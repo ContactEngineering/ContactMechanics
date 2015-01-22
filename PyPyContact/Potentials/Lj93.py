@@ -72,7 +72,7 @@ if __name__ == "__main__":
     sig = Symbol('sig')
     eps = Symbol('eps')
     r = Symbol('r')
-    lj = eps*(2/15*(sig/r)**9 - (sig/r)**3)
+    lj = eps*(2*(sig/r)**9/15 - (sig/r)**3)
     dlj = sympy.diff(lj, r)
     ddlj = sympy.diff(dlj, r)
     pprint(  lj)
