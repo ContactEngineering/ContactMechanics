@@ -36,23 +36,22 @@ class Potential(object):
         computed at any point in the problem from just the one-dimensional gap
         (h(x,y)-z(x,y)) at that point
     """
+    name = "generic"
+
     class PotentialError(Exception):
         pass
     def __init__(self, ):
-        self.name = "generic"
-        self.cutoff = None
+        self.r_c = None
 
         self.energy = None
         self.forces = None
+        self.curb   = None
 
 
     def __repr__(self):
-        return ("Potential type '{0.name}', cut-off radius r_cut = "+
-                "{0.cutoff}").format(self)
+        return ("Potential '{0.name}', cut-off radius r_cut = "+
+                "{0.r_c}").format(self)
 
-    def compute(self, gap, compute_forces=False):
-        if compute_forces:
-            self.compute_Energy_and_forces(gap)
-        else:
-            self.forces = None
-            self.compute_Energy(gap)
+    def compute(self, gap, pot=True, forces=False, curb=False):
+        self.energy, self.forces, self.curb = self.evaluate(
+            gap, pot, forces, curb)
