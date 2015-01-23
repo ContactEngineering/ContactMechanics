@@ -71,7 +71,7 @@ class LJ93smooth(Lj93.LJ93):
         The unknowns are C_i (i in {0,..4}) and r_t
     """
     name = 'lj9-3smooth'
-    def __init__(self, epsilon, sigma, gamma=None, r_t=None):
+    def __init__(self, epsilon, sigma, gamma=None, r_t=None, softfail=False):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of adhesion
@@ -87,7 +87,8 @@ class LJ93smooth(Lj93.LJ93):
         self.r_c = None
         ## coefficients of the spline
         self.coeffs = np.zeros(5)
-        self.eval_poly_and_cutoff()
+        self.eval_poly_and_cutoff(softfail=softfail)
+        pass
 
     def __repr__(self):
         has_gamma = self.gamma != self.naive_min
@@ -108,18 +109,31 @@ class LJ93smooth(Lj93.LJ93):
         curb   -- (default False) if true, returns second derivative
         """
         r = np.array(r)
+        nb_dim = len(r.shape)
+        if nb_dim == 0:
+            r.shape = (1,)
         V   = np.zeros_like(r) if pot    else self.SliceableNone()
         dV  = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb   else self.SliceableNone()
 
         sl_inner = r < self.r_t
-        V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_V(
-            r[sl_inner], pot, forces, curb)
+        ## little hack to work around numpy bug
+        if np.array_equal(sl_inner, np.array([True])):
+            V, dV, ddV = self.naive_V(r, pot, forces, curb)
+        else:
+            V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_V(
+                r[sl_inner], pot, forces, curb)
         V[sl_inner] -= self.offset
 
         sl_outer = r < self.r_c * (True - sl_inner)
-        V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_V(
-            r[sl_outer], pot, forces, curb)
+        ## little hack to work around numpy bug
+        if np.array_equal(sl_outer, np.array([True])):
+            V, dV, ddV = self.spline_V(r, pot, forces, curb)
+        else:
+            V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_V(
+                r[sl_outer], pot, forces, curb)
+
+        print(self.spline_V(r[sl_outer], pot, forces, curb))
 
         return (V    if pot    else None,
                 dV   if forces else None,
@@ -143,7 +157,7 @@ class LJ93smooth(Lj93.LJ93):
             ddV = self.ddpoly(dr)
         return (V, dV, ddV)
 
-    def eval_poly_and_cutoff(self, xtol=1e-14):
+    def eval_poly_and_cutoff(self, xtol=1e-14, softfail=False):
         """ Computes the coefficients of the spline and the cutoff based on σ
             and ε. Since this is a non-linear system of equations, this requires
             some numerics
@@ -155,7 +169,7 @@ class LJ93smooth(Lj93.LJ93):
 
             (2): C_2 = -V_l''(r_t)
 
-            (6): C_0 = - γ + C_1*Δr_m + C_2/2*Δr_m^2
+            (6): C_0 = + γ + C_1*Δr_m + C_2/2*Δr_m^2
                        + C_3/3*Δr_m^3 + C_4/4*Δr_m^4
             Also, we have some info about the shape of the spline:
             since Δr_c is both an inflection point and an extremum and it has to
@@ -190,9 +204,10 @@ class LJ93smooth(Lj93.LJ93):
                    ⎢                                             ⎥
                    ⎢                    2         3         4    ⎥
                    ⎢              C₂⋅Δrm    C₃⋅Δrm    C₄⋅Δrm     ⎥
-                   ⎢C₀ - C₁⋅Δrm - ─────── - ─────── - ─────── + γ⎥
+                   ⎢C₀ - C₁⋅Δrm - ─────── - ─────── - ─────── - γ⎥
                    ⎣                 2         3         4       ⎦
-            is solved. The jacobian is:
+            is solved. Note that a positive work of adhesion (sticky surface)
+            has a negative value for γ. The jacobian is:
                    ⎡                 2                                  ⎤
                    ⎢0  -2⋅Δrc  -3⋅Δrc           -2⋅C₃ - 6⋅C₄⋅Δrc        ⎥
                    ⎢                                                    ⎥
@@ -230,7 +245,7 @@ class LJ93smooth(Lj93.LJ93):
                     -C1      - C2 * dr_c    -   C3 * dr_c**2 - C4 * dr_c**3,
                  C0 -C1*dr_c - C2/2*dr_c**2 -   C3/3*dr_c**3 - C4/4*dr_c**4,
                  C0 -C1*dr_m - C2/2*dr_m**2 -   C3/3*dr_m**3 - C4/4*dr_m**4
-                  + gam])
+                  - gam])
         def jacobian(x):
             C0, C3, C4, dr_c = x
             return np.array(
@@ -245,22 +260,29 @@ class LJ93smooth(Lj93.LJ93):
         x0 = np.array([-gam, C3guess, 0, max(2.5*self.sig, 2*self.r_min)-r_t])
         options = dict(xtol=self.eps*1e-14)
         sol = scipy.optimize.root(obj_fun, x0, jac=jacobian, options=options)
-        if sol.success:
+        if True or sol.success:
             print(sol)
             self.coeffs[0], self.coeffs[3], self.coeffs[4], self.r_c = sol.x
             self.r_c += self.r_t
             ## !!WARNING!! poly is 'backwards': poly = [C4, C3, C2, C1, C0] and
-            ## all coeffs except C0 have the wrong sign
-            polycoeffs = -self.coeffs[::-1]
-            polycoeffs[-1] **-1
+            ## all coeffs except C0 have the wrong sign, furthermore they are
+            ## divided by their order
+            polycoeffs = [-self.coeffs[4]/4,
+                          -self.coeffs[3]/3,
+                          -self.coeffs[2]/2,
+                          -self.coeffs[1],
+                           self.coeffs[0]]
             self.poly   = np.poly1d(polycoeffs)
             self.dpoly  = np.polyder(self.poly)
             self.ddpoly = np.polyder(self.dpoly)
-            self.offset = (self.spline_V(self.r_t)[0] - self.naive_V(self.r_t)[0])
+            self.offset = -(self.spline_V(self.r_t)[0] - self.naive_V(self.r_t)[0])
         else:
-            raise self.PotentialError(
-                ("Evaluation of spline for potential '{}' failed. Please check"
-                 " whether the inputs make sense").format(self))
+            err_str = ("Evaluation of spline for potential '{}' failed. Please check"
+                 " whether the inputs make sense").format(self)
+            if softfail:
+                print("WARNING! {}".format(err_str))
+            else:
+                raise self.PotentialError(err_str)
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -306,17 +328,23 @@ if __name__ == '__main__':
 
     import matplotlib.pyplot as plt
     f = plt.figure()
-    p_ax = f.add_subplot(311)
-    f_ax = f.add_subplot(312)
-    c_ax = f.add_subplot(313)
+    p_ax = f.add_subplot(131)
+    f_ax = f.add_subplot(132)
+    c_ax = f.add_subplot(133)
 
-    pot = LJ93smooth(epsilon, sigma, gamma=epsilon)
-    x = np.arange(.7*sigma, 2.5*sigma, .01*sigma)
+    pot = LJ93smooth(epsilon, sigma, gamma=-epsilon, r_t=r_t)
+
+    x = np.arange(.8*sigma, 2*sigma, .0025*sigma)
     V, dV, ddV = pot.evaluate(x, pot=True, forces=True, curb=True)
     color = p_ax.plot(x, V, label="bla")[0].get_color()
-    p_ax.scatter(pot.r_min, pot.evaluate(pot.r_min)[0], marker='x', c=color)
+    sig_pts = [pot.r_t, pot.r_min, pot.r_c]
+    V_t, dV_t, ddV_t = pot.evaluate(sig_pts, True, True, True)
+    print(V_t, dV_t, ddV_t)
+    p_ax.scatter(sig_pts, V_t, marker='x', c=color)
     f_ax.plot(x, dV, c=color)
+    f_ax.scatter(sig_pts, dV_t, marker='x', c=color)
     c_ax.plot(x, ddV, c=color)
+    c_ax.scatter(sig_pts, ddV_t, marker='x', c=color)
 
     p_ax.legend(loc='best')
     x_range = p_ax.get_xlim()
@@ -327,15 +355,15 @@ if __name__ == '__main__':
     cy_range = c_ax.get_ylim()
 
     V, dV, ddV = pot.spline_V(x, pot=True, forces=True, curb=True)
-    color = p_ax.plot(x, V, label="bla")[0].get_color()
-    f_ax.plot(x, dV, c=color)
-    c_ax.plot(x, ddV, c=color)
+    color = p_ax.plot(x, V, label="bla", ls='--')[0].get_color()
+    f_ax.plot(x, dV, c=color, ls='--')
+    c_ax.plot(x, ddV, c=color, ls='--')
 
     V, dV, ddV = pot.naive_V(x, pot=True, forces=True, curb=True)
-    color = p_ax.plot(x, V, label="bla")[0].get_color()
-    f_ax.plot(x, dV, c=color)
-    c_ax.plot(x, ddV, c=color)
-    
+    color = p_ax.plot(x, V, label="bla", ls='--')[0].get_color()
+    f_ax.plot(x, dV, c=color, ls='--')
+    c_ax.plot(x, ddV, c=color, ls='--')
+
     p_ax.set_ylim(py_range)
     f_ax.set_ylim(fy_range)
     c_ax.set_ylim(cy_range)
@@ -343,5 +371,3 @@ if __name__ == '__main__':
     f_ax.grid(True)
     c_ax.grid(True)
     plt.show()
-
-

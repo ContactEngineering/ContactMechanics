@@ -40,6 +40,8 @@ class Potential(object):
 
     class PotentialError(Exception):
         pass
+    class PotentialWarning(Warning):
+        pass
     def __init__(self, ):
         self.r_c = None
 
