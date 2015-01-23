@@ -55,3 +55,7 @@ class Potential(object):
     def compute(self, gap, pot=True, forces=False, curb=False):
         self.energy, self.forces, self.curb = self.evaluate(
             gap, pot, forces, curb)
+
+if __name__ == "__main__":
+    pot = Potential()
+    raise pot.PotentialError('error')

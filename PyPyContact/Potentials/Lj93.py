@@ -44,6 +44,14 @@ class LJ93(Potential.Potential):
 
         V_lc (r) = V_l (r) - V_l (r_c)
     """
+    class SliceableNone(object):
+        """small helper class to remedy numpy's lack of views on
+        index-sliced array views. This construction avoid the computation
+        of all interactions as with np.where, and copies"""
+        __slots__ = ()
+        def __setitem__(self, index, val):pass
+        def __getitem__(self, index):pass
+
     name = "lj9-3"
     def __init__(self, epsilon, sigma, r_cut=float('inf')):
         """
@@ -74,18 +82,11 @@ class LJ93(Potential.Potential):
         forces -- (default False) if true, returns forces
         curb   -- (default False) if true, returns second derivative
         """
-        class SliceableNone(object):
-            """small helper class to remedy numpy's lack of views on
-            index-sliced array views. This construction avoid the computation
-            of all interactions as with np.where, and copies"""
-            __slots__ = ()
-            def __setitem__(self, index, val):pass
-            def __getitem__(self, index):pass
         r = np.array(r)
         slice = r < self.r_c
-        V   = np.zeros_like(r) if pot    else SliceableNone()
-        dV  = np.zeros_like(r) if forces else SliceableNone()
-        ddV = np.zeros_like(r) if curb   else SliceableNone()
+        V   = np.zeros_like(r) if pot    else self.SliceableNone()
+        dV  = np.zeros_like(r) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r) if curb   else self.SliceableNone()
 
         V[slice], dV[slice], ddV[slice] = self.naive_V(
             r[slice], pot, forces, curb)
@@ -104,6 +105,14 @@ class LJ93(Potential.Potential):
                      5
         """
         return self.sig*(2*5**5)**(1./6)/5.
+
+    @property
+    def naive_min(self):
+        """ convenience function returning the energy minimum of the bare
+           potential
+
+        """
+        return self.naive_V(self.r_min)[0]
 
     def naive_V(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the potential and its derivatives without cutoffs or

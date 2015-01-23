@@ -30,10 +30,12 @@
 # Boston, MA 02111-1307, USA.
 #
 
+import scipy.optimize
+import numpy as np
+
 import Lj93
 
-
-class Lj93smooth(Lj93.LJ93):
+class LJ93smooth(Lj93.LJ93):
     """ 9-3 Lennard-Jones potential with forces splined to zero from
         the minimum of the potential using a fourth order spline. The 9-3
         Lennard-Jones interaction potential is often used to model the interac-
@@ -72,18 +74,76 @@ class Lj93smooth(Lj93.LJ93):
     def __init__(self, epsilon, sigma, gamma=None, r_t=None):
         """
         Keyword Arguments:
-        epsilon -- Lennard-Jones potential well ε
+        epsilon -- Lennard-Jones potential well ε (careful, not work of adhesion
+                   in this formulation)
         sigma   -- Lennard-Jones distance parameter σ
         gamma   -- (default None) Work of adhesion, defaults to epsilon
         r_t     -- (default None) transition point, defaults to r_min
         """
         self.eps = epsilon
         self.sig = sigma
-        self.gamma = gamma if gamma is not None else epsilon
+        self.gamma = gamma if gamma is not None else self.naive_min
         self.r_t = r_t if r_t is not None else self.r_min
+        self.r_c = None
+        ## coefficients of the spline
+        self.coeffs = np.zeros(5)
+        self.eval_poly_and_cutoff()
 
+    def __repr__(self):
+        has_gamma = self.gamma != self.naive_min
+        has_r_t = self.r_t != self.r_min
+        return ("Potential '{0.name}', ε = {0.eps}, σ = "
+                "{0.sig}{1}{2}").format(
+                    self,
+                    ", γ = {.gamma}".format(self) if has_gamma else "",
+                    ", r_t = {}".format(
+                        self.r_t if has_r_t else "r_min"))
 
-    def eval_poly_and_cutoff(self):
+    def evaluate(self, r, pot=True, forces=False, curb=False):
+        """Evaluates the potential and its derivatives
+        Keyword Arguments:
+        r      -- array of distances
+        pot    -- (default True) if true, returns potential energy
+        forces -- (default False) if true, returns forces
+        curb   -- (default False) if true, returns second derivative
+        """
+        r = np.array(r)
+        V   = np.zeros_like(r) if pot    else self.SliceableNone()
+        dV  = np.zeros_like(r) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r) if curb   else self.SliceableNone()
+
+        sl_inner = r < self.r_t
+        V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_V(
+            r[sl_inner], pot, forces, curb)
+        V[sl_inner] -= self.offset
+
+        sl_outer = r < self.r_c * (True - sl_inner)
+        V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_V(
+            r[sl_outer], pot, forces, curb)
+
+        return (V    if pot    else None,
+                dV   if forces else None,
+                ddV  if curb   else None)
+
+    def spline_V(self, r, pot=True, forces=False, curb=False):
+        """ Evaluates the spline part and its derivatives of the potential.
+        Keyword Arguments:
+        r      -- array of distances
+        pot    -- (default True) if true, returns potential energy
+        forces -- (default False) if true, returns forces
+        curb   -- (default False) if true, returns second derivative
+        """
+        V = dV = ddV = None
+        dr = r-self.r_t
+        if pot:
+            V = self.poly(dr)
+        if forces:
+            dV = self.dpoly(dr)
+        if curb:
+            ddV = self.ddpoly(dr)
+        return (V, dV, ddV)
+
+    def eval_poly_and_cutoff(self, xtol=1e-14):
         """ Computes the coefficients of the spline and the cutoff based on σ
             and ε. Since this is a non-linear system of equations, this requires
             some numerics
@@ -111,12 +171,100 @@ class Lj93smooth(Lj93.LJ93):
             Δr_c = ⎢-C₃ + ╲╱  -3⋅C₂⋅C₄ + C₃    -⎝C₃ + ╲╱  -3⋅C₂⋅C₄ + C₃  ⎠ ⎥
                    ⎢─────────────────────────, ────────────────────────────⎥
                    ⎣           3⋅C₄                        3⋅C₄            ⎦
+            This however seems to lead to intractable polynomial equations
+            (minutes of sympy without finding a solution, ran out of patience)
+
+            Numerical approach: equations (1) and (2) are evauated immediately,
+            Then the system of equations
+
+                   ⎡                                   2         ⎤
+                   ⎢          -C₂ - 2⋅C₃⋅Δrc - 3⋅C₄⋅Δrc          ⎥
+                   ⎢                                             ⎥
+                   ⎢                            2         3      ⎥
+                   ⎢       -C₁ - C₂⋅Δrc - C₃⋅Δrc  - C₄⋅Δrc       ⎥
+                   ⎢                                             ⎥
+                   ⎢                       2         3         4 ⎥
+            F(x) = ⎢                 C₂⋅Δrc    C₃⋅Δrc    C₄⋅Δrc  ⎥ = 0
+                   ⎢   C₀ - C₁⋅Δrc - ─────── - ─────── - ─────── ⎥
+                   ⎢                    2         3         4    ⎥
+                   ⎢                                             ⎥
+                   ⎢                    2         3         4    ⎥
+                   ⎢              C₂⋅Δrm    C₃⋅Δrm    C₄⋅Δrm     ⎥
+                   ⎢C₀ - C₁⋅Δrm - ─────── - ─────── - ─────── + γ⎥
+                   ⎣                 2         3         4       ⎦
+            is solved. The jacobian is:
+                   ⎡                 2                                  ⎤
+                   ⎢0  -2⋅Δrc  -3⋅Δrc           -2⋅C₃ - 6⋅C₄⋅Δrc        ⎥
+                   ⎢                                                    ⎥
+                   ⎢       2        3                               2   ⎥
+                   ⎢0  -Δrc     -Δrc       -C₂ - 2⋅C₃⋅Δrc - 3⋅C₄⋅Δrc    ⎥
+                   ⎢                                                    ⎥
+                   ⎢       3       4                                    ⎥
+            G(x) = ⎢   -Δrc    -Δrc                          2         3⎥
+                   ⎢1  ──────  ──────   -C₁ - C₂⋅Δrc - C₃⋅Δrc  - C₄⋅Δrc ⎥
+                   ⎢     3       4                                      ⎥
+                   ⎢                                                    ⎥
+                   ⎢       3       4                                    ⎥
+                   ⎢   -Δrm    -Δrm                                     ⎥
+                   ⎢1  ──────  ──────                  0                ⎥
+                   ⎣     3       4                                      ⎦
+
+            with x = [C₀  C₃  C₄  Δrc]
+
+        Keyword Arguments:
+        xtol -- tolerance for numerical solution. Is multiplied by ε internally.
+
         """
-        pass
+        # known coeffs
+        trash, dV, ddV = self.naive_V(self.r_t, pot=False, forces=True, curb=True)
+        C1 = self.coeffs[1] = -dV
+        C2 = self.coeffs[2] = -ddV
+        gam = self.gamma
+        r_t = self.r_t
+        dr_m = self.r_min - r_t
+
+        def obj_fun(x):
+            C0, C3, C4, dr_c = x
+            return np.array(
+                [            - C2           - 2*C3 * dr_c  - 3*C4 * dr_c**2,
+                    -C1      - C2 * dr_c    -   C3 * dr_c**2 - C4 * dr_c**3,
+                 C0 -C1*dr_c - C2/2*dr_c**2 -   C3/3*dr_c**3 - C4/4*dr_c**4,
+                 C0 -C1*dr_m - C2/2*dr_m**2 -   C3/3*dr_m**3 - C4/4*dr_m**4
+                  + gam])
+        def jacobian(x):
+            C0, C3, C4, dr_c = x
+            return np.array(
+             [[0,    -2*dr_c, -3*dr_c**2,            -2*C3       -6*C4*dr_c   ],
+              [0,   -dr_c**2,   -dr_c**3,        -C2 -2*C3*dr_c  -3*C4*dr_c**2],
+              [1, -dr_c**3/3, -dr_c**4/4, -C1 -C2*dr_c -C3*dr_c**2 -C4*dr_c**3],
+              [1, -dr_m**3/3, -dr_m**4/4,                                   0]])
+
+        C3guess = -C2
+        C4guess = self.eps/2
+
+        x0 = np.array([-gam, C3guess, 0, max(2.5*self.sig, 2*self.r_min)-r_t])
+        options = dict(xtol=self.eps*1e-14)
+        sol = scipy.optimize.root(obj_fun, x0, jac=jacobian, options=options)
+        if sol.success:
+            print(sol)
+            self.coeffs[0], self.coeffs[3], self.coeffs[4], self.r_c = sol.x
+            self.r_c += self.r_t
+            ## !!WARNING!! poly is 'backwards': poly = [C4, C3, C2, C1, C0] and
+            ## all coeffs except C0 have the wrong sign
+            polycoeffs = -self.coeffs[::-1]
+            polycoeffs[-1] **-1
+            self.poly   = np.poly1d(polycoeffs)
+            self.dpoly  = np.polyder(self.poly)
+            self.ddpoly = np.polyder(self.dpoly)
+            self.offset = (self.spline_V(self.r_t)[0] - self.naive_V(self.r_t)[0])
+        else:
+            raise self.PotentialError(
+                ("Evaluation of spline for potential '{}' failed. Please check"
+                 " whether the inputs make sense").format(self))
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    from sympy import Symbol, pprint
+    from sympy import Symbol, pprint, solve_poly_system, Matrix, zeros
     import sympy
     C0 = Symbol('C0')
     C1 = Symbol('C1')
@@ -124,7 +272,76 @@ if __name__ == '__main__':
     C3 = Symbol('C3')
     C4 = Symbol('C4')
     dr_c = Symbol('Δrc')
+    dr_m = Symbol('Δrm')
+    gam = Symbol('γ')
     dr1, dr2 = sympy.solve(    - C2      - 2*C3*dr_c  - 3*C4*dr_c**2, dr_c)
-    pprint(dr1)
-    pprint(dr2)
-    pprint(sympy.solve((-C1 - C2*dr_c -   C3*dr_c**2 - C4*dr_c**3).subs(dr_c, dr1), dr1))
+
+    eq5 =             - C2           - 2*C3 * dr_c  - 3*C4 * dr_c**2
+    eq4 =    -C1      - C2 * dr_c    -   C3 * dr_c**2 - C4 * dr_c**3
+    eq3 = C0 -C1*dr_c - C2/2*dr_c**2 -   C3/3*dr_c**3 - C4/4*dr_c**4
+    eq6 = C0 -C1*dr_m - C2/2*dr_m**2 -   C3/3*dr_m**3 - C4/4*dr_m**4 + gam
+
+    ## apparently not easily solvable
+    #solve_poly_system([eq5, eq4, eq3, eq6], dr_c, C4, C3, C0)
+    F = Matrix([[eq5, eq4, eq3, eq6]])
+    pprint(F.T)
+    vs = Matrix([[C0, C3, C4, dr_c]])
+    pprint (vs)
+    size = len(vs)
+    gradient = zeros(size, size)
+    for i in range(size):
+        for j in range(size):
+            gradient[i,j] = sympy.diff(F[i], vs[j])
+    pprint(gradient)
+    print(gradient)
+
+    epsilon, sigma, r_t, gamma = 1.2, 4, 4, 1.3
+    ## print(LJ93smooth(epsilon, sigma))
+    ## print(LJ93smooth(epsilon, sigma).poly)
+    ## print(LJ93smooth(epsilon, sigma, gamma=gamma))
+    ## print(LJ93smooth(epsilon, sigma, gamma=gamma).poly)
+    ## print(LJ93smooth(epsilon, sigma, r_t =r_t))
+    ## print(LJ93smooth(epsilon, sigma, gamma=gamma, r_t =r_t))
+
+
+    import matplotlib.pyplot as plt
+    f = plt.figure()
+    p_ax = f.add_subplot(311)
+    f_ax = f.add_subplot(312)
+    c_ax = f.add_subplot(313)
+
+    pot = LJ93smooth(epsilon, sigma, gamma=epsilon)
+    x = np.arange(.7*sigma, 2.5*sigma, .01*sigma)
+    V, dV, ddV = pot.evaluate(x, pot=True, forces=True, curb=True)
+    color = p_ax.plot(x, V, label="bla")[0].get_color()
+    p_ax.scatter(pot.r_min, pot.evaluate(pot.r_min)[0], marker='x', c=color)
+    f_ax.plot(x, dV, c=color)
+    c_ax.plot(x, ddV, c=color)
+
+    p_ax.legend(loc='best')
+    x_range = p_ax.get_xlim()
+    f_ax.set_xlim(x_range)
+    c_ax.set_xlim(x_range)
+    py_range = p_ax.get_ylim()
+    fy_range = f_ax.get_ylim()
+    cy_range = c_ax.get_ylim()
+
+    V, dV, ddV = pot.spline_V(x, pot=True, forces=True, curb=True)
+    color = p_ax.plot(x, V, label="bla")[0].get_color()
+    f_ax.plot(x, dV, c=color)
+    c_ax.plot(x, ddV, c=color)
+
+    V, dV, ddV = pot.naive_V(x, pot=True, forces=True, curb=True)
+    color = p_ax.plot(x, V, label="bla")[0].get_color()
+    f_ax.plot(x, dV, c=color)
+    c_ax.plot(x, ddV, c=color)
+    
+    p_ax.set_ylim(py_range)
+    f_ax.set_ylim(fy_range)
+    c_ax.set_ylim(cy_range)
+    p_ax.grid(True)
+    f_ax.grid(True)
+    c_ax.grid(True)
+    plt.show()
+
+
