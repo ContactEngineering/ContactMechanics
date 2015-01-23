@@ -339,12 +339,14 @@ if __name__ == '__main__':
     color = p_ax.plot(x, V, label="bla")[0].get_color()
     sig_pts = [pot.r_t, pot.r_min, pot.r_c]
     V_t, dV_t, ddV_t = pot.evaluate(sig_pts, True, True, True)
-    print(V_t, dV_t, ddV_t)
+
+
     p_ax.scatter(sig_pts, V_t, marker='x', c=color)
     f_ax.plot(x, dV, c=color)
     f_ax.scatter(sig_pts, dV_t, marker='x', c=color)
     c_ax.plot(x, ddV, c=color)
     c_ax.scatter(sig_pts, ddV_t, marker='x', c=color)
+
 
     p_ax.legend(loc='best')
     x_range = p_ax.get_xlim()
