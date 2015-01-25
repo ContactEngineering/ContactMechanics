@@ -60,4 +60,6 @@ class Potential(object):
 
 if __name__ == "__main__":
     pot = Potential()
-    raise pot.PotentialError('error')
+
+    raise pot.PotentialError('error, not really')
+
