@@ -29,14 +29,16 @@
 # Boston, MA 02111-1307, USA.
 #
 
-class Potential(object):
+from .Interaction import SoftWall
+
+class Potential(SoftWall):
     """ Describes the minimum interface to interaction potentials for
         PyPyContact. These pontentials are purely 1D, which allows for a few
         simplifications. For instance, the potential energy and forces can be
         computed at any point in the problem from just the one-dimensional gap
         (h(x,y)-z(x,y)) at that point
     """
-    name = "generic"
+    name = "generic_potential"
 
     class PotentialError(Exception):
         pass

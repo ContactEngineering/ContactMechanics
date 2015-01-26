@@ -31,9 +31,9 @@
 
 import math
 import numpy as np
-import Potential
+from . import Potential
 
-class LJ93(Potential.Potential):
+class LJ93(Potential):
     """ 9-3 Lennard-Jones potential with optional cutoff radius.
 
         9-3 Lennard-Jones potential:

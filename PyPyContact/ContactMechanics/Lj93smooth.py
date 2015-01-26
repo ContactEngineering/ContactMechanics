@@ -33,7 +33,7 @@
 import scipy.optimize
 import numpy as np
 
-import Lj93
+from . import Lj93
 
 class LJ93smooth(Lj93.LJ93):
     """ 9-3 Lennard-Jones potential with forces splined to zero from

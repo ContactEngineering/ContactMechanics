@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
-
+# -*- coding:utf-8 -*-
+#
 # @file   __init__.py
 #
 # @author Till Junge <till.junge@kit.edu>
 #
-# @date   21 Jan 2015
+# @date   26 Jan 2015
 #
-# @brief  interaction potentials
+# @brief  Defines all solid mechanics model used in PyPyContact
 #
 # @section LICENCE
 #
 #  Copyright (C) 2015 Till Junge
 #
-# PyPyContact is free software; you can redistribute it and/or
+# This project is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation, either version 3, or (at
 # your option) any later version.
 #
-# PyPyContact is distributed in the hope that it will be useful, but
+# This project is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
@@ -27,5 +28,5 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 #
-
-from Potential import Potential
+from .HalfSpace import HalfSpace, ElasticHalfSpace
+from .FFTElasticHalfSpace import FFTElasticHalfSpace
