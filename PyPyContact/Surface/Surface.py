@@ -40,8 +40,9 @@ class Surface(object):
     name = 'generic_geom'
 
     def __init__(self):
-        self.resolution = None
-        self.dim = None
+        self._resolution = None
+        self._dim = None
+        self._size = None
 
     def profile(self, *args, **kwargs):
         """ returns an array of heights
@@ -58,6 +59,35 @@ class Surface(object):
         return ScaledSurface(self, other)
 
     __rmul__ = __mul__
+
+    @property
+    def dim(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self._dim
+
+    @property
+    def resolution(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self._resolution
+
+    @property
+    def size(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self._size
+
+    def save(self, fname, compress=True, *args, **kwargs):
+        """ saves the surface as a NumpyTxtSurface
+        """
+        if compress:
+            if not fname.endswith('.gz'):
+                fname = fname + ".gz"
+        np.savetxt(fname, self.profile(*args, **kwargs))
 
 
 class ScaledSurface(Surface):
@@ -108,24 +138,22 @@ class CompoundSurface(Surface):
         surfA   -- first surface of the compound
         surfB   -- second surface of the compound
         """
-        assert (surfA.dim == surfB.dim)
-        assert (surfA.resolution == surfB.resolution)
+        def combined_val(propA, propB, propname):
+            if propA is None:
+                return probB
+            else:
+                if propB is not None:
+                    assert propA == propB, \
+                        "{} incompatible:{} <-> {}".format(
+                            propname, propA, propB)
+                return propA
+
+        self._dim = combined_val(surfA.dim, surfB.dim, 'dim')
+        self._resulution = combined_val(surfA.resolution,
+                                         surfB.resolution, 'resolution')
         self.surfA = surfA
         self.surfB = surfB
 
-    @property
-    def dim(self,):
-        """ needs to be testable to make sure that geometry and halfspace are
-            compatible
-        """
-        return self.surfA.dim
-
-    @property
-    def resolution(self,):
-        """ needs to be testable to make sure that geometry and halfspace are
-            compatible
-        """
-        return self.surfA.resolution
 
     def profile(self, surfA_args = list(), surfA_kwargs = dict(),
             surfB_args = list(), surfB_kwargs = dict()):
@@ -155,3 +183,9 @@ class NumpySurface(Surface):
 
     def profile(self):
         return self.__h
+
+class Sphere(Surface):
+    """ Spherical surface. Corresponds to a cylinder in 2D
+    """
+    name = 'sphere'
+    ##def __init__(self, radius, resolution, size

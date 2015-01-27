@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 #
-# @file   __init__.py
+# @file   04-SurfaceTests.py
 #
 # @author Till Junge <till.junge@kit.edu>
 #
-# @date   21 Jan 2015
+# @date   27 Jan 2015
 #
-# @brief  Defines all interaction modes used in PyPyContact
+# @brief  Tests surface classes
 #
 # @section LICENCE
 #
@@ -29,9 +29,13 @@
 # Boston, MA 02111-1307, USA.
 #
 
-__all__ = ["Interaction", "HardWall", "SoftWall", "Potential", "LJ93",
-           "LJ93smooth"]
-from .Interaction import Interaction, HardWall, SoftWall
-from .Potential import Potential
-from .Lj93 import LJ93
-from .Lj93smooth import LJ93smooth
+
+import unittest
+import numpy as np
+import tempfile, os
+
+from PyPyContact.Surface import NumpyTxtSurface
+
+class NumpyTxtSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass

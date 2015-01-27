@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import lj93_ref_potential as lj93
-import lj93smooth_ref_potential as lj93s
+from . import lj93_ref_potential as lj93
+from . import lj93smooth_ref_potential as lj93s
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -18,7 +18,7 @@ x = np.arange(xmin, xmax, step)
 v  = lj93. V(x, eps, sig, rc1)
 vs = lj93s.V(x, eps, sig, 1.1, rc1)
 
-plt.plot(x, v,  label='std')
-plt.plot(x, vs, label='smooth')
-plt.legend(loc='best')
-plt.show()
+## plt.plot(x, v,  label='std')
+## plt.plot(x, vs, label='smooth')
+## plt.legend(loc='best')
+## plt.show()

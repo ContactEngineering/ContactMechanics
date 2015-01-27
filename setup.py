@@ -40,5 +40,5 @@ setup(
     author_email = "till.junge@kit.edu",
     description = "Simple contact mechanics code",
     license = "GPLv3",
-    test_suite = 'tests.test_suite'
+    test_suite = 'tests'
 )

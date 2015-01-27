@@ -129,7 +129,7 @@ if __name__ == '__main__':
     test_res = (s_res, s_res)
     hs = FFTElasticHalfSpace(test_res, 1, (12.5, 28.3))
     forces = np.zeros(test_res)
-    forces[16:48,:32] = 1
+    forces[:s_res//2,:s_res//2] = 1
 
     import time
     start = time.perf_counter()

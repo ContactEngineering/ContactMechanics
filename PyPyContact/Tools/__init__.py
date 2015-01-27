@@ -5,9 +5,9 @@
 #
 # @author Till Junge <till.junge@kit.edu>
 #
-# @date   21 Jan 2015
+# @date   27 Jan 2015
 #
-# @brief  Defines all interaction modes used in PyPyContact
+# @brief  Helper tools for PyPyContact
 #
 # @section LICENCE
 #
@@ -28,10 +28,4 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 #
-
-__all__ = ["Interaction", "HardWall", "SoftWall", "Potential", "LJ93",
-           "LJ93smooth"]
-from .Interaction import Interaction, HardWall, SoftWall
-from .Potential import Potential
-from .Lj93 import LJ93
-from .Lj93smooth import LJ93smooth
+from .AugmentedLagrangian import AugmentedLagrangian

@@ -82,16 +82,22 @@ class LJ93smooth(Lj93.LJ93):
         """
         self.eps = epsilon
         self.sig = sigma
-        self.gamma = gamma if gamma is not None else self.naive_min
+        self.gamma = gamma if gamma is not None else -self.naive_min
         self.r_t = r_t if r_t is not None else self.r_min
         self.r_c = None
+        if self.gamma*self.eps < 0:
+            raise self.PotentialError(
+                ("ε and γ should have the same sign."
+                 "you specified ε = {} and γ = {}. Is your γ "
+                 "positive (as it should be)?").format(
+                     self.eps, self.gamma))
         ## coefficients of the spline
         self.coeffs = np.zeros(5)
         self.eval_poly_and_cutoff(softfail=softfail)
         pass
 
     def __repr__(self):
-        has_gamma = self.gamma != self.naive_min
+        has_gamma = -self.gamma != self.naive_min
         has_r_t = self.r_t != self.r_min
         return ("Potential '{0.name}', ε = {0.eps}, σ = "
                 "{0.sig}{1}{2}").format(
@@ -125,15 +131,13 @@ class LJ93smooth(Lj93.LJ93):
                 r[sl_inner], pot, forces, curb)
         V[sl_inner] -= self.offset
 
-        sl_outer = r < self.r_c * (True - sl_inner)
+        sl_outer = r < self.r_c * np.logical_xor(True, sl_inner)
         ## little hack to work around numpy bug
         if np.array_equal(sl_outer, np.array([True])):
             V, dV, ddV = self.spline_V(r, pot, forces, curb)
         else:
             V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_V(
                 r[sl_outer], pot, forces, curb)
-
-        print(self.spline_V(r[sl_outer], pot, forces, curb))
 
         return (V    if pot    else None,
                 dV   if forces else None,
@@ -157,7 +161,7 @@ class LJ93smooth(Lj93.LJ93):
             ddV = self.ddpoly(dr)
         return (V, dV, ddV)
 
-    def eval_poly_and_cutoff(self, xtol=1e-14, softfail=False):
+    def eval_poly_and_cutoff(self, xtol=1e-10, softfail=False):
         """ Computes the coefficients of the spline and the cutoff based on σ
             and ε. Since this is a non-linear system of equations, this requires
             some numerics
@@ -234,7 +238,7 @@ class LJ93smooth(Lj93.LJ93):
         trash, dV, ddV = self.naive_V(self.r_t, pot=False, forces=True, curb=True)
         C1 = self.coeffs[1] = -dV
         C2 = self.coeffs[2] = -ddV
-        gam = self.gamma
+        gam = -self.gamma
         r_t = self.r_t
         dr_m = self.r_min - r_t
 
@@ -258,10 +262,9 @@ class LJ93smooth(Lj93.LJ93):
         C4guess = self.eps/2
 
         x0 = np.array([-gam, C3guess, 0, max(2.5*self.sig, 2*self.r_min)-r_t])
-        options = dict(xtol=self.eps*1e-14)
+        options = dict(xtol=self.eps*xtol)
         sol = scipy.optimize.root(obj_fun, x0, jac=jacobian, options=options)
         if True or sol.success:
-            print(sol)
             self.coeffs[0], self.coeffs[3], self.coeffs[4], self.r_c = sol.x
             self.r_c += self.r_t
             ## !!WARNING!! poly is 'backwards': poly = [C4, C3, C2, C1, C0] and
