@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 #
-# @file   Solver.py
+# @file   System
 #
 # @author Till Junge <till.junge@kit.edu>
 #
@@ -25,12 +25,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GNU Emacs; see the file COPYING. If not, write to the
-# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Free Software Foundation, Inc., 59 Temple Place - Su ite 330,
 # Boston, MA 02111-1307, USA.
 #
 
 
-class Solver(object):
+class System(object):
     def __init__(self, substrate, interaction, surface):
         """ 
         Keyword Arguments:

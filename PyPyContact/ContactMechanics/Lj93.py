@@ -90,7 +90,8 @@ class LJ93(Potential):
 
         V[slice], dV[slice], ddV[slice] = self.naive_V(
             r[slice], pot, forces, curb)
-        V[slice] -= self.offset
+        if V[slice] is not None:
+            V[slice] -= self.offset
         return (V    if pot    else None,
                 dV   if forces else None,
                 ddV  if curb   else None)
