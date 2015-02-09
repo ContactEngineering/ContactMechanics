@@ -56,4 +56,4 @@ def augmented_lagrangian(fun, x0, constraints, mu_0=None, lamb_0=None,
     mu = 1. if mu_0 is None else mu_0
     lamb = np.ones_like(lamb_0) if lamb_0 is None else lamb_0
 
-    def objective(
+    def objective():pass
