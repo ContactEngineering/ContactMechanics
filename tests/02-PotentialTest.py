@@ -100,7 +100,9 @@ class LJTest(unittest.TestCase):
         r_m = pot.r_min
         curb = pot.evaluate(r_m, pot=False, forces=False, curb=True)[2]
     def test_ad_hoc(self):
-        ## 'Potential 'lj9-3smooth', ε = 1.7294663266397667, σ = 3.253732668164946, γ = 5.845648523044794, r_t = r_min' failed. Please check whether the inputs make sense
+        ## 'Potential 'lj9-3smooth', ε = 1.7294663266397667,
+        ## σ = 3.253732668164946, γ = 5.845648523044794, r_t = r_min' failed.
+        ## Please check whether the inputs make sense
         eps = 1.7294663266397667
         sig = 3.253732668164946
         gam = 5.845648523044794

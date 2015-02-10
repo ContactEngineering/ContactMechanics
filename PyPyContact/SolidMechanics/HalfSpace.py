@@ -35,6 +35,13 @@ class HalfSpace(object):
     class Error(Exception):pass
     name = 'generic_halfspace'
 
+    def evaluateFromDisp(self, disp):
+        force = self.evaluateForce(disp)
+        return self.evaluateElasticEnergy(force, disp), force
+    def evaluateFromForce(self, force):
+        disp = self.evaluateDisp(force)
+        return self.evaluateElasticEnergy(force, disp), force
+
 class ElasticHalfSpace(HalfSpace):
     """ Generic baseclass for elastic substrates
     """

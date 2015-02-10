@@ -52,7 +52,7 @@ class ImportabilityChecks(unittest.TestCase):
         self.assertEqual(self.import_module("PyPyContact.SolidMechanics"), 0)
 
     def test_Solver(self):
-        self.assertEqual(self.import_module("PyPyContact.Solver"), 0)
+        self.assertEqual(self.import_module("PyPyContact.System"), 0)
 
     def test_Surface(self):
         self.assertEqual(self.import_module("PyPyContact.Surface"), 0)

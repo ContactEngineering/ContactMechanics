@@ -73,10 +73,13 @@ class FFTElasticHalfSpace(ElasticHalfSpace):
         for i in range(self.dim):
             tmpsize.append(size[min(i, len(size)-1)])
         self.size = tuple(tmpsize)
+        self.nb_pts = np.prod(self.resolution)
+        self.area_per_pt = np.prod(self.size)/self.nb_pts
 
         self.young = young
 
-        self.weights = self.compute_factors()
+        self.__computeFourierCoeffs()
+        self.__computeIFourierCoeffs()
 
     @property
     def dim(self, ):
@@ -90,7 +93,7 @@ class FFTElasticHalfSpace(ElasticHalfSpace):
         return ("{0.dim}-dimensional halfspace '{0.name}', size(resolution) in "
                 "{1}, E' = {0.young}").format(self, size_str)
 
-    def compute_factors(self):
+    def __computeFourierCoeffs(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
            fft(u) = w*fft(p), see (6) Stanley & Kato J. Tribol. 119(3), 481-485
            (Jul 01, 1997)
@@ -100,24 +103,87 @@ class FFTElasticHalfSpace(ElasticHalfSpace):
             for index in range(2, self.resolution[0]//2+2):
                 facts[-index+1] = facts[index - 1] = 2./(self.young*index)
         if self.dim == 2:
-            for m in range(2, self.resolution[0]//2+2):
-                for n in range(2, self.resolution[1]//2+2):
+            for m in range(1, self.resolution[0]//2+2):
+                for n in range(1, self.resolution[1]//2+2):
                     facts[-m+1, -n+1] = facts[-m+1, n-1] = facts[m-1, -n+1] = \
                       facts[m-1, n-1] = 2./(self.young*(m**2+n**2)**.5)
-        return facts
+            facts[0, 0] = 0
+        self.weights = facts
 
+    def __computeIFourierCoeffs(self):
+        """Compute the weights w relating fft(displacement) to fft(pressure):
+           fft(u) = w*fft(p), see (6) Stanley & Kato J. Tribol. 119(3), 481-485
+           (Jul 01, 1997)
+        """
+        self.iweights = np.zeros_like(self.weights)
+        self.iweights[self.weights != 0] = 1./self.weights[self.weights != 0]
 
-    def evaluate_disp(self, forces):
+    def evaluateDisp(self, forces):
         """ Computes the displacement due to a given force array
         Keyword Arguments:
-        forces   -- a numpy array containing point forces (or pressures
+        forces   -- a numpy array containing point forces (*not* pressures)
         """
         if forces.shape != self.resolution:
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace's"
                  " resolution ({1})").format(forces.shape, self.resolution))
-        return ifftn(self.weights * fftn(forces)).real
+        return ifftn(self.weights * fftn(forces)).real/self.area_per_pt
 
+    def evaluateForce(self, disp):
+        """ Computes the forcedue to a given displacement array
+        Keyword Arguments:
+        disp   -- a numpy array containing point displacements
+        """
+        if disp.shape != self.resolution:
+            raise self.Error(
+                ("force array has a different shape ({0}) than this halfspace's"
+                 " resolution ({1})").format(disp.shape, self.resolution))
+        return ifftn(self.iweights*fftn(disp)).real*self.area_per_pt
+
+
+    def evaluateKDisp(self, forces):
+        """ Computes the K-space displacement due to a given force array
+        Keyword Arguments:
+        forces   -- a numpy array containing point forces (*not* pressures)
+        """
+        if forces.shape != self.resolution:
+            raise self.Error(
+                ("force array has a different shape ({0}) than this halfspace's"
+                 " resolution ({1})").format(forces.shape, self.resolution))
+        return self.weights * fftn(forces)/self.area_per_pt
+
+    def evaluateKForce(self, disp):
+        """ Computes the K-space forces due to a given displacement array
+        Keyword Arguments:
+        disp   -- a numpy array containing point displacements
+        """
+        if disp.shape != self.resolution:
+            raise self.Error(
+                ("force array has a different shape ({0}) than this halfspace's"
+                 " resolution ({1})").format(disp.shape, self.resolution))
+        return self.iweights*fftn(disp)*self.area_per_pt
+
+    def evaluateElasticEnergy(self, forces, disp):
+        return .5*np.dot(np.ravel(disp), np.ravel(forces))
+
+    def evaluateElasticEnergyKspace(self, Kforces, Kdisp):
+        return .5*np.dot(np.ravel(Kdisp), np.ravel(Kforces))/self.nb_pts
+
+    def evaluate(self, disp, pot=True, forces=False):
+        """Evaluates the elastic energy and the point forces
+        Keyword Arguments:
+        disp   -- array of distances
+        pot    -- (default True) if true, returns potential energy
+        forces -- (default False) if true, returns forces
+        """
+        if forces:
+            dV = self.evaluateForce(disp)
+            V = self.evaluateElasticEnergy(force, disp)
+        else:
+            Fforce = self.evaluateKForce(disp)
+            V = self.evaluateElasticEnergyKspace(Fforce, fftn(disp))
+            dV = None
+        return V, dV
 if __name__ == '__main__':
     print(FFTElasticHalfSpace(512, 14.8))
     print(FFTElasticHalfSpace((512, 256), 14.8))

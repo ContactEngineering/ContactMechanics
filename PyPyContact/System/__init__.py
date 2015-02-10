@@ -29,4 +29,4 @@
 # Boston, MA 02111-1307, USA.
 #
 
-from .Solver import Solver
+from .System import System

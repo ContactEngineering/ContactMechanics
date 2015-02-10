@@ -29,4 +29,4 @@
 # Boston, MA 02111-1307, USA.
 #
 
-from . import ContactMechanics, SolidMechanics, Solver, Surface
+from . import ContactMechanics, SolidMechanics, System, Surface

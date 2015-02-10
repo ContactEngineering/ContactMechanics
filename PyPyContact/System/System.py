@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 #
-# @file   System
+# @file   System.py
 #
 # @author Till Junge <till.junge@kit.edu>
 #
 # @date   26 Jan 2015
 #
-# @brief  Defines the interface for PyPyContact solvers
+# @brief  Defines the interface for PyPyContact systems
 #
 # @section LICENCE
 #
@@ -32,11 +32,15 @@
 
 class System(object):
     def __init__(self, substrate, interaction, surface):
-        """ 
+        """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                        the substrate
         interaction -- An instance of Interaction. Defines the contact formulation
         surface     -- An instance of Surface, defines the profile.
         """
-        pass
+        self.substrate = substrate
+        self.interaction = interaction
+        self.surface = surface
+
+        
