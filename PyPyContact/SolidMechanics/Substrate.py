@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 #
-# @file   HalfSpace.py
+# @file   Substrate.py
 #
 # @author Till Junge <till.junge@kit.edu>
 #
@@ -29,7 +29,7 @@
 # Boston, MA 02111-1307, USA.
 #
 
-class HalfSpace(object):
+class Substrate(object):
     """ Generic baseclass from which all substate classes derive
     """
     class Error(Exception):pass
@@ -42,7 +42,18 @@ class HalfSpace(object):
         disp = self.evaluateDisp(force)
         return self.evaluateElasticEnergy(force, disp), force
 
-class ElasticHalfSpace(HalfSpace):
+class ElasticSubstrate(Substrate):
     """ Generic baseclass for elastic substrates
     """
     name = 'generic_elastic_halfspace'
+    ## Since an elastic substrate essentially defines a Potential, a similar
+    ## internal structure is chosen
+
+    def compute(self, disp, pot=True, forces=False):
+        self.energy, self.force = self.evaluate(
+            disp, pot, forces)
+
+class PlasticSubstrate(Substrate):
+    """ Generic baseclass for plastic substrates
+    """
+    name = 'generic_plastic_halfspace'

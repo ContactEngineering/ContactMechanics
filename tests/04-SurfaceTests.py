@@ -32,10 +32,36 @@
 
 import unittest
 import numpy as np
+import numpy.matlib as mp
+from numpy.random import rand, random
 import tempfile, os
+from tempfile import TemporaryDirectory as tmp_dir
+import os
 
-from PyPyContact.Surface import NumpyTxtSurface
-
+from PyPyContact.Surface import NumpyTxtSurface, NumpySurface, Sphere
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+    def test_saving_loading_and_sphere(self):
+        l = 8+4*rand()  # domain size (edge lenght of square)
+        R = 17+6*rand() # sphere radius
+        res = 2        # resolution
+        x_c = l*rand()  # coordinates of center
+        y_c = l*rand()
+        x = np.arange(res, dtype = float)*l/res-x_c
+        y = np.arange(res, dtype = float)*l/res-y_c
+        r2 = np.zeros((res, res))
+        for i in range(res):
+            for j in range(res):
+                r2[i,j] = x[i]**2 + y[j]**2
+        h = np.sqrt(R**2-r2)-R # profile of sphere
+
+        S1 = NumpySurface(h)
+        with tmp_dir() as dir:
+            fname = os.path.join(dir,"surface")
+            S1.save(dir+"/surface")
+
+            S2 = NumpyTxtSurface(fname)
+        S3 = Sphere(R, (res, res), (l, l), (x_c, y_c))
+        self.assertTrue(np.array_equal(S1.profile(), S2.profile()))
+        self.assertTrue(np.array_equal(S1.profile(), S3.profile()),)

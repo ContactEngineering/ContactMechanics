@@ -39,6 +39,7 @@ def augmented_lagrangian(objective_fun, eq_const_fun, solver='hybr', options=dic
     solver        -- (default 'hybr')
     options       -- (default dict())
     """
+    pass
 def augmented_lagrangian(fun, x0, constraints, mu_0=None, lamb_0=None,
                          method=None, jac=False, tol=None, callback=None,
                          options=None):

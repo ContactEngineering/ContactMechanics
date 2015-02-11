@@ -29,6 +29,7 @@
 # Boston, MA 02111-1307, USA.
 #
 
+import numpy as np
 
 class Surface(object):
     """ Base class for geometries. These are used to define height profiles for
@@ -150,7 +151,7 @@ class CompoundSurface(Surface):
 
         self._dim = combined_val(surfA.dim, surfB.dim, 'dim')
         self._resulution = combined_val(surfA.resolution,
-                                         surfB.resolution, 'resolution')
+                                        surfB.resolution, 'resolution')
         self.surfA = surfA
         self.surfB = surfB
 
@@ -178,14 +179,45 @@ class NumpySurface(Surface):
         profile -- surface profile
         """
         self.__h = profile
-        self.resolution = self.__h.shape
-        self.dim = len(self.resolution)
+        self._resolution = self.__h.shape
+        self._dim = len(self.resolution)
 
     def profile(self):
         return self.__h
 
-class Sphere(Surface):
+class Sphere(NumpySurface):
     """ Spherical surface. Corresponds to a cylinder in 2D
     """
     name = 'sphere'
-    ##def __init__(self, radius, resolution, size
+    def __init__(self, radius, resolution, size, centre=None):
+        dim = len(resolution)
+        if centre is None:
+            centre = np.zeros_like(resolution)
+        if not hasattr(resolution, "__iter__"):
+            resolution = (resolution, )
+        if not hasattr(size, "__iter__"):
+            size = (size, )
+        if not hasattr(centre, "__iter__"):
+            centre = (centre, )
+
+        if dim == 1:
+            r2 = (np.arange(resolution[0], dtype=float)
+                  *size[0]/resolution[0] - centre[0])**2
+        elif dim == 2:
+            rx2 = (np.arange(resolution[0], dtype=float)
+                   *size[0]/resolution[0] - centre[0])**2
+            ry2 = (np.arange(resolution[1], dtype=float)
+                   *size[1]/resolution[1] - centre[1])**2
+            r2 = np.zeros(resolution)
+            for i in range(resolution[0]):
+                r2[i,:] += rx2[i]
+            for j in range(resolution[1]):
+                r2[:,j] += ry2[j]
+        h = np.sqrt(radius**2 - r2)-radius
+        super().__init__(h)
+        self._size = size
+        self._centre = centre
+
+    @property
+    def centre(self):
+        return self._centre

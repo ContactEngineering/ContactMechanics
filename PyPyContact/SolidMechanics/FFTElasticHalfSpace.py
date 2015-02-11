@@ -33,11 +33,11 @@ import multiprocessing
 import numpy as np
 from scipy.fftpack import fftn, ifftn
 
-from .HalfSpace import ElasticHalfSpace
+from .Substrate import ElasticSubstrate
 
 nb_cores = multiprocessing.cpu_count()
 
-class FFTElasticHalfSpace(ElasticHalfSpace):
+class FFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
         Halfspace due to a given array of point forces. This halfspace implemen-
         tation cheats somewhat: since a net pressure would result in infinite
@@ -167,7 +167,7 @@ class FFTElasticHalfSpace(ElasticHalfSpace):
         return .5*np.dot(np.ravel(disp), np.ravel(forces))
 
     def evaluateElasticEnergyKspace(self, Kforces, Kdisp):
-        return .5*np.dot(np.ravel(Kdisp), np.ravel(Kforces))/self.nb_pts
+        return .5*np.dot(np.ravel(Kdisp), np.ravel(Kforces)).real/self.nb_pts
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces
@@ -178,7 +178,7 @@ class FFTElasticHalfSpace(ElasticHalfSpace):
         """
         if forces:
             dV = self.evaluateForce(disp)
-            V = self.evaluateElasticEnergy(force, disp)
+            V = self.evaluateElasticEnergy(dV, disp)
         else:
             Fforce = self.evaluateKForce(disp)
             V = self.evaluateElasticEnergyKspace(Fforce, fftn(disp))

@@ -30,4 +30,5 @@
 #
 
 from .Surface import Surface, ScaledSurface, CompoundSurface, NumpySurface
+from .Surface import Sphere
 from .FromFile import NumpyTxtSurface

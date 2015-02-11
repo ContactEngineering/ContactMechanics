@@ -30,6 +30,7 @@
 #
 
 import numpy as np
+import os
 
 from . import NumpySurface
 
@@ -43,6 +44,14 @@ class NumpyTxtSurface(NumpySurface):
         Keyword Arguments:
         fname -- filename
         """
+        if not os.path.isfile(fname):
+            zfname = fname + ".gz"
+            if os.path.isfile(zfname):
+                fname = zfname
+            else:
+                raise FileNotFoundError(
+                    "No such file or directory: '{}(.gz)'".format(
+                        fname))
         super().__init__(np.loadtxt(fname))
 
 

@@ -48,7 +48,7 @@ class Potential(SoftWall):
         self.r_c = None
 
         self.energy = None
-        self.forces = None
+        self.force  = None
         self.curb   = None
 
 
@@ -57,8 +57,9 @@ class Potential(SoftWall):
                 "{0.r_c}").format(self)
 
     def compute(self, gap, pot=True, forces=False, curb=False):
-        self.energy, self.forces, self.curb = self.evaluate(
+        energy, self.force, self.curb = self.evaluate(
             gap, pot, forces, curb)
+        self.energy = energy.sum()
 
 if __name__ == "__main__":
     pot = Potential()
