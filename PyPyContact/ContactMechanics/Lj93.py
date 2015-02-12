@@ -83,6 +83,8 @@ class LJ93(Potential):
         curb   -- (default False) if true, returns second derivative
         """
         r = np.array(r)
+        if r.shape == ():
+            r.shape = (1, )
         slice = r < self.r_c
         V   = np.zeros_like(r) if pot    else self.SliceableNone()
         dV  = np.zeros_like(r) if forces else self.SliceableNone()
