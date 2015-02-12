@@ -167,7 +167,7 @@ class FFTElasticHalfSpace(ElasticSubstrate):
         return .5*np.dot(np.ravel(disp), np.ravel(forces))
 
     def evaluateElasticEnergyKspace(self, Kforces, Kdisp):
-        return .5*np.dot(np.ravel(Kdisp), np.ravel(Kforces)).real/self.nb_pts
+        return .5*np.dot(np.ravel(Kdisp), np.ravel(np.conj(Kforces))).real/self.nb_pts
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces

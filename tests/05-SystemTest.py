@@ -30,20 +30,23 @@
 #
 
 import unittest
+from numpy.random import rand, random
+import numpy as np
+
+from scipy.optimize import minimize
+import time
 
 from PyPyContact.System import System, IncompatibleFormulationError
 from PyPyContact.System import IncompatibleResolutionError
 import PyPyContact.SolidMechanics as Solid
 import PyPyContact.ContactMechanics as Contact
 import PyPyContact.Surface as Surface
-from numpy.random import rand, random
-import numpy as np
 
 class SystemTest(unittest.TestCase):
     def setUp(self):
         self.size = (7.5+5*rand(), 7.5+5*rand())
         self.radius = 100
-        base_res = 16
+        base_res = 8
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
@@ -73,5 +76,66 @@ class SystemTest(unittest.TestCase):
         S = System(self.substrate, self.smooth, self.sphere)
         offset = self.sig
         disp = np.zeros(self.res)
-        print(S.evaluate(disp, offset, forces = True))
+        start = time.perf_counter()
+        pot, forces = S.evaluate(disp, offset, forces = True)
+        delay = time.perf_counter()-start
+        print("delay = {}".format(delay))
 
+    def test_unconfirmed_minimization(self):
+        ## this merely makes sure that the code doesn't throw exceptions
+        ## the plausibility of the result is not verified
+        res = self.res#[0]
+        size = self.size#[0]
+        substrate = Solid.FFTElasticHalfSpace(
+            res, 25*self.young, self.size[0])
+        sphere = Surface.Sphere(self.radius, res, size)
+        S = System(substrate, self.smooth, sphere)
+        offset = self.sig
+        disp = np.zeros(res)
+
+        import matplotlib.pyplot as plt
+        x = np.arange(.5, 2, .05)*self.sig
+        e     = np.zeros_like(x)
+        e_sub = np.zeros_like(x)
+        e_pot = np.zeros_like(x)
+
+        for i, delta in enumerate (x):
+            e[i]     = S.evaluate(disp, delta)[0]
+            e_sub[i] = S.substrate.energy
+            e_pot[i] = S.interaction.energy
+        plt.plot(x/self.sig, e,     label='e_tot')
+        plt.plot(x/self.sig, e_sub, label='e_sub')
+        plt.plot(x/self.sig, e_pot, label='e_pot')
+        plt.title("varying offset")
+        plt.legend(loc='best')
+        radii = [self.radius*1.1**i for i in range(15)]
+        e = list()
+        e_sub = list()
+        e_pot = list()
+        #offset = 100
+        for i, r in enumerate(radii):
+            u = Surface.Sphere(r, res, size).profile()
+            e.append(S.evaluate(u, offset, forces=True)[0])
+            e_sub.append(S.substrate.energy)
+            e_pot.append(S.interaction.energy)
+        radii.append( 0)
+        e.append(S.evaluate(disp, offset)[0])
+        e_sub.append(S.substrate.energy)
+        e_pot.append(S.interaction.energy)
+        plt.figure()
+        plt.plot(radii, e,     label='e_tot')
+        plt.plot(radii, e_sub, label='e_sub')
+        plt.plot(radii, e_pot, label='e_pot')
+        plt.title("varying curvature")
+        plt.legend(loc='best')
+        plt.show()
+
+        fun_jac = S.objective(offset, gradient=True)
+        fun     = S.objective(offset, gradient=False)
+        result = minimize(fun_jac, disp.reshape(-1), jac=True)
+        print (result)
+
+        result = minimize(fun, disp)
+        print (result)
+        print("Gap:")
+        print(S.gap)

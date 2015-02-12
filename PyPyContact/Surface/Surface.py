@@ -190,11 +190,11 @@ class Sphere(NumpySurface):
     """
     name = 'sphere'
     def __init__(self, radius, resolution, size, centre=None):
+        if not hasattr(resolution, "__iter__"):
+            resolution = (resolution, )
         dim = len(resolution)
         if centre is None:
             centre = np.zeros_like(resolution)
-        if not hasattr(resolution, "__iter__"):
-            resolution = (resolution, )
         if not hasattr(size, "__iter__"):
             size = (size, )
         if not hasattr(centre, "__iter__"):

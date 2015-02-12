@@ -63,7 +63,7 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
         self.assertTrue(error < tol)
 
 
-    def test_parabolic_shape(self):
+    def test_parabolic_shape_force(self):
         """ tests whether the Elastic energy is a quadratic function of the
             applied force"""
         hs = FFTElasticHalfSpace(self.res, self.young, self.size)
@@ -73,6 +73,21 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
         El = np.zeros(nb_tests)
         for i in range(nb_tests):
             disp = hs.evaluateDisp(i*force)
+            El[i] = hs.evaluateElasticEnergy(i*force, disp)
+        tol = 1e-10
+        error = norm(El/El[1]-np.arange(nb_tests)**2)
+        self.assertTrue(error<tol)
+
+    def test_parabolic_shape_disp(self):
+        """ tests whether the Elastic energy is a quadratic function of the
+            applied displacement"""
+        hs = FFTElasticHalfSpace(self.res, self.young, self.size)
+        disp = random(self.res)
+        disp -= disp.mean()
+        nb_tests = 4
+        El = np.zeros(nb_tests)
+        for i in range(nb_tests):
+            force = hs.evaluateForce(i*disp)
             El[i] = hs.evaluateElasticEnergy(i*force, disp)
         tol = 1e-10
         error = norm(El/El[1]-np.arange(nb_tests)**2)

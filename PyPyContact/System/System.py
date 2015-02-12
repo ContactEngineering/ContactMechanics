@@ -97,13 +97,33 @@ class SmoothContactSystem(SystemBase):
         Compute the energies and forces in the system for a given displacement
         field
         """
-        gap = self.computeGap(disp, offset)
-        self.interaction.compute(gap, pot, forces)
+        self.gap = self.computeGap(disp, offset)
+        self.interaction.compute(self.gap, pot, forces)
         self.substrate.compute(disp, pot, forces)
         return ((self.interaction.energy + self.substrate.energy if pot else None),
                 (self.interaction.force + self.substrate.force if forces else None))
 
-
+    def objective(self, offset, gradient=False):
+        """
+        This helper method exposes a scipy.optimize-friendly interface to the
+        evaluate() method. Use this for optimization purposes, it makes sure
+        that the shape of disp is maintained and lets you set the offset and
+        'forces' flag without using scipy's cumbersome argument passing
+        interface. Returns a function of only disp
+        Keyword Arguments:
+        offset      -- determines indentation depth
+        forces      -- (default False) whether the gradient is supposed to be used
+        """
+        res = self.substrate.resolution
+        if gradient:
+            def fun(disp):
+                energy, force = self.evaluate(
+                disp.reshape(res), offset, forces=True)
+                return (energy, -force.reshape(-1))
+            return fun
+        else:
+            return lambda disp: self.evaluate(
+                disp.reshape(res), offset, forces=False)[0]
 
 class IncompatibleFormulationError(Exception):
     pass
