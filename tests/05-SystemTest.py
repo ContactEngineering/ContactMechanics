@@ -41,12 +41,13 @@ from PyPyContact.System import IncompatibleResolutionError
 import PyPyContact.SolidMechanics as Solid
 import PyPyContact.ContactMechanics as Contact
 import PyPyContact.Surface as Surface
+import PyPyContact.Tools as Tools
 
 class SystemTest(unittest.TestCase):
     def setUp(self):
         self.size = (7.5+5*rand(), 7.5+5*rand())
         self.radius = 100
-        base_res = 8
+        base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
@@ -76,16 +77,113 @@ class SystemTest(unittest.TestCase):
         S = System(self.substrate, self.smooth, self.sphere)
         offset = self.sig
         disp = np.zeros(self.res)
-        start = time.perf_counter()
         pot, forces = S.evaluate(disp, offset, forces = True)
-        delay = time.perf_counter()-start
-        print("delay = {}".format(delay))
+
+    def test_SystemGradient(self):
+        res = self.res##[0]
+        size = self.size##[0]
+        substrate = Solid.FFTElasticHalfSpace(
+            res, 25*self.young, self.size[0])
+        sphere = Surface.Sphere(self.radius, res, size)
+        S = System(substrate, self.smooth, sphere)
+        disp = random(res)*self.sig/10
+        disp -= disp.mean()
+        offset = self.sig
+        gap = S.computeGap(disp, offset)
+
+        ## check subgradient of potential
+        V, dV, ddV = S.interaction.evaluate(gap, pot=True, forces=True)
+        f = V.sum()
+        g = -dV
+        fun = lambda x: S.interaction.evaluate(x)[0].sum()
+        approx_g = Tools.evaluate_gradient(
+            fun, gap, self.sig/1e5)
+
+        tol = 1e-8
+        error = Tools.mean_err(g, approx_g)
+        msg = ["interaction: "]
+        msg.append("f = {}".format(f))
+        msg.append("g = {}".format(g))
+        msg.append('approx = {}'.format(approx_g))
+        msg.append("error = {}".format(error))
+        msg.append("tol = {}".format(tol))
+        self.assertTrue(error < tol, ", ".join(msg))
+        interaction = dict({"e":f,
+                            "g":g,
+                            "a":approx_g})
+        ## check subgradient of substrate
+        V, dV = S.substrate.evaluate(disp, pot=True, forces=True)
+        f = V.sum()
+        g = -dV
+        fun = lambda x: S.substrate.evaluate(x)[0].sum()
+        approx_g = Tools.evaluate_gradient(
+            fun, disp, self.sig/1e5)
+
+        tol = 1e-8
+        error = Tools.mean_err(g, approx_g)
+        msg = ["substrate: "]
+        msg.append("f = {}".format(f))
+        msg.append("g = {}".format(g))
+        msg.append('approx = {}'.format(approx_g))
+        msg.append("error = {}".format(error))
+        msg.append("tol = {}".format(tol))
+        self.assertTrue(error < tol, ", ".join(msg))
+        substrate = dict({"e":f,
+                          "g":g,
+                          "a":approx_g})
+
+        V, dV = S.evaluate(disp, offset, forces=True)
+        f = V
+        g = -dV
+        approx_g = Tools.evaluate_gradient(S.objective(offset), disp, 1e-5)
+        approx_g2 = Tools.evaluate_gradient(
+            lambda x: S.objective(offset, gradient=True)(x)[0], disp, 1e-5)
+        tol = 1e-6
+        self.assertTrue(
+            Tools.mean_err(approx_g2, approx_g) < tol,
+            "approx_g  = {}\napprox_g2 = {}\nerror = {}, tol = {}".format(
+                approx_g, approx_g2, Tools.mean_err(approx_g2, approx_g),
+                tol))
+
+
+        i, s = interaction, substrate
+        f_combo = i['e'] + s['e']
+        error = abs(f_combo-V)
+        self.assertTrue(
+            error < tol,
+            "f_combo = {}, f = {}, error = {}, tol = {}".format(
+                f_combo, V, error, tol))
+
+
+        g_combo = -i['g'] + s['g'] ## -minus sign comes from derivative of gap
+        error = Tools.mean_err(g_combo, g)
+        self.assertTrue(
+            error < tol,
+            "g_combo = {}, g = {}, error = {}, tol = {}".format(
+                g_combo, g, error, tol))
+
+        approx_g_combo = -i['a'] + s['a'] ## minus sign comes from derivative of gap
+        error = Tools.mean_err(approx_g_combo, approx_g)
+        self.assertTrue(
+            error < tol,
+            "approx_g_combo = {}, approx_g = {}, error = {}, tol = {}".format(
+                approx_g_combo, approx_g, error, tol))
+
+        error = Tools.mean_err(g, approx_g)
+        msg = []
+        msg.append("f = {}".format(f))
+        msg.append("g = {}".format(g))
+        msg.append('approx = {}'.format(approx_g))
+        msg.append("error = {}".format(error))
+        msg.append("tol = {}".format(tol))
+        self.assertTrue(error < tol, ", ".join(msg))
+
 
     def test_unconfirmed_minimization(self):
         ## this merely makes sure that the code doesn't throw exceptions
         ## the plausibility of the result is not verified
-        res = self.res#[0]
-        size = self.size#[0]
+        res = self.res[0]
+        size = self.size[0]
         substrate = Solid.FFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
@@ -93,49 +191,31 @@ class SystemTest(unittest.TestCase):
         offset = self.sig
         disp = np.zeros(res)
 
-        import matplotlib.pyplot as plt
-        x = np.arange(.5, 2, .05)*self.sig
-        e     = np.zeros_like(x)
-        e_sub = np.zeros_like(x)
-        e_pot = np.zeros_like(x)
-
-        for i, delta in enumerate (x):
-            e[i]     = S.evaluate(disp, delta)[0]
-            e_sub[i] = S.substrate.energy
-            e_pot[i] = S.interaction.energy
-        plt.plot(x/self.sig, e,     label='e_tot')
-        plt.plot(x/self.sig, e_sub, label='e_sub')
-        plt.plot(x/self.sig, e_pot, label='e_pot')
-        plt.title("varying offset")
-        plt.legend(loc='best')
-        radii = [self.radius*1.1**i for i in range(15)]
-        e = list()
-        e_sub = list()
-        e_pot = list()
-        #offset = 100
-        for i, r in enumerate(radii):
-            u = Surface.Sphere(r, res, size).profile()
-            e.append(S.evaluate(u, offset, forces=True)[0])
-            e_sub.append(S.substrate.energy)
-            e_pot.append(S.interaction.energy)
-        radii.append( 0)
-        e.append(S.evaluate(disp, offset)[0])
-        e_sub.append(S.substrate.energy)
-        e_pot.append(S.interaction.energy)
-        plt.figure()
-        plt.plot(radii, e,     label='e_tot')
-        plt.plot(radii, e_sub, label='e_sub')
-        plt.plot(radii, e_pot, label='e_pot')
-        plt.title("varying curvature")
-        plt.legend(loc='best')
-        plt.show()
-
         fun_jac = S.objective(offset, gradient=True)
         fun     = S.objective(offset, gradient=False)
-        result = minimize(fun_jac, disp.reshape(-1), jac=True)
-        print (result)
 
-        result = minimize(fun, disp)
-        print (result)
-        print("Gap:")
-        print(S.gap)
+        info =[]
+        start = time.perf_counter()
+        result_grad = minimize(fun_jac, disp.reshape(-1), jac=True)
+        duration_g = time.perf_counter()-start
+        info.append("using gradient:")
+        info.append("solved in {} seconds using {} fevals and {} jevals".format(
+            duration_g, result_grad.nfev, result_grad.njev))
+
+        start = time.perf_counter()
+        result_simple = minimize(fun, disp)
+        duration_w = time.perf_counter()-start
+        info.append("without gradient:")
+        info.append("solved in {} seconds using {} fevals".format(
+            duration_w, result_simple.nfev))
+
+        info.append("speedup (timewise) was {}".format(duration_w/duration_g))
+
+        print('\n'.join(info))
+
+
+        message = ("Success with gradient: {0.success}, message was '{0.message"
+                   "}',\nSuccess without: {1.success}, message was '{1.message}"
+                   "'").format(result_grad, result_simple)
+        self.assertTrue(result_grad.success and result_simple.success,
+                        message)

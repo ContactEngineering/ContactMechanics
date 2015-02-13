@@ -100,8 +100,12 @@ class SmoothContactSystem(SystemBase):
         self.gap = self.computeGap(disp, offset)
         self.interaction.compute(self.gap, pot, forces)
         self.substrate.compute(disp, pot, forces)
+
+        ## attention: the gradient of the interaction has the wrong sign,
+        ## because the derivative of the gap with respect to displacement
+        ##introduces a -1 factor. Hence the minus sign in the 'sum' of forces:
         return ((self.interaction.energy + self.substrate.energy if pot else None),
-                (self.interaction.force + self.substrate.force if forces else None))
+                (-self.interaction.force + self.substrate.force if forces else None))
 
     def objective(self, offset, gradient=False):
         """

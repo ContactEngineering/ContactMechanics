@@ -31,6 +31,7 @@
 
 import unittest
 import importlib
+import numpy as np
 
 class ImportabilityChecks(unittest.TestCase):
 

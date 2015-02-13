@@ -127,7 +127,7 @@ class FFTElasticHalfSpace(ElasticSubstrate):
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace's"
                  " resolution ({1})").format(forces.shape, self.resolution))
-        return ifftn(self.weights * fftn(forces)).real/self.area_per_pt
+        return ifftn(self.weights * fftn(-forces)).real/self.area_per_pt
 
     def evaluateForce(self, disp):
         """ Computes the forcedue to a given displacement array
@@ -138,7 +138,7 @@ class FFTElasticHalfSpace(ElasticSubstrate):
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace's"
                  " resolution ({1})").format(disp.shape, self.resolution))
-        return ifftn(self.iweights*fftn(disp)).real*self.area_per_pt
+        return -ifftn(self.iweights*fftn(disp)).real*self.area_per_pt
 
 
     def evaluateKDisp(self, forces):
@@ -164,7 +164,7 @@ class FFTElasticHalfSpace(ElasticSubstrate):
         return self.iweights*fftn(disp)*self.area_per_pt
 
     def evaluateElasticEnergy(self, forces, disp):
-        return .5*np.dot(np.ravel(disp), np.ravel(forces))
+        return .5*np.dot(np.ravel(disp), np.ravel(-forces))
 
     def evaluateElasticEnergyKspace(self, Kforces, Kdisp):
         return .5*np.dot(np.ravel(Kdisp), np.ravel(np.conj(Kforces))).real/self.nb_pts

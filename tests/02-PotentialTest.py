@@ -34,6 +34,9 @@ import numpy as np
 
 from PyPyContact.ContactMechanics import LJ93
 from PyPyContact.ContactMechanics import LJ93smooth
+
+import PyPyContact.Tools as Tools
+
 if __name__ == "__main__":
     from lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
     from lj93smooth_ref_potential import V as LJs_ref_V, dV as LJs_ref_dV, d2V as LJs_ref_ddV
@@ -58,7 +61,7 @@ class LJTest(unittest.TestCase):
             self.eps, self.sig, self.rcut).evaluate(
                 self.r, pot=True, forces=True, curb=True)
         V_ref   = LJ_ref_V  (self.r, self.eps, self.sig, self.rcut)
-        dV_ref  = LJ_ref_dV (self.r, self.eps, self.sig, self.rcut)
+        dV_ref  = -LJ_ref_dV (self.r, self.eps, self.sig, self.rcut)
         ddV_ref = LJ_ref_ddV(self.r, self.eps, self.sig, self.rcut)
 
         err_V   = ((  V-  V_ref)**2).sum()
@@ -76,7 +79,7 @@ class LJTest(unittest.TestCase):
         V, dV, ddV = smooth_pot.evaluate(
                 self.r, pot=True, forces=True, curb=True)
         V_ref   = LJs_ref_V  (self.r, self.eps, self.sig, rc1, rc2)
-        dV_ref  = LJs_ref_dV (self.r, self.eps, self.sig, rc1, rc2)
+        dV_ref  = -LJs_ref_dV (self.r, self.eps, self.sig, rc1, rc2)
         ddV_ref = LJs_ref_ddV(self.r, self.eps, self.sig, rc1, rc2)
 
         err_V   = ((  V-  V_ref)**2).sum()
@@ -94,6 +97,49 @@ class LJTest(unittest.TestCase):
         """
         self.assertRaises(LJ93smooth.PotentialError, LJ93smooth,
                           self.eps, self.sig, -self.gam)
+
+    def test_LJ_gradient(self):
+        pot = LJ93(self.eps, self.sig, self.rcut)
+        x = np.random.random(3)-.5+self.sig
+        V, dV, ddV = pot.evaluate(x, forces=True)
+        f = V.sum()
+        g = -dV
+
+        delta = self.sig/1e5
+        approx_g = Tools.evaluate_gradient(
+            lambda x: pot.evaluate(x)[0].sum(),
+            x, delta)
+        tol = 1e-8
+        error = Tools.mean_err(g, approx_g)
+        msg = []
+        msg.append("f = {}".format(f))
+        msg.append("g = {}".format(g))
+        msg.append('approx = {}'.format(approx_g))
+        msg.append("error = {}".format(error))
+        msg.append("tol = {}".format(tol))
+        self.assertTrue(error < tol, ", ".join(msg))
+
+    def test_LJsmooth_gradient(self):
+        pot = LJ93smooth(self.eps, self.sig, self.gam)
+        x = np.random.random(3)-.5+self.sig
+        V, dV, ddV = pot.evaluate(x, forces=True)
+        f = V.sum()
+        g = -dV
+
+        delta = self.sig/1e5
+        approx_g = Tools.evaluate_gradient(
+            lambda x: pot.evaluate(x)[0].sum(),
+            x, delta)
+        tol = 1e-8
+        error = Tools.mean_err(g, approx_g)
+        msg = []
+        msg.append("f = {}".format(f))
+        msg.append("g = {}".format(g))
+        msg.append('approx = {}'.format(approx_g))
+        msg.append("error = {}".format(error))
+        msg.append("tol = {}".format(tol))
+        self.assertTrue(error < tol, ", ".join(msg))
+
 
     def test_single_point_eval(self):
         pot = LJ93(self.eps, self.sig, self.gam)
@@ -113,7 +159,7 @@ class LJTest(unittest.TestCase):
         V, dV, ddV = smooth_pot.evaluate(
                 self.r, pot=True, forces=True, curb=True)
         V_ref   = LJs_ref_V  (self.r, eps, sig, rc1, rc2)
-        dV_ref  = LJs_ref_dV (self.r, eps, sig, rc1, rc2)
+        dV_ref  = -LJs_ref_dV (self.r, eps, sig, rc1, rc2)
         ddV_ref = LJs_ref_ddV(self.r, eps, sig, rc1, rc2)
 
         err_V   = ((  V-  V_ref)**2).sum()

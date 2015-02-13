@@ -36,14 +36,12 @@ from numpy.random import rand, random
 from scipy.fftpack import fftn, ifftn
 
 from PyPyContact.SolidMechanics import FFTElasticHalfSpace
-
-def mean_err(arr1, arr2):
-    return abs(np.ravel(arr1-arr2)).mean()
+import PyPyContact.Tools as Tools
 
 class FFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
         self.size = (7.5+5*rand(), 7.5+5*rand())
-        base_res = 128
+        base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
@@ -93,6 +91,28 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
         error = norm(El/El[1]-np.arange(nb_tests)**2)
         self.assertTrue(error<tol)
 
+    def test_gradient(self):
+        res = size = (2, 2)
+        disp = random(res)
+        disp -= disp.mean()
+        hs = FFTElasticHalfSpace(res, self.young, size)
+        hs.compute(disp, forces = True)
+        f =  hs.energy
+        g = -hs.force
+        approx_g = Tools.evaluate_gradient(
+            lambda x: hs.evaluate(x, forces=True)[0], disp, 1e-5)
+
+        tol = 1e-8
+        error = Tools.mean_err(g, approx_g)
+        msg = []
+        msg.append("f = {}".format(f))
+        msg.append("g = {}".format(g))
+        msg.append('approx = {}'.format(approx_g))
+        msg.append("error = {}".format(error))
+        msg.append("tol = {}".format(tol))
+        self.assertTrue(error < tol, ", ".join(msg))
+
+
     def test_force_disp_reversibility(self):
         ## since only the zero-frequency is rejected, any force/disp field with
         ## zero mean should be fully reversible
@@ -102,7 +122,7 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
             disp = random(res)
             disp -= disp.mean()
 
-            error = mean_err(disp, hs.evaluateDisp(hs.evaluateForce(disp)))
+            error = Tools.mean_err(disp, hs.evaluateDisp(hs.evaluateForce(disp)))
             self.assertTrue(
                 error < tol,
                 "for resolution = {}, error = {} > tol = {}".format(
@@ -111,7 +131,7 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
             force = random(res)
             force -= force.mean()
 
-            error = mean_err(force, hs.evaluateForce(hs.evaluateDisp(force)))
+            error = Tools.mean_err(force, hs.evaluateForce(hs.evaluateDisp(force)))
             self.assertTrue(
                 error < tol,
                 "for resolution = {}, error = {} > tol = {}".format(
@@ -140,10 +160,10 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
             fforce = fftn(force)
             fdisp = hs.weights*fforce
             self.assertTrue(
-                mean_err(fforce, Fforce)<tol, "fforce = \n{},\nFforce = \n{}".format(
+                Tools.mean_err(fforce, Fforce)<tol, "fforce = \n{},\nFforce = \n{}".format(
                     fforce.real, Fforce))
             self.assertTrue(
-                mean_err(fdisp, Fdisp)<tol, "fdisp = \n{},\nFdisp = \n{}".format(
+                Tools.mean_err(fdisp, Fdisp)<tol, "fdisp = \n{},\nFdisp = \n{}".format(
                     fdisp.real, Fdisp))
 
             ##Fourier energy

@@ -156,7 +156,7 @@ class LJ93smooth(Lj93.LJ93):
         if pot:
             V = self.poly(dr)
         if forces:
-            dV = self.dpoly(dr)
+            dV = -self.dpoly(dr) ## Forces are the negative gradient
         if curb:
             ddV = self.ddpoly(dr)
         return (V, dV, ddV)

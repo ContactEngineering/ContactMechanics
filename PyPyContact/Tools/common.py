@@ -29,6 +29,8 @@
 # Boston, MA 02111-1307, USA.
 #
 
+import numpy as np
+
 def compare_containers(x, y):
     """
     compares whether two containers have the same content regardless of their
@@ -45,3 +47,31 @@ def compare_containers(x, y):
         except Exception:
             return False
     return True
+
+def evaluate_gradient(fun, x, delta):
+    """
+    Don't actually use this function in production code, it's not efficient.
+    Returns an approximation of the gradient evaluated using central
+    differences.
+
+    (grad f)_i = ((f(x+e_i*delta/2)-f(x-e_i*delta/2))/delta)
+
+    Arguments:
+    fun   -- function to be evaluated
+    x     -- point of evaluation
+    delta -- step width
+    """
+    x = np.array(x)
+    grad = np.zeros_like(x).reshape(-1)
+    for i, coord in enumerate(x.reshape(-1)):
+        x_plus      = x.copy().reshape(-1)
+        x_plus[i]  += .5*delta
+        x_minus     = x.copy().reshape(-1)
+        x_minus[i] -= .5*delta
+        grad[i] = (fun(x_plus.reshape(x.shape))-fun(x_minus.reshape(x.shape)))/delta
+    grad.shape = x.shape
+    return grad
+
+def mean_err(arr1, arr2):
+    return abs(np.ravel(arr1-arr2)).mean()
+

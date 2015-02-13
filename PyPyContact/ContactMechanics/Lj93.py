@@ -153,7 +153,7 @@ class LJ93(Potential):
         if forces or curb:
             eps_r = self.eps/r
         if forces:
-            dV = -eps_r*(6./5*sig_r9 - 3*sig_r3)
+            dV = eps_r*(6./5*sig_r9 - 3*sig_r3) ## Forces are the negative gradient
         if curb:
             ddV = 12*eps_r/r*(sig_r9 - sig_r3)
         return (V, dV, ddV)
