@@ -34,11 +34,13 @@ import numpy as np
 from numpy.linalg import norm
 from numpy.random import rand, random
 from scipy.fftpack import fftn, ifftn
+import time
 
-from PyPyContact.SolidMechanics import FFTElasticHalfSpace
+from PyPyContact.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyPyContact.SolidMechanics import FreeFFTElasticHalfSpace
 import PyPyContact.Tools as Tools
 
-class FFTElasticHalfSpaceTest(unittest.TestCase):
+class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
         self.size = (7.5+5*rand(), 7.5+5*rand())
         base_res = 16
@@ -52,7 +54,7 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
         for i in (1, 2):
             s_res = base_res*i
             test_res = (s_res, s_res)
-            hs = FFTElasticHalfSpace(test_res, self.young, self.size)
+            hs = PeriodicFFTElasticHalfSpace(test_res, self.young, self.size)
             forces = np.zeros(test_res)
             forces[:s_res//2,:s_res//2] = 1.
 
@@ -64,7 +66,7 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
     def test_parabolic_shape_force(self):
         """ tests whether the Elastic energy is a quadratic function of the
             applied force"""
-        hs = FFTElasticHalfSpace(self.res, self.young, self.size)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size)
         force = random(self.res)
         force -= force.mean()
         nb_tests = 4
@@ -79,7 +81,7 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
     def test_parabolic_shape_disp(self):
         """ tests whether the Elastic energy is a quadratic function of the
             applied displacement"""
-        hs = FFTElasticHalfSpace(self.res, self.young, self.size)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size)
         disp = random(self.res)
         disp -= disp.mean()
         nb_tests = 4
@@ -95,7 +97,7 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
         res = size = (2, 2)
         disp = random(res)
         disp -= disp.mean()
-        hs = FFTElasticHalfSpace(res, self.young, size)
+        hs = PeriodicFFTElasticHalfSpace(res, self.young, size)
         hs.compute(disp, forces = True)
         f =  hs.energy
         g = -hs.force
@@ -118,7 +120,7 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
         ## zero mean should be fully reversible
         tol = 1e-10
         for res in ((self.res[0],), self.res):
-            hs = FFTElasticHalfSpace(res, self.young, self.size)
+            hs = PeriodicFFTElasticHalfSpace(res, self.young, self.size)
             disp = random(res)
             disp -= disp.mean()
 
@@ -156,7 +158,97 @@ class FFTElasticHalfSpaceTest(unittest.TestCase):
             Fdisp[1] = Fdisp[-1] = res/2.*a/E
 
             ## verify consistency
-            hs = FFTElasticHalfSpace(res, E, l)
+            hs = PeriodicFFTElasticHalfSpace(res, E, l)
+            fforce = fftn(force)
+            fdisp = hs.weights*fforce
+            self.assertTrue(
+                Tools.mean_err(fforce, Fforce)<tol, "fforce = \n{},\nFforce = \n{}".format(
+                    fforce.real, Fforce))
+            self.assertTrue(
+                Tools.mean_err(fdisp, Fdisp)<tol, "fdisp = \n{},\nFdisp = \n{}".format(
+                    fdisp.real, Fdisp))
+
+            ##Fourier energy
+            E = .5*np.dot(Fforce/area_per_pt, Fdisp)/res
+
+            disp = hs.evaluateDisp(force)
+            e =  hs.evaluateElasticEnergy(force, disp)
+            kdisp = hs.evaluateKDisp(force)
+            ee = hs.evaluateElasticEnergyKspace(fforce, kdisp)
+            self.assertTrue(
+                abs(e-ee) < tol,
+                 "violate Parseval: e = {}, ee = {}, ee/e = {}".format(
+                    e, ee, ee/e))
+
+            self.assertTrue(
+                abs(E-e)<tol,
+                "theoretical E = {}, computed e = {}, diff(tol) = {}({})".format(
+                    E, e, E-e, tol))
+class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
+    def setUp(self):
+        self.size = (7.5+5*rand(), 7.5+5*rand())
+        base_res = 16
+        self.res = (base_res, base_res)
+        self.young = 3+2*random()
+
+    def test_consistency(self):
+        pressure = list()
+        base_res = 32
+        tol = 1e-1
+        for i in (1, 2):
+            s_res = base_res*i
+            test_res = (s_res, s_res)
+            hs = FreeFFTElasticHalfSpace(test_res, self.young, self.size)
+            forces = np.zeros([2*r for r in test_res])
+            forces[:s_res//2,:s_res//2] = 1.
+
+            pressure.append(hs.evaluateDisp(forces)[::i,::i]*hs.area_per_pt)
+        error = ((pressure[0]-pressure[1])**2).sum().sum()/base_res**2
+        self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
+
+    def test_FourierCoeffCost(self):
+        print()
+        print('Computation of Fourier coefficients:')
+        for i in range(1, 11):
+            res = (2**i, 2**i)
+            hs = FreeFFTElasticHalfSpace(res, self.young, self.size)
+            start = time.perf_counter()
+            w0, f0 =hs._computeFourierCoeffs0()
+            duration0 = time.perf_counter()-start
+            start = time.perf_counter()
+            w1, f1 =hs._computeFourierCoeffs1()
+            duration1 = time.perf_counter()-start
+            start = time.perf_counter()
+            w2, f2 =hs._computeFourierCoeffs2()
+            duration2 = time.perf_counter()-start
+            w3, f3 =hs._computeFourierCoeffs3()
+            duration3 = time.perf_counter()-start
+            print(
+                "for {0[0]}: dumb:{1:.2f}, py {2:.2f} ms({3:.1f}% gain), np {4:.2f} ms({5:.1f}%), np_mem {6:.2f} ms({7:.1f}%)".format(
+                    res, duration0*1e3, duration1*1e3, 1e2*(1-duration1/duration0),
+                     duration2*1e3, 1e2*(1-duration2/duration0),
+                    duration3*1e3, 1e2*(1-duration3/duration0)))
+
+    def test_energy(self):
+        tol = 1e-10
+        l = 2 + rand() # domain length
+        a = 3 + rand() # amplitude of force
+        E = 4 + rand() # Young's Mod
+        for res in [4, 8, 16]:
+            area_per_pt = l/res
+            x = np.arange(res)*l/res
+            force = a*np.cos(2*np.pi/l*x)
+
+            ## theoretical FFT of force
+            Fforce = np.zeros_like(x)
+            Fforce[1] = Fforce[-1] = res/2.*a
+
+            ## theoretical FFT of disp
+            Fdisp = np.zeros_like(x)
+            Fdisp[1] = Fdisp[-1] = res/2.*a/E
+
+            ## verify consistency
+            hs = PeriodicFFTElasticHalfSpace(res, E, l)
             fforce = fftn(force)
             fdisp = hs.weights*fforce
             self.assertTrue(

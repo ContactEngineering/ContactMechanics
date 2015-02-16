@@ -29,4 +29,5 @@
 # Boston, MA 02111-1307, USA.
 #
 from .Substrate import Substrate, ElasticSubstrate, PlasticSubstrate
-from .FFTElasticHalfSpace import FFTElasticHalfSpace
+from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace
+from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace

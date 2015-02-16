@@ -51,7 +51,7 @@ class SystemTest(unittest.TestCase):
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
-        self.substrate = Solid.FFTElasticHalfSpace(
+        self.substrate = Solid.PeriodicFFTElasticHalfSpace(
             self.res, self.young, self.size)
 
         self.eps = 1+np.random.rand()
@@ -82,7 +82,7 @@ class SystemTest(unittest.TestCase):
     def test_SystemGradient(self):
         res = self.res##[0]
         size = self.size##[0]
-        substrate = Solid.FFTElasticHalfSpace(
+        substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
         S = System(substrate, self.smooth, sphere)
@@ -184,7 +184,7 @@ class SystemTest(unittest.TestCase):
         ## the plausibility of the result is not verified
         res = self.res[0]
         size = self.size[0]
-        substrate = Solid.FFTElasticHalfSpace(
+        substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
         S = System(substrate, self.smooth, sphere)
