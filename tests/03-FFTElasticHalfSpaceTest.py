@@ -209,25 +209,43 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def test_FourierCoeffCost(self):
         print()
         print('Computation of Fourier coefficients:')
-        for i in range(1, 11):
+        for i in range(1, 4):
             res = (2**i, 2**i)
             hs = FreeFFTElasticHalfSpace(res, self.young, self.size)
-            start = time.perf_counter()
-            w0, f0 =hs._computeFourierCoeffs0()
-            duration0 = time.perf_counter()-start
-            start = time.perf_counter()
-            w1, f1 =hs._computeFourierCoeffs1()
-            duration1 = time.perf_counter()-start
+
             start = time.perf_counter()
             w2, f2 =hs._computeFourierCoeffs2()
             duration2 = time.perf_counter()-start
-            w3, f3 =hs._computeFourierCoeffs3()
+
+            start = time.perf_counter()
+            w3, f3 =hs._computeFourierCoeffs()
             duration3 = time.perf_counter()-start
+
             print(
-                "for {0[0]}: dumb:{1:.2f}, py {2:.2f} ms({3:.1f}% gain), np {4:.2f} ms({5:.1f}%), np_mem {6:.2f} ms({7:.1f}%)".format(
-                    res, duration0*1e3, duration1*1e3, 1e2*(1-duration1/duration0),
-                     duration2*1e3, 1e2*(1-duration2/duration0),
-                    duration3*1e3, 1e2*(1-duration3/duration0)))
+                "for {0[0]}: np {1:.2f}, mat_scipy {2:.2f} ms({3:.1f}%)".format(
+                    res, duration2*1e3, duration3*1e3, 1e2*(1-duration3/duration2)))
+            error = Tools.mean_err(w2, w3)
+            self.assertTrue(error == 0)
+
+    def test_realnessEnergy(self):
+        hs = FreeFFTElasticHalfSpace(self.res, self.young, self.size)
+        force = np.zeros(hs.computational_resolution)
+        force[:self.res[0], :self.res[1]] = np.random.random(self.res)
+        force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
+        kdisp = hs.evaluateKDisp(force)
+        kforce = fftn(force)
+        np_pts = np.prod(self.res)
+        area_per_pt = np.prod(self.size)/np_pts
+        energy = .5*np.vdot(kforce, kdisp)/np_pts
+        error = abs(energy.imag)
+        tol = 1e-10
+        self.assertTrue(error < tol,
+                         "error (imaginary part) = {}, tol = {}".format(
+                             error, tol))
+        error = abs(energy-hs.evaluateElasticEnergyKspace(kforce, kdisp))
+        self.assertTrue(error < tol,
+                         "error (comparison) = {}, tol = {}".format(
+                             error, tol))
 
     def test_energy(self):
         tol = 1e-10

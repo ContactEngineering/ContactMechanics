@@ -180,7 +180,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return .5*np.dot(np.ravel(disp), np.ravel(-forces))
 
     def evaluateElasticEnergyKspace(self, Kforces, Kdisp):
-        return .5*np.dot(np.ravel(Kdisp), np.ravel(np.conj(Kforces))).real/self.nb_pts
+        ## using vdot instead of dot because of conjugate
+        return .5*np.vdot(Kdisp, Kforces).real/self.nb_pts
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces
@@ -216,7 +217,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     """
     name = "free_fft_elastic_halfspace"
 
-    def __init__(self, resolution, young, size=2*np.pi, save_memory=False):
+    def __init__(self, resolution, young, size=2*np.pi):
         """
         Keyword Arguments:
         resolution  -- Tuple containing number of points in spatial directions.
@@ -232,11 +233,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                        a tuple can be provided to specify the lenths per
                        dimension. If the tuple has less entries than dimensions,
                        the last value in repeated.
-        save_memory -- (default False) if this flag is set, a less memory-hungry
-                       method to compute the fourier coefficients is used. The
-                       less memory-hungry method is slower.
         """
-        self.save_memory = save_memory
         super().__init__(resolution, young, size)
         self._comp_resolution = tuple((2*r for r in self.resolution))
 
@@ -250,89 +247,15 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """
         return self._comp_resolution
 
-    def _computeFourierCoeffs(self):
-        """ Delegates the computation of the weights w relating
-            fft(displacement) to fft(pressure):
-            fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
-        """
-        if self.save_memory:
-            return self._computeFourierCoeffs3()
-        return self._computeFourierCoeffs2()
-    def _computeFourierCoeffs0(self):
-        """Compute the weights w relating fft(displacement) to fft(pressure):
-           fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
-           This version has no optimizations an should not be used. it remains
-           here as a reference for the unit testing because of it's simple
-           uggability
-        """
-        facts = np.zeros(tuple((res*2 for res in self.resolution)))
-        a = self.steps[0]*.5
-        if self.dim == 1:
-            pass
-        else:
-            b = self.steps[1]*.5
-            nx, ny = (res*2-1 for res in self.resolution)
-            for i in range (self.resolution[0]):
-                x = self.steps[0]*i
-                for j in range (self.resolution[1]):
-                    y = self.steps[1]*j
-                    facts[i, j] = facts[nx-i, j] = facts[i, ny-j] = \
-                      facts[nx-i, ny-j] = 1/(np.pi*self.young)*\
-                      ( (x+a)*np.log(((y+b)+np.sqrt((y+b)*(y+b)+(x+a)*(x+a)))/
-                                     ((y-b)+np.sqrt((y-b)*(y-b)+(x+a)*(x+a))))
-                       +(y+b)*np.log(((x+a)+np.sqrt((y+b)*(y+b)+(x+a)*(x+a)))/
-                                     ((x-a)+np.sqrt((y+b)*(y+b)+(x-a)*(x-a))))
-                       +(x-a)*np.log(((y-b)+np.sqrt((y-b)*(y-b)+(x-a)*(x-a)))/
-                                     ((y+b)+np.sqrt((y+b)*(y+b)+(x-a)*(x-a))))
-                       +(y-b)*np.log(((x-a)+np.sqrt((y-b)*(y-b)+(x-a)*(x-a)))/
-                                     ((x+a)+np.sqrt((y-b)*(y-b)+(x+a)*(x+a)))))
-        self.weights = fftn(facts)
-        return self.weights, facts
-
-    def _computeFourierCoeffs1(self):
-        """Compute the weights w relating fft(displacement) to fft(pressure):
-           fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
-           this Version has worthless python optimizations and should not be
-           used. merely here for historical reasons.
-        """
-        facts = np.zeros(tuple((res*2 for res in self.resolution)))
-        a = self.steps[0]*.5
-        if self.dim == 1:
-            pass
-        else:
-            b = self.steps[1]*.5
-            nx, ny = (res*2-1 for res in self.resolution)
-            for i in range (self.resolution[0]):
-                x = self.steps[0]*i
-                xpa = x+a
-                xma = x-a
-                xpa2 = xpa*xpa
-                xma2 = xma*xma
-                for j in range (self.resolution[1]):
-                    y = self.steps[1]*j
-                    ypb = y+b
-                    ymb = y-b
-                    ypb2 = ypb*ypb
-                    ymb2 = ymb*ymb
-                    facts[i, j] = facts[nx-i, j] = facts[i, ny-j] = \
-                      facts[nx-i, ny-j] = 1/(np.pi*self.young)*\
-                      ( xpa*np.log((ypb+np.sqrt(ypb2+xpa2))/
-                                   (ymb+np.sqrt(ymb2+xpa2)))
-                       +ypb*np.log((xpa+np.sqrt(ypb2+xpa2))/
-                                   (xma+np.sqrt(ypb2+xma2)))
-                       +xma*np.log((ymb+np.sqrt(ymb2+xma2))/
-                                   (ypb+np.sqrt(ypb2+xma2)))
-                       +ymb*np.log((xma+np.sqrt(ymb2+xma2))/
-                                   (xpa+np.sqrt(ymb2+xpa2))))
-        self.weights = fftn(facts)
-        return self.weights, facts
-
     def _computeFourierCoeffs2(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
            fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
 
+           Now Deprecated
            This is the fastest version, about 2 orders faster than the python
-           versions, however a bit memory-hungry, this version is used by default
+           versions, however a bit memory-hungry, this version used to be
+           default, but turns out to have no significant advantage over the
+           matscipy implementation
         """
         facts = np.zeros(tuple((res*2 for res in self.resolution)))
         a = self.steps[0]*.5
@@ -349,10 +272,10 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             ym = np.arange(self.resolution[1])*self.steps[1]-b
             yp2 = yp*yp
             ym2 = ym*ym
-            sqrt_yp_xp = np.sqrt(np.zeros(self.resolution) + yp2 + xp2)
-            sqrt_ym_xp = np.sqrt(np.zeros(self.resolution) + ym2 + xp2)
-            sqrt_yp_xm = np.sqrt(np.zeros(self.resolution) + yp2 + xm2)
-            sqrt_ym_xm = np.sqrt(np.zeros(self.resolution) + ym2 + xm2)
+            sqrt_yp_xp = np.sqrt(yp2 + xp2)
+            sqrt_ym_xp = np.sqrt(ym2 + xp2)
+            sqrt_yp_xm = np.sqrt(yp2 + xm2)
+            sqrt_ym_xm = np.sqrt(ym2 + xm2)
             facts[:self.resolution[0], -1:self.resolution[1]-1:-1] = \
               facts[-1:self.resolution[0]-1:-1, :self.resolution[1]] = \
               facts[-1:self.resolution[0]-1:-1, -1:self.resolution[1]-1:-1] = \
@@ -368,12 +291,11 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         self.weights = fftn(facts)
         return self.weights, facts
 
-    def _computeFourierCoeffs3(self):
+    def _computeFourierCoeffs(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
            fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
 
-           This version is less memory-hungry than the default version, but also
-           only about half as fast. Use if memory is a concern.
+           This version is less is copied from matscipy, use if memory is a concern
         """
         facts = np.zeros(tuple((res*2 for res in self.resolution)))
         a = self.steps[0]*.5
@@ -381,27 +303,20 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             pass
         else:
             b = self.steps[1]*.5
-            xp = (np.arange(self.resolution[0])*self.steps[0]+a).reshape((-1, 1))
-            xm = (np.arange(self.resolution[0])*self.steps[0]-a).reshape((-1, 1))
-            xp2 = xp*xp
-            xm2 = xm*xm
-
-            yp = np.arange(self.resolution[1])*self.steps[1]+b
-            ym = np.arange(self.resolution[1])*self.steps[1]-b
-            yp2 = yp*yp
-            ym2 = ym*ym
+            x = (np.arange(self.resolution[0])*self.steps[0]).reshape((-1, 1))
+            y = np.arange(self.resolution[1])*self.steps[1]
             facts[:self.resolution[0], -1:self.resolution[1]-1:-1] = \
               facts[-1:self.resolution[0]-1:-1, :self.resolution[1]] = \
               facts[-1:self.resolution[0]-1:-1, -1:self.resolution[1]-1:-1] = \
               facts[:self.resolution[0], :self.resolution[1]] = 1/(np.pi*self.young)*\
-              ( xp*np.log((yp+np.sqrt(np.zeros(self.resolution) + yp2 + xp2))/
-                          (ym+np.sqrt(np.zeros(self.resolution) + ym2 + xp2)))
-               +yp*np.log((xp+np.sqrt(np.zeros(self.resolution) + yp2 + xp2))/
-                          (xm+np.sqrt(np.zeros(self.resolution) + yp2 + xm2)))
-               +xm*np.log((ym+np.sqrt(np.zeros(self.resolution) + ym2 + xm2))/
-                          (yp+np.sqrt(np.zeros(self.resolution) + yp2 + xm2)))
-               +ym*np.log((xm+np.sqrt(np.zeros(self.resolution) + ym2 + xm2))/
-                          (xp+np.sqrt(np.zeros(self.resolution) + ym2 + xp2))))
+              ( (x+a)*np.log( ( (y+b)+np.sqrt((y+b)*(y+b)+(x+a)*(x+a)) )/
+                              ( (y-b)+np.sqrt((y-b)*(y-b)+(x+a)*(x+a)) ) )+
+                (y+b)*np.log( ( (x+a)+np.sqrt((y+b)*(y+b)+(x+a)*(x+a)) ) /
+                              ( (x-a)+np.sqrt((y+b)*(y+b)+(x-a)*(x-a)) ) )+
+                (x-a)*np.log( ( (y-b)+np.sqrt((y-b)*(y-b)+(x-a)*(x-a)) ) /
+                              ( (y+b)+np.sqrt((y+b)*(y+b)+(x-a)*(x-a)) ) )+
+                (y-b)*np.log( ( (x-a)+np.sqrt((y-b)*(y-b)+(x-a)*(x-a)) ) /
+                              ( (x+a)+np.sqrt((y-b)*(y-b)+(x+a)*(x+a)) ) ) )
         self.weights = fftn(facts)
         return self.weights, facts
 

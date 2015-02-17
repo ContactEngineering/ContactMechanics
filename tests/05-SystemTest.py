@@ -36,6 +36,9 @@ import numpy as np
 from scipy.optimize import minimize
 import time
 
+import os
+from netCDF4 import Dataset
+
 from PyPyContact.System import System, IncompatibleFormulationError
 from PyPyContact.System import IncompatibleResolutionError
 import PyPyContact.SolidMechanics as Solid
@@ -219,3 +222,106 @@ class SystemTest(unittest.TestCase):
                    "'").format(result_grad, result_simple)
         self.assertTrue(result_grad.success and result_simple.success,
                         message)
+
+class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
+    def setUp(self):
+        self.size = (7.5+5*rand(), 7.5+5*rand())
+        self.radius = 100
+        base_res = 16
+        self.res = (base_res, base_res)
+        self.young = 3+2*random()
+
+        self.substrate = Solid.FreeFFTElasticHalfSpace(
+            self.res, self.young, self.size)
+
+        self.eps = 1+np.random.rand()
+        self.sig = 3+np.random.rand()
+        self.gam = (5+np.random.rand())
+        self.rcut = 2.5*self.sig+np.random.rand()
+        self.smooth = Contact.LJ93smooth(self.eps, self.sig, self.gam)
+
+        self.sphere = Surface.Sphere(self.radius, self.res, self.size)
+
+    def test_unconfirmed_minimization(self):
+        ## this merely makes sure that the code doesn't throw exceptions
+        ## the plausibility of the result is not verified
+        res = self.res[0]
+        size = self.size[0]
+        substrate = Solid.PeriodicFFTElasticHalfSpace(
+            res, 25*self.young, self.size[0])
+        sphere = Surface.Sphere(self.radius, res, size)
+        S = System(substrate, self.smooth, sphere)
+        offset = self.sig
+        disp = np.zeros(substrate.computational_resolution)
+
+        fun_jac = S.objective(offset, gradient=True)
+        fun     = S.objective(offset, gradient=False)
+
+        info =[]
+        start = time.perf_counter()
+        result_grad = minimize(fun_jac, disp.reshape(-1), jac=True)
+        duration_g = time.perf_counter()-start
+        info.append("using gradient:")
+        info.append("solved in {} seconds using {} fevals and {} jevals".format(
+            duration_g, result_grad.nfev, result_grad.njev))
+
+        start = time.perf_counter()
+        result_simple = minimize(fun, disp)
+        duration_w = time.perf_counter()-start
+        info.append("without gradient:")
+        info.append("solved in {} seconds using {} fevals".format(
+            duration_w, result_simple.nfev))
+
+        info.append("speedup (timewise) was {}".format(duration_w/duration_g))
+
+        print('\n'.join(info))
+
+
+        message = ("Success with gradient: {0.success}, message was '{0.message"
+                   "}',\nSuccess without: {1.success}, message was '{1.message}"
+                   "'").format(result_grad, result_simple)
+        self.assertTrue(result_grad.success and result_simple.success,
+                        message)
+
+    def test_comparison_pycontact(self):
+        tol = 1e-10
+        ref_fpath = 'tests/ref_smooth_sphere.nc'
+        ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
+        ## 1. replicate potential
+        sig = ref_data.lj_sigma
+        eps = ref_data.lj_epsilon
+        # pycontact doesn't store gamma (work of adhesion) in the nc file, but
+        # the computed rc1, which I can test for consistency
+        gamma = 0.001
+        potential = Contact.LJ93smooth(eps, sig, gamma)
+        error = abs(potential.r_c- ref_data.lj_rc2)
+        self.assertTrue(
+            error < tol,
+            ("computation of lj93smooth cut-off radius differs from pycontact "
+             "reference: PyPyContact: {}, pycontact: {}, error: {}, tol: "
+            "{}").format(potential.r_c, ref_data.lj_rc2, error, tol))
+        ## 2. replicate substrate
+        res = (ref_data.size, ref_data.size)
+        size= tuple((float(r) for r in res))
+        young = 2. # pycontact convention (hardcoded)
+        substrate = Solid.FreeFFTElasticHalfSpace(res, young, size)
+
+        ## 3. replicate surface
+        radius = ref_data.Hertz
+        surface = Surface.Sphere(radius, res, size)
+
+        ## 4. Set up system:
+        S = System(substrate, potential, surface)
+        # pycontact does not save the offset in the nc, so this one has to be
+        # taken on faith
+        offset = .8*potential.r_c
+        fun = S.objective(offset, gradient=True)
+        fun_hard = S.objective(offset, gradient=False)
+
+        ## initial guess (cheating) is the solution of pycontact
+        disp = np.zeros(substrate.computational_resolution)
+        ## disp[:ref_data.size, :ref_data.size] = ref_data.variables['u'][0]
+        print()
+        result = minimize(fun, disp, jac=True, callback=S.callback(force=True), method = 'L-BFGS-B')
+        print(result)
+        #result = minimize(fun_hard, disp, callback=S.callback())

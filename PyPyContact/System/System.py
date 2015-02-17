@@ -28,6 +28,8 @@
 # Free Software Foundation, Inc., 59 Temple Place - Su ite 330,
 # Boston, MA 02111-1307, USA.
 #
+import numpy as np
+
 from .. import ContactMechanics, SolidMechanics, Surface
 from ..Tools import compare_containers
 
@@ -56,8 +58,11 @@ class SystemBase(object):
     def computeGap(self, disp, offset, *profile_args, **profile_kwargs):
         """
         """
-        return (offset - self.surface.profile(
-            *profile_args, **profile_kwargs) - disp)
+        if self.dim == 1:
+            return (offset - disp[:self.resolution[0]] -
+                    self.surface.profile(*profile_args, **profile_kwargs))
+        return (offset - disp[:self.resolution[0], :self.resolution[1]] -
+                self.surface.profile(*profile_args, **profile_kwargs))
 
 class SmoothContactSystem(SystemBase):
     def __init__(self, substrate, interaction, surface):
@@ -76,6 +81,10 @@ class SmoothContactSystem(SystemBase):
                 ("the substrate ({}) and the surface ({}) have incompatible "
                  "resolutions.").format(
                      substrate.resolution, surface.resolution))
+        self.dim = len(self.substrate.resolution)
+    @property
+    def resolution(self):
+        return self.surface.resolution
 
     @staticmethod
     def handles(substrate_type, interaction_type, surface_type):
@@ -97,6 +106,8 @@ class SmoothContactSystem(SystemBase):
         Compute the energies and forces in the system for a given displacement
         field
         """
+        ## attention: the substrate may have a higher resolution than the gap
+        ## and the interaction (e.g. FreeElasticHalfSpace)
         self.gap = self.computeGap(disp, offset)
         self.interaction.compute(self.gap, pot, forces)
         self.substrate.compute(disp, pot, forces)
@@ -104,8 +115,19 @@ class SmoothContactSystem(SystemBase):
         ## attention: the gradient of the interaction has the wrong sign,
         ## because the derivative of the gap with respect to displacement
         ##introduces a -1 factor. Hence the minus sign in the 'sum' of forces:
-        return ((self.interaction.energy + self.substrate.energy if pot else None),
-                (-self.interaction.force + self.substrate.force if forces else None))
+        self.energy = (self.interaction.energy + self.substrate.energy
+                       if pot else None)
+        if forces:
+            self.force = self.substrate.force
+            if self.dim == 1:
+                self.force[:self.resolution[0]] -= self.interaction.force
+            else:
+                self.force[:self.resolution[0], :self.resolution[1]] -= \
+                  self.interaction.force
+        else:
+            self.force = None
+
+        return (self.energy, self.force)
 
     def objective(self, offset, gradient=False):
         """
@@ -118,16 +140,33 @@ class SmoothContactSystem(SystemBase):
         offset      -- determines indentation depth
         forces      -- (default False) whether the gradient is supposed to be used
         """
-        res = self.substrate.resolution
+        res = self.substrate.computational_resolution
         if gradient:
             def fun(disp):
-                energy, force = self.evaluate(
-                disp.reshape(res), offset, forces=True)
-                return (energy, -force.reshape(-1))
+                print("been called wit an input of shape {}".format(disp.shape))
+                self.evaluate(
+                    disp.reshape(res), offset, forces=True)
+                return (self.energy, -self.force.reshape(-1))
             return fun
         else:
             return lambda disp: self.evaluate(
                 disp.reshape(res), offset, forces=False)[0]
+
+    def callback(self, force=False):
+        counter = 0
+        if force:
+            def fun(vdisp):
+                nonlocal counter
+                counter +=1
+                print("at it {}, e = {}, |f| = {}".format(
+                    counter, self.energy, np.linalg.norm(np.ravel(self.force))))
+        else:
+            def fun(vdisp):
+                nonlocal counter
+                counter +=1
+                print("at it {}, e = {}".format(
+                    counter, self.energy))
+        return fun
 
 class IncompatibleFormulationError(Exception):
     pass

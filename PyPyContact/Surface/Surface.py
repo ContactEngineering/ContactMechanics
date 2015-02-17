@@ -193,10 +193,10 @@ class Sphere(NumpySurface):
         if not hasattr(resolution, "__iter__"):
             resolution = (resolution, )
         dim = len(resolution)
-        if centre is None:
-            centre = np.zeros_like(resolution)
         if not hasattr(size, "__iter__"):
             size = (size, )
+        if centre is None:
+            centre = np.array(size)*.5
         if not hasattr(centre, "__iter__"):
             centre = (centre, )
 
@@ -204,16 +204,14 @@ class Sphere(NumpySurface):
             r2 = (np.arange(resolution[0], dtype=float)
                   *size[0]/resolution[0] - centre[0])**2
         elif dim == 2:
-            rx2 = (np.arange(resolution[0], dtype=float)
-                   *size[0]/resolution[0] - centre[0])**2
+            rx2 = ((np.arange(resolution[0], dtype=float)
+                    *size[0]/resolution[0] - centre[0])**2).reshape((-1, 1))
             ry2 = (np.arange(resolution[1], dtype=float)
                    *size[1]/resolution[1] - centre[1])**2
-            r2 = np.zeros(resolution)
-            for i in range(resolution[0]):
-                r2[i,:] += rx2[i]
-            for j in range(resolution[1]):
-                r2[:,j] += ry2[j]
-        h = np.sqrt(radius**2 - r2)-radius
+            r2 = rx2 + ry2
+        radius2 = radius**2 # avoid nans for small radii
+        r2[r2 > radius2] = radius2
+        h = np.sqrt(radius2 - r2)-radius
         super().__init__(h)
         self._size = size
         self._centre = centre

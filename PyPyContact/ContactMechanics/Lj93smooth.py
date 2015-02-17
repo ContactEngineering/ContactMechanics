@@ -77,8 +77,8 @@ class LJ93smooth(Lj93.LJ93):
         epsilon -- Lennard-Jones potential well ε (careful, not work of adhesion
                    in this formulation)
         sigma   -- Lennard-Jones distance parameter σ
-        gamma   -- (default None) Work of adhesion, defaults to epsilon
-        r_t     -- (default None) transition point, defaults to r_min
+        gamma   -- (default ε) Work of adhesion, defaults to ε
+        r_t     -- (default r_min) transition point, defaults to r_min
         """
         self.eps = epsilon
         self.sig = sigma
@@ -94,7 +94,6 @@ class LJ93smooth(Lj93.LJ93):
         ## coefficients of the spline
         self.coeffs = np.zeros(5)
         self.eval_poly_and_cutoff(softfail=softfail)
-        pass
 
     def __repr__(self):
         has_gamma = -self.gamma != self.naive_min
