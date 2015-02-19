@@ -209,7 +209,7 @@ class Sphere(NumpySurface):
             ry2 = (np.arange(resolution[1], dtype=float)
                    *size[1]/resolution[1] - centre[1])**2
             r2 = rx2 + ry2
-        radius2 = radius**2 # avoid nans for small radii
+        radius2 = radius**2 # avoid nans for small radiio
         r2[r2 > radius2] = radius2
         h = np.sqrt(radius2 - r2)-radius
         super().__init__(h)

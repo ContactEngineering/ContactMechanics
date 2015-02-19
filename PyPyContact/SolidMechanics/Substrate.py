@@ -42,6 +42,10 @@ class Substrate(object):
         disp = self.evaluateDisp(force)
         return self.evaluateElasticEnergy(force, disp), force
 
+    @property
+    def needInit(self):
+        return False
+
 class ElasticSubstrate(Substrate):
     """ Generic baseclass for elastic substrates
     """

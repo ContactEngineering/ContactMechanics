@@ -73,5 +73,8 @@ def evaluate_gradient(fun, x, delta):
     return grad
 
 def mean_err(arr1, arr2):
+    if arr1.shape != arr2.shape:
+        raise Exception("The array shapes differ: a: {}, b:{}".format(
+            arr1.shape, arr2.shape))
     return abs(np.ravel(arr1-arr2)).mean()
 

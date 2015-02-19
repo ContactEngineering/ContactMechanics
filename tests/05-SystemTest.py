@@ -34,6 +34,7 @@ from numpy.random import rand, random
 import numpy as np
 
 from scipy.optimize import minimize
+from scipy.fftpack import fftn, ifftn
 import time
 
 import os
@@ -284,9 +285,14 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
                         message)
 
     def test_comparison_pycontact(self):
-        tol = 1e-10
+        tol = 1e-9
         ref_fpath = 'tests/ref_smooth_sphere.nc'
+        out_fpath = 'tests/ref_smooth_sphere.out'
         ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
+        with open(out_fpath) as fh:
+            fh.__next__()
+            fh.__next__()
+            ref_N = float(fh.__next__().split()[0])
         ## 1. replicate potential
         sig = ref_data.lj_sigma
         eps = ref_data.lj_epsilon
@@ -301,27 +307,111 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
              "reference: PyPyContact: {}, pycontact: {}, error: {}, tol: "
             "{}").format(potential.r_c, ref_data.lj_rc2, error, tol))
         ## 2. replicate substrate
-        res = (ref_data.size, ref_data.size)
+        res = (ref_data.size//2, ref_data.size//2)
+
         size= tuple((float(r) for r in res))
         young = 2. # pycontact convention (hardcoded)
         substrate = Solid.FreeFFTElasticHalfSpace(res, young, size)
 
         ## 3. replicate surface
         radius = ref_data.Hertz
-        surface = Surface.Sphere(radius, res, size)
-
+        centre = (15.5, 15.5)
+        surface = Surface.Sphere(radius, res, size, centre=centre)
+        ## ref_h = -np.array(ref_data.variables['h'])
+        ## ref_h -= ref_h.max()
+        ## surface = Surface.NumpySurface(ref_h)
         ## 4. Set up system:
         S = System(substrate, potential, surface)
+
+        ref_profile = np.array(
+            ref_data.variables['h']+ref_data.variables['avgh'][0])[:32, :32]
+        offset = .8*potential.r_c
+        gap = S.computeGap(np.zeros(substrate.computational_resolution), offset)
+        diff = ref_profile-gap
+        # pycontact centres spheres at (n + 0.5, m + 0.5). need to correct for test
+        correction = np.sqrt(radius**2-.5)-radius
+        error = Tools.mean_err(ref_profile-correction, gap)
+        self.assertTrue(
+            error < tol,
+            "initial profiles differ (mean error ē = {} > tol = {})".format(
+                error, tol))
         # pycontact does not save the offset in the nc, so this one has to be
         # taken on faith
-        offset = .8*potential.r_c
-        fun = S.objective(offset, gradient=True)
+        fun = S.objective(offset+correction, gradient=True)
         fun_hard = S.objective(offset, gradient=False)
 
         ## initial guess (cheating) is the solution of pycontact
-        disp = np.zeros(substrate.computational_resolution)
-        ## disp[:ref_data.size, :ref_data.size] = ref_data.variables['u'][0]
-        print()
-        result = minimize(fun, disp, jac=True, callback=S.callback(force=True), method = 'L-BFGS-B')
-        print(result)
-        #result = minimize(fun_hard, disp, callback=S.callback())
+        disp = np.zeros(S.substrate.computational_resolution)
+        disp[:ref_data.size, :ref_data.size] = ref_data.variables['u'][0]
+
+        options = dict(ftol = 1e-12, gtol = 1e-10)
+        result = minimize(fun, disp, jac=True, callback=S.callback(force=True), method = 'L-BFGS-B', options=options)
+
+        e, force = fun(result.x)
+
+
+
+        error = abs(ref_N - S.computeNormalForce())
+        # here the answers differ slightly, relaxing the tol for this one
+        ftol = 1e-7
+        self.assertTrue(
+            error < ftol,
+            "resulting normal forces differ: error = {} > tol = {}".format(
+                error, ftol))
+        error = Tools.mean_err(
+            disp, result.x.reshape(S.substrate.computational_resolution))
+        self.assertTrue(
+            error < tol,
+            "resulting displacements differ: error = {} > tol = {}".format(
+                error, tol))
+
+    def test_size_insensitivity(self):
+        tol = 1e-6
+        ref_fpath = 'tests/ref_smooth_sphere.nc'
+        out_fpath = 'tests/ref_smooth_sphere.out'
+        ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
+        with open(out_fpath) as fh:
+            fh.__next__()
+            fh.__next__()
+            ref_N = float(fh.__next__().split()[0])
+        ## 1. replicate potential
+        sig = ref_data.lj_sigma
+        eps = ref_data.lj_epsilon
+        # pycontact doesn't store gamma (work of adhesion) in the nc file, but
+        # the computed rc1, which I can test for consistency
+        gamma = 0.001
+        potential = Contact.LJ93smooth(eps, sig, gamma)
+        error = abs(potential.r_c- ref_data.lj_rc2)
+        self.assertTrue(
+            error < tol,
+            ("computation of lj93smooth cut-off radius differs from pycontact "
+             "reference: PyPyContact: {}, pycontact: {}, error: {}, tol: "
+            "{}").format(potential.r_c, ref_data.lj_rc2, error, tol))
+        nb_compars = 3
+        normalforce = np.zeros(nb_compars)
+        options = dict(ftol = 1e-12, gtol = 1e-10)
+
+        for i, resolution in ((i, ref_data.size//4*2**i) for i in range(nb_compars)):
+            res = (resolution, resolution)
+
+            size= tuple((float(r) for r in res))
+            young = 2. # pycontact convention (hardcoded)
+            substrate = Solid.FreeFFTElasticHalfSpace(res, young, size)
+
+            ## 3. replicate surface
+            radius = ref_data.Hertz
+            surface = Surface.Sphere(radius, res, size)
+
+            ## 4. Set up system:
+            S = System(substrate, potential, surface)
+            # pycontact does not save the offset in the nc, so this one has to be
+            # taken on faith
+            offset = .8*potential.r_c
+            fun = S.objective(offset, gradient=True)
+            disp = np.zeros(np.prod(res)*4)
+            result = minimize(fun, disp, jac=True,
+                              method = 'L-BFGS-B', options=options)
+            normalforce[i] = S.interaction.force.sum()
+            error = abs(normalforce-normalforce.mean()).mean()
+        self.assertTrue(error < tol, "error = {:.15g} > tol = {}, N = {}".format(
+            error, tol, normalforce))

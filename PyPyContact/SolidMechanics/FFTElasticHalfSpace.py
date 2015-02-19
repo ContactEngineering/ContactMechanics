@@ -32,6 +32,7 @@
 import multiprocessing
 import numpy as np
 from scipy.fftpack import fftn, ifftn
+from collections import namedtuple
 
 from .Substrate import ElasticSubstrate
 
@@ -46,7 +47,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         119(3), 481-485 (Jul 01, 1997)
     """
     name = "periodic_fft_elastic_halfspace"
-    def __init__(self, resolution, young, size=2*np.pi):
+    def __init__(self, resolution, young, size=2*np.pi, superclass=True):
         """
         Keyword Arguments:
         resolution -- Tuple containing number of points in spatial directions.
@@ -58,6 +59,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                       a tuple can be provided to specify the lenths per
                       dimension. If the tuple has less entries than dimensions,
                       the last value in repeated.
+        superclass -- (default True) client software never uses this. Only
+                      inheriting subclasses use this.
         """
         if not hasattr(resolution, "__iter__"):
             resolution = (resolution, )
@@ -78,9 +81,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.steps = tuple(
             float(size)/res for size, res in zip(self.size, self.resolution))
         self.young = young
-
-        self._computeFourierCoeffs()
-        self._computeIFourierCoeffs()
+        if superclass:
+            self._computeFourierCoeffs()
+            self._computeIFourierCoeffs()
 
     @property
     def dim(self, ):
@@ -214,6 +217,11 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     R. W. HOCKNEY, "The potential calculation and some applications," Methods of
     Computational Physics, B. Adler, S. Fernback and M. Rotenberg (Eds.),
     Academic Press, New York, 1969, pp. 136-211.
+
+    This class should not be used directly, as it uses a fixed size
+    computational domain instead of determining it dynamically to safe
+    resources. Instead, use the proxy-class FastFreeFFTElasticHalfSpace, which
+    has the same interface.
     """
     name = "free_fft_elastic_halfspace"
 
@@ -234,7 +242,9 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                        dimension. If the tuple has less entries than dimensions,
                        the last value in repeated.
         """
-        super().__init__(resolution, young, size)
+        super().__init__(resolution, young, size, superclass=False)
+        self._computeFourierCoeffs()
+        self._computeIFourierCoeffs()
         self._comp_resolution = tuple((2*r for r in self.resolution))
 
     @property
@@ -263,23 +273,26 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             pass
         else:
             b = self.steps[1]*.5
-            xp = (np.arange(self.resolution[0])*self.steps[0]+a).reshape((-1, 1))
-            xm = (np.arange(self.resolution[0])*self.steps[0]-a).reshape((-1, 1))
+            x = np.arange(self.resolution[0]*2)
+            x = np.where(x <= self.resolution[0], x, x-self.resolution[0]*2) * self.steps[0]
+            x.shape = (-1,1)
+            y = np.arange(self.resolution[1]*2)
+            y = np.where(y <= self.resolution[1], y, y-self.resolution[1]*2) * self.steps[1]
+            y.shape = (1,-1)
+            xp = (x+a).reshape((-1, 1))
+            xm = (x-a).reshape((-1, 1))
             xp2 = xp*xp
             xm2 = xm*xm
 
-            yp = np.arange(self.resolution[1])*self.steps[1]+b
-            ym = np.arange(self.resolution[1])*self.steps[1]-b
+            yp = y+b
+            ym = y-b
             yp2 = yp*yp
             ym2 = ym*ym
             sqrt_yp_xp = np.sqrt(yp2 + xp2)
             sqrt_ym_xp = np.sqrt(ym2 + xp2)
             sqrt_yp_xm = np.sqrt(yp2 + xm2)
             sqrt_ym_xm = np.sqrt(ym2 + xm2)
-            facts[:self.resolution[0], -1:self.resolution[1]-1:-1] = \
-              facts[-1:self.resolution[0]-1:-1, :self.resolution[1]] = \
-              facts[-1:self.resolution[0]-1:-1, -1:self.resolution[1]-1:-1] = \
-              facts[:self.resolution[0], :self.resolution[1]] = 1/(np.pi*self.young)*\
+            facts = 1/(np.pi*self.young)*\
               ( xp*np.log((yp+sqrt_yp_xp)/
                           (ym+sqrt_ym_xp))
                +yp*np.log((xp+sqrt_yp_xp)/
@@ -303,12 +316,13 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             pass
         else:
             b = self.steps[1]*.5
-            x = (np.arange(self.resolution[0])*self.steps[0]).reshape((-1, 1))
-            y = np.arange(self.resolution[1])*self.steps[1]
-            facts[:self.resolution[0], -1:self.resolution[1]-1:-1] = \
-              facts[-1:self.resolution[0]-1:-1, :self.resolution[1]] = \
-              facts[-1:self.resolution[0]-1:-1, -1:self.resolution[1]-1:-1] = \
-              facts[:self.resolution[0], :self.resolution[1]] = 1/(np.pi*self.young)*\
+            x = np.arange(self.resolution[0]*2)
+            x = np.where(x <= self.resolution[0], x, x-self.resolution[0]*2)* self.steps[0]
+            x.shape = (-1,1)
+            y = np.arange(self.resolution[1]*2)
+            y = np.where(y <= self.resolution[1], y, y-self.resolution[1]*2)* self.steps[1]
+            y.shape = (1,-1)
+            facts = 1/(np.pi*self.young)*\
               ( (x+a)*np.log( ( (y+b)+np.sqrt((y+b)*(y+b)+(x+a)*(x+a)) )/
                               ( (y-b)+np.sqrt((y-b)*(y-b)+(x+a)*(x+a)) ) )+
                 (y+b)*np.log( ( (x+a)+np.sqrt((y+b)*(y+b)+(x+a)*(x+a)) ) /
@@ -320,25 +334,110 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         self.weights = fftn(facts)
         return self.weights, facts
 
-if __name__ == '__main__':
-    print(PeriodicFFTElasticHalfSpace(512, 14.8))
-    print(PeriodicFFTElasticHalfSpace((512, 256), 14.8))
-    print(PeriodicFFTElasticHalfSpace(512, 14.8, 12.5))
-    print(PeriodicFFTElasticHalfSpace((512, 256), 14.8, 12.5))
-    print(PeriodicFFTElasticHalfSpace((512, 256), 14.8, (12.5, 28.3)))
 
-    s_res = 512
-    test_res = (s_res, s_res)
-    hs = PeriodicFFTElasticHalfSpace(test_res, 1, (12.5, 28.3))
-    forces = np.zeros(test_res)
-    forces[:s_res//2,:s_res//2] = 1
+## convenient container for storing correspondences betwees small and large system
+BndSet = namedtuple('BndSet', ('large', 'small'))
 
-    import time
-    start = time.perf_counter()
-    disp = hs.evaluate_disp(forces)
-    finish = time.perf_counter()
-    print("Took {} seconds for a {}x{} grid".format(finish-start, *test_res))
-    import matplotlib.pyplot as plt
+class FastFreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
+    """
+    Uses the FFT to solve the displacements and stresses in an non-periodic
+    elastic Halfspace due to a given array of point forces. Uses the Green's
+    functions formulaiton of Johnson (1985, p. 54). The application of the FFT
+    to a nonperiodic domain is explained in Hockney (1969, p. 178.)
 
-    plt.contour(disp)
-    plt.show()
+    K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge: Cambridge
+    University Press. Available from: Cambridge Books Online
+    <http://dx.doi.org/10.1017/CBO9781139171731> [Accessed 16 February 2015]
+
+    R. W. HOCKNEY, "The potential calculation and some applications," Methods of
+    Computational Physics, B. Adler, S. Fernback and M. Rotenberg (Eds.),
+    Academic Press, New York, 1969, pp. 136-211.
+    """
+    name = "free_fft_elastic_halfspace"
+
+    def __init__(self, resolution, young, size=2*np.pi, buffer_zone=16):
+        """
+        Keyword Arguments:
+        resolution  -- Tuple containing number of points in spatial directions.
+                       The length of the tuple determines the spatial dimension
+                       of the problem. Warning: internally, the free boundary
+                       conditions require the system so store a system of
+                       2*resolution.x by 2*resolution.y. Keep in mind that if
+                       your surface is nx by ny, the forces and displacements
+                       will still be 2nx by 2ny.
+        young       -- Equiv. Young's modulus E'
+                       1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
+        size        -- (default 2π) domain size. For multidimensional problems,
+                       a tuple can be provided to specify the lenths per
+                       dimension. If the tuple has less entries than dimensions,
+                       the last value in repeated.
+        buffer-zone -- (default 16) number of pixels around the contact area
+                       bounding box to be included
+        """
+        super().__init__(resolution, young, size)
+        self._comp_resolution = tuple((2*r for r in self.resolution))
+
+        ## this is where the nested FreeFFTElasticHalfSpace will be stored
+        self.babushka = None
+        self.offset = tuple((0 for _ in self.resolution))
+        if self.dim != 2:
+            raise NotImplementedError(
+                "FastFreeFFTElasticHalfSpace is currently only implemented for "
+                "2-dimensional problems")
+        self.computeBabushkaBounds()
+
+    @property
+    def needInit(self):
+        return True
+
+   ## def init(self, system):
+
+    def _computeFourierCoeffs(self): raise NotImplementedError
+    def _computeIFourierCoeffs(self): raise NotImplementedError
+
+    def computeBabushkaBounds(self):
+        def boundary_generator():
+          sm_res = self.babushka.resolution
+          lg_res = self.resolution
+          for i in (0,1):
+            for j in (0,1):
+              sm_slice = tuple(slice(i*sm_res[0], (i+1)*sm_res[0]),
+                               slice(j*sm_res[1], (j+1)*sm_res[1]))
+              lg_slice = tuple(
+                  slice(i*lg_res[0]+self.offset[0], (i+1)*lg_res[0]+self.offset[0]),
+                  slice(j*lg_res[1]+self.offset[1], (j+1)*lg_res[1]+self.offset[1]))
+              yield(BndSet(large=lg_slice, small=sm_slice))
+        self.bounds = tuple((bnd for bnd in boundary_generator()))
+
+
+
+
+    def _getBabushkaArray(self, full_array, babushka_array=None):
+        if babushka_array is None:
+            babushka_array = np.zeros(self.babushka.computational_resolution)
+        for bnd in self.bounds:
+            babushka_array[bnd.small] = full_array[bnd.large]
+        return babushka_array
+
+    def _getFullArray(self, babushka_array, full_array=None):
+        if full_array is None:
+            full_array = np.zeros(self.babushka.computational_resolution)
+        for bnd in self.bounds:
+            full_array[bnd.small] = babushka_array[bnd.large]
+        return full_array
+
+
+    def evaluateForce(self, disp):
+        return self._getFullArray(
+            self.babushka.evaluateForce(self._getBabushkaArray(disp)))
+
+    def evaluateDisp(self, force):
+        return self._getFullArray(
+            self.babushka.evaluateDisp(self._getBabushkaArray(force)))
+
+    def evaluateKForce(self, disp):
+        return self.babushka.evaluateKForce(self._getBabushkaArray(disp))
+
+    def evaluateKDisp(self, forces):
+        return self.babushka.evaluateKDisp(self._getBabushkaArray(force))
+    

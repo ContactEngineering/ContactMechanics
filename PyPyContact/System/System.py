@@ -64,6 +64,9 @@ class SystemBase(object):
         return (offset - disp[:self.resolution[0], :self.resolution[1]] -
                 self.surface.profile(*profile_args, **profile_kwargs))
 
+    def computeNormalForce(self):
+        raise Exception
+
 class SmoothContactSystem(SystemBase):
     def __init__(self, substrate, interaction, surface):
         """ Represents a contact problem
@@ -101,6 +104,9 @@ class SmoothContactSystem(SystemBase):
                             Surface.Surface)
         return is_ok
 
+    def computeNormalForce(self):
+        return self.interaction.force.sum()
+
     def evaluate(self, disp, offset, pot=True, forces=False):
         """
         Compute the energies and forces in the system for a given displacement
@@ -118,7 +124,7 @@ class SmoothContactSystem(SystemBase):
         self.energy = (self.interaction.energy + self.substrate.energy
                        if pot else None)
         if forces:
-            self.force = self.substrate.force
+            self.force = self.substrate.force.copy()
             if self.dim == 1:
                 self.force[:self.resolution[0]] -= self.interaction.force
             else:
@@ -143,14 +149,27 @@ class SmoothContactSystem(SystemBase):
         res = self.substrate.computational_resolution
         if gradient:
             def fun(disp):
-                print("been called wit an input of shape {}".format(disp.shape))
-                self.evaluate(
-                    disp.reshape(res), offset, forces=True)
+                try:
+                    self.evaluate(
+                        disp.reshape(res), offset, forces=True)
+                except ValueError as err:
+                    raise ValueError(
+                        "{}: disp.shape: {}, res: {}".format(err, disp.shape, res))
                 return (self.energy, -self.force.reshape(-1))
-            return fun
         else:
-            return lambda disp: self.evaluate(
+            fun = lambda disp: self.evaluate(
                 disp.reshape(res), offset, forces=False)[0]
+
+        ## if the substrate needs an initialization step (as
+        ## FastFreeFFTElasticHalfSpace does) eval fun once and run the init
+        ## using the result
+        if self.substrate.needInit:
+            fun(np.zeros(self.substrate.computational_resolution))
+            self.substrate.init(self)
+
+        return fun
+
+
 
     def callback(self, force=False):
         counter = 0
