@@ -45,6 +45,11 @@ class Substrate(object):
     @property
     def needInit(self):
         return False
+    def spawnChild(self, resolution):
+        """ does nothing for periodic substrates.
+        """
+        raise NotImplementedError(
+            "Only substrates with free boundaries can do this")
 
 class ElasticSubstrate(Substrate):
     """ Generic baseclass for elastic substrates

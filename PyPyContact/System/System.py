@@ -143,8 +143,8 @@ class SmoothContactSystem(SystemBase):
         'forces' flag without using scipy's cumbersome argument passing
         interface. Returns a function of only disp
         Keyword Arguments:
-        offset      -- determines indentation depth
-        forces      -- (default False) whether the gradient is supposed to be used
+        offset   -- determines indentation depth
+        gradient -- (default False) whether the gradient is supposed to be used
         """
         res = self.substrate.computational_resolution
         if gradient:

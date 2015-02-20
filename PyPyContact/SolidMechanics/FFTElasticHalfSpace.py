@@ -218,10 +218,10 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     Computational Physics, B. Adler, S. Fernback and M. Rotenberg (Eds.),
     Academic Press, New York, 1969, pp. 136-211.
 
-    This class should not be used directly, as it uses a fixed size
-    computational domain instead of determining it dynamically to safe
-    resources. Instead, use the proxy-class FastFreeFFTElasticHalfSpace, which
-    has the same interface.
+    ### This class should not be used directly, as it uses a fixed size
+    ### computational domain instead of determining it dynamically to safe
+    ### resources. Instead, use the proxy-class FastFreeFFTElasticHalfSpace, which
+    ### has the same interface.
     """
     name = "free_fft_elastic_halfspace"
 
@@ -246,6 +246,15 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         self._computeFourierCoeffs()
         self._computeIFourierCoeffs()
         self._comp_resolution = tuple((2*r for r in self.resolution))
+
+    def spawnChild(self, resolution):
+        """
+        returns an instance with same physical properties with a smaller
+        computational grid
+        """
+        size = tuple((resolution[i]/float(self.resolution[i])*self.size[i] for
+                      i in range(self.dim)))
+        return type(self)(resolution, self.young, size)
 
     @property
     def computational_resolution(self, ):
@@ -338,106 +347,106 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
 ## convenient container for storing correspondences betwees small and large system
 BndSet = namedtuple('BndSet', ('large', 'small'))
 
-class FastFreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
-    """
-    Uses the FFT to solve the displacements and stresses in an non-periodic
-    elastic Halfspace due to a given array of point forces. Uses the Green's
-    functions formulaiton of Johnson (1985, p. 54). The application of the FFT
-    to a nonperiodic domain is explained in Hockney (1969, p. 178.)
-
-    K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge: Cambridge
-    University Press. Available from: Cambridge Books Online
-    <http://dx.doi.org/10.1017/CBO9781139171731> [Accessed 16 February 2015]
-
-    R. W. HOCKNEY, "The potential calculation and some applications," Methods of
-    Computational Physics, B. Adler, S. Fernback and M. Rotenberg (Eds.),
-    Academic Press, New York, 1969, pp. 136-211.
-    """
-    name = "free_fft_elastic_halfspace"
-
-    def __init__(self, resolution, young, size=2*np.pi, buffer_zone=16):
-        """
-        Keyword Arguments:
-        resolution  -- Tuple containing number of points in spatial directions.
-                       The length of the tuple determines the spatial dimension
-                       of the problem. Warning: internally, the free boundary
-                       conditions require the system so store a system of
-                       2*resolution.x by 2*resolution.y. Keep in mind that if
-                       your surface is nx by ny, the forces and displacements
-                       will still be 2nx by 2ny.
-        young       -- Equiv. Young's modulus E'
-                       1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
-        size        -- (default 2π) domain size. For multidimensional problems,
-                       a tuple can be provided to specify the lenths per
-                       dimension. If the tuple has less entries than dimensions,
-                       the last value in repeated.
-        buffer-zone -- (default 16) number of pixels around the contact area
-                       bounding box to be included
-        """
-        super().__init__(resolution, young, size)
-        self._comp_resolution = tuple((2*r for r in self.resolution))
-
-        ## this is where the nested FreeFFTElasticHalfSpace will be stored
-        self.babushka = None
-        self.offset = tuple((0 for _ in self.resolution))
-        if self.dim != 2:
-            raise NotImplementedError(
-                "FastFreeFFTElasticHalfSpace is currently only implemented for "
-                "2-dimensional problems")
-        self.computeBabushkaBounds()
-
-    @property
-    def needInit(self):
-        return True
-
-   ## def init(self, system):
-
-    def _computeFourierCoeffs(self): raise NotImplementedError
-    def _computeIFourierCoeffs(self): raise NotImplementedError
-
-    def computeBabushkaBounds(self):
-        def boundary_generator():
-          sm_res = self.babushka.resolution
-          lg_res = self.resolution
-          for i in (0,1):
-            for j in (0,1):
-              sm_slice = tuple(slice(i*sm_res[0], (i+1)*sm_res[0]),
-                               slice(j*sm_res[1], (j+1)*sm_res[1]))
-              lg_slice = tuple(
-                  slice(i*lg_res[0]+self.offset[0], (i+1)*lg_res[0]+self.offset[0]),
-                  slice(j*lg_res[1]+self.offset[1], (j+1)*lg_res[1]+self.offset[1]))
-              yield(BndSet(large=lg_slice, small=sm_slice))
-        self.bounds = tuple((bnd for bnd in boundary_generator()))
-
-
-
-
-    def _getBabushkaArray(self, full_array, babushka_array=None):
-        if babushka_array is None:
-            babushka_array = np.zeros(self.babushka.computational_resolution)
-        for bnd in self.bounds:
-            babushka_array[bnd.small] = full_array[bnd.large]
-        return babushka_array
-
-    def _getFullArray(self, babushka_array, full_array=None):
-        if full_array is None:
-            full_array = np.zeros(self.babushka.computational_resolution)
-        for bnd in self.bounds:
-            full_array[bnd.small] = babushka_array[bnd.large]
-        return full_array
-
-
-    def evaluateForce(self, disp):
-        return self._getFullArray(
-            self.babushka.evaluateForce(self._getBabushkaArray(disp)))
-
-    def evaluateDisp(self, force):
-        return self._getFullArray(
-            self.babushka.evaluateDisp(self._getBabushkaArray(force)))
-
-    def evaluateKForce(self, disp):
-        return self.babushka.evaluateKForce(self._getBabushkaArray(disp))
-
-    def evaluateKDisp(self, forces):
-        return self.babushka.evaluateKDisp(self._getBabushkaArray(force))
-    
+## class FastFreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
+##     """
+##     Uses the FFT to solve the displacements and stresses in an non-periodic
+##     elastic Halfspace due to a given array of point forces. Uses the Green's
+##     functions formulaiton of Johnson (1985, p. 54). The application of the FFT
+##     to a nonperiodic domain is explained in Hockney (1969, p. 178.)
+## 
+##     K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge: Cambridge
+##     University Press. Available from: Cambridge Books Online
+##     <http://dx.doi.org/10.1017/CBO9781139171731> [Accessed 16 February 2015]
+## 
+##     R. W. HOCKNEY, "The potential calculation and some applications," Methods of
+##     Computational Physics, B. Adler, S. Fernback and M. Rotenberg (Eds.),
+##     Academic Press, New York, 1969, pp. 136-211.
+##     """
+##     name = "free_fft_elastic_halfspace"
+## 
+##     def __init__(self, resolution, young, size=2*np.pi, buffer_zone=16):
+##         """
+##         Keyword Arguments:
+##         resolution  -- Tuple containing number of points in spatial directions.
+##                        The length of the tuple determines the spatial dimension
+##                        of the problem. Warning: internally, the free boundary
+##                        conditions require the system so store a system of
+##                        2*resolution.x by 2*resolution.y. Keep in mind that if
+##                        your surface is nx by ny, the forces and displacements
+##                        will still be 2nx by 2ny.
+##         young       -- Equiv. Young's modulus E'
+##                        1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
+##         size        -- (default 2π) domain size. For multidimensional problems,
+##                        a tuple can be provided to specify the lenths per
+##                        dimension. If the tuple has less entries than dimensions,
+##                        the last value in repeated.
+##         buffer-zone -- (default 16) number of pixels around the contact area
+##                        bounding box to be included
+##         """
+##         super().__init__(resolution, young, size)
+##         self._comp_resolution = tuple((2*r for r in self.resolution))
+## 
+##         ## this is where the nested FreeFFTElasticHalfSpace will be stored
+##         self.babushka = None
+##         self.offset = tuple((0 for _ in self.resolution))
+##         if self.dim != 2:
+##             raise NotImplementedError(
+##                 "FastFreeFFTElasticHalfSpace is currently only implemented for "
+##                 "2-dimensional problems")
+##         self.computeBabushkaBounds()
+## 
+##     @property
+##     def needInit(self):
+##         return True
+## 
+##    ## def init(self, system):
+## 
+##     def _computeFourierCoeffs(self): raise NotImplementedError
+##     def _computeIFourierCoeffs(self): raise NotImplementedError
+## 
+##     def computeBabushkaBounds(self):
+##         def boundary_generator():
+##           sm_res = self.babushka.resolution
+##           lg_res = self.resolution
+##           for i in (0,1):
+##             for j in (0,1):
+##               sm_slice = tuple(slice(i*sm_res[0], (i+1)*sm_res[0]),
+##                                slice(j*sm_res[1], (j+1)*sm_res[1]))
+##               lg_slice = tuple(
+##                   slice(i*lg_res[0]+self.offset[0], (i+1)*lg_res[0]+self.offset[0]),
+##                   slice(j*lg_res[1]+self.offset[1], (j+1)*lg_res[1]+self.offset[1]))
+##               yield(BndSet(large=lg_slice, small=sm_slice))
+##         self.bounds = tuple((bnd for bnd in boundary_generator()))
+## 
+## 
+## 
+## 
+##     def _getBabushkaArray(self, full_array, babushka_array=None):
+##         if babushka_array is None:
+##             babushka_array = np.zeros(self.babushka.computational_resolution)
+##         for bnd in self.bounds:
+##             babushka_array[bnd.small] = full_array[bnd.large]
+##         return babushka_array
+## 
+##     def _getFullArray(self, babushka_array, full_array=None):
+##         if full_array is None:
+##             full_array = np.zeros(self.babushka.computational_resolution)
+##         for bnd in self.bounds:
+##             full_array[bnd.small] = babushka_array[bnd.large]
+##         return full_array
+## 
+## 
+##     def evaluateForce(self, disp):
+##         return self._getFullArray(
+##             self.babushka.evaluateForce(self._getBabushkaArray(disp)))
+## 
+##     def evaluateDisp(self, force):
+##         return self._getFullArray(
+##             self.babushka.evaluateDisp(self._getBabushkaArray(force)))
+## 
+##     def evaluateKForce(self, disp):
+##         return self.babushka.evaluateKForce(self._getBabushkaArray(disp))
+## 
+##     def evaluateKDisp(self, forces):
+##         return self.babushka.evaluateKDisp(self._getBabushkaArray(force))
+##     

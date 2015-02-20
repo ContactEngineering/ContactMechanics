@@ -61,6 +61,9 @@ class Potential(SoftWall):
             gap, pot, forces, curb)
         self.energy = energy.sum()
 
+    def evaluate(self, gap, pot=True, forces=False, curb=False):
+        raise NotImplementedError()
+
 if __name__ == "__main__":
     pot = Potential()
 
