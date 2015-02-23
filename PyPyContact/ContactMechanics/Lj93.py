@@ -1,37 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-#
-# @file   Lj93.py
-#
-# @author Till Junge <till.junge@kit.edu>
-#
-# @date   22 Jan 2015
-#
-# @brief  9-3 Lennard-Jones potential for wall interactions
-#
-# @section LICENCE
-#
-#  Copyright (C) 2015 Till Junge
-#
-# PyPyContact is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3, or (at
-# your option) any later version.
-#
-# PyPyContact is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNU Emacs; see the file COPYING. If not, write to the
-# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-# Boston, MA 02111-1307, USA.
-#
+"""
+@file   Lj93.py
+
+@author Till Junge <till.junge@kit.edu>
+
+@date   22 Jan 2015
+
+@brief  9-3 Lennard-Jones potential for wall interactions
+
+@section LICENCE
+
+ Copyright (C) 2015 Till Junge
+
+PyPyContact is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3, or (at
+your option) any later version.
+
+PyPyContact is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Emacs; see the file COPYING. If not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
+"""
 
 import math
 import numpy as np
 from . import Potential
+
 
 class LJ93(Potential):
     """ 9-3 Lennard-Jones potential with optional cutoff radius.
@@ -48,11 +49,17 @@ class LJ93(Potential):
         """small helper class to remedy numpy's lack of views on
         index-sliced array views. This construction avoid the computation
         of all interactions as with np.where, and copies"""
+        # pylint: disable=R0903
         __slots__ = ()
-        def __setitem__(self, index, val):pass
-        def __getitem__(self, index):pass
+
+        def __setitem__(self, index, val):
+            pass
+
+        def __getitem__(self, index):
+            pass
 
     name = "lj9-3"
+
     def __init__(self, epsilon, sigma, r_cut=float('inf')):
         """
         Keyword Arguments:
@@ -60,10 +67,14 @@ class LJ93(Potential):
         sigma   -- Lennard-Jones distance parameter σ
         r_cut   -- (default infinity) optional cutoff radius
         """
+        super().__init__()
         self.eps = epsilon
         self.sig = sigma
         self.r_c = r_cut
-        self.has_cutoff = not math.isinf(self.r_c)
+        if r_cut is not None:
+            self.has_cutoff = not math.isinf(self.r_c)
+        else:
+            self.has_cutoff = False
         if self.has_cutoff:
             self.offset = self.naive_V(self.r_c)[0]
         else:
@@ -82,21 +93,23 @@ class LJ93(Potential):
         forces -- (default False) if true, returns forces
         curb   -- (default False) if true, returns second derivative
         """
+        # pylint: disable=bad-whitespace
+        # pylint: disable=invalid-name
         r = np.array(r)
         if r.shape == ():
             r.shape = (1, )
-        slice = r < self.r_c
-        V   = np.zeros_like(r) if pot    else self.SliceableNone()
-        dV  = np.zeros_like(r) if forces else self.SliceableNone()
-        ddV = np.zeros_like(r) if curb   else self.SliceableNone()
+        inside_slice = r < self.r_c
+        V = np.zeros_like(r) if pot else self.SliceableNone()
+        dV = np.zeros_like(r) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r) if curb else self.SliceableNone()
 
-        V[slice], dV[slice], ddV[slice] = self.naive_V(
-            r[slice], pot, forces, curb)
-        if V[slice] is not None:
-            V[slice] -= self.offset
-        return (V    if pot    else None,
-                dV   if forces else None,
-                ddV  if curb   else None)
+        V[inside_slice], dV[inside_slice], ddV[inside_slice] = self.naive_V(
+            r[inside_slice], pot, forces, curb)
+        if V[inside_slice] is not None:
+            V[inside_slice] -= self.offset
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
 
     @property
     def r_min(self):
@@ -145,58 +158,18 @@ class LJ93(Potential):
             forces -- (default False) if true, returns forces
             curb   -- (default False) if true, returns second derivative
         """
+        # pylint: disable=bad-whitespace
+        # pylint: disable=invalid-name
         V = dV = ddV = None
         sig_r3 = (self.sig/r)**3
         sig_r9 = sig_r3**3
         if pot:
-            V =  self.eps*(2./15*sig_r9 - sig_r3)
+            V = self.eps*(2./15*sig_r9 - sig_r3)
         if forces or curb:
             eps_r = self.eps/r
         if forces:
-            dV = eps_r*(6./5*sig_r9 - 3*sig_r3) ## Forces are the negative gradient
+            # Forces are the negative gradient
+            dV = eps_r*(6./5*sig_r9 - 3*sig_r3)
         if curb:
             ddV = 12*eps_r/r*(sig_r9 - sig_r3)
         return (V, dV, ddV)
-
-if __name__ == "__main__":
-    from sympy import Symbol, pprint
-    import sympy
-    sig = Symbol('sigma')
-    eps = Symbol('epsilon')
-    r = Symbol('r')
-    ## lj = eps*(2*(sig/r)**9/15 - (sig/r)**3)
-    ## dlj = sympy.diff(lj, r)
-    ## ddlj = sympy.diff(dlj, r)
-    ## pprint(  lj)
-    ## pprint( dlj)
-    ## pprint(ddlj)
-    ##
-    ## pprint(sympy.solve(dlj, r))
-
-    epsilon, sigma, r_cut = 1.2, 4, 7
-    pot = LJ93(epsilon, sigma)
-    pot_c = LJ93(epsilon, sigma, r_cut)
-    print(pot)
-    print(pot_c)
-    print(pot.r_min, pot_c.r_min)
-    import matplotlib.pyplot as plt
-    x = np.arange(.8*sigma, 2.5*sigma, .01*sigma)
-    f = plt.figure()
-    p_ax = f.add_subplot(311)
-    f_ax = f.add_subplot(312)
-    c_ax = f.add_subplot(313)
-    for r_cut in [4, 4.5, 5, 6, 7, float('inf')]:
-        pot = LJ93(epsilon, sigma, r_cut)
-        V, dV, ddV = pot.evaluate(x, pot=True, forces=True, curb=True)
-        color = p_ax.plot(x, V, label="r_c = {}".format(r_cut))[0].get_color()
-        p_ax.scatter(pot.r_min, pot.evaluate(pot.r_min)[0], marker='x', c=color)
-        f_ax.plot(x, dV, c=color)
-        c_ax.plot(x, ddV, c=color)
-    p_ax.legend(loc='best')
-    x_range = p_ax.get_xlim()
-    f_ax.set_xlim(x_range)
-    c_ax.set_xlim(x_range)
-    p_ax.grid(True)
-    f_ax.grid(True)
-    c_ax.grid(True)
-    plt.show()

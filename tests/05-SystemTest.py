@@ -37,10 +37,14 @@ from scipy.optimize import minimize
 from scipy.fftpack import fftn, ifftn
 import time
 
+from pylint import epylint
+
 import os
 from netCDF4 import Dataset
 
-from PyPyContact.System import System, IncompatibleFormulationError
+import PyPyContact
+
+from PyPyContact.System import SystemFactory, IncompatibleFormulationError
 from PyPyContact.System import IncompatibleResolutionError
 import PyPyContact.SolidMechanics as Solid
 import PyPyContact.ContactMechanics as Contact
@@ -66,19 +70,23 @@ class SystemTest(unittest.TestCase):
 
         self.sphere = Surface.Sphere(self.radius, self.res, self.size)
 
+    def test_conformity(self):
+        options = ' --rcfile=tests/pylint.rc --disable=locally-disabled'
+        epylint.py_run(PyPyContact.SolidMechanics.FFTElasticHalfSpace.__file__ +
+                        options)
 
     def test_RejectInconsistentInputTypes(self):
         with self.assertRaises(IncompatibleFormulationError):
-            System(12, 13, 24)
+            SystemFactory(12, 13, 24)
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
         incompat_sphere = Surface.Sphere(self.radius, incompat_res, self.size)
         with self.assertRaises(IncompatibleResolutionError):
-            System(self.substrate, self.smooth, incompat_sphere)
+            SystemFactory(self.substrate, self.smooth, incompat_sphere)
 
     def test_SmoothContact(self):
-        S = System(self.substrate, self.smooth, self.sphere)
+        S = SystemFactory(self.substrate, self.smooth, self.sphere)
         offset = self.sig
         disp = np.zeros(self.res)
         pot, forces = S.evaluate(disp, offset, forces = True)
@@ -89,11 +97,11 @@ class SystemTest(unittest.TestCase):
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
-        S = System(substrate, self.smooth, sphere)
+        S = SystemFactory(substrate, self.smooth, sphere)
         disp = random(res)*self.sig/10
         disp -= disp.mean()
         offset = self.sig
-        gap = S.computeGap(disp, offset)
+        gap = S.compute_gap(disp, offset)
 
         ## check subgradient of potential
         V, dV, ddV = S.interaction.evaluate(gap, pot=True, forces=True)
@@ -191,7 +199,7 @@ class SystemTest(unittest.TestCase):
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
-        S = System(substrate, self.smooth, sphere)
+        S = SystemFactory(substrate, self.smooth, sphere)
         offset = self.sig
         disp = np.zeros(res)
 
@@ -251,7 +259,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
-        S = System(substrate, self.smooth, sphere)
+        S = SystemFactory(substrate, self.smooth, sphere)
         offset = self.sig
         disp = np.zeros(substrate.computational_resolution)
 
@@ -321,12 +329,12 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ## ref_h -= ref_h.max()
         ## surface = Surface.NumpySurface(ref_h)
         ## 4. Set up system:
-        S = System(substrate, potential, surface)
+        S = SystemFactory(substrate, potential, surface)
 
         ref_profile = np.array(
             ref_data.variables['h']+ref_data.variables['avgh'][0])[:32, :32]
         offset = .8*potential.r_c
-        gap = S.computeGap(np.zeros(substrate.computational_resolution), offset)
+        gap = S.compute_gap(np.zeros(substrate.computational_resolution), offset)
         diff = ref_profile-gap
         # pycontact centres spheres at (n + 0.5, m + 0.5). need to correct for test
         correction = np.sqrt(radius**2-.5)-radius
@@ -351,7 +359,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
 
 
-        error = abs(ref_N - S.computeNormalForce())
+        error = abs(ref_N - S.compute_normal_force())
         # here the answers differ slightly, relaxing the tol for this one
         ftol = 1e-7
         self.assertTrue(
@@ -403,7 +411,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
             surface = Surface.Sphere(radius, res, size)
 
             ## 4. Set up system:
-            S = System(substrate, potential, surface)
+            S = SystemFactory(substrate, potential, surface)
             # pycontact does not save the offset in the nc, so this one has to be
             # taken on faith
             offset = .8*potential.r_c

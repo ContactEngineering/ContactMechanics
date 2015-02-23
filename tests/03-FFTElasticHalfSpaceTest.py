@@ -58,7 +58,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
             forces = np.zeros(test_res)
             forces[:s_res//2,:s_res//2] = 1.
 
-            pressure.append(hs.evaluateDisp(forces)[::i,::i]*hs.area_per_pt)
+            pressure.append(hs.evaluate_disp(forces)[::i,::i]*hs.area_per_pt)
         error = ((pressure[0]-pressure[1])**2).sum().sum()/base_res**2
         self.assertTrue(error < tol)
 
@@ -72,8 +72,8 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         nb_tests = 4
         El = np.zeros(nb_tests)
         for i in range(nb_tests):
-            disp = hs.evaluateDisp(i*force)
-            El[i] = hs.evaluateElasticEnergy(i*force, disp)
+            disp = hs.evaluate_disp(i*force)
+            El[i] = hs.evaluate_elastic_energy(i*force, disp)
         tol = 1e-10
         error = norm(El/El[1]-np.arange(nb_tests)**2)
         self.assertTrue(error<tol)
@@ -87,8 +87,8 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         nb_tests = 4
         El = np.zeros(nb_tests)
         for i in range(nb_tests):
-            force = hs.evaluateForce(i*disp)
-            El[i] = hs.evaluateElasticEnergy(i*force, disp)
+            force = hs.evaluate_force(i*disp)
+            El[i] = hs.evaluate_elastic_energy(i*force, disp)
         tol = 1e-10
         error = norm(El/El[1]-np.arange(nb_tests)**2)
         self.assertTrue(error<tol)
@@ -124,7 +124,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
             disp = random(res)
             disp -= disp.mean()
 
-            error = Tools.mean_err(disp, hs.evaluateDisp(hs.evaluateForce(disp)))
+            error = Tools.mean_err(disp, hs.evaluate_disp(hs.evaluate_force(disp)))
             self.assertTrue(
                 error < tol,
                 "for resolution = {}, error = {} > tol = {}".format(
@@ -133,7 +133,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
             force = random(res)
             force -= force.mean()
 
-            error = Tools.mean_err(force, hs.evaluateForce(hs.evaluateDisp(force)))
+            error = Tools.mean_err(force, hs.evaluate_force(hs.evaluate_disp(force)))
             self.assertTrue(
                 error < tol,
                 "for resolution = {}, error = {} > tol = {}".format(
@@ -171,10 +171,10 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
             ##Fourier energy
             E = .5*np.dot(Fforce/area_per_pt, Fdisp)/res
 
-            disp = hs.evaluateDisp(force)
-            e =  hs.evaluateElasticEnergy(force, disp)
-            kdisp = hs.evaluateKDisp(force)
-            ee = hs.evaluateElasticEnergyKspace(fforce, kdisp)
+            disp = hs.evaluate_disp(force)
+            e =  hs.evaluate_elastic_energy(force, disp)
+            kdisp = hs.evaluate_k_disp(force)
+            ee = hs.evaluate_elastic_energy_k_space(fforce, kdisp)
             self.assertTrue(
                 abs(e-ee) < tol,
                  "violate Parseval: e = {}, ee = {}, ee/e = {}".format(
@@ -202,7 +202,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             forces = np.zeros([2*r for r in test_res])
             forces[:s_res//2,:s_res//2] = 1.
 
-            pressure.append(hs.evaluateDisp(forces)[::i,::i]*hs.area_per_pt)
+            pressure.append(hs.evaluate_disp(forces)[::i,::i]*hs.area_per_pt)
         error = ((pressure[0]-pressure[1])**2).sum().sum()/base_res**2
         self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
 
@@ -214,11 +214,11 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             hs = FreeFFTElasticHalfSpace(res, self.young, self.size)
 
             start = time.perf_counter()
-            w2, f2 =hs._computeFourierCoeffs2()
+            w2, f2 =hs._compute_fourier_coeffs2()
             duration2 = time.perf_counter()-start
 
             start = time.perf_counter()
-            w3, f3 =hs._computeFourierCoeffs()
+            w3, f3 =hs._compute_fourier_coeffs()
             duration3 = time.perf_counter()-start
 
             print(
@@ -232,7 +232,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         force = np.zeros(hs.computational_resolution)
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
-        kdisp = hs.evaluateKDisp(force)
+        kdisp = hs.evaluate_k_disp(force)
         kforce = fftn(force)
         np_pts = np.prod(self.res)
         area_per_pt = np.prod(self.size)/np_pts
@@ -242,7 +242,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         self.assertTrue(error < tol,
                          "error (imaginary part) = {}, tol = {}".format(
                              error, tol))
-        error = abs(energy-hs.evaluateElasticEnergyKspace(kforce, kdisp))
+        error = abs(energy-hs.evaluate_elastic_energy_k_space(kforce, kdisp))
         self.assertTrue(error < tol,
                          "error (comparison) = {}, tol = {}".format(
                              error, tol))
@@ -279,10 +279,10 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             ##Fourier energy
             E = .5*np.dot(Fforce/area_per_pt, Fdisp)/res
 
-            disp = hs.evaluateDisp(force)
-            e =  hs.evaluateElasticEnergy(force, disp)
-            kdisp = hs.evaluateKDisp(force)
-            ee = hs.evaluateElasticEnergyKspace(fforce, kdisp)
+            disp = hs.evaluate_disp(force)
+            e =  hs.evaluate_elastic_energy(force, disp)
+            kdisp = hs.evaluate_k_disp(force)
+            ee = hs.evaluate_elastic_energy_k_space(fforce, kdisp)
             self.assertTrue(
                 abs(e-ee) < tol,
                  "violate Parseval: e = {}, ee = {}, ee/e = {}".format(
