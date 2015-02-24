@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   System.py
+@file   Systems.py
 
 @author Till Junge <till.junge@kit.edu>
 
@@ -35,6 +35,16 @@ from .. import ContactMechanics, SolidMechanics, Surface
 from ..Tools import compare_containers
 
 
+class IncompatibleFormulationError(Exception):
+    # pylint: disable=missing-docstring
+    pass
+
+
+class IncompatibleResolutionError(Exception):
+    # pylint: disable=missing-docstring
+    pass
+
+
 class SystemBase(object):
     "Base class for contact systems"
     def __init__(self, substrate, interaction, surface):
@@ -51,7 +61,21 @@ class SystemBase(object):
         self.surface = surface
         self.dim = None
         self.gap = None
+    _proxyclass = False
 
+    @classmethod
+    def is_proxy(cls):
+        """
+        subclasses may not be able to implement the full interface because they
+        try to do something smart and internally compute a different system.
+        They should declare to  to be proxies and provide a method called cls.
+        deproxyfied() that returns the energy, force and displacement of the
+        full problem based on its internal state. E.g at the end of an
+        optimization, you could have:
+        if system.is_proxy():
+            energy, force, disp = system.deproxyfied()
+        """
+        return cls._proxyclass
     @property
     def resolution(self):
         "For systems, resolution can become non-trivial"
@@ -86,6 +110,39 @@ class SystemBase(object):
         "evaluates and returns the normal force between substrate and surface"
         raise NotImplementedError()
 
+    def shape_minimisation_input(self, in_array):
+        """
+        For minimisation of smart systems, the initial guess array (e.g.
+        displacement) may have a non-intuitive shape and size (The problem size
+        may be decreased, as for free, non-periodic systems, or increased as
+        with augmented-lagrangian-type issues). Use the output of this function
+        as argument x0 for scipy minimisation functions. Also, if you initial
+        guess has a shape that makes no sense, this will tell you before you
+        get caught in debugging scipy-code
+
+        Arguments:
+        in_array -- array with the initial guess. has the intuitive shape you
+                    think it has
+        """
+        if np.prod(self.substrate.computational_resolution) == in_array.size:
+            return in_array.reshape(-1)
+        raise IncompatibleResolutionError()
+
+    def shape_minimisation_output(self, in_array):
+        """
+        For minimisation of smart systems, the output array (e.g.
+        displacement) may have a non-intuitive shape and size (The problem size
+        may be decreased, as for free, non-periodic systems, or increased as
+        with augmented-lagrangian-type issues). Use  this function
+        to get the array shape you expect to have
+
+        Arguments:
+        in_array -- array with the initial guess. has the intuitive shape you
+                    think it has
+        """
+        if np.prod(self.substrate.computational_resolution) == in_array.size:
+            return in_array.reshape(self.substrate.computational_resolution)
+        raise IncompatibleResolutionError()
 
 class SmoothContactSystem(SystemBase):
     """
@@ -119,9 +176,11 @@ class SmoothContactSystem(SystemBase):
     @staticmethod
     def handles(substrate_type, interaction_type, surface_type):
         is_ok = True
-        # any type of substrate formulation should do
+        # any periodic type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
                             SolidMechanics.Substrate)
+        if is_ok:
+            is_ok &= substrate_type.is_periodic()
         # only soft interactions allowed
         is_ok &= issubclass(interaction_type,
                             ContactMechanics.SoftWall)
@@ -220,16 +279,6 @@ class SmoothContactSystem(SystemBase):
         return fun
 
 
-class IncompatibleFormulationError(Exception):
-    # pylint: disable=missing-docstring
-    pass
-
-
-class IncompatibleResolutionError(Exception):
-    # pylint: disable=missing-docstring
-    pass
-
-
 def SystemFactory(substrate, interaction, surface):
     """
     Factory function for contact systems. Checks the compatibility between the
@@ -245,7 +294,13 @@ def SystemFactory(substrate, interaction, surface):
     # pylint: disable=invalid-name
     # pylint: disable=no-member
     args = substrate, interaction, surface
-    for cls in SystemBase.__subclasses__():
+    subclasses = list()
+    def check_subclasses(base_class, container):
+        for cls in base_class.__subclasses__():
+            check_subclasses(cls, container)
+            container.append(cls)
+    check_subclasses(SystemBase, subclasses)
+    for cls in subclasses:
         if cls.handles(*(type(arg) for arg in args)):
             return cls(*args)
     raise IncompatibleFormulationError(

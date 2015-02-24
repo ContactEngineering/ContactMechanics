@@ -124,6 +124,7 @@ class LJ93smooth(Lj93.LJ93):
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
 
         sl_inner = r < self.r_t
+        sl_rest = np.logical_not(sl_inner)
         # little hack to work around numpy bug
         if np.array_equal(sl_inner, np.array([True])):
             V, dV, ddV = self.naive_V(r, pot, forces, curb)
@@ -132,7 +133,7 @@ class LJ93smooth(Lj93.LJ93):
                 r[sl_inner], pot, forces, curb)
         V[sl_inner] -= self.offset
 
-        sl_outer = r < self.r_c * np.logical_xor(True, sl_inner)
+        sl_outer = np.logical_and(r < self.r_c, sl_rest)
         # little hack to work around numpy bug
         if np.array_equal(sl_outer, np.array([True])):
             V, dV, ddV = self.spline_pot(r, pot, forces, curb)

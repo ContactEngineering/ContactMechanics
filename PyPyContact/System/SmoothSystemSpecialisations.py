@@ -32,8 +32,9 @@ Boston, MA 02111-1307, USA.
 from collections import namedtuple
 import numpy as np
 
-from .System import SmoothContactSystem
+from .Systems import SmoothContactSystem
 from ..Surface import NumpySurface
+from .. import ContactMechanics, SolidMechanics, Surface
 
 
 # convenient container for storing correspondences betwees small and large
@@ -53,7 +54,16 @@ class FastSmoothContactSystem(SmoothContactSystem):
     the small system significantly increases optimisation speed, this tradeoff
     seems to be well worth the trouble.
     """
-    def __init__(self, substrate, interaction, surface, margin=4):
+    # declare that this class is only a proxy
+    _proxyclass = True
+    class FreeBoundaryError(Exception):
+        """
+        called when the supplied system cannot be computed with the current
+        constraints
+        """
+        pass
+
+    def __init__(self, substrate, interaction, surface, margin=1):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -64,8 +74,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
         margin      -- (default 4) safety margin (in pixels) around the initial
                        contact area bounding box
         """
-        super().__init__(substrate, interaction. surface)
-        # create empty encapsulated syste
+        super().__init__(substrate, interaction, surface)
+        # create empty encapsulated system
         self.babushka = None
         self.margin = margin
         self.bounds = None
@@ -80,7 +90,45 @@ class FastSmoothContactSystem(SmoothContactSystem):
         self.energy = None
         self.force = None
 
-    def objective(self, offset, disp0, gradient=False):
+    def shape_minimisation_input(self, in_array):
+        """
+        For minimisation of smart systems, the initial guess array (e.g.
+        displacement) may have a non-intuitive shape and size (The problem size
+        may be decreased, as for free, non-periodic systems, or increased as
+        with augmented-lagrangian-type issues). Use the output of this function
+        as argument x0 for scipy minimisation functions. Also, if you initial
+        guess has a shape that makes no sense, this will tell you before you
+        get caught in debugging scipy-code
+
+        Arguments:
+        in_array -- array with the initial guess. has the intuitive shape you
+                    think it has
+        """
+        if np.prod(self.substrate.computational_resolution) == in_array.size:
+            return self._get_babushka_array(in_array).reshape(-1)
+        elif (np.prod(self.babushka.substrate.computational_resolution) ==
+              in_array.size):
+            return in_array.reshape(-1)
+        raise IncompatibleResolutionError()
+
+    @staticmethod
+    def handles(substrate_type, interaction_type, surface_type):
+        is_ok = True
+        # any periodic type of substrate formulation should do
+        is_ok &= issubclass(substrate_type,
+                            SolidMechanics.Substrate)
+        if is_ok:
+            is_ok &= ~substrate_type.is_periodic()
+        # only soft interactions allowed
+        is_ok &= issubclass(interaction_type,
+                            ContactMechanics.SoftWall)
+
+        # any surface should do
+        is_ok &= issubclass(surface_type,
+                            Surface.Surface)
+        return is_ok
+
+    def objective(self, offset, disp0=None, gradient=False):
         """
         See super().objective for general description this method's purpose.
         Difference for this class wrt 'dumb' systems:
@@ -90,32 +138,70 @@ class FastSmoothContactSystem(SmoothContactSystem):
         Keyword Arguments:
         offset   -- determines indentation depth
         gradient -- (default False) whether the gradient is supposed to be used
-        disp0    -- initial guess for displacement field.
+        disp0    -- (default np.zeros) initial guess for displacement field.
+                    if not chosen appropriately, results may be unreliable
         """
         # pylint: disable=arguments-differ
         # this class needs to remember its offset since the evaluate method
         # does not accept it as argument anymore
         self.offset = offset
-
+        if disp0 is None:
+            disp0 = np.zeros(self.substrate.computational_resolution)
         gap = self.compute_gap(disp0, offset)
         contact = np.argwhere(gap < self.interaction.r_c)
-        self.__babushka_offset = tuple(bnd - self.margin for bnd in
-                                       np.min(contact, 0))
-        sm_res = tuple(bnd - self.margin - self.__babushka_offset[i] for i,
-                       bnd in enumerate(np.max(contact, 0)))
+        # Lower bounds by dimension of the indices of contacting cells
+        bnd_lo = np.min(contact, 0)
+        # Upper bounds by dimension of the indices of contacting cells
+        bnd_up = np.max(contact, 0)
+        print(bnd_up)
+
+        self.__babushka_offset = tuple(bnd - self.margin for bnd in bnd_lo)
+        sm_res = tuple((hi-lo + 2*self.margin for (hi, lo) in
+                        zip(bnd_up, bnd_lo)))
+        print(sm_res)
+        if any(bnd < 0 for bnd in self.__babushka_offset):
+            raise self.FreeBoundaryError(
+                ("With the current margin of {}, the system overlaps the lower"
+                 " bounds by {}").format(self.margin, self.__babushka_offset))
+        if any(res + self.__babushka_offset[i] > self.resolution[i] for i, res
+               in enumerate(sm_res)):
+            raise self.FreeBoundaryError(
+                ("With the current margin of {}, the system overlaps the upper"
+                 " bounds by {}").format(
+                     self.margin,
+                     tuple(self.__babushka_offset[i] + res - self.resolution[i]
+                           for i, res in enumerate(sm_res))))
 
         self.compute_babushka_bounds(sm_res)
-        sm_disp0 = self._get_babushka_array(self.surface.profile())
+        sm_surf = self._get_babushka_array(self.surface.profile(),
+                                            np.zeros(sm_res))
+        cntct = gap < self.interaction.r_c
+        sm_cntct = self._get_babushka_array(cntct,
+                                            np.zeros(sm_res))
+        #####import matplotlib.pyplot as plt
+        #####plt.figure()
+        #####plt.spy(cntct)
+        #####plt.figure()
+        #####plt.spy(sm_cntct)
+        #####plt.show()
+
+
 
         sm_substrate = self.substrate.spawn_child(sm_res)
-        sm_surface = NumpySurface(sm_disp0)
+        sm_surface = NumpySurface(sm_surf)
         self.babushka = SmoothContactSystem(
             sm_substrate, self.interaction, sm_surface)
 
-        return self.babushka.objective(offset, gradient), sm_disp0.copy()
+        return self.babushka.objective(offset, gradient)
 
-    def evaluate(self):
-        # pylint: disable=arguments-differ
+    def callback(self, force=False):
+        return self.babushka.callback(force)
+
+    def evaluate(self, disp, offset, pot=True, forces=False):
+        raise Exception(
+            "This proxy-class cannot be evaluated. If you do not understand this, use the base-class instead")
+
+    def deproxyfied(self):
         self.substrate.force = self._get_full_array(
             self.babushka.substrate.force)
         self.interaction.force = self._get_full_array(
@@ -148,13 +234,13 @@ class FastSmoothContactSystem(SmoothContactSystem):
             lg_res = self.resolution
             for i in (0, 1):
                 for j in (0, 1):
-                    sm_slice = tuple(slice(i*sm_res[0], (i+1)*sm_res[0]),
-                                     slice(j*sm_res[1], (j+1)*sm_res[1]))
-                    lg_slice = tuple(
-                        slice(i*lg_res[0]+self.offset[0],
-                              (i+1)*lg_res[0]+self.offset[0]),
-                        slice(j*lg_res[1]+self.offset[1],
-                              (j+1)*lg_res[1]+self.offset[1]))
+                    sm_slice = tuple((slice(i*sm_res[0], (i+1)*sm_res[0]),
+                                      slice(j*sm_res[1], (j+1)*sm_res[1])))
+                    lg_slice = tuple((
+                        slice(i*lg_res[0]+self.__babushka_offset[0],
+                              i*lg_res[0]+sm_res[0]+self.__babushka_offset[0]),
+                        slice(j*lg_res[1]+self.__babushka_offset[1],
+                              j*lg_res[1]+sm_res[1]+self.__babushka_offset[1])))
                     yield BndSet(large=lg_slice, small=sm_slice)
         self.bounds = tuple((bnd for bnd in boundary_generator()))
 

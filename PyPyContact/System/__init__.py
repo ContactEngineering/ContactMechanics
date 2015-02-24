@@ -29,6 +29,6 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-from .System import SystemFactory, IncompatibleFormulationError
-from .System import IncompatibleResolutionError
-from .SmoothSystemSpecialisations import FastSmoothContactSystem
+from .Systems import SystemFactory, IncompatibleFormulationError
+from .Systems import IncompatibleResolutionError
+

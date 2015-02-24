@@ -49,6 +49,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     # pylint: disable=too-many-instance-attributes
 
     name = "periodic_fft_elastic_halfspace"
+    _periodic = True
 
     def __init__(self, resolution, young, size=2*np.pi, superclass=True):
         """
@@ -241,6 +242,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     Academic Press, New York, 1969, pp. 136-211.
     """
     name = "free_fft_elastic_halfspace"
+    _periodic = False
 
     def __init__(self, resolution, young, size=2*np.pi):
         """

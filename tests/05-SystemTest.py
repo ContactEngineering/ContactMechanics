@@ -1,33 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-#
-# @file   04-SystemTest.py
-#
-# @author Till Junge <till.junge@kit.edu>
-#
-# @date   11 Feb 2015
-#
-# @brief  Tests the creation of tribosystems
-#
-# @section LICENCE
-#
-#  Copyright (C) 2015 Till Junge
-#
-# PyPyContact is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3, or (at
-# your option) any later version.
-#
-# PyPyContact is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNU Emacs; see the file COPYING. If not, write to the
-# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-# Boston, MA 02111-1307, USA.
-#
+"""
+@file   04-SystemTest.py
+
+@author Till Junge <till.junge@kit.edu>
+
+@date   11 Feb 2015
+
+@brief  Tests the creation of tribosystems
+
+@section LICENCE
+
+ Copyright (C) 2015 Till Junge
+
+PyPyContact is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3, or (at
+your option) any later version.
+
+PyPyContact is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Emacs; see the file COPYING. If not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
+
+
+You should have received a copy of the GNU General Public License
+along with GNU Emacs; see the file COPYING. If not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
+"""
 
 import unittest
 from numpy.random import rand, random
@@ -37,15 +43,12 @@ from scipy.optimize import minimize
 from scipy.fftpack import fftn, ifftn
 import time
 
-from pylint import epylint
-
 import os
 from netCDF4 import Dataset
 
-import PyPyContact
-
 from PyPyContact.System import SystemFactory, IncompatibleFormulationError
 from PyPyContact.System import IncompatibleResolutionError
+from PyPyContact.System.Systems import SmoothContactSystem
 import PyPyContact.SolidMechanics as Solid
 import PyPyContact.ContactMechanics as Contact
 import PyPyContact.Surface as Surface
@@ -70,11 +73,6 @@ class SystemTest(unittest.TestCase):
 
         self.sphere = Surface.Sphere(self.radius, self.res, self.size)
 
-    def test_conformity(self):
-        options = ' --rcfile=tests/pylint.rc --disable=locally-disabled'
-        epylint.py_run(PyPyContact.SolidMechanics.FFTElasticHalfSpace.__file__ +
-                        options)
-
     def test_RejectInconsistentInputTypes(self):
         with self.assertRaises(IncompatibleFormulationError):
             SystemFactory(12, 13, 24)
@@ -86,7 +84,7 @@ class SystemTest(unittest.TestCase):
             SystemFactory(self.substrate, self.smooth, incompat_sphere)
 
     def test_SmoothContact(self):
-        S = SystemFactory(self.substrate, self.smooth, self.sphere)
+        S = SmoothContactSystem(self.substrate, self.smooth, self.sphere)
         offset = self.sig
         disp = np.zeros(self.res)
         pot, forces = S.evaluate(disp, offset, forces = True)
@@ -97,7 +95,7 @@ class SystemTest(unittest.TestCase):
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
-        S = SystemFactory(substrate, self.smooth, sphere)
+        S = SmoothContactSystem(substrate, self.smooth, sphere)
         disp = random(res)*self.sig/10
         disp -= disp.mean()
         offset = self.sig
@@ -199,7 +197,7 @@ class SystemTest(unittest.TestCase):
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
-        S = SystemFactory(substrate, self.smooth, sphere)
+        S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
         disp = np.zeros(res)
 
@@ -259,7 +257,11 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Surface.Sphere(self.radius, res, size)
-        S = SystemFactory(substrate, self.smooth, sphere)
+        # here, i deliberately avoid using the SystemFactory, because I want to
+        # explicitly test the dumb (yet safer) way of computing problems with a
+        # free, non-periodic  boundary. A user who invokes a system constructor
+        # directliy like this is almost certainly mistaken
+        S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
         disp = np.zeros(substrate.computational_resolution)
 
@@ -329,7 +331,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ## ref_h -= ref_h.max()
         ## surface = Surface.NumpySurface(ref_h)
         ## 4. Set up system:
-        S = SystemFactory(substrate, potential, surface)
+        S = SmoothContactSystem(substrate, potential, surface)
 
         ref_profile = np.array(
             ref_data.variables['h']+ref_data.variables['avgh'][0])[:32, :32]
@@ -411,7 +413,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
             surface = Surface.Sphere(radius, res, size)
 
             ## 4. Set up system:
-            S = SystemFactory(substrate, potential, surface)
+            S = SmoothContactSystem(substrate, potential, surface)
             # pycontact does not save the offset in the nc, so this one has to be
             # taken on faith
             offset = .8*potential.r_c

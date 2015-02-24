@@ -33,16 +33,26 @@ Boston, MA 02111-1307, USA.
 class Substrate(object):
     """ Generic baseclass from which all substate classes derive
     """
+    _periodic = None
     class Error(Exception):
         # pylint: disable=missing-docstring
         pass
     name = 'generic_halfspace'
 
     def spawn_child(self, dummy):
-        """ does nothing for periodic substrates.
+        """ does nothing for most substrates.
         """
         raise self.Error(
             "Only substrates with free boundaries can do this")
+
+    @classmethod
+    def is_periodic(cls):
+        "non-periodic substrates can use some optimisations"
+        if cls._periodic is not None:
+            return cls._periodic
+        raise cls.Error(
+            ("periodicity of Substrate type '{}' ('{}') is not defined"
+             "").format(cls.name, cls.__name__))
 
 
 class ElasticSubstrate(Substrate):

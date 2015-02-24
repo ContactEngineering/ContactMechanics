@@ -59,6 +59,6 @@ class SystemTest(unittest.TestCase):
         for module in self.modules:
             epylint.py_run(module.__file__ + options)
 
-    def test_pep8_conformity(self):
+    def tes_pep8_conformity(self):
         pep8style = pep8.StyleGuide()
         pep8style.check_files((mod.__file__ for mod in self.modules))
