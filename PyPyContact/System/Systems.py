@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.
 """
 
 import numpy as np
+import scipy
 
 from .. import ContactMechanics, SolidMechanics, Surface
 from ..Tools import compare_containers
@@ -61,6 +62,7 @@ class SystemBase(object):
         self.surface = surface
         self.dim = None
         self.gap = None
+        self.disp = None
     _proxyclass = False
 
     @classmethod
@@ -143,6 +145,45 @@ class SystemBase(object):
         if np.prod(self.substrate.computational_resolution) == in_array.size:
             return in_array.reshape(self.substrate.computational_resolution)
         raise IncompatibleResolutionError()
+
+    def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
+                       options=None, gradient=True, tol=None,
+                       callback=None):
+        """
+        Convenience function. Eliminates boilerplate code for most minimisation
+        problems by encapsulating the use of scipy.minimize for common default
+        options. In the case of smart proxy systems, this may also encapsulate
+        things like dynamics computation of safety margins, extrapolation of
+        results onto the proxied system, etc.
+
+        Parameters:
+        offset   -- determines indentation depth
+        disp0    -- (default zero) initial guess for displacement field. If not
+                    chosen appropriately, results may be unreliable.
+        method   -- (defaults to L-BFGS-B, see scipy documentation). Be sure to
+                    choose method that can handle high-dimensional parameter
+                    spaces.
+        options  -- (default None) options to be passed to the minimizer method
+        gradient -- (default True) whether to use the gradient or not
+        tol      -- (default None) tolerance for termination. For detailed
+                    control, use solver-specific options.
+        callback -- (default None) callback function to be at each iteration as
+                    callback(disp_k) where disp_k is the current displacement
+                    vector. Instead of a callable, it can be set to 'True', in
+                    which case the system's default callback function is
+                    called.
+        """
+        fun = self.objective(offset, gradient=gradient)
+        if disp0 is None:
+            disp0 = np.zeros(self.substrate.computational_resolution)
+        disp0 = self.shape_minimisation_input(disp0)
+        if callback is True:
+            callback = self.callback(force=gradient)
+        result = scipy.optimize.minimize(fun, x0=disp0, method=method,
+                                         jac=gradient, tol=tol,
+                                         callback=callback, options=options)
+        self.disp = self.shape_minimisation_output(result.x)
+        return result
 
 class SmoothContactSystem(SystemBase):
     """

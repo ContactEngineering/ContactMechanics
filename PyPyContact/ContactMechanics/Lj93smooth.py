@@ -128,6 +128,8 @@ class LJ93smooth(Lj93.LJ93):
         # little hack to work around numpy bug
         if np.array_equal(sl_inner, np.array([True])):
             V, dV, ddV = self.naive_V(r, pot, forces, curb)
+            V -= self.offset
+            return V, dV, ddV
         else:
             V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_V(
                 r[sl_inner], pot, forces, curb)

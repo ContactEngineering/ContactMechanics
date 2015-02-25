@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.
 
 import numpy as np
 
-from . import Lj93smooth
+from .Lj93smooth import LJ93smooth
 
 
 class LJ93smoothMin(LJ93smooth):
@@ -45,7 +45,7 @@ class LJ93smoothMin(LJ93smooth):
     """
     name = 'lj9-3smooth-min'
 
-    def __init__(self, epsilon, sigma, gamma=None, r_ti=None, r_to=None):
+    def __init__(self, epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
@@ -54,16 +54,16 @@ class LJ93smoothMin(LJ93smooth):
         gamma   -- (default ε) Work of adhesion, defaults to ε
         r_ti    -- (default r_min) transition point between linear function and
                    lj, defaults to r_min
-        r_to    -- (default r_min) transition point between lj and spline,
+        r_t_ls  -- (default r_min) transition point between lj and spline,
                     defaults to r_min
         """
-        super().__init__(epsilon, sigma, gamma, r_to)
+        super().__init__(epsilon, sigma, gamma, r_t_ls)
         self.r_ti = r_ti if r_ti is not None else self.r_min/2
         self.lin_part = self.compute_linear_part()
 
     def compute_linear_part(self):
-        f_val, f_prime = super().evaluate(self.r_ti, True, True)
-        return np.poly1d((f_prime, f_val - f_prime*self.r_ti))
+        f_val, f_prime, dummy = super().evaluate(self.r_ti, True, True)
+        return np.poly1d((float(-f_prime), f_val + f_prime*self.r_ti))
 
     def __repr__(self):
         has_gamma = -self.gamma != self.naive_min
@@ -98,7 +98,7 @@ class LJ93smoothMin(LJ93smooth):
         sl_rest = np.logical_not(sl_core)
         # little hack to work around numpy bug
         if np.array_equal(sl_core, np.array([True])):
-            V, dV, ddV = self.lin_pot(r, pot, forces, curb)
+            return self.lin_pot(r, pot, forces, curb)
         else:
             V[sl_core], dV[sl_core], ddV[sl_core] = self.lin_pot(
                 r[sl_core], pot, forces, curb)
@@ -108,6 +108,8 @@ class LJ93smoothMin(LJ93smooth):
         # little hack to work around numpy bug
         if np.array_equal(sl_inner, np.array([True])):
             V, dV, ddV = self.naive_V(r, pot, forces, curb)
+            V -= self.offset
+            return V, dV, ddV
         else:
             V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_V(
                 r[sl_inner], pot, forces, curb)

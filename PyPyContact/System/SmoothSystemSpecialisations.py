@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.
 
 from collections import namedtuple
 import numpy as np
+import scipy
 
 from .Systems import SmoothContactSystem
 from ..Surface import NumpySurface
@@ -52,7 +53,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
     compute displacements everywhere the large system exists. Therefore, for
     full-domain output, an extra evaluation step must be taken. But since using
     the small system significantly increases optimisation speed, this tradeoff
-    seems to be well worth the trouble.
+    seems to be wyell worth the trouble.
     """
     # declare that this class is only a proxy
     _proxyclass = True
@@ -61,9 +62,11 @@ class FastSmoothContactSystem(SmoothContactSystem):
         called when the supplied system cannot be computed with the current
         constraints
         """
-        pass
+        def __init__(self, message, disp):
+            super().__init__(message)
+            self.disp = disp
 
-    def __init__(self, substrate, interaction, surface, margin=1):
+    def __init__(self, substrate, interaction, surface, margin=4):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -89,6 +92,10 @@ class FastSmoothContactSystem(SmoothContactSystem):
         self.offset = None
         self.energy = None
         self.force = None
+        if self.dim == 1:
+            raise Exception(
+                ("Class '{}' is not fully implemented for 1D. Please help!"
+                 "").format(type(self).__name__))
 
     def shape_minimisation_input(self, in_array):
         """
@@ -110,6 +117,23 @@ class FastSmoothContactSystem(SmoothContactSystem):
               in_array.size):
             return in_array.reshape(-1)
         raise IncompatibleResolutionError()
+
+    def check_margins(self):
+        """
+        Checks whether the safety margin is sufficient (i.e. the outer ring of
+        the ofrce array equals zero
+        """
+        is_ok = True
+        if self.dim == 2:
+            is_ok &= (self.interaction.force[:,  0] == 0.).all()
+            is_ok &= (self.interaction.force[:, -1] == 0.).all()
+            is_ok &= (self.interaction.force[ 0, :] == 0.).all()
+            is_ok &= (self.interaction.force[-1, :] == 0.).all()
+        if not is_ok:
+            self.deproxyfied()
+            raise self.FreeBoundaryError(
+                ("Small system probably too small, increase the margins and "
+                 "reevaluate self.objective(...)."), self.disp)
 
     @staticmethod
     def handles(substrate_type, interaction_type, surface_type):
@@ -138,8 +162,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
         Keyword Arguments:
         offset   -- determines indentation depth
         gradient -- (default False) whether the gradient is supposed to be used
-        disp0    -- (default np.zeros) initial guess for displacement field.
-                    if not chosen appropriately, results may be unreliable
+        disp0    -- (default zero) initial guess for displacement field. If not
+                    chosen appropriately, results may be unreliable.
         """
         # pylint: disable=arguments-differ
         # this class needs to remember its offset since the evaluate method
@@ -178,14 +202,6 @@ class FastSmoothContactSystem(SmoothContactSystem):
         cntct = gap < self.interaction.r_c
         sm_cntct = self._get_babushka_array(cntct,
                                             np.zeros(sm_res))
-        #####import matplotlib.pyplot as plt
-        #####plt.figure()
-        #####plt.spy(cntct)
-        #####plt.figure()
-        #####plt.spy(sm_cntct)
-        #####plt.show()
-
-
 
         sm_substrate = self.substrate.spawn_child(sm_res)
         sm_surface = NumpySurface(sm_surf)
@@ -193,6 +209,9 @@ class FastSmoothContactSystem(SmoothContactSystem):
             sm_substrate, self.interaction, sm_surface)
 
         return self.babushka.objective(offset, gradient)
+
+    def compute_normal_force(self):
+        return self.babushka.interaction.force.sum()
 
     def callback(self, force=False):
         return self.babushka.callback(force)
@@ -214,8 +233,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
         else:
             self.force[:self.resolution[0], :self.resolution[1]] -= \
               self.interaction.force
-        disp = self.substrate.evaluate_disp(self.substrate.force)
-        return self.energy, self.force, disp
+        self.disp = self.substrate.evaluate_disp(self.substrate.force)
+        return self.energy, self.force, self.disp
 
     def compute_babushka_bounds(self, babushka_resolution):
         """
@@ -308,3 +327,57 @@ class FastSmoothContactSystem(SmoothContactSystem):
             return normal_resolution()
         else:
             return computational_resolution()
+
+    def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
+                       options=None, gradient=True, tol=None,
+                       callback=None):
+        """
+        Convenience function. Eliminates boilerplate code for most minimisation
+        problems by encapsulating the use of scipy.minimize for common default
+        options. In the case of smart proxy systems, this may also encapsulate
+        things like dynamics computation of safety margins, extrapolation of
+        results onto the proxied system, etc.
+
+        Parameters:
+        offset   -- determines indentation depth
+        disp0    -- (default zero) initial guess for displacement field. If not
+                    chosen appropriately, results may be unreliable.
+        method   -- (defaults to L-BFGS-B, see scipy documentation). Be sure to
+                    choose method that can handle high-dimensional parameter
+                    spaces.
+        options  -- (default None) options to be passed to the minimizer method
+        gradient -- (default True) whether to use the gradient or not
+        tol      -- (default None) tolerance for termination. For detailed
+                    control, use solver-specific options.
+        callback -- (default None) callback function to be at each iteration as
+                    callback(disp_k) where disp_k is the current displacement
+                    vector. Instead of a callable, it can be set to 'True', in
+                    which case the system's default callback function is
+                    called.
+        """
+        fun = self.objective(offset, disp0, gradient=gradient)
+        if disp0 is None:
+            disp0 = np.zeros(self.substrate.computational_resolution)
+        disp0 = self.shape_minimisation_input(disp0)
+        if callback is True:
+            use_callback = self.callback(force=gradient)
+        elif callback is None:
+            def use_callback(disp_k):
+                pass
+        else:
+            use_callback = callback
+        def compound_callback(disp_k):
+            self.check_margins()
+            return use_callback(disp_k)
+        try:
+            result = scipy.optimize.minimize(
+                fun, x0=disp0, method=method, jac=gradient, tol=tol,
+                callback=compound_callback,
+                options=options)
+        except self.FreeBoundaryError as err:
+            print("Caught FreeBoundaryError. Reevaluating margins")
+            self.check_margins()
+            return self.minimize_proxy(offset, err.disp, method, options,
+                                       gradient, tol, callback)
+        self.deproxyfied()
+        return result

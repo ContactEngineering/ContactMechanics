@@ -34,6 +34,7 @@ import numpy as np
 
 from PyPyContact.ContactMechanics import LJ93
 from PyPyContact.ContactMechanics import LJ93smooth
+from PyPyContact.ContactMechanics import LJ93smoothMin
 
 import PyPyContact.Tools as Tools
 
@@ -91,6 +92,47 @@ class LJTest(unittest.TestCase):
             ("Error = {}, (tol = {})\n"
              "   err_V = {}, err_dV = {}, err_ddV = {}").format(
             error, self.tol, err_V, err_dV, err_ddV))
+
+    def test_LJsmoothMinReference(self):
+        """
+        compare lj93smoothmin to reference implementation (where it applies).
+        """
+        smooth_pot = LJ93smoothMin(self.eps, self.sig, self.gam)
+        rc1 = smooth_pot.r_t
+        rc2 = smooth_pot.r_c
+        V, dV, ddV = smooth_pot.evaluate(
+                self.r, pot=True, forces=True, curb=True)
+        V_ref   = LJs_ref_V  (self.r, self.eps, self.sig, rc1, rc2)
+        dV_ref  = -LJs_ref_dV (self.r, self.eps, self.sig, rc1, rc2)
+        ddV_ref = LJs_ref_ddV(self.r, self.eps, self.sig, rc1, rc2)
+
+        err_V   = ((  V-  V_ref)**2).sum()
+        err_dV  = (( dV- dV_ref)**2).sum()
+        err_ddV = ((ddV-ddV_ref)**2).sum()
+        error   = err_V + err_dV + err_ddV
+        self.assertTrue(
+            error < self.tol,
+            ("Error = {}, (tol = {})\n"
+             "   err_V = {}, err_dV = {}, err_ddV = {}").format(
+            error, self.tol, err_V, err_dV, err_ddV))
+
+#     def test_triplePlot(self):
+#         lj_pot = LJ93(self.eps, self.sig, self.rcut)
+#         gam = float(-lj_pot.evaluate(lj_pot.r_min)[0])
+#         smooth_pot = LJ93smooth(self.eps, self.sig, gam)
+#         min_pot = LJ93smoothMin(self.eps, self.sig, gam, lj_pot.r_min)
+#         plots = (("LJ", lj_pot),
+#                  ("smooth", smooth_pot),
+#                  ("min", min_pot))
+#         import matplotlib.pyplot as plt
+#         plt.figure()
+#         r = self.r
+#         for name, pot in plots:
+#             V, dV, ddV = pot.evaluate(r)
+#             plt.plot(r, V, label=name)
+#         plt.legend(loc='best')
+#         plt.grid(True)
+#         plt.show()
 
     def test_LJsmoothSanity(self):
         """ make sure LJsmooth rejects common bad input

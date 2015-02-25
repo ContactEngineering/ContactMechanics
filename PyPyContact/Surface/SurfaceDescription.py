@@ -213,7 +213,20 @@ class Sphere(NumpySurface):
     """
     name = 'sphere'
 
-    def __init__(self, radius, resolution, size, centre=None):
+    def __init__(self, radius, resolution, size, centre=None, standoff=0):
+        """
+        Simple shere geometry.
+        Parameters:
+        radius     -- self-explanatory
+        resolution -- self-explanatory
+        size       -- self-explanatory
+        centre     -- specifies the coordinates (in lenght units, not pixels).
+                      by default, the sphere is centred in the surface
+        standoff   -- when using interaction forces with ranges of the order
+                      the radius, you might want to set the surface outside of
+                      the spere to far away, maybe even pay the price of inf,
+                      if your interaction has no cutoff
+        """
         # pylint: disable=invalid-name
         if not hasattr(resolution, "__iter__"):
             resolution = (resolution, )
@@ -235,8 +248,10 @@ class Sphere(NumpySurface):
                    size[1] / resolution[1] - centre[1])**2
             r2 = rx2 + ry2
         radius2 = radius**2  # avoid nans for small radiio
-        r2[r2 > radius2] = radius2
+        outside = r2 > radius2
+        r2[outside] = radius2
         h = np.sqrt(radius2 - r2)-radius
+        h[outside] -= standoff
         super().__init__(h)
         self._size = size
         self._centre = centre

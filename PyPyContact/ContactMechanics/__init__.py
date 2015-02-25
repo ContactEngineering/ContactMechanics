@@ -32,6 +32,7 @@ from .Interactions import Interaction, HardWall, SoftWall
 from .Potentials import Potential
 from .Lj93 import LJ93
 from .Lj93smooth import LJ93smooth
+from .Lj93smoothMin import LJ93smoothMin
 
 __all__ = ["Interaction", "HardWall", "SoftWall", "Potential", "LJ93",
            "LJ93smooth"]

@@ -34,6 +34,7 @@ import unittest
 import numpy as np
 from numpy.random import rand, random
 from scipy.optimize import minimize
+import time
 
 from PyPyContact.System.Systems import SmoothContactSystem
 from PyPyContact.System.SmoothSystemSpecialisations import FastSmoothContactSystem
@@ -46,7 +47,7 @@ import PyPyContact.Tools as Tools
 
 class FastSystemTest(unittest.TestCase):
     def setUp(self):
-        self.size = (7.5, 7.5)#(7.5+5*rand(), 7.5+5*rand())
+        self.size = (15, 15)#(7.5+5*rand(), 7.5+5*rand())
         self.radius = 4
         base_res = 32
         self.res = (base_res, base_res)
@@ -56,12 +57,14 @@ class FastSystemTest(unittest.TestCase):
             self.res, self.young, self.size)
 
         self.eps = 1# +np.random.rand()
-        self.sig = 3# +np.random.rand()
+        self.sig = 2# +np.random.rand()
         self.gam = 5# +np.random.rand()
         self.rcut = 2.5*self.sig# +np.random.rand()
         self.interaction = Contact.LJ93smooth(self.eps, self.sig, self.gam)
+        self.min_pot = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.surface = Surface.Sphere(self.radius, self.res, self.size)
+        self.surface = Surface.Sphere(self.radius, self.res, self.size,
+                                      standoff=float('inf'))
 
     def test_FastSmoothContactSystem(self):
         S = FastSmoothContactSystem(self.substrate,
@@ -87,7 +90,7 @@ class FastSystemTest(unittest.TestCase):
 
 
     def test_equivalence(self):
-        tol = 1e-9
+        tol = 1e-6
         # here, i deliberately avoid using the SystemFactory, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a
         # free, non-periodic  boundary. A user who invokes a system constructor
@@ -96,63 +99,87 @@ class FastSystemTest(unittest.TestCase):
         def eval(system):
             print("running for system {}".format(system.__name__))
             S = system(self.substrate,
-                       self.interaction,
+                       self.min_pot,
                        self.surface)
-            offset = .95 * self.interaction.r_c
+            offset = .8 * S.interaction.r_c
             fun = S.objective(offset, gradient=True)
 
-            options = dict(ftol = 1e-12, gtol = 1e-10)
+            options = dict(ftol = 1e-18, gtol = 1e-10)
             disp = S.shape_minimisation_input(
                 np.zeros(self.substrate.computational_resolution))
             bla = fun(disp)
             print(bla)
             result = minimize(fun, disp, jac=True,
-                              callback=S.callback(force=True),
                               method = 'L-BFGS-B', options=options)
-            print(result.x)
             if system.is_proxy():
                 dummy, force, disp = S.deproxyfied()
-                print(result.x)
-                return S.interaction.force, disp
-            return S.interaction.force, S.shape_minimisation_output(result.x)
 
-        (force_slow, disp_slow), (force_fast, disp_fast) = tuple((eval(system) for system in systems))
+            else:
+                disp = S.shape_minimisation_output(result.x)
+            gap = S.compute_gap(disp, offset)
+            gap[np.isinf(gap)] = self.min_pot.r_c
+
+            print('r_min = {}'.format(self.min_pot.r_min))
+            return S.interaction.force, disp, gap, S.compute_normal_force()
+
+        def timer(fun, *args):
+            start = time.perf_counter()
+            res = fun(*args)
+            delay = time.perf_counter()-start
+            return res, delay
+
+        (((force_slow, disp_slow, gap_slow, N_slow), slow_time),
+         ((force_fast, disp_fast, gap_fast, N_fast), fast_time)) = tuple(
+             (timer(eval, system) for system in systems))
         error = Tools.mean_err(disp_slow, disp_fast)
-        import matplotlib.pyplot as plt
-        slow = True
-        fast = False
-        if slow:
-            plt.figure()
-            plt.pcolor(disp_slow)
-            plt.colorbar()
-            plt.title("disp_slow")
-        if fast:
-            plt.figure()
-            plt.pcolor(disp_fast)
-            plt.colorbar()
-            plt.title("disp_fast")
-        if slow and fast:
-            plt.figure()
-            plt.pcolor(disp_slow-disp_fast)
-            plt.colorbar()
-            plt.title("disp_diff")
 
-        if slow:
-            plt.figure()
-            plt.pcolor(force_slow)
-            plt.colorbar()
-            plt.title("force_slow")
-        if fast:
-            plt.figure()
-            plt.pcolor(force_fast)
-            plt.colorbar()
-            plt.title("force_fast")
-        if slow and fast:
-            plt.figure()
-            plt.pcolor(force_slow-force_fast)
-            plt.colorbar()
-            plt.title("force_diff")
-        plt.show()
-        self.assertTrue(error < tol*0,
+        print("Normal forces: fast: {}, slow: {}, error: {}".format(
+            N_fast, N_slow, abs(N_slow- N_fast)))
+
+        print("timings: fast: {}, slow: {}, gain: {:2f}%".format(
+            fast_time, slow_time, 100*(1-fast_time/slow_time)))
+        self.assertTrue(error < tol,
                         "error = {} > tol = {}".format(
                             error, tol))
+
+    def test_minimize_proxy(self):
+        tol = 1e-6
+        # here, i deliberately avoid using the SystemFactory, because I want to
+        # explicitly test the dumb (yet safer) way of computing problems with a
+        # free, non-periodic  boundary. A user who invokes a system constructor
+        # directliy like this is almost certainly mistaken
+        systems = (SmoothContactSystem, FastSmoothContactSystem)
+        def eval(system):
+            print("running for system {}".format(system.__name__))
+            S = system(self.substrate,
+                       self.min_pot,
+                       self.surface)
+            offset = .8 * S.interaction.r_c
+            options = dict(ftol = 1e-18, gtol = 1e-10)
+            result = S.minimize_proxy(offset, options=options)
+
+            gap = S.compute_gap(S.disp, offset)
+            gap[np.isinf(gap)] = self.min_pot.r_c
+
+            return S.interaction.force, S.disp, gap, S.compute_normal_force()
+
+        def timer(fun, *args):
+            start = time.perf_counter()
+            res = fun(*args)
+            delay = time.perf_counter()-start
+            return res, delay
+
+        (((force_slow, disp_slow, gap_slow, N_slow), slow_time),
+         ((force_fast, disp_fast, gap_fast, N_fast), fast_time)) = tuple(
+             (timer(eval, system) for system in systems))
+        error = Tools.mean_err(disp_slow, disp_fast)
+
+        print("Normal forces: fast: {}, slow: {}, error: {}".format(
+            N_fast, N_slow, abs(N_slow- N_fast)))
+
+        print("timings: fast: {}, slow: {}, gain: {:2f}%".format(
+            fast_time, slow_time, 100*(1-fast_time/slow_time)))
+        self.assertTrue(error < tol,
+                        "error = {} > tol = {}".format(
+                            error, tol))
+
