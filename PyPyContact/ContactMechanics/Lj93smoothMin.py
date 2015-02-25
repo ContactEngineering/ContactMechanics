@@ -62,6 +62,7 @@ class LJ93smoothMin(LJ93smooth):
         self.lin_part = self.compute_linear_part()
 
     def compute_linear_part(self):
+        " evaluates the two coefficients of the linear part of the potential"
         f_val, f_prime, dummy = super().evaluate(self.r_ti, True, True)
         return np.poly1d((float(-f_prime), f_val + f_prime*self.r_ti))
 
@@ -74,7 +75,6 @@ class LJ93smoothMin(LJ93smooth):
                     ", γ = {.gamma}".format(self) if has_gamma else "",
                     ", r_t = {}".format(
                         self.r_t if has_r_t else "r_min"))
-
 
     def evaluate(self, r, pot=True, forces=False, curb=False):
         """Evaluates the potential and its derivatives
@@ -107,11 +107,11 @@ class LJ93smoothMin(LJ93smooth):
         sl_rest *= np.logical_not(sl_inner)
         # little hack to work around numpy bug
         if np.array_equal(sl_inner, np.array([True])):
-            V, dV, ddV = self.naive_V(r, pot, forces, curb)
+            V, dV, ddV = self.naive_pot(r, pot, forces, curb)
             V -= self.offset
             return V, dV, ddV
         else:
-            V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_V(
+            V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_pot(
                 r[sl_inner], pot, forces, curb)
         V[sl_inner] -= self.offset
 

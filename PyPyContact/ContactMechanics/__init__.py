@@ -33,6 +33,7 @@ from .Potentials import Potential
 from .Lj93 import LJ93
 from .Lj93smooth import LJ93smooth
 from .Lj93smoothMin import LJ93smoothMin
+from .VdW82 import VDW82
 
 __all__ = ["Interaction", "HardWall", "SoftWall", "Potential", "LJ93",
-           "LJ93smooth"]
+           "LJ93smooth", "VDW82"]

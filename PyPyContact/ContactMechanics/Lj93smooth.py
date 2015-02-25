@@ -127,11 +127,11 @@ class LJ93smooth(Lj93.LJ93):
         sl_rest = np.logical_not(sl_inner)
         # little hack to work around numpy bug
         if np.array_equal(sl_inner, np.array([True])):
-            V, dV, ddV = self.naive_V(r, pot, forces, curb)
+            V, dV, ddV = self.naive_pot(r, pot, forces, curb)
             V -= self.offset
             return V, dV, ddV
         else:
-            V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_V(
+            V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_pot(
                 r[sl_inner], pot, forces, curb)
         V[sl_inner] -= self.offset
 
@@ -246,7 +246,7 @@ class LJ93smooth(Lj93.LJ93):
         # pylint: disable=bad-continuation
         # pylint: disable=invalid-name
         # known coeffs
-        dummy, dV, ddV = self.naive_V(self.r_t, pot=False, forces=True,
+        dummy, dV, ddV = self.naive_pot(self.r_t, pot=False, forces=True,
                                       curb=True)
         C1 = self.coeffs[1] = -dV
         C2 = self.coeffs[2] = -ddV
@@ -297,7 +297,7 @@ class LJ93smooth(Lj93.LJ93):
             self.dpoly = np.polyder(self.poly)
             self.ddpoly = np.polyder(self.dpoly)
             self.offset = -(self.spline_pot(self.r_t)[0] -
-                            self.naive_V(self.r_t)[0])
+                            self.naive_pot(self.r_t)[0])
         else:
             err_str = ("Evaluation of spline for potential '{}' failed. Please"
                        " check whether the inputs make sense").format(self)

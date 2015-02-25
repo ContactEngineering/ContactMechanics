@@ -34,6 +34,7 @@ class Substrate(object):
     """ Generic baseclass from which all substate classes derive
     """
     _periodic = None
+
     class Error(Exception):
         # pylint: disable=missing-docstring
         pass

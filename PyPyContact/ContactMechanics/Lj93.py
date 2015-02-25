@@ -29,8 +29,6 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import math
-import numpy as np
 from . import Potential
 
 
@@ -45,18 +43,6 @@ class LJ93(Potential):
 
         V_lc (r) = V_l (r) - V_l (r_c)
     """
-    class SliceableNone(object):
-        """small helper class to remedy numpy's lack of views on
-        index-sliced array views. This construction avoid the computation
-        of all interactions as with np.where, and copies"""
-        # pylint: disable=R0903
-        __slots__ = ()
-
-        def __setitem__(self, index, val):
-            pass
-
-        def __getitem__(self, index):
-            pass
 
     name = "lj9-3"
 
@@ -65,51 +51,16 @@ class LJ93(Potential):
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε
         sigma   -- Lennard-Jones distance parameter σ
-        r_cut   -- (default infinity) optional cutoff radius
+        r_cut   -- (default +∞) optional cutoff radius
         """
-        super().__init__()
         self.eps = epsilon
         self.sig = sigma
-        self.r_c = r_cut
-        if r_cut is not None:
-            self.has_cutoff = not math.isinf(self.r_c)
-        else:
-            self.has_cutoff = False
-        if self.has_cutoff:
-            self.offset = self.naive_V(self.r_c)[0]
-        else:
-            self.offset = 0
+        super().__init__(r_cut)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': ε = {0.eps}, σ = {0.sig}, "
                 "r_c = {1}").format(
                     self, self.r_c if self.has_cutoff else '∞')
-
-    def evaluate(self, r, pot=True, forces=False, curb=False):
-        """Evaluates the potential and its derivatives
-        Keyword Arguments:
-        r      -- array of distances
-        pot    -- (default True) if true, returns potential energy
-        forces -- (default False) if true, returns forces
-        curb   -- (default False) if true, returns second derivative
-        """
-        # pylint: disable=bad-whitespace
-        # pylint: disable=invalid-name
-        r = np.array(r)
-        if r.shape == ():
-            r.shape = (1, )
-        inside_slice = r < self.r_c
-        V = np.zeros_like(r) if pot else self.SliceableNone()
-        dV = np.zeros_like(r) if forces else self.SliceableNone()
-        ddV = np.zeros_like(r) if curb else self.SliceableNone()
-
-        V[inside_slice], dV[inside_slice], ddV[inside_slice] = self.naive_V(
-            r[inside_slice], pot, forces, curb)
-        if V[inside_slice] is not None:
-            V[inside_slice] -= self.offset
-        return (V if pot else None,
-                dV if forces else None,
-                ddV if curb else None)
 
     @property
     def r_min(self):
@@ -122,15 +73,7 @@ class LJ93(Potential):
         """
         return self.sig*(2*5**5)**(1./6)/5.
 
-    @property
-    def naive_min(self):
-        """ convenience function returning the energy minimum of the bare
-           potential
-
-        """
-        return self.naive_V(self.r_min)[0]
-
-    def naive_V(self, r, pot=True, forces=False, curb=False):
+    def naive_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the potential and its derivatives without cutoffs or
             offsets. These have been collected in a single method to reuse the
             computated LJ terms for efficiency

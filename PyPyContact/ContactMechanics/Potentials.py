@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.
 """
 
 from .Interactions import SoftWall
+import math
+import numpy as np
 
 
 class Potential(SoftWall):
@@ -39,16 +41,37 @@ class Potential(SoftWall):
         computed at any point in the problem from just the one-dimensional gap
         (h(x,y)-z(x,y)) at that point
     """
-    # pylint: disable=abstract-class-not-used
     name = "generic_potential"
 
     class PotentialError(Exception):
-        # pylint: disable=missing-docstring
+        "umbrella exception for potential-related issues"
         pass
 
-    def __init__(self, ):
+    class SliceableNone(object):
+        """small helper class to remedy numpy's lack of views on
+        index-sliced array views. This construction avoid the computation
+        of all interactions as with np.where, and copies"""
+        # pylint: disable=too-few-public-methods
+        __slots__ = ()
+
+        def __setitem__(self, index, val):
+            pass
+
+        def __getitem__(self, index):
+            pass
+
+    def __init__(self, r_cut):
         super().__init__()
-        self.r_c = None
+        self.r_c = r_cut
+        if r_cut is not None:
+            self.has_cutoff = not math.isinf(self.r_c)
+        else:
+            self.has_cutoff = False
+        if self.has_cutoff:
+            self.offset = self.naive_pot(self.r_c)[0]
+        else:
+            self.offset = 0
+
         self.curb = None
 
     def __repr__(self):
@@ -61,6 +84,55 @@ class Potential(SoftWall):
             gap, pot, forces, curb)
         self.energy = energy.sum()
 
-    def evaluate(self, gap, pot=True, forces=False, curb=False):
-        # pylint: disable=arguments-differ
+    def naive_pot(self, r, pot=True, forces=False, curb=False):
+        """ Evaluates the potential and its derivatives without cutoffs or
+            offsets.
+            Keyword Arguments:
+            r      -- array of distances
+            pot    -- (default True) if true, returns potential energy
+            forces -- (default False) if true, returns forces
+            curb   -- (default False) if true, returns second derivative
+
+        """
         raise NotImplementedError()
+
+    def evaluate(self, r, pot=True, forces=False, curb=False):
+        """Evaluates the potential and its derivatives
+        Keyword Arguments:
+        r      -- array of distances
+        pot    -- (default True) if true, returns potential energy
+        forces -- (default False) if true, returns forces
+        curb   -- (default False) if true, returns second derivative
+        """
+        # pylint: disable=bad-whitespace
+        # pylint: disable=arguments-differ
+        r = np.array(r)
+        if r.shape == ():
+            r.shape = (1, )
+        inside_slice = r < self.r_c
+        V = np.zeros_like(r) if pot else self.SliceableNone()
+        dV = np.zeros_like(r) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r) if curb else self.SliceableNone()
+
+        V[inside_slice], dV[inside_slice], ddV[inside_slice] = self.naive_pot(
+            r[inside_slice], pot, forces, curb)
+        if V[inside_slice] is not None:
+            V[inside_slice] -= self.offset
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
+
+    @property
+    def r_min(self):
+        """
+        convenience function returning the location of the enery minimum
+        """
+        raise NotImplementedError()
+
+    @property
+    def naive_min(self):
+        """ convenience function returning the energy minimum of the bare
+           potential
+
+        """
+        return self.naive_pot(self.r_min)[0]
