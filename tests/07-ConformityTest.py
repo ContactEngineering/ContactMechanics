@@ -49,16 +49,16 @@ class SystemTest(unittest.TestCase):
                              PyPyContact.Surface.SurfaceDescription,
                              PyPyContact.System,
                              PyPyContact.System.SmoothSystemSpecialisations,
-                             PyPyContact.System.System,
+                             PyPyContact.System.Systems,
                              PyPyContact.Tools,
                              #PyPyContact.Tools.AugmentedLagrangian,
                              PyPyContact.Tools.common])
 
-    def tes_pylint_bitchiness(self):
+    def test_pylint_bitchiness(self):
         options = ' --rcfile=tests/pylint.rc --disable=locally-disabled'
         for module in self.modules:
             epylint.py_run(module.__file__ + options)
 
-    def tes_pep8_conformity(self):
+    def test_pep8_conformity(self):
         pep8style = pep8.StyleGuide()
         pep8style.check_files((mod.__file__ for mod in self.modules))

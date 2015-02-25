@@ -78,6 +78,7 @@ class SystemBase(object):
             energy, force, disp = system.deproxyfied()
         """
         return cls._proxyclass
+
     @property
     def resolution(self):
         "For systems, resolution can become non-trivial"
@@ -184,6 +185,30 @@ class SystemBase(object):
                                          callback=callback, options=options)
         self.disp = self.shape_minimisation_output(result.x)
         return result
+
+    def objective(self, offset, gradient=False):
+        """
+        This helper method exposes a scipy.optimize-friendly interface to the
+        evaluate() method. Use this for optimization purposes, it makes sure
+        that the shape of disp is maintained and lets you set the offset and
+        'forces' flag without using scipy's cumbersome argument passing
+        interface. Returns a function of only disp
+        Keyword Arguments:
+        offset   -- determines indentation depth
+        gradient -- (default False) whether the gradient is supposed to be used
+        """
+        raise NotImplementedError()
+
+    def callback(self, force=False):
+        """
+        Simple callback function that can be handed over to scipy's minimize to
+        get updates during minimisation
+        Parameters:
+        force -- (default False) whether to include the norm of the force
+                 vector in the update message
+        """
+        raise NotImplementedError()
+
 
 class SmoothContactSystem(SystemBase):
     """
@@ -336,10 +361,19 @@ def SystemFactory(substrate, interaction, surface):
     # pylint: disable=no-member
     args = substrate, interaction, surface
     subclasses = list()
+
     def check_subclasses(base_class, container):
+        """
+        accumulates a flattened container containing all subclasses of
+        base_class
+        Parameters:
+        base_class -- self-explanatory
+        container  -- self-explanatory
+        """
         for cls in base_class.__subclasses__():
             check_subclasses(cls, container)
             container.append(cls)
+
     check_subclasses(SystemBase, subclasses)
     for cls in subclasses:
         if cls.handles(*(type(arg) for arg in args)):

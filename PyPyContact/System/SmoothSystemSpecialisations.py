@@ -34,6 +34,7 @@ import numpy as np
 import scipy
 
 from .Systems import SmoothContactSystem
+from .Systems import IncompatibleResolutionError
 from ..Surface import NumpySurface
 from .. import ContactMechanics, SolidMechanics, Surface
 
@@ -57,6 +58,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
     """
     # declare that this class is only a proxy
     _proxyclass = True
+
     class FreeBoundaryError(Exception):
         """
         called when the supplied system cannot be computed with the current
@@ -87,8 +89,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
         self.__babushka_offset = None
         # This is the verticas offset between surface and substrate. Determined
         # indentation depth. This class needs to keep track of the offsets for
-        # which its babushka has been evaluated, in order to have the ability
-        # to interpolate the babushka-results onto the domain
+        # which its babuška has been evaluated, in order to have the ability
+        # to interpolate the babuška-results onto the domain
         self.offset = None
         self.energy = None
         self.force = None
@@ -125,9 +127,9 @@ class FastSmoothContactSystem(SmoothContactSystem):
         """
         is_ok = True
         if self.dim == 2:
-            is_ok &= (self.interaction.force[:,  0] == 0.).all()
+            is_ok &= (self.interaction.force[:, 0] == 0.).all()
             is_ok &= (self.interaction.force[:, -1] == 0.).all()
-            is_ok &= (self.interaction.force[ 0, :] == 0.).all()
+            is_ok &= (self.interaction.force[0, :] == 0.).all()
             is_ok &= (self.interaction.force[-1, :] == 0.).all()
         if not is_ok:
             self.deproxyfied()
@@ -177,12 +179,10 @@ class FastSmoothContactSystem(SmoothContactSystem):
         bnd_lo = np.min(contact, 0)
         # Upper bounds by dimension of the indices of contacting cells
         bnd_up = np.max(contact, 0)
-        print(bnd_up)
 
         self.__babushka_offset = tuple(bnd - self.margin for bnd in bnd_lo)
         sm_res = tuple((hi-lo + 2*self.margin for (hi, lo) in
                         zip(bnd_up, bnd_lo)))
-        print(sm_res)
         if any(bnd < 0 for bnd in self.__babushka_offset):
             raise self.FreeBoundaryError(
                 ("With the current margin of {}, the system overlaps the lower"
@@ -198,10 +198,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
         self.compute_babushka_bounds(sm_res)
         sm_surf = self._get_babushka_array(self.surface.profile(),
-                                            np.zeros(sm_res))
-        cntct = gap < self.interaction.r_c
-        sm_cntct = self._get_babushka_array(cntct,
-                                            np.zeros(sm_res))
+                                           np.zeros(sm_res))
 
         sm_substrate = self.substrate.spawn_child(sm_res)
         sm_surface = NumpySurface(sm_surf)
@@ -218,9 +215,13 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
     def evaluate(self, disp, offset, pot=True, forces=False):
         raise Exception(
-            "This proxy-class cannot be evaluated. If you do not understand this, use the base-class instead")
+            "This proxy-class cannot be evaluated. If you do not understand "
+            "this, use the base-class instead")
 
     def deproxyfied(self):
+        """
+        Extrapolates the state of the babushka system onto the proxied sytem
+        """
         self.substrate.force = self._get_full_array(
             self.babushka.substrate.force)
         self.interaction.force = self._get_full_array(
@@ -259,7 +260,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
                         slice(i*lg_res[0]+self.__babushka_offset[0],
                               i*lg_res[0]+sm_res[0]+self.__babushka_offset[0]),
                         slice(j*lg_res[1]+self.__babushka_offset[1],
-                              j*lg_res[1]+sm_res[1]+self.__babushka_offset[1])))
+                              j*lg_res[1]+sm_res[1] +
+                              self.__babushka_offset[1])))
                     yield BndSet(large=lg_slice, small=sm_slice)
         self.bounds = tuple((bnd for bnd in boundary_generator()))
 
@@ -363,10 +365,21 @@ class FastSmoothContactSystem(SmoothContactSystem):
             use_callback = self.callback(force=gradient)
         elif callback is None:
             def use_callback(disp_k):
+                # pylint: disable=missing-docstring
+                # pylint: disable=unused-argument
                 pass
         else:
             use_callback = callback
+
         def compound_callback(disp_k):
+            """
+            The callback first check whether the new state of the system
+            violates the size restrictions of the babuška system before calling
+            the user-provided callback function
+            Parameter:
+            disp_k -- flattened displacement vector at the current optimization
+                      step
+            """
             self.check_margins()
             return use_callback(disp_k)
         try:

@@ -31,4 +31,3 @@ Boston, MA 02111-1307, USA.
 
 from .Systems import SystemFactory, IncompatibleFormulationError
 from .Systems import IncompatibleResolutionError
-

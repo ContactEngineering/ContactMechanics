@@ -108,7 +108,6 @@ class FastSystemTest(unittest.TestCase):
             disp = S.shape_minimisation_input(
                 np.zeros(self.substrate.computational_resolution))
             bla = fun(disp)
-            print(bla)
             result = minimize(fun, disp, jac=True,
                               method = 'L-BFGS-B', options=options)
             if system.is_proxy():
