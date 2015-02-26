@@ -39,8 +39,6 @@ class SystemTest(unittest.TestCase):
                              PyPyContact.ContactMechanics,
                              PyPyContact.ContactMechanics.Interactions,
                              PyPyContact.ContactMechanics.Lj93,
-                             PyPyContact.ContactMechanics.Lj93smooth,
-                             PyPyContact.ContactMechanics.Lj93smoothMin,
                              PyPyContact.ContactMechanics.VdW82,
                              PyPyContact.ContactMechanics.Potentials,
                              PyPyContact.SolidMechanics,
@@ -56,11 +54,13 @@ class SystemTest(unittest.TestCase):
                              #PyPyContact.Tools.AugmentedLagrangian,
                              PyPyContact.Tools.common])
 
-    def test_pylint_bitchiness(self):
+    def tes_pylint_bitchiness(self):
+        print()
         options = ' --rcfile=tests/pylint.rc --disable=locally-disabled'
         for module in self.modules:
             epylint.py_run(module.__file__ + options)
 
-    def test_pep8_conformity(self):
+    def tes_pep8_conformity(self):
+        print()
         pep8style = pep8.StyleGuide()
         pep8style.check_files((mod.__file__ for mod in self.modules))

@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.
 """
 import numpy as np
 
-from . import Potential
+from . import Potential, SmoothPotential, MinimisationPotential
 
 
 class VDW82(Potential):
@@ -52,7 +52,7 @@ class VDW82(Potential):
         """
         self.c_sr = c_sr
         self.hamaker = hamaker
-        super().__init__(r_cut)
+        Potential.__init__(self, r_cut)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
@@ -86,7 +86,7 @@ class VDW82(Potential):
         """
         V = dV = ddV = None
         r_2 = r**-2
-        c_sr_r6 = self.c_sr*r_2**-3
+        c_sr_r6 = self.c_sr*r_2**3
         a_pi = self.hamaker/np.pi
 
         if pot:
@@ -109,3 +109,60 @@ class VDW82(Potential):
                            ╲╱     A
         """
         return 2**(2./3)*3**(1./6)*(self.c_sr*np.pi/self.hamaker)**(1./6)
+
+
+class VDW82smooth(VDW82, SmoothPotential):
+    """
+    Van der Waals potential with a smoothly finite tail, see docstring of
+    SmoothPotential
+    """
+    name = 'vdw82smooth'
+
+    def __init__(self, c_sr, hamaker, gamma=None, r_t=None):
+        """
+        Keyword Arguments:
+        c_sr    -- coefficient for repulsive part
+        hamaker -- Hamaker constant for substrate
+        gamma   -- (default ε) Work of adhesion, defaults to ε
+        r_t     -- (default r_min) transition point, defaults to r_min
+        """
+        VDW82.__init__(self, c_sr, hamaker)
+        SmoothPotential.__init__(self, gamma, r_t)
+
+    def __repr__(self):
+        has_gamma = -self.gamma != self.naive_min
+        has_r_t = self.r_t != self.r_min
+        return ("Potential '{0.name}', C_sr = {0.c_sr}, Hamaker = "
+                "{0.hamaker}{1}{2}").format(
+                    self,
+                    ", γ = {.gamma}".format(self) if has_gamma else "",
+                    ", r_t = {}".format(
+                        self.r_t if has_r_t else "r_min"))
+
+
+class VDW82smoothMin(VDW82smooth, MinimisationPotential):
+    """
+    When starting from a bad guess, or with a bad optimizer, sometimes
+    optimisations that include potentials with a singularity at the origin
+    fail, because the optimizer chooses a bad step direction and length and
+    falls into non-physical territory. This class tries to remedy this by
+    replacing the singular repulsive part around zero by a linear function.
+    """
+    name = 'vdW8-2smooth-min'
+
+    def __init__(self, c_sr, hamaker, gamma=None, r_ti=None, r_t_ls=None):
+        """
+        Keyword Arguments:
+        c_sr    -- coefficient for repulsive part
+        hamaker -- Hamaker constant for substrate
+        gamma   -- (default ε) Work of adhesion, defaults to ε
+        r_ti    -- (default r_min/2) transition point between linear function
+                   and lj, defaults to r_min
+        r_t_ls  -- (default r_min) transition point between lj and spline,
+                    defaults to r_min
+        """
+        VDW82smooth.__init__(self, c_sr, hamaker, gamma, r_t_ls)
+        MinimisationPotential.__init__(self, r_ti)
+
+    def __repr__(self):
+        super().__repr__()
