@@ -126,8 +126,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             for idx_m in range(1, self.resolution[0]//2+2):
                 for idx_n in range(1, self.resolution[1]//2+2):
                     facts[-idx_m+1, -idx_n+1] = facts[-idx_m+1, idx_n-1] = \
-                      facts[idx_m-1, -idx_n+1] = facts[idx_m-1, idx_n-1] = \
-                      2./(self.young*(idx_m**2+idx_n**2)**.5)
+                        facts[idx_m-1, -idx_n+1] = facts[idx_m-1, idx_n-1] = \
+                        2./(self.young*(idx_m**2+idx_n**2)**.5)
             facts[0, 0] = 0
         self.weights = facts
 
