@@ -152,10 +152,10 @@ class SmoothPotential(Potential):
     V_lγ (r) = V_l(r) - V_l(r_t) + γ
 
     spline: (Δr = r-r_t)
-    V_s(Δr) = C0 - C1*Δr
-              - 1/2*C2*Δr**2
-              - 1/3*C3*Δr**3
-              - 1/4*C4*Δr**4
+                                2        3        4
+                           C₂⋅Δr    C₃⋅Δr    C₄⋅Δr
+    V_s(Δr) = C₀ - C₁⋅Δr - ────── - ────── - ──────
+                             2        3        4
 
     The formulation allows to choose the contact stiffness (the original
     repulsive zone) independently from the work of adhesion (the energy
@@ -165,13 +165,21 @@ class SmoothPotential(Potential):
 
     The spline is chosen to guarantee continuity of the second derivative
     of the potential, leading to the following conditions:
-    (1): V_s' (0)    =  V_lγ' (r_t)
-    (2): V_s''(0)    =  V_lγ''(r_t)
-    (3): V_s  (Δr_c) =  0, where Δr_c = r_c-r_t
+    (1): V_s' (Δr_t)    =  V_lγ' (r_t)
+    (2): V_s''(Δr_t)    =  V_lγ''(r_t)
+    (3): V_s  (Δr_c) =  0, where Δr_c = r_c-r_o
     (4): V_s' (Δr_c) =  0
     (5): V_s''(Δr_c) =  0
-    (6): V_s  (Δr_m) = -γ, where Δr_m = r_min-r_t
-    The unknowns are C_i (i in {0,..4}) and r_t
+    (6): V_s  (Δr_m) = -γ, where Δr_m = r_min-r_o
+    The unknowns are C_i (i in {0,..4}) and r_c
+    r_o is the origin for the spline, which can be chosen freely. The original
+    choice was r_o = r_t, but it turned out to be a bad choice, leading to a
+    system of nonlinear equation in which only two of the six unknowns can be
+    eliminated.
+
+    With r_o = r_c, all coefficients C_i can be eliminated and a good initial
+    guess for the remaining scalar nonlinear equation can be computed. see
+    eval_poly_and_cutoff
     """
     def __init__(self, gamma=None, r_t=None):
         """
@@ -257,7 +265,7 @@ class SmoothPotential(Potential):
         """
         # pylint: disable=invalid-name
         V = dV = ddV = None
-        dr = r-self.r_t
+        dr = r-self.r_c
         if pot:
             V = self.poly(dr)
         if forces:
@@ -267,7 +275,152 @@ class SmoothPotential(Potential):
         return (V, dV, ddV)
 
     def eval_poly_and_cutoff(self, xtol=1e-10):
-        """ Computes the coefficients of the spline and the cutoff based on σ
+        """
+        Computes the coefficients C_i of the spline and the cutoff radius r_c
+        based on the work of adhesion γ and the slope V'(r_t) and curvature
+        V"(r_t) at the transition point. The calculations leading to the
+        formulation I use here are done symbolically in SplineHelper.py. Check
+        there for details. Short version:
+
+
+                                     2        3        4
+                                C₂⋅Δr    C₃⋅Δr    C₄⋅Δr
+        V_s(Δr) = C₀ - C₁⋅Δr - ────── - ────── - ──────
+                                  2        3        4
+
+                                      2        3
+        V_s'(Δr) = -C₁ - C₂⋅Δr - C₃⋅Δr  - C₄⋅Δr
+
+
+                                          2
+        V_s"(Δr) = -C₂ - 2⋅C₃⋅Δr - 3⋅C₄⋅Δr
+
+        By applying the following boundary conditions
+        (1): V_s'(Δr_t)    =  V_lγ'(r_t)
+        (2): V_s"(Δr_t)    =  V_lγ"(r_t)
+        (3): V_s (Δr_c) =  0, where Δr_c = r_c-r_o
+        (4): V_s'(Δr_c) =  0
+        (5): V_s"(Δr_c) =  0
+        (6): V_s (Δr_m) = -γ, where Δr_m = r_min-r_o
+        The unknowns are C_i (i in {0,..4}) and r_c
+        and choosing the origin of the spline r_o at the cut-off r_c, the
+        coefficients C_i can be determined explicitly (see SplineHelper.py):
+
+        C₀: 0, C₁: 0, C₂: 0,
+
+            -3⋅V'(r_t) + V"(r_t)⋅Δrt      2⋅V'(r_t) - V"(r_t)⋅Δrt
+        C₃: ────────────────────────, C₄: ───────────────────────
+                            2                            3
+                         Δrt                          Δrt
+        The remaining unknown is Δr_t (our proxy for r_c) but that equation has
+        no analytical solution (I think), except for r_t = r_m. The equation
+        is:
+                                               4
+                  Δrt⋅(3⋅V'(r_t) - V"(r_t)⋅Δrt)
+        f(Δrt) = ────────────────────────────── + γ = 0
+                                              3
+                  12⋅(2⋅V'(r_t) - V"(r_t)⋅Δrt)
+
+        When r_t = r_m (the default); the solution is
+                      _________
+                     ╱   3γ
+        Δr_t = -2⋅  ╱  ───────
+                  ╲╱   V"(r_m)
+
+        this can be used as initial guess for solving f(Δrt). The derivative
+        f'(Δrt) is to bulky to pretty-print here, so look at SplineHelper.py if
+        you wish to see it.
+
+        In conclusion, with the inputs of r_t, γ, V'(r_t) and V"(r_t), we can
+        conpute the objective function f(Δrt) and its derivative f'(Δrt), which
+        should be roughly constant around the solution (inspect output of
+        SplineHelper.py). If r_m = r_t, we can directly compute Δrt. Else, with
+        the additional input of V"(r_m), we can compute a good initial guess to
+        solve the problem numerically.
+
+
+        Keyword Arguments:
+        xtol -- (default 1e-10) tolerance for numerical solution. Is scaled
+                by γ internally.
+        """
+        dummy, force_t, ddV_t = self.naive_pot(self.r_t, pot=False,
+                                               forces=True, curb=True)
+        dV_t = -force_t
+        dummy, dummy, ddV_m = self.naive_pot(self.r_min, pot=False,
+                                             forces=False, curb=True)
+        def spline(Δrt):
+            " from SplineHelper.py"
+            C_i = [0, 0, 0, (-3*dV_t + ddV_t*Δrt)/Δrt**2,
+                   (2*dV_t - ddV_t*Δrt)/Δrt**3]
+            # in numpy polynomial form
+            polycoeffs = [-C_i[4]/4,
+                          -C_i[3]/3,
+                          0, 0, 0]
+            return np.poly1d(polycoeffs)
+
+        def inner_obj_fun(Δrt, gam_star):
+            " from SplineHelper.py"
+            return (Δrt*(3*dV_t - ddV_t*Δrt)**4/(12*(2*dV_t - ddV_t*Δrt)**3) +
+                    gam_star)
+
+        def inner_obj_derivative(Δrt, dummy):
+            " from SplineHelper.py"
+            return ((3*dV_t - ddV_t*Δrt)**3*(3*ddV_t*Δrt*(3*dV_t - ddV_t*Δrt) +
+                                             (2*dV_t - ddV_t*Δrt)*
+                                             (3*dV_t - 5*ddV_t*Δrt))/
+                                             (12*(2*dV_t - ddV_t*Δrt)**4))
+        def Δrm(Δrt):
+            return Δrt*(3*dV_t - ddV_t*Δrt)/(2*dV_t - ddV_t*Δrt)
+
+        # start with initial guess:
+        Δrt0 = -2*np.sqrt(3*self.gamma/ddV_m)
+        gam_star0 = self.gamma
+
+        options = dict(xtol=self.gamma*xtol)
+        Δrt = None
+        def outer_obj_fun(gam):
+            sol = scipy.optimize.root(
+                inner_obj_fun, Δrt0, args=(gam,),
+                jac=inner_obj_derivative, options=options)
+            nonlocal Δrt
+            if  sol.success:
+                Δrt = sol.x
+                offset = self.naive_pot(self.r_t)[0] - np.array(spline(Δrt)(Δrt))
+                error = self.naive_pot(self.r_min)[0] - offset + self.gamma
+
+                return error
+            else:
+                err_str = ("Evaluation of spline for potential '{}' failed. "
+                           "Please check whether the inputs make sense"
+                           "").format(self)
+                raise self.PotentialError(err_str)
+
+
+        def outer_obj_derivative(gam):
+            return np.array([1.])
+
+        sol = scipy.optimize.root(
+                outer_obj_fun, gam_star0,
+                jac=outer_obj_derivative, options=options)
+
+        if  sol.success:
+            self.r_c = self.r_t - Δrt
+            self.poly = spline(Δrt)
+            self.dpoly = np.polyder(self.poly)
+            self.ddpoly = np.polyder(self.dpoly)
+            self.offset = -(self.spline_pot(self.r_t)[0] -
+                            self.naive_pot(self.r_t)[0])
+        else:
+            err_str = ("Evaluation of spline for potential '{}' failed. Please"
+                       " check whether the inputs make sense").format(self)
+            raise self.PotentialError(err_str)
+
+
+    def eval_poly_and_cutoff_legacy(self, xtol=1e-10):
+        """ Seems to be a bad method, do not use in general, will likely
+            disappear.
+
+            Computes the coefficients of the spline and the cutoff based on σ
             and ε. Since this is a non-linear system of equations, this
             requires some numerics.
             The equations derive from the continuity conditions in the class's

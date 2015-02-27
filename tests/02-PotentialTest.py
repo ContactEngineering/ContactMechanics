@@ -223,27 +223,27 @@ class LJTest(unittest.TestCase):
         vdw = VDW82(c_sr, hamaker)
         r_min = vdw.r_min
         V_min, dV_min, ddV_min = vdw.evaluate(r_min, True, True, True)
-        vdws = VDW82smooth(c_sr, hamaker)
-        vdwm = VDW82smoothMin(c_sr, hamaker, r_ti=r_min)
+        vdws = VDW82smooth(c_sr, hamaker, r_t=2.5)
+        vdwm = VDW82smoothMin(c_sr, hamaker, r_ti=1.95)
         r = np.arange(0.5, 2.01, .005)*r_min
 
 
-        import matplotlib.pyplot as plt
-        plt.figure()
-        pot = vdw.evaluate(r)[0]
-        print()
-        print("  V_min = {}".format(  V_min))
-        print(" dV_min = {}".format( dV_min))
-        print("ddV_min = {}".format(ddV_min))
-        print("transition = {}".format(vdws.r_t))
-        bot = 1.1*V_min
-        plt.plot(r, pot,label='simple')
-        plt.plot(r, vdws.evaluate(r)[0],label='smooth')
-        plt.plot(r, vdwm.evaluate(r)[0],label='minim')
-        plt.scatter(vdw.r_min, V_min, marker='+')
-        plt.ylim(bottom=bot, top=0)
-        plt.legend(loc='best')
-        plt.show()
+        # import matplotlib.pyplot as plt
+        # plt.figure()
+        # pot = vdw.evaluate(r)[0]
+        # print()
+        # print("  V_min = {}".format(  V_min))
+        # print(" dV_min = {}".format( dV_min))
+        # print("ddV_min = {}".format(ddV_min))
+        # print("transition = {}".format(vdws.r_t))
+        # bot = 1.1*V_min
+        # plt.plot(r, pot,label='simple')
+        # plt.plot(r, vdws.evaluate(r)[0],label='smooth')
+        # plt.plot(r, vdwm.evaluate(r)[0],label='minim')
+        # plt.scatter(vdw.r_min, V_min, marker='+')
+        # plt.ylim(bottom=bot, top=0)
+        # plt.legend(loc='best')
+        # plt.show()
 
     def test_vanDerWaals(self):
         # reproduces the graph in
@@ -257,13 +257,14 @@ class LJTest(unittest.TestCase):
                 ("min", VDW82smoothMin(c_sr, hamaker)))
 
         import matplotlib.pyplot as plt
-        # plt.figure()
-        # bot = None
-        # for name, t_h_phile in pots:
-        #     pot = t_h_phile.evaluate(r)[0]
-        #     if bot is None:
-        #         bot = 1.1*t_h_phile.evaluate(t_h_phile.r_min)[0]
-        #     plt.plot(r, pot,label=name)
-        # plt.ylim(bottom=bot, top=0)
-        # plt.legend(loc='best')
-        # plt.show()
+        plt.figure()
+        bot = None
+        for name, t_h_phile in pots:
+            pot = t_h_phile.evaluate(r)[0]
+            if bot is None:
+                bot = 1.1*t_h_phile.evaluate(t_h_phile.r_min)[0]
+            plt.plot(r, pot,label=name)
+        plt.ylim(bottom=bot, top=0)
+        plt.legend(loc='best')
+        plt.show()
+        pass
