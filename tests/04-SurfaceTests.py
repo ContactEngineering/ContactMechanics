@@ -29,14 +29,18 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-
-import unittest
-import numpy as np
-import numpy.matlib as mp
-from numpy.random import rand, random
-import tempfile, os
-from tempfile import TemporaryDirectory as tmp_dir
-import os
+try:
+    import unittest
+    import numpy as np
+    import numpy.matlib as mp
+    from numpy.random import rand, random
+    import tempfile, os
+    from tempfile import TemporaryDirectory as tmp_dir
+    import os
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
 
 from PyPyContact.Surface import NumpyTxtSurface, NumpySurface, Sphere
 class NumpyTxtSurfaceTest(unittest.TestCase):

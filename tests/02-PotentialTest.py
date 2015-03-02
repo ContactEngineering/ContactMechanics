@@ -29,21 +29,26 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import unittest
-import numpy as np
+try:
+    import unittest
+    import numpy as np
 
-from PyPyContact.ContactMechanics import LJ93
-from PyPyContact.ContactMechanics import LJ93smooth
-from PyPyContact.ContactMechanics import LJ93smoothMin
+    from PyPyContact.ContactMechanics import LJ93
+    from PyPyContact.ContactMechanics import LJ93smooth
+    from PyPyContact.ContactMechanics import LJ93smoothMin
 
-from PyPyContact.ContactMechanics import VDW82
-from PyPyContact.ContactMechanics import VDW82smooth
-from PyPyContact.ContactMechanics import VDW82smoothMin
+    from PyPyContact.ContactMechanics import VDW82
+    from PyPyContact.ContactMechanics import VDW82smooth
+    from PyPyContact.ContactMechanics import VDW82smoothMin
 
-import PyPyContact.Tools as Tools
+    import PyPyContact.Tools as Tools
 
-from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
-from .lj93smooth_ref_potential import V as LJs_ref_V, dV as LJs_ref_dV, d2V as LJs_ref_ddV
+    from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
+    from .lj93smooth_ref_potential import V as LJs_ref_V, dV as LJs_ref_dV, d2V as LJs_ref_ddV
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
 
 class LJTest(unittest.TestCase):
     tol = 1e-14

@@ -35,24 +35,29 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import unittest
-from numpy.random import rand, random
-import numpy as np
+try:
+    import unittest
+    from numpy.random import rand, random
+    import numpy as np
 
-from scipy.optimize import minimize
-from scipy.fftpack import fftn, ifftn
-import time
+    from scipy.optimize import minimize
+    from scipy.fftpack import fftn, ifftn
+    import time
 
-import os
-from netCDF4 import Dataset
+    import os
+    from netCDF4 import Dataset
 
-from PyPyContact.System import SystemFactory, IncompatibleFormulationError
-from PyPyContact.System import IncompatibleResolutionError
-from PyPyContact.System.Systems import SmoothContactSystem
-import PyPyContact.SolidMechanics as Solid
-import PyPyContact.ContactMechanics as Contact
-import PyPyContact.Surface as Surface
-import PyPyContact.Tools as Tools
+    from PyPyContact.System import SystemFactory, IncompatibleFormulationError
+    from PyPyContact.System import IncompatibleResolutionError
+    from PyPyContact.System.Systems import SmoothContactSystem
+    import PyPyContact.SolidMechanics as Solid
+    import PyPyContact.ContactMechanics as Contact
+    import PyPyContact.Surface as Surface
+    import PyPyContact.Tools as Tools
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
 
 class SystemTest(unittest.TestCase):
     def setUp(self):

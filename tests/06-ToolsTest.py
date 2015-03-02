@@ -29,10 +29,15 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import unittest
-import numpy as np
+try:
+    import unittest
+    import numpy as np
 
-import PyPyContact.Tools as Tools
+    import PyPyContact.Tools as Tools
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
 
 class ToolTest(unittest.TestCase):
     def test_gradient(self):

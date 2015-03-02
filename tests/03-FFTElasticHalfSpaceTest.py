@@ -29,16 +29,21 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import unittest
-import numpy as np
-from numpy.linalg import norm
-from numpy.random import rand, random
-from scipy.fftpack import fftn, ifftn
-import time
+try:
+    import unittest
+    import numpy as np
+    from numpy.linalg import norm
+    from numpy.random import rand, random
+    from scipy.fftpack import fftn, ifftn
+    import time
 
-from PyPyContact.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyPyContact.SolidMechanics import FreeFFTElasticHalfSpace
-import PyPyContact.Tools as Tools
+    from PyPyContact.SolidMechanics import PeriodicFFTElasticHalfSpace
+    from PyPyContact.SolidMechanics import FreeFFTElasticHalfSpace
+    import PyPyContact.Tools as Tools
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
 
 class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):

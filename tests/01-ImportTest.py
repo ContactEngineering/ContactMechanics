@@ -29,9 +29,14 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import unittest
-import importlib
-import numpy as np
+try:
+    import unittest
+    import importlib
+    import numpy as np
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
 
 class ImportabilityChecks(unittest.TestCase):
 

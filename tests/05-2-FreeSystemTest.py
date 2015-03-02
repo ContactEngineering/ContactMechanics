@@ -30,19 +30,24 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import unittest
-import numpy as np
-from numpy.random import rand, random
-from scipy.optimize import minimize
-import time
+try:
+    import unittest
+    import numpy as np
+    from numpy.random import rand, random
+    from scipy.optimize import minimize
+    import time
 
-from PyPyContact.System.Systems import SmoothContactSystem
-from PyPyContact.System.SmoothSystemSpecialisations import FastSmoothContactSystem
-from PyPyContact.System import SystemFactory
-import PyPyContact.SolidMechanics as Solid
-import PyPyContact.ContactMechanics as Contact
-import PyPyContact.Surface as Surface
-import PyPyContact.Tools as Tools
+    from PyPyContact.System.Systems import SmoothContactSystem
+    from PyPyContact.System.SmoothSystemSpecialisations import FastSmoothContactSystem
+    from PyPyContact.System import SystemFactory
+    import PyPyContact.SolidMechanics as Solid
+    import PyPyContact.ContactMechanics as Contact
+    import PyPyContact.Surface as Surface
+    import PyPyContact.Tools as Tools
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
 
 
 class FastSystemTest(unittest.TestCase):

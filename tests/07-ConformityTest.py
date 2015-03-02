@@ -28,11 +28,17 @@ along with GNU Emacs; see the file COPYING. If not, write to the
 Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
-import unittest
-from pylint import epylint
-import pep8
+try:
+    import unittest
+    from pylint import epylint
+    import pep8
 
-import PyPyContact
+    import PyPyContact
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
+
 class SystemTest(unittest.TestCase):
     def setUp(self):
         self.modules = list([PyPyContact,
