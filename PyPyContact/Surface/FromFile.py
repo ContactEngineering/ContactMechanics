@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.
 
 import numpy as np
 import os
+import re
 
 from . import NumpySurface
 
@@ -55,4 +56,69 @@ class NumpyTxtSurface(NumpySurface):
                 raise FileNotFoundError(
                     "No such file or directory: '{}(.gz)'".format(
                         fname))
+        self.fname = fname
         super().__init__(np.loadtxt(fname))
+
+
+class NumpyAscSurface(NumpySurface):
+    """ Reads a surface profile from an asc file and presents in in a Surface-
+        conformant manner.
+    """
+    name = 'surface_from_nc_file'
+
+    def __init__(self, fname, x_unit=1e-6, z_unit=1e-9):
+        """
+        Keyword Arguments:
+        fname -- filename
+        """
+        if not os.path.isfile(fname):
+            raise FileNotFoundError(
+                "No such file or directory: '{}(.gz)'".format(
+                    fname))
+        self.fname = fname
+        super().__init__(self.load())
+
+    def load(self, ):
+        """ read in a surface file
+        """
+        checks = list()
+        checks.append((re.compile("x-pixels = ([0-9]+)"), int, "x_res"))
+        checks.append((re.compile("y-pixels = ([0-9]+)"), int, "y_res"))
+        checks.append((re.compile("x-length = ([0-9.]+)"), float, "x_siz"))
+        checks.append((re.compile("y-length = ([0-9.]+)"), float, "y_siz"))
+
+        data = None
+        xres = yres = xsiz = ysiz = None
+        def process_comment(line):
+            def check(line, reg, fun):
+                match = reg.search(line)
+                if match is not None:
+                    return fun(match.group(1))
+                return None
+            nonlocal xres, yres, xsiz, ysiz, data
+            matches = {key: check(line, reg, fun)
+                       for (reg, fun, key) in checks}
+            if matches['x_res'] is not None:
+                xres = matches['x_res']
+            elif matches['y_res'] is not None:
+                yres = matches['y_res']
+            elif matches['x_siz'] is not None:
+                xsiz = matches['x_siz']
+            elif matches['y_siz'] is not None:
+                ysiz = matches['y_siz']
+            if xres is not None and yres is not None:
+                data = np.zeros((xres, yres))
+
+        row_nu = 0
+        with open(self.fname) as fh:
+            for line in fh:
+                if line.startswith("#"):
+                    process_comment(line)
+                else:
+                    data[row_nu, :] = line.strip().split()
+                    row_nu += 1
+        if row_nu != xres:
+            raise Exception(
+                ("The number of rows read from the file '{}' does not match "
+                 "the declared resolution").format(self.fname))
+        return data

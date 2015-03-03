@@ -40,10 +40,10 @@ class Surface(object):
         pass
     name = 'generic_geom'
 
-    def __init__(self):
-        self._resolution = None
-        self._dim = None
-        self._size = None
+    def __init__(self, resolution=None, dim=None, size=None):
+        self._resolution = resolution
+        self._dim = dim
+        self._size = size
 
     def profile(self, *args, **dummy_kwargs):
         """ returns an array of heights
@@ -194,15 +194,14 @@ class NumpySurface(Surface):
     """
     name = 'surface_from_np_array'
 
-    def __init__(self, profile):
+    def __init__(self, profile, size=None):
         """
         Keyword Arguments:
         profile -- surface profile
         """
-        super().__init__()
         self.__h = profile
-        self._resolution = self.__h.shape
-        self._dim = len(self.resolution)
+        super().__init__(resolution=self.__h.shape, dim=len(self.__h.shape),
+                         size=size)
 
     def profile(self):
         return self.__h
