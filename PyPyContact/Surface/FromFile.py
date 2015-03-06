@@ -76,7 +76,8 @@ class NumpyAscSurface(NumpySurface):
                 "No such file or directory: '{}(.gz)'".format(
                     fname))
         self.fname = fname
-        super().__init__(self.load())
+        profile, size = self.load()
+        super().__init__(profile*z_unit, tuple((x_unit*s for s in size)))
 
     def load(self, ):
         """ read in a surface file
@@ -121,4 +122,4 @@ class NumpyAscSurface(NumpySurface):
             raise Exception(
                 ("The number of rows read from the file '{}' does not match "
                  "the declared resolution").format(self.fname))
-        return data
+        return data, (xsiz, ysiz)

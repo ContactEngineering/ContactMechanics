@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.
 from .Interactions import SoftWall
 import math
 import numpy as np
-import scipy
+import scipy.optimize
 import abc
 
 

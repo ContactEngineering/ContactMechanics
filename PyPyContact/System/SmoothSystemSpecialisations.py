@@ -175,6 +175,12 @@ class FastSmoothContactSystem(SmoothContactSystem):
             disp0 = np.zeros(self.substrate.computational_resolution)
         gap = self.compute_gap(disp0, offset)
         contact = np.argwhere(gap < self.interaction.r_c)
+        if contact.size == 0:
+            raise self.FreeBoundaryError(
+                ("The offset you chose ('{}') leads to no contact at all. With"
+                 " the current offset, the minimum of the gap is g_min = {}, "
+                 "while the interaction has a cutoff range of {}.").format(
+                     float(offset), gap.min(), float(self.interaction.r_c)), disp0)
         # Lower bounds by dimension of the indices of contacting cells
         bnd_lo = np.min(contact, 0)
         # Upper bounds by dimension of the indices of contacting cells
@@ -186,7 +192,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
         if any(bnd < 0 for bnd in self.__babushka_offset):
             raise self.FreeBoundaryError(
                 ("With the current margin of {}, the system overlaps the lower"
-                 " bounds by {}").format(self.margin, self.__babushka_offset))
+                 " bounds by {}").format(self.margin, self.__babushka_offset),
+                disp0)
         if any(res + self.__babushka_offset[i] > self.resolution[i] for i, res
                in enumerate(sm_res)):
             raise self.FreeBoundaryError(
@@ -194,7 +201,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                  " bounds by {}").format(
                      self.margin,
                      tuple(self.__babushka_offset[i] + res - self.resolution[i]
-                           for i, res in enumerate(sm_res))))
+                           for i, res in enumerate(sm_res))), disp0)
 
         self.compute_babushka_bounds(sm_res)
         sm_surf = self._get_babushka_array(self.surface.profile(),
@@ -380,6 +387,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
             disp_k -- flattened displacement vector at the current optimization
                       step
             """
+            self.deproxyfied()
             self.check_margins()
             return use_callback(disp_k)
         try:

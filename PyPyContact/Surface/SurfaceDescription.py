@@ -30,9 +30,10 @@ Boston, MA 02111-1307, USA.
 """
 
 import numpy as np
+import abc
 
 
-class Surface(object):
+class Surface(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
          contact problems"""
     class Error(Exception):
@@ -40,12 +41,27 @@ class Surface(object):
         pass
     name = 'generic_geom'
 
-    def __init__(self, resolution=None, dim=None, size=None):
+    def __init__(self, resolution=None, dim=None, size=None,
+                 adjustment=0.):
         self._resolution = resolution
         self._dim = dim
         self._size = size
+        self.adjustment = adjustment
 
-    def profile(self, *args, **dummy_kwargs):
+    def adjust(self):
+        """
+        shifts surface up or down so that a zero displacement would lead to a
+        zero gap
+        """
+        self.adjustment = self.profile().max()
+
+    def profile(self):
+        """ returns an array of possibly adjusted heights
+        """
+        return self._profile()-self.adjustment
+
+    @abc.abstractmethod
+    def _profile(self):
         """ returns an array of heights
         """
         raise NotImplementedError()
@@ -82,13 +98,13 @@ class Surface(object):
         """
         return self._size
 
-    def save(self, fname, compress=True, *args, **kwargs):
+    def save(self, fname, compress=True):
         """ saves the surface as a NumpyTxtSurface
         """
         if compress:
             if not fname.endswith('.gz'):
                 fname = fname + ".gz"
-        np.savetxt(fname, self.profile(*args, **kwargs))
+        np.savetxt(fname, self.profile())
 
 
 class ScaledSurface(Surface):
@@ -121,14 +137,10 @@ class ScaledSurface(Surface):
         """
         return self.surf.resolution
 
-    def profile(self, *args, **kwargs):
-        """ Computes the combined profile. Optional *args and **kwargs are
-            passed to the surfaces.
-        Keyword Arguments:
-        args   -- (default list())
-        kwargs -- (default dict())
+    def _profile(self):
+        """ Computes the combined profile.
         """
-        return self.coeff*self.surf.profile(*args, **kwargs)
+        return self.coeff*self.surf.profile()
 
 
 class CompoundSurface(Surface):
@@ -165,28 +177,16 @@ class CompoundSurface(Surface):
                 return prop_a
 
         self._dim = combined_val(surf_a.dim, surf_b.dim, 'dim')
-        self._resulution = combined_val(surf_a.resolution,
+        self._resolution = combined_val(surf_a.resolution,
                                         surf_b.resolution, 'resolution')
         self.surf_a = surf_a
         self.surf_b = surf_b
 
-    def profile(self, surf_a_args=None, surf_a_kwargs=None,
-                surf_b_args=None, surf_b_kwargs=None):
-        """ Computes the combined profile. Optional *args and **kwargs are
-            passed to the surfaces.
-        Keyword Arguments:
-        surf_a_args              -- (default list())
-        surf_a_kwargs            -- (default dict())
-        surf_b_args -- (default list())
-        surf_b_kwargs            -- (default dict())
+    def _profile(self):
+        """ Computes the combined profile
         """
-        # pylint: disable=arguments-differ
-        surf_a_args = () if surf_a_args is None else surf_a_args
-        surf_a_kwargs = {} if surf_a_kwargs is None else surf_a_kwargs
-        surf_b_args = () if surf_b_args is None else surf_b_args
-        surf_b_kwargs = {} if surf_b_kwargs is None else surf_b_kwargs
-        return (self.surf_a.profile(*surf_a_args, **surf_a_kwargs) +
-                self.surf_b.profile(*surf_b_args, **surf_b_kwargs))
+        return (self.surf_a.profile() +
+                self.surf_b.profile())
 
 
 class NumpySurface(Surface):
@@ -203,7 +203,7 @@ class NumpySurface(Surface):
         super().__init__(resolution=self.__h.shape, dim=len(self.__h.shape),
                          size=size)
 
-    def profile(self):
+    def _profile(self):
         return self.__h
 
 
