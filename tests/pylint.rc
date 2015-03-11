@@ -60,7 +60,8 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=W1607,W1606,W1605,W1604,W1603,W1602,W1601,E1608,W1620,W1628,W1623,W1609,W1608,W0704,W1622,W1632,W1625,W1624,I0021,W1627,W1626,W1614,W1629,W1610,W1633,W1612,W1618,W1619,W1630,W1613,E1601,W1611,E1603,E1602,E1605,E1604,W1616,E1606,I0020,W1617,W1621,E1607,W1631,W1615,W0142
+disable=W1607,W1606,W1605,W1604,W1603,W1602,W1601,E1608,W1620,W1628,W1623,W1609,W1608,W0704,W1622,W1632,W1625,W1624,I0021,W1627,W1626,W1614,W1629,W1610,W1633,W1612,W1618,W1619,W1630,W1613,E1601,W1611,E1603,E1602,E1605,E1604,W1616,E1606,I0020,W1617,W1621,E1607,W1631,W1615,W0142,R0922,R0921
+
 
 [REPORTS]
 
@@ -120,7 +121,7 @@ required-attributes=
 bad-functions=map,filter
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i,j,k,ex,Run,_
+good-names=i,j,k,ex,Run,_,r,V,dV,ddV
 
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
@@ -322,13 +323,13 @@ max-branches=12
 max-statements=50
 
 # Maximum number of parents for a class (see R0901).
-max-parents=7
+max-parents=14
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=20
 
 # Minimum number of public methods for a class (see R0903).
-min-public-methods=1
+min-public-methods=0
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=20

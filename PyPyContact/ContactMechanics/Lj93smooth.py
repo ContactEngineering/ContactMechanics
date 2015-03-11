@@ -90,7 +90,7 @@ class LJ93smooth(Lj93.LJ93):
                 ("ε and γ should have the same sign."
                  "you specified ε = {} and γ = {}. Is your γ "
                  "positive (as it should be)?").format(
-                    self.eps, self.gamma))
+                     self.eps, self.gamma))
         # coefficients of the spline
         self.coeffs = np.zeros(5)
         self.eval_poly_and_cutoff()
@@ -100,10 +100,10 @@ class LJ93smooth(Lj93.LJ93):
         has_r_t = self.r_t != self.r_min
         return ("Potential '{0.name}', ε = {0.eps}, σ = "
                 "{0.sig}{1}{2}").format(
-                   self,
-                   ", γ = {.gamma}".format(self) if has_gamma else "",
-                   ", r_t = {}".format(
-                       self.r_t if has_r_t else "r_min"))
+                    self,
+                    ", γ = {.gamma}".format(self) if has_gamma else "",
+                    ", r_t = {}".format(
+                        self.r_t if has_r_t else "r_min"))
 
     def evaluate(self, r, pot=True, forces=False, curb=False):
         """Evaluates the potential and its derivatives
