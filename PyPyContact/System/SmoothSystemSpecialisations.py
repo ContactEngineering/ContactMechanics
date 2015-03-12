@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.
 from collections import namedtuple
 import numpy as np
 import scipy
+import copy
 
 from .Systems import SmoothContactSystem
 from .Systems import IncompatibleResolutionError
@@ -87,7 +88,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         # coordinates of the bottom-right corner of the small scale domain in
         # the large scale domain
         self.__babushka_offset = None
-        # This is the verticas offset between surface and substrate. Determined
+        # This is the vertical offset between surface and substrate. Determined
         # indentation depth. This class needs to keep track of the offsets for
         # which its babuška has been evaluated, in order to have the ability
         # to interpolate the babuška-results onto the domain
@@ -209,8 +210,10 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
         sm_substrate = self.substrate.spawn_child(sm_res)
         sm_surface = NumpySurface(sm_surf)
+        # It is necessary to copy the interaction, or else deproxifying an
+        # instance of this class changes the babushka!
         self.babushka = SmoothContactSystem(
-            sm_substrate, self.interaction, sm_surface)
+            sm_substrate, copy.deepcopy(self.interaction), sm_surface)
 
         return self.babushka.objective(offset, gradient)
 
@@ -390,15 +393,16 @@ class FastSmoothContactSystem(SmoothContactSystem):
             self.deproxyfied()
             self.check_margins()
             return use_callback(disp_k)
+
         try:
             result = scipy.optimize.minimize(
                 fun, x0=disp0, method=method, jac=gradient, tol=tol,
                 callback=compound_callback,
                 options=options)
+            self.deproxyfied()
         except self.FreeBoundaryError as err:
             print("Caught FreeBoundaryError. Reevaluating margins")
             self.check_margins()
             return self.minimize_proxy(offset, err.disp, method, options,
                                        gradient, tol, callback)
-        self.deproxyfied()
         return result
