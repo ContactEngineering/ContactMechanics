@@ -45,7 +45,7 @@ class SystemTest(unittest.TestCase):
                              PyPyContact.ContactMechanics,
                              PyPyContact.ContactMechanics.Interactions,
                              PyPyContact.ContactMechanics.Lj93,
-                             PyPyContact.ContactMechanics.Lj93smooth,
+                             PyPyContact.ContactMechanics.VdW82,
                              PyPyContact.ContactMechanics.Potentials,
                              PyPyContact.SolidMechanics,
                              PyPyContact.SolidMechanics.FFTElasticHalfSpace,

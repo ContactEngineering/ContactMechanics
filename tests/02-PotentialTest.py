@@ -37,6 +37,10 @@ try:
     from PyPyContact.ContactMechanics import LJ93smooth
     from PyPyContact.ContactMechanics import LJ93smoothMin
 
+    from PyPyContact.ContactMechanics import VDW82
+    from PyPyContact.ContactMechanics import VDW82smooth
+    from PyPyContact.ContactMechanics import VDW82smoothMin
+
     import PyPyContact.Tools as Tools
 
     from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
@@ -215,5 +219,57 @@ class LJTest(unittest.TestCase):
              "   err_V = {}, err_dV = {}, err_ddV = {}").format(
             error, self.tol, err_V, err_dV, err_ddV))
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_vanDerWaalsSimple(self):
+        # reproduces the graph in
+        # http://dx.doi.org/10.1103/PhysRevLett.111.035502
+        # originally visally compared then just regression checking
+        c_sr = 2# 2.1e-78
+        hamaker = 4# 68.1e-78
+        vdw = VDW82(c_sr, hamaker)
+        r_min = vdw.r_min
+        V_min, dV_min, ddV_min = vdw.evaluate(r_min, True, True, True)
+        vdws = VDW82smooth(c_sr, hamaker, r_t=2.5)
+        vdwm = VDW82smoothMin(c_sr, hamaker, r_ti=1.95)
+        r = np.arange(0.5, 2.01, .005)*r_min
+
+
+        # import matplotlib.pyplot as plt
+        # plt.figure()
+        # pot = vdw.evaluate(r)[0]
+        # print()
+        # print("  V_min = {}".format(  V_min))
+        # print(" dV_min = {}".format( dV_min))
+        # print("ddV_min = {}".format(ddV_min))
+        # print("transition = {}".format(vdws.r_t))
+        # bot = 1.1*V_min
+        # plt.plot(r, pot,label='simple')
+        # plt.plot(r, vdws.evaluate(r)[0],label='smooth')
+        # plt.plot(r, vdwm.evaluate(r)[0],label='minim')
+        # plt.scatter(vdw.r_min, V_min, marker='+')
+        # plt.ylim(bottom=bot, top=0)
+        # plt.legend(loc='best')
+        # plt.show()
+
+    def test_vanDerWaals(self):
+        # reproduces the graph in
+        # http://dx.doi.org/10.1103/PhysRevLett.111.035502
+        # originally visally compared then just regression checking
+        r = np.arange(0.25, 2.01, .01)*1e-9
+        c_sr = 2.1e-78
+        hamaker = 68.1e-21
+        pots = (("vdW", VDW82(c_sr, hamaker)),
+                ("smooth", VDW82smooth(c_sr, hamaker)),
+                ("min", VDW82smoothMin(c_sr, hamaker)))
+
+        # import matplotlib.pyplot as plt
+        # plt.figure()
+        # bot = None
+        # for name, t_h_phile in pots:
+        #     pot = t_h_phile.evaluate(r)[0]
+        #     if bot is None:
+        #         bot = 1.1*t_h_phile.evaluate(t_h_phile.r_min)[0]
+        #     plt.plot(r, pot,label=name)
+        # plt.ylim(bottom=bot, top=0)
+        # plt.legend(loc='best')
+        #plt.show()
+

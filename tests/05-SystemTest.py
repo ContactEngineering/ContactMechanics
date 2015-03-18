@@ -74,7 +74,7 @@ class SystemTest(unittest.TestCase):
         self.sig = 3+np.random.rand()
         self.gam = (5+np.random.rand())
         self.rcut = 2.5*self.sig+np.random.rand()
-        self.smooth = Contact.LJ93smooth(self.eps, self.sig, self.gam)
+        self.smooth = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
         self.sphere = Surface.Sphere(self.radius, self.res, self.size)
 
@@ -96,9 +96,9 @@ class SystemTest(unittest.TestCase):
 
     def test_SystemGradient(self):
         res = self.res##[0]
-        size = self.size##[0]
+        size = self.res##[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+            res, 25*self.young, size)
         sphere = Surface.Sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         disp = random(res)*self.sig/10
@@ -164,6 +164,7 @@ class SystemTest(unittest.TestCase):
         i, s = interaction, substrate
         f_combo = i['e'] + s['e']
         error = abs(f_combo-V)
+
         self.assertTrue(
             error < tol,
             "f_combo = {}, f = {}, error = {}, tol = {}".format(
@@ -234,6 +235,29 @@ class SystemTest(unittest.TestCase):
                    "'").format(result_grad, result_simple)
         self.assertTrue(result_grad.success and result_simple.success,
                         message)
+
+    def test_minimize_proxy(self):
+        res = self.res
+        size = self.size
+        substrate = Solid.PeriodicFFTElasticHalfSpace(
+            res, 25*self.young, self.size[0])
+        sphere = Surface.Sphere(self.radius, res, size)
+        S = SmoothContactSystem(substrate, self.smooth, sphere)
+        offset = self.sig
+        nb_scales = 5
+        n_iter = np.zeros(nb_scales, dtype=int)
+        n_force = np.zeros(nb_scales, dtype=float)
+        
+        for i in range(nb_scales):
+            scale = 10**(i-2)
+            res = S.minimize_proxy(offset, disp_scale=scale, tol = 1e-40,
+                                   gradient=True, callback=True)
+            print(res.message)
+            n_iter[i] = res.nit
+            n_force[i] = S.compute_normal_force()
+        print("N_iter = ", n_iter)
+        print("N_force = ", n_force)
+
 
 class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
     def setUp(self):

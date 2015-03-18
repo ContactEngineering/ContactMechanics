@@ -29,9 +29,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import math
-import numpy as np
-from . import Potential
+from . import Potential, SmoothPotential, MinimisationPotential
 
 
 class LJ93(Potential):
@@ -45,18 +43,6 @@ class LJ93(Potential):
 
         V_lc (r) = V_l (r) - V_l (r_c)
     """
-    class SliceableNone(object):
-        """small helper class to remedy numpy's lack of views on
-        index-sliced array views. This construction avoid the computation
-        of all interactions as with np.where, and copies"""
-        # pylint: disable=R0903
-        __slots__ = ()
-
-        def __setitem__(self, index, val):
-            pass
-
-        def __getitem__(self, index):
-            pass
 
     name = "lj9-3"
 
@@ -65,51 +51,16 @@ class LJ93(Potential):
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε
         sigma   -- Lennard-Jones distance parameter σ
-        r_cut   -- (default infinity) optional cutoff radius
+        r_cut   -- (default i) optional cutoff radius
         """
-        super().__init__()
         self.eps = epsilon
         self.sig = sigma
-        self.r_c = r_cut
-        if r_cut is not None:
-            self.has_cutoff = not math.isinf(self.r_c)
-        else:
-            self.has_cutoff = False
-        if self.has_cutoff:
-            self.offset = self.naive_V(self.r_c)[0]
-        else:
-            self.offset = 0
+        Potential.__init__(self, r_cut)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': ε = {0.eps}, σ = {0.sig}, "
                 "r_c = {1}").format(
                     self, self.r_c if self.has_cutoff else '∞')
-
-    def evaluate(self, r, pot=True, forces=False, curb=False):
-        """Evaluates the potential and its derivatives
-        Keyword Arguments:
-        r      -- array of distances
-        pot    -- (default True) if true, returns potential energy
-        forces -- (default False) if true, returns forces
-        curb   -- (default False) if true, returns second derivative
-        """
-        # pylint: disable=bad-whitespace
-        # pylint: disable=invalid-name
-        r = np.array(r)
-        if r.shape == ():
-            r.shape = (1, )
-        inside_slice = r < self.r_c
-        V = np.zeros_like(r) if pot else self.SliceableNone()
-        dV = np.zeros_like(r) if forces else self.SliceableNone()
-        ddV = np.zeros_like(r) if curb else self.SliceableNone()
-
-        V[inside_slice], dV[inside_slice], ddV[inside_slice] = self.naive_V(
-            r[inside_slice], pot, forces, curb)
-        if V[inside_slice] is not None:
-            V[inside_slice] -= self.offset
-        return (V if pot else None,
-                dV if forces else None,
-                ddV if curb else None)
 
     @property
     def r_min(self):
@@ -122,15 +73,7 @@ class LJ93(Potential):
         """
         return self.sig*(2*5**5)**(1./6)/5.
 
-    @property
-    def naive_min(self):
-        """ convenience function returning the energy minimum of the bare
-           potential
-
-        """
-        return self.naive_V(self.r_min)[0]
-
-    def naive_V(self, r, pot=True, forces=False, curb=False):
+    def naive_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the potential and its derivatives without cutoffs or
             offsets. These have been collected in a single method to reuse the
             computated LJ terms for efficiency
@@ -173,3 +116,99 @@ class LJ93(Potential):
         if curb:
             ddV = 12*eps_r/r*(sig_r9 - sig_r3)
         return (V, dV, ddV)
+
+
+class LJ93smooth(LJ93, SmoothPotential):
+    """ 9-3 Lennard-Jones potential with forces splined to zero from
+        the minimum of the potential using a fourth order spline. The 9-3
+        Lennard-Jones interaction potential is often used to model the interac-
+        tion between a continuous solid wall and the atoms/molecules of a li-
+        quid.
+
+        9-3 Lennard-Jones potential:
+        V_l (r) = ε[ 2/15 (σ/r)**9 - (σ/r)**3]
+
+        decoupled 9-3:
+        V_lγ (r) = V_l(r) - V_l(r_t) + γ
+
+        spline: (Δr = r-r_t)
+        V_s(Δr) = C0 - C1*Δr
+                  - 1/2*C2*Δr**2
+                  - 1/3*C3*Δr**3
+                  - 1/4*C4*Δr**4
+
+        The formulation allows to choose the contact stiffness (the original
+        repulsive LJ zone) independently from the work of adhesion (the energy
+        well). By default, the work of adhesion equals epsilon and the transi-
+        tion point r_t between LJ and spline is at the minimumm, however they
+        can be chosen freely.
+
+        The spline is chosen to guarantee continuity of the second derivative
+        of the potential, leading to the following conditions:
+        (1): V_s' (0)    =  V_lγ' (r_t)
+        (2): V_s''(0)    =  V_lγ''(r_t)
+        (3): V_s  (Δr_c) =  0, where Δr_c = r_c-r_t
+        (4): V_s' (Δr_c) =  0
+        (5): V_s''(Δr_c) =  0
+        (6): V_s  (Δr_m) = -γ, where Δr_m = r_min-r_t
+        The unknowns are C_i (i in {0,..4}) and r_t
+    """
+    name = 'lj9-3smooth'
+
+    def __init__(self, epsilon, sigma, gamma=None, r_t=None):
+        """
+        Keyword Arguments:
+        epsilon -- Lennard-Jones potential well ε (careful, not work of
+                   adhesion in this formulation)
+        sigma   -- Lennard-Jones distance parameter σ
+        gamma   -- (default ε) Work of adhesion, defaults to ε
+        r_t     -- (default r_min) transition point, defaults to r_min
+        """
+        LJ93.__init__(self, epsilon, sigma, None)
+        SmoothPotential.__init__(self, gamma, r_t)
+
+    def __repr__(self):
+        has_gamma = -self.gamma != self.naive_min
+        has_r_t = self.r_t != self.r_min
+        return ("Potential '{0.name}', ε = {0.eps}, σ = "
+                "{0.sig}{1}{2}").format(
+                    self,
+                    ", γ = {.gamma}".format(self) if has_gamma else "",
+                    ", r_t = {}".format(
+                        self.r_t if has_r_t else "r_min"))
+
+
+class LJ93smoothMin(LJ93smooth, MinimisationPotential):
+    """
+    When starting from a bad guess, or with a bad optimizer, sometimes
+    optimisations that include potentials with a singularity at the origin
+    fail, because the optimizer chooses a bad step direction and length and
+    falls into non-physical territory. This class tries to remedy this by
+    replacing the singular repulsive part around zero by a linear function.
+    """
+    name = 'lj9-3smooth-min'
+
+    def __init__(self, epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None):
+        """
+        Keyword Arguments:
+        epsilon -- Lennard-Jones potential well ε (careful, not work of
+                   adhesion in this formulation)
+        sigma   -- Lennard-Jones distance parameter σ
+        gamma   -- (default ε) Work of adhesion, defaults to ε
+        r_ti    -- (default r_min/2) transition point between linear function
+                   and lj, defaults to r_min
+        r_t_ls  -- (default r_min) transition point between lj and spline,
+                    defaults to r_min
+        """
+        LJ93smooth.__init__(self, epsilon, sigma, gamma, r_t_ls)
+        MinimisationPotential.__init__(self, r_ti)
+
+    def __repr__(self):
+        has_gamma = -self.gamma != self.naive_min
+        has_r_t = self.r_t != self.r_min
+        return ("Potential '{0.name}', ε = {0.eps}, σ = "
+                "{0.sig}{1}{2}, r_ti = {0.r_ti}").format(
+                    self,
+                    ", γ = {.gamma}".format(self) if has_gamma else "",
+                    ", r_t = {}".format(
+                        self.r_t if has_r_t else "r_min"))

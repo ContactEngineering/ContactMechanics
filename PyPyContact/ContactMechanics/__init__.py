@@ -29,10 +29,6 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 from .Interactions import Interaction, HardWall, SoftWall
-from .Potentials import Potential
-from .Lj93 import LJ93
-from .Lj93smooth import LJ93smooth
-from .Lj93smoothMin import LJ93smoothMin
-
-__all__ = ["Interaction", "HardWall", "SoftWall", "Potential", "LJ93",
-           "LJ93smooth"]
+from .Potentials import Potential, SmoothPotential, MinimisationPotential
+from .Lj93 import LJ93, LJ93smooth, LJ93smoothMin
+from .VdW82 import VDW82, VDW82smooth, VDW82smoothMin

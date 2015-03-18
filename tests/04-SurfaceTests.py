@@ -43,6 +43,7 @@ except ImportError as err:
     sys.exit(-1)
 
 from PyPyContact.Surface import NumpyTxtSurface, NumpySurface, Sphere
+from PyPyContact.Surface import NumpyAscSurface
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
@@ -69,3 +70,9 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
         S3 = Sphere(R, (res, res), (l, l), (x_c, y_c))
         self.assertTrue(np.array_equal(S1.profile(), S2.profile()))
         self.assertTrue(np.array_equal(S1.profile(), S3.profile()),)
+
+class NumpyAscSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_loading(self):
+        surf = NumpyAscSurface('tests/TopoRef.asc')
