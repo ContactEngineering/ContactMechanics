@@ -75,7 +75,10 @@ class FastSmoothContactSystem(SmoothContactSystem):
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                        the substrate
         interaction -- An instance of Interaction. Defines the contact
-                       formulation
+                       formulation. If this computes interaction energies,
+                       forces etc, these are supposed to be expressed per unit
+                       area in whatever units you use. The conversion is
+                       performed by the system
         surface     -- An instance of Surface, defines the profile.
         margin      -- (default 4) safety margin (in pixels) around the initial
                        contact area bounding box
@@ -155,7 +158,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                             Surface.Surface)
         return is_ok
 
-    def objective(self, offset, disp0=None, gradient=False):
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.):
         """
         See super().objective for general description this method's purpose.
         Difference for this class wrt 'dumb' systems:
@@ -167,6 +170,10 @@ class FastSmoothContactSystem(SmoothContactSystem):
         gradient -- (default False) whether the gradient is supposed to be used
         disp0    -- (default zero) initial guess for displacement field. If not
                     chosen appropriately, results may be unreliable.
+        disp_scale -- (default 1.) allows to specify a scaling of the
+                      dislacement before evaluation. This can be necessary when
+                      using dumb minimizers with hardcoded convergence criteria
+                      such as scipy's L-BFGS-B.
         """
         # pylint: disable=arguments-differ
         # this class needs to remember its offset since the evaluate method
@@ -177,11 +184,9 @@ class FastSmoothContactSystem(SmoothContactSystem):
         gap = self.compute_gap(disp0, offset)
         contact = np.argwhere(gap < self.interaction.r_c)
         if contact.size == 0:
-            raise self.FreeBoundaryError(
-                ("The offset you chose ('{}') leads to no contact at all. With"
-                 " the current offset, the minimum of the gap is g_min = {}, "
-                 "while the interaction has a cutoff range of {}.").format(
-                     float(offset), gap.min(), float(self.interaction.r_c)), disp0)
+            contact = np.array(
+                np.unravel_index(
+                    np.argmin(gap), gap.shape)).reshape((-1, 2))
         # Lower bounds by dimension of the indices of contacting cells
         bnd_lo = np.min(contact, 0)
         # Upper bounds by dimension of the indices of contacting cells
@@ -215,7 +220,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         self.babushka = SmoothContactSystem(
             sm_substrate, copy.deepcopy(self.interaction), sm_surface)
 
-        return self.babushka.objective(offset, gradient)
+        return self.babushka.objective(offset, gradient, disp_scale)
 
     def compute_normal_force(self):
         return self.babushka.interaction.force.sum()
@@ -237,6 +242,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
         self.interaction.force = self._get_full_array(
             self.babushka.interaction.force)
         self.energy = self.babushka.energy
+        self.interaction.energy = self.babushka.interaction.energy
+        self.substrate.energy = self.babushka.substrate.energy
 
         self.force = self.substrate.force.copy()
         if self.dim == 1:
@@ -342,7 +349,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
                        options=None, gradient=True, tol=None,
-                       callback=None):
+                       callback=None, disp_scale=1.):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of scipy.minimize for common default
@@ -351,23 +358,27 @@ class FastSmoothContactSystem(SmoothContactSystem):
         results onto the proxied system, etc.
 
         Parameters:
-        offset   -- determines indentation depth
-        disp0    -- (default zero) initial guess for displacement field. If not
-                    chosen appropriately, results may be unreliable.
-        method   -- (defaults to L-BFGS-B, see scipy documentation). Be sure to
-                    choose method that can handle high-dimensional parameter
-                    spaces.
-        options  -- (default None) options to be passed to the minimizer method
-        gradient -- (default True) whether to use the gradient or not
-        tol      -- (default None) tolerance for termination. For detailed
-                    control, use solver-specific options.
-        callback -- (default None) callback function to be at each iteration as
-                    callback(disp_k) where disp_k is the current displacement
-                    vector. Instead of a callable, it can be set to 'True', in
-                    which case the system's default callback function is
-                    called.
+        offset     -- determines indentation depth
+        disp0      -- (default zero) initial guess for displacement field. If
+                      not chosen appropriately, results may be unreliable.
+        method     -- (defaults to L-BFGS-B, see scipy documentation). Be sure
+                      to choose method that can handle high-dimensional
+                      parameter spaces.
+        options    -- (default None) options to be passed to the minimizer
+                      method
+        gradient   -- (default True) whether to use the gradient or not
+        tol        -- (default None) tolerance for termination. For detailed
+                      control, use solver-specific options.
+        callback   -- (default None) callback function to be at each iteration
+                      as callback(disp_k) where disp_k is the current
+                      displacement vector. Instead of a callable, it can be set
+                      to 'True', in which case the system's default callback
+                      function is called.
+        disp_scale -- (default 1.) allows to specify a scaling of the
+                      dislacement before evaluation.
         """
-        fun = self.objective(offset, disp0, gradient=gradient)
+        fun = self.objective(offset, disp0, gradient=gradient,
+                             disp_scale=disp_scale)
         if disp0 is None:
             disp0 = np.zeros(self.substrate.computational_resolution)
         disp0 = self.shape_minimisation_input(disp0)

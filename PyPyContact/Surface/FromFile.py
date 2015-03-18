@@ -90,6 +90,7 @@ class NumpyAscSurface(NumpySurface):
 
         data = None
         xres = yres = xsiz = ysiz = None
+
         def process_comment(line):
             def check(line, reg, fun):
                 match = reg.search(line)

@@ -261,15 +261,15 @@ class LJTest(unittest.TestCase):
                 ("smooth", VDW82smooth(c_sr, hamaker)),
                 ("min", VDW82smoothMin(c_sr, hamaker)))
 
-        import matplotlib.pyplot as plt
-        plt.figure()
-        bot = None
-        for name, t_h_phile in pots:
-            pot = t_h_phile.evaluate(r)[0]
-            if bot is None:
-                bot = 1.1*t_h_phile.evaluate(t_h_phile.r_min)[0]
-            plt.plot(r, pot,label=name)
-        plt.ylim(bottom=bot, top=0)
-        plt.legend(loc='best')
-        plt.show()
-        pass
+        # import matplotlib.pyplot as plt
+        # plt.figure()
+        # bot = None
+        # for name, t_h_phile in pots:
+        #     pot = t_h_phile.evaluate(r)[0]
+        #     if bot is None:
+        #         bot = 1.1*t_h_phile.evaluate(t_h_phile.r_min)[0]
+        #     plt.plot(r, pot,label=name)
+        # plt.ylim(bottom=bot, top=0)
+        # plt.legend(loc='best')
+        #plt.show()
+

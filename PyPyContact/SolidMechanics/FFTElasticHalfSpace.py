@@ -114,20 +114,35 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 " {1}, E' = {0.young}").format(self, size_str)
 
     def _compute_fourier_coeffs(self):
-        """Compute the weights w relating fft(displacement) to fft(pressure):
-           fft(u) = w*fft(p), see (6) Stanley & Kato J. Tribol. 119(3), 481-485
-           (Jul 01, 1997)
+        """
+        Compute the weights w relating fft(displacement) to fft(pressure):
+        fft(u) = w*fft(p), see (6) Stanley & Kato J. Tribol. 119(3), 481-485
+        (Jul 01, 1997).
+        WARNING: the paper is dimensionally *incorrect*. see for the correct
+        1D formulation: Section 13.2 in
+            K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge:
+            Cambridge  University Press. Available from: Cambridge Books Online
+            <http://dx.doi.org/10.1017/CBO9781139171731> [Accessed 16 February
+            2015]
+        for correct 2D formulation: Appendix 1, eq A.2 in
+            Johnson, Greenwood and Higginson, "The Contact of Elastic Regular
+            Wavy surfaces", Int. J. Mech. Sci. Vol. 27 No. 6, pp. 383-396, 1985
+            <http://dx.doi.org/10.1016/0020-7403(85)90029-3> [Accessed 18 March
+            2015]
         """
         facts = np.zeros(self.resolution)
         if self.dim == 1:
             for index in range(2, self.resolution[0]//2+2):
-                facts[-index+1] = facts[index - 1] = 2./(self.young*index)
+                facts[-index+1] = facts[index - 1] = \
+                  self.size[0]/(self.young*index*np.pi)
+
         if self.dim == 2:
             for idx_m in range(1, self.resolution[0]//2+2):
                 for idx_n in range(1, self.resolution[1]//2+2):
                     facts[-idx_m+1, -idx_n+1] = facts[-idx_m+1, idx_n-1] = \
                       facts[idx_m-1, -idx_n+1] = facts[idx_m-1, idx_n-1] = \
-                      2./(self.young*(idx_m**2+idx_n**2)**.5)
+                      1./(self.young*np.pi*((idx_m/self.size[0])**2 +
+                                            (idx_n/self.size[1])**2)**.5)
             facts[0, 0] = 0
         self.weights = facts
 

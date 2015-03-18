@@ -165,4 +165,4 @@ class VDW82smoothMin(VDW82smooth, MinimisationPotential):
         MinimisationPotential.__init__(self, r_ti)
 
     def __repr__(self):
-        super().__repr__()
+        return super().__repr__()
