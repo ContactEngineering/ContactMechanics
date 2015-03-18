@@ -55,7 +55,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
     def test_consistency(self):
         pressure = list()
         base_res = 128
-        tol = 1e-5
+        tol = 1e-4
         for i in (1, 2):
             s_res = base_res*i
             test_res = (s_res, s_res)
@@ -65,7 +65,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
 
             pressure.append(hs.evaluate_disp(forces)[::i,::i]*hs.area_per_pt)
         error = ((pressure[0]-pressure[1])**2).sum().sum()/base_res**2
-        self.assertTrue(error < tol)
+        self.assertTrue(error < tol, "error = {}".format(error))
 
 
     def test_parabolic_shape_force(self):
@@ -160,7 +160,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
 
             ## theoretical FFT of disp
             Fdisp = np.zeros_like(x)
-            Fdisp[1] = Fdisp[-1] = res/2.*a/E
+            Fdisp[1] = Fdisp[-1] = res/2.*a/E*l/(2*np.pi)
 
             ## verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, l)
@@ -189,6 +189,77 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
                 abs(E-e)<tol,
                 "theoretical E = {}, computed e = {}, diff(tol) = {}({})".format(
                     E, e, E-e, tol))
+
+    def test_unit_neutrality(self):
+        tol = 1e-7
+        # runs the same problem in two unit sets and checks whether results are
+        # changed
+
+        # Conversion factors
+        length_c   = 1. + np.random.rand()
+        force_c    = 1. + np.random.rand()
+        pressure_c = force_c/length_c**2
+        energy_c   = force_c*length_c
+
+        length_rc = (1., 1./length_c)
+        force_rc = (1., 1./force_c)
+        pressure_rc = (1., 1./pressure_c)
+        energy_rc = (1., 1./energy_c)
+        resolution = (32, 32)
+        young = (self.young, pressure_c*self.young)
+        size = self.size[0], 2*self.size[1]
+        size = (size, tuple((length_c*s for s in size)))
+        print('SELF.SIZE = {}'.format(self.size))
+
+        disp = np.random.random(resolution)
+        disp -= disp.mean()
+        disp = (disp, disp*length_c)
+
+        forces = list()
+        for i in range(2):
+            sub = PeriodicFFTElasticHalfSpace(resolution, young[i], size[i])
+            force = sub.evaluate_force(disp[i])
+            forces.append(force*force_rc[i])
+        error = Tools.mean_err(forces[0], forces[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+
+    def test_unit_neutrality1D(self):
+        tol = 1e-7
+        # runs the same problem in two unit sets and checks whether results are
+        # changed
+
+        # Conversion factors
+        length_c   = 1. + np.random.rand()
+        force_c    = 2. + np.random.rand()
+        pressure_c = force_c/length_c**2
+        energy_c   = force_c*length_c
+        force_per_length_c = force_c/length_c
+
+        length_rc = (1., 1./length_c)
+        force_rc = (1., 1./force_c)
+        pressure_rc = (1., 1./pressure_c)
+        energy_rc = (1., 1./energy_c)
+        force_per_length_rc = (1., 1./force_per_length_c)
+
+        resolution = (32, )
+        young = (self.young, pressure_c*self.young)
+        size = (self.size[0], length_c*self.size[0])
+
+        disp = np.random.random(resolution)
+        disp -= disp.mean()
+        disp = (disp, disp*length_c)
+
+        forces = list()
+        subs = tuple((PeriodicFFTElasticHalfSpace(resolution, y, s) for y, s in
+                      zip(young, size)))
+        forces = tuple((s.evaluate_force(d)*f_p_l for s, d, f_p_l in
+                        zip(subs, disp, force_per_length_rc)))
+        error = Tools.mean_err(forces[0], forces[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+
+
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
         self.size = (7.5+5*rand(), 7.5+5*rand())
@@ -268,7 +339,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
             ## theoretical FFT of disp
             Fdisp = np.zeros_like(x)
-            Fdisp[1] = Fdisp[-1] = res/2.*a/E
+            Fdisp[1] = Fdisp[-1] = res/2.*a/E*l/(2.*np.pi)
 
             ## verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, l)
@@ -297,3 +368,37 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
                 abs(E-e)<tol,
                 "theoretical E = {}, computed e = {}, diff(tol) = {}({})".format(
                     E, e, E-e, tol))
+
+    def test_unit_neutrality(self):
+        tol = 1e-7
+        # runs the same problem in two unit sets and checks whether results are
+        # changed
+
+        # Conversion factors
+        length_c   = 1. + np.random.rand()
+        force_c    = 2. + np.random.rand()
+        pressure_c = force_c/length_c**2
+        energy_c   = force_c*length_c
+
+        length_rc = (1., 1./length_c)
+        force_rc = (1., 1./force_c)
+        pressure_rc = (1., 1./pressure_c)
+        energy_rc = (1., 1./energy_c)
+        resolution = (32, 32)
+        young = (self.young, pressure_c*self.young)
+        size = (self.size, tuple((length_c*s for s in self.size)))
+
+        comp_resolution = tuple((2*res for res in resolution))
+        disp = np.random.random(comp_resolution)
+        disp -= disp.mean()
+        disp = (disp, disp*length_c)
+
+        forces = list()
+        for i in range(2):
+            sub = FreeFFTElasticHalfSpace(resolution, young[i], size[i])
+            force = sub.evaluate_force(disp[i])
+            forces.append(force*force_rc[i])
+        error = Tools.mean_err(forces[0], forces[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+

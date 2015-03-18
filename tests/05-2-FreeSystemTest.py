@@ -44,6 +44,8 @@ try:
     import PyPyContact.ContactMechanics as Contact
     import PyPyContact.Surface as Surface
     import PyPyContact.Tools as Tools
+
+    import matplotlib.pyplot as plt
 except ImportError as err:
     import sys
     print(err)
@@ -187,3 +189,107 @@ class FastSystemTest(unittest.TestCase):
                         "error = {} > tol = {}".format(
                             error, tol))
 
+    def test_unit_neutrality(self):
+        tol = 1e-7
+        # runs the same problem in two unit sets and checks whether results are
+        # changed
+
+        # Conversion factors
+        length_c   = 1. +9# np.random.rand()
+        force_c    = 2. + 1#np.random.rand()
+        pressure_c = force_c/length_c**2
+        energy_per_area_c   = force_c/length_c
+        energy_c   = force_c*length_c
+
+        young = (self.young, pressure_c*self.young)
+        size = (self.size, tuple((length_c*s for s in self.size)))
+        print("SIZES!!!!! = ", size)
+        radius = (self.radius, length_c*self.radius)
+        res = self.res
+        eps = (self.eps, energy_per_area_c*self.eps)
+        sig = (self.sig, length_c*self.sig)
+        gam = (self.gam, energy_per_area_c*self.gam)
+
+        systems = list()
+        offsets = list()
+        length_rc = (1., 1./length_c)
+        force_rc = (1., 1./force_c)
+        energy_per_area_rc = (1., 1./energy_per_area_c)
+        energy_rc = (1., 1./energy_c)
+
+        for i in range(2):
+            substrate = Solid.PeriodicFFTElasticHalfSpace(
+                res, young[i], size[i])
+            interaction = Contact.LJ93smoothMin(
+                eps[i], sig[i], gam[i])
+            surface = Surface.Sphere(
+                radius[i], res, size[i], standoff=float(sig[i]*1000))
+            systems.append(SystemFactory(substrate, interaction, surface))
+            offsets.append(.8*systems[i].interaction.r_c)
+
+        gaps = list()
+        for i in range(2):
+            gap = systems[i].compute_gap(np.zeros(systems[i].resolution), offsets[i])
+            gaps.append(gap*length_rc[i])
+
+        error = Tools.mean_err(gaps[0], gaps[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+
+        forces = list()
+        for i in range(2):
+            energy, force = systems[i].evaluate(np.zeros(res), offsets[i], forces=True)
+            forces.append(force*force_rc[i])
+
+        error = Tools.mean_err(forces[0], forces[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+
+        energies, forces = list(), list()
+        substrate_energies = list()
+        interaction_energies = list()
+        disp = np.random.random(res)
+        disp -= disp.mean()
+        disp = (disp, disp*length_c)
+        gaps = list()
+
+        for i in range(2):
+            energy, force = systems[i].evaluate(disp[i], offsets[i], forces=True)
+            gap = systems[i].compute_gap(disp[i], offsets[i])
+            gaps.append(gap*length_rc[i])
+            energies.append(energy*energy_rc[i])
+            substrate_energies.append(systems[i].substrate.energy*energy_rc[i])
+            interaction_energies.append(systems[i].interaction.energy*energy_rc[i])
+            forces.append(force*force_rc[i])
+
+        error = Tools.mean_err(gaps[0], gaps[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+
+        error = Tools.mean_err(forces[0], forces[1])
+
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+
+        error = abs(interaction_energies[0] - interaction_energies[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+
+
+        error = abs(substrate_energies[0] - substrate_energies[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}, (c = {})".format(error, tol, energy_c))
+
+        error = abs(energies[0] - energies[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}".format(error, tol))
+
+        disps = list()
+        for i in range(2):
+            options = dict(ftol = 1e-32, gtol = 1e-20)
+            result = systems[i].minimize_proxy(offsets[i], options=options)
+            disps.append(systems[i].shape_minimisation_output(result.x)*length_rc[i])
+
+        error = Tools.mean_err(disps[0], disps[1])
+        self.assertTrue(error < tol,
+                        "error = {} ≥ tol = {}, (c = {})".format(error, tol, length_c))

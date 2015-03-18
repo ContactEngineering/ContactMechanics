@@ -54,10 +54,14 @@ class SystemBase(object):
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                        the substrate
         interaction -- An instance of Interaction. Defines the contact
-                       formulation
+                       formulation. If this computes interaction energies,
+                       forces etc, these are supposed to be expressed per unit
+                       area in whatever units you use. The conversion is
+                       performed by the system
         surface     -- An instance of Surface, defines the profile.
         """
         self.substrate = substrate
+        self.area_per_pt = self.substrate.area_per_pt
         self.interaction = interaction
         self.surface = surface
         self.dim = None
@@ -149,7 +153,7 @@ class SystemBase(object):
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
                        options=None, gradient=True, tol=None,
-                       callback=None):
+                       callback=None, disp_scale=1.):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of scipy.minimize for common default
@@ -158,35 +162,40 @@ class SystemBase(object):
         results onto the proxied system, etc.
 
         Parameters:
-        offset   -- determines indentation depth
-        disp0    -- (default zero) initial guess for displacement field. If not
-                    chosen appropriately, results may be unreliable.
-        method   -- (defaults to L-BFGS-B, see scipy documentation). Be sure to
-                    choose method that can handle high-dimensional parameter
-                    spaces.
-        options  -- (default None) options to be passed to the minimizer method
-        gradient -- (default True) whether to use the gradient or not
-        tol      -- (default None) tolerance for termination. For detailed
-                    control, use solver-specific options.
-        callback -- (default None) callback function to be at each iteration as
-                    callback(disp_k) where disp_k is the current displacement
-                    vector. Instead of a callable, it can be set to 'True', in
-                    which case the system's default callback function is
-                    called.
+        offset     -- determines indentation depth
+        disp0      -- (default zero) initial guess for displacement field. If
+                      not chosen appropriately, results may be unreliable.
+        method     -- (defaults to L-BFGS-B, see scipy documentation). Be sure
+                      to choose method that can handle high-dimensional
+                      parameter spaces.
+        options    -- (default None) options to be passed to the minimizer
+                      method
+        gradient   -- (default True) whether to use the gradient or not
+        tol        -- (default None) tolerance for termination. For detailed
+                      control, use solver-specific options.
+        callback   -- (default None) callback function to be at each iteration
+                      as callback(disp_k) where disp_k is the current
+                      displacement vector. Instead of a callable, it can be set
+                      to 'True', in which case the system's default callback
+                      function is called.
+        disp_scale -- (default 1.) allows to specify a scaling of the
+                      dislacement before evaluation.
         """
-        fun = self.objective(offset, gradient=gradient)
+        fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale)
         if disp0 is None:
             disp0 = np.zeros(self.substrate.computational_resolution)
         disp0 = self.shape_minimisation_input(disp0)
         if callback is True:
             callback = self.callback(force=gradient)
-        result = scipy.optimize.minimize(fun, x0=disp0, method=method,
+        result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
+                                         method=method,
                                          jac=gradient, tol=tol,
                                          callback=callback, options=options)
-        self.disp = self.shape_minimisation_output(result.x)
+        self.disp = self.shape_minimisation_output(result.x*disp_scale)
+        self.evaluate(self.disp, offset, forces=gradient)
         return result
 
-    def objective(self, offset, gradient=False):
+    def objective(self, offset, gradient=False, disp_scale=1.):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -194,8 +203,11 @@ class SystemBase(object):
         'forces' flag without using scipy's cumbersome argument passing
         interface. Returns a function of only disp
         Keyword Arguments:
-        offset   -- determines indentation depth
-        gradient -- (default False) whether the gradient is supposed to be used
+        offset     -- determines indentation depth
+        gradient   -- (default False) whether the gradient is supposed to be
+                      used
+        disp_scale -- (default 1.) allows to specify a scaling of the
+                      dislacement before evaluation.
         """
         raise NotImplementedError()
 
@@ -221,7 +233,10 @@ class SmoothContactSystem(SystemBase):
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                        the substrate
         interaction -- An instance of Interaction. Defines the contact
-                       formulation
+                       formulation. If this computes interaction energies,
+                       forces etc, these are supposed to be expressed per unit
+                       area in whatever units you use. The conversion is
+                       performed by the system
         surface     -- An instance of Surface, defines the profile.
         """
         super().__init__(substrate, interaction, surface)
@@ -267,18 +282,21 @@ class SmoothContactSystem(SystemBase):
         # attention: the substrate may have a higher resolution than the gap
         # and the interaction (e.g. FreeElasticHalfSpace)
         self.gap = self.compute_gap(disp, offset)
-        self.interaction.compute(self.gap, pot, forces)
+        self.interaction.compute(self.gap, pot=pot, forces=forces, curb=False,
+                                 area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
 
         # attention: the gradient of the interaction has the wrong sign,
         # because the derivative of the gap with respect to displacement
         # introduces a -1 factor. Hence the minus sign in the 'sum' of forces:
-        self.energy = (self.interaction.energy + self.substrate.energy
+        self.energy = (self.interaction.energy +
+                       self.substrate.energy
                        if pot else None)
         if forces:
             self.force = self.substrate.force.copy()
             if self.dim == 1:
-                self.force[:self.resolution[0]] -= self.interaction.force
+                self.force[:self.resolution[0]] -= \
+                  self.interaction.force
             else:
                 self.force[:self.resolution[0], :self.resolution[1]] -= \
                   self.interaction.force
@@ -287,7 +305,7 @@ class SmoothContactSystem(SystemBase):
 
         return (self.energy, self.force)
 
-    def objective(self, offset, gradient=False):
+    def objective(self, offset, gradient=False, disp_scale=1.):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -295,8 +313,11 @@ class SmoothContactSystem(SystemBase):
         'forces' flag without using scipy's cumbersome argument passing
         interface. Returns a function of only disp
         Keyword Arguments:
-        offset   -- determines indentation depth
-        gradient -- (default False) whether the gradient is supposed to be used
+        offset     -- determines indentation depth
+        gradient   -- (default False) whether the gradient is supposed to be
+                      used
+        disp_scale -- (default 1.) allows to specify a scaling of the
+                      dislacement before evaluation.
         """
         res = self.substrate.computational_resolution
         if gradient:
@@ -304,17 +325,17 @@ class SmoothContactSystem(SystemBase):
                 # pylint: disable=missing-docstring
                 try:
                     self.evaluate(
-                        disp.reshape(res), offset, forces=True)
+                        disp_scale * disp.reshape(res), offset, forces=True)
                 except ValueError as err:
                     raise ValueError(
                         "{}: disp.shape: {}, res: {}".format(
                             err, disp.shape, res))
-                return (self.energy, -self.force.reshape(-1))
+                return (self.energy, -self.force.reshape(-1)*disp_scale)
         else:
             def fun(disp):
                 # pylint: disable=missing-docstring
                 return self.evaluate(
-                    disp.reshape(res), offset, forces=False)[0]
+                    disp_scale * disp.reshape(res), offset, forces=False)[0]
 
         return fun
 

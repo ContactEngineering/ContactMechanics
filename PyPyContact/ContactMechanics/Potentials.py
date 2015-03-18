@@ -82,10 +82,10 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         return ("Potential '{0.name}', cut-off radius r_cut = " +
                 "{0.r_c}").format(self)
 
-    def compute(self, gap, pot=True, forces=False, curb=False):
+    def compute(self, gap, pot=True, forces=False, curb=False, area_scale=1.):
         # pylint: disable=arguments-differ
         energy, self.force, self.curb = self.evaluate(
-            gap, pot, forces, curb)
+            gap, pot, forces, curb, area_scale)
         self.energy = energy.sum()
 
     @abc.abstractmethod
@@ -101,13 +101,16 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    def evaluate(self, r, pot=True, forces=False, curb=False):
+    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
         """Evaluates the potential and its derivatives
         Keyword Arguments:
-        r      -- array of distances
-        pot    -- (default True) if true, returns potential energy
-        forces -- (default False) if true, returns forces
-        curb   -- (default False) if true, returns second derivative
+        r          -- array of distances
+        pot        -- (default True) if true, returns potential energy
+        forces     -- (default False) if true, returns forces
+        curb       -- (default False) if true, returns second derivative
+        area_scale -- (default 1.) scale by this. (Interaction quantities are
+                      supposed to be expressed per unit area, so systems need
+                      to be able to scale their response for their resolution))
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=arguments-differ
@@ -123,9 +126,9 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
             r[inside_slice], pot, forces, curb)
         if V[inside_slice] is not None:
             V[inside_slice] -= self.offset
-        return (V if pot else None,
-                dV if forces else None,
-                ddV if curb else None)
+        return (area_scale*V if pot else None,
+                area_scale*dV if forces else None,
+                area_scale*ddV if curb else None)
 
     @abc.abstractproperty
     def r_min(self):
@@ -213,13 +216,16 @@ class SmoothPotential(Potential):
     def __repr__(self):
         raise NotImplementedError
 
-    def evaluate(self, r, pot=True, forces=False, curb=False):
+    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
         """Evaluates the potential and its derivatives
         Keyword Arguments:
-        r      -- array of distances
-        pot    -- (default True) if true, returns potential energy
-        forces -- (default False) if true, returns forces
-        curb   -- (default False) if true, returns second derivative
+        r          -- array of distances
+        pot        -- (default True) if true, returns potential energy
+        forces     -- (default False) if true, returns forces
+        curb       -- (default False) if true, returns second derivative
+        area_scale -- (default 1.) scale by this. (Interaction quantities are
+                      supposed to be expressed per unit area, so systems need
+                      to be able to scale their response for their resolution))
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
@@ -251,9 +257,9 @@ class SmoothPotential(Potential):
             V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_pot(
                 r[sl_outer], pot, forces, curb)
 
-        return (V if pot else None,
-                dV if forces else None,
-                ddV if curb else None)
+        return (area_scale*V if pot else None,
+                area_scale*dV if forces else None,
+                area_scale*ddV if curb else None)
 
     def spline_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the spline part and its derivatives of the potential.
@@ -348,6 +354,7 @@ class SmoothPotential(Potential):
         dV_t = -force_t
         dummy, dummy, ddV_m = self.naive_pot(self.r_min, pot=False,
                                              forces=False, curb=True)
+
         def spline(Δrt):
             " from SplineHelper.py"
             C_i = [0, 0, 0, (-3*dV_t + ddV_t*Δrt)/Δrt**2,
@@ -366,9 +373,10 @@ class SmoothPotential(Potential):
         def inner_obj_derivative(Δrt, dummy):
             " from SplineHelper.py"
             return ((3*dV_t - ddV_t*Δrt)**3*(3*ddV_t*Δrt*(3*dV_t - ddV_t*Δrt) +
-                                             (2*dV_t - ddV_t*Δrt)*
-                                             (3*dV_t - 5*ddV_t*Δrt))/
-                                             (12*(2*dV_t - ddV_t*Δrt)**4))
+                                             (2*dV_t - ddV_t*Δrt) *
+                                             (3*dV_t - 5*ddV_t*Δrt)) /
+                    (12*(2*dV_t - ddV_t*Δrt)**4))
+
         def Δrm(Δrt):
             return Δrt*(3*dV_t - ddV_t*Δrt)/(2*dV_t - ddV_t*Δrt)
 
@@ -378,14 +386,16 @@ class SmoothPotential(Potential):
 
         options = dict(xtol=self.gamma*xtol)
         Δrt = None
+
         def outer_obj_fun(gam):
             sol = scipy.optimize.root(
                 inner_obj_fun, Δrt0, args=(gam,),
                 jac=inner_obj_derivative, options=options)
             nonlocal Δrt
-            if  sol.success:
+            if sol.success:
                 Δrt = sol.x
-                offset = self.naive_pot(self.r_t)[0] - np.array(spline(Δrt)(Δrt))
+                offset = self.naive_pot(self.r_t)[0] - \
+                    np.array(spline(Δrt)(Δrt))
                 error = self.naive_pot(self.r_min)[0] - offset + self.gamma
 
                 return error
@@ -395,7 +405,6 @@ class SmoothPotential(Potential):
                            "").format(self)
                 raise self.PotentialError(err_str)
 
-
         def outer_obj_derivative(gam):
             return np.array([1.])
 
@@ -403,7 +412,7 @@ class SmoothPotential(Potential):
                 outer_obj_fun, gam_star0,
                 jac=outer_obj_derivative, options=options)
 
-        if  sol.success:
+        if sol.success:
             self.r_c = self.r_t - Δrt
             self.poly = spline(Δrt)
             self.dpoly = np.polyder(self.poly)
@@ -414,7 +423,6 @@ class SmoothPotential(Potential):
             err_str = ("Evaluation of spline for potential '{}' failed. Please"
                        " check whether the inputs make sense").format(self)
             raise self.PotentialError(err_str)
-
 
     def eval_poly_and_cutoff_legacy(self, xtol=1e-10):
         """ Seems to be a bad method, do not use in general, will likely
@@ -535,7 +543,7 @@ class SmoothPotential(Potential):
         x0 = np.array([-gam, C3guess, 0, 2*self.r_min])
         options = dict(xtol=-gam*xtol)
         sol = scipy.optimize.root(obj_fun, x0, jac=jacobian, options=options)
-        if  sol.success:
+        if sol.success:
             self.coeffs[0], self.coeffs[3], self.coeffs[4], self.r_c = sol.x
             self.r_c += self.r_t
             # !!WARNING!! poly is 'backwards': poly = [C4, C3, C2, C1, C0] and
@@ -586,13 +594,16 @@ class MinimisationPotential(SmoothPotential):
     def __repr__(self):
         raise NotImplementedError
 
-    def evaluate(self, r, pot=True, forces=False, curb=False):
+    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
         """Evaluates the potential and its derivatives
         Keyword Arguments:
-        r      -- array of distances
-        pot    -- (default True) if true, returns potential energy
-        forces -- (default False) if true, returns forces
-        curb   -- (default False) if true, returns second derivative
+        r          -- array of distances
+        pot        -- (default True) if true, returns potential energy
+        forces     -- (default False) if true, returns forces
+        curb       -- (default False) if true, returns second derivative
+        area_scale -- (default 1.) scale by this. (Interaction quantities are
+                      supposed to be expressed per unit area, so systems need
+                      to be able to scale their response for their resolution))
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
@@ -633,9 +644,9 @@ class MinimisationPotential(SmoothPotential):
             V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_pot(
                 r[sl_outer], pot, forces, curb)
 
-        return (V if pot else None,
-                dV if forces else None,
-                ddV if curb else None)
+        return (area_scale*V if pot else None,
+                area_scale*dV if forces else None,
+                area_scale*ddV if curb else None)
 
     @abc.abstractmethod
     def naive_pot(self, r, pot=True, forces=False, curb=False):
@@ -659,7 +670,7 @@ class MinimisationPotential(SmoothPotential):
         curb   -- (default False) if true, returns second derivative
         """
         V = None if pot is False else self.lin_part(r)
-        dV = None if forces is False else self.lin_part[1]
+        dV = None if forces is False else -self.lin_part[1]
         ddV = None if curb is False else 0.
         return V, dV, ddV
 
