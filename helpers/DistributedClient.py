@@ -64,7 +64,7 @@ class Worker(multiprocessing.Process):
     def process(self, disp0, offset0, coords):
         # time.sleep(0.1)
         print("try to put it:")
-        self.result_queue.put((np.random.random((10, 10)), coords))
+        self.result_queue.put((self.worker_id, coords))
         print("managed to put it?")
 
 def parse_args():
