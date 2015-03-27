@@ -31,3 +31,4 @@ Boston, MA 02111-1307, USA.
 
 from .AugmentedLagrangian import augmented_lagrangian
 from .common import compare_containers, evaluate_gradient, mean_err
+from .DistributedComputation import BaseResultManager, BaseWorker
