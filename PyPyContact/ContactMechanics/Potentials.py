@@ -86,7 +86,7 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         # pylint: disable=arguments-differ
         energy, self.force, self.curb = self.evaluate(
             gap, pot, forces, curb, area_scale)
-        self.energy = energy.sum()
+        self.energy = energy.sum() if pot else None
 
     @abc.abstractmethod
     def naive_pot(self, r, pot=True, forces=False, curb=False):
@@ -634,7 +634,8 @@ class MinimisationPotential(SmoothPotential):
         else:
             V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_pot(
                 r[sl_inner], pot, forces, curb)
-        V[sl_inner] -= self.offset
+        if pot:
+            V[sl_inner] -= self.offset
 
         sl_outer = np.logical_and(r < self.r_c, sl_rest)
         # little hack to work around numpy bug

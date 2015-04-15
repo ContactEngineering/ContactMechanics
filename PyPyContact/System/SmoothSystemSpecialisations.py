@@ -136,7 +136,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
             is_ok &= (self.interaction.force[0, :] == 0.).all()
             is_ok &= (self.interaction.force[-1, :] == 0.).all()
         if not is_ok:
-            self.deproxyfied()
+            self.deproxified()
             raise self.FreeBoundaryError(
                 ("Small system probably too small, increase the margins and "
                  "reevaluate self.objective(...)."), self.disp)
@@ -175,7 +175,10 @@ class FastSmoothContactSystem(SmoothContactSystem):
                       using dumb minimizers with hardcoded convergence criteria
                       such as scipy's L-BFGS-B.
         """
-        # pylint: disable=arguments-differ
+        self.create_babushka(offset, disp0, disp_scale)
+        return self.babushka.objective(offset, gradient, disp_scale)
+
+    def create_babushka(self, offset, disp0=None, disp_scale=1.):
         # this class needs to remember its offset since the evaluate method
         # does not accept it as argument anymore
         self.offset = offset
@@ -220,20 +223,18 @@ class FastSmoothContactSystem(SmoothContactSystem):
         self.babushka = SmoothContactSystem(
             sm_substrate, copy.deepcopy(self.interaction), sm_surface)
 
-        return self.babushka.objective(offset, gradient, disp_scale)
-
     def compute_normal_force(self):
         return self.babushka.interaction.force.sum()
 
     def callback(self, force=False):
-        return self.babushka.callback(force)
+        return self.babushka.callback(force=force)
 
     def evaluate(self, disp, offset, pot=True, forces=False):
         raise Exception(
             "This proxy-class cannot be evaluated. If you do not understand "
             "this, use the base-class instead")
 
-    def deproxyfied(self):
+    def deproxified(self):
         """
         Extrapolates the state of the babushka system onto the proxied sytem
         """
@@ -349,7 +350,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
                        options=None, gradient=True, tol=None,
-                       callback=None, disp_scale=1.):
+                       callback=None, disp_scale=1., deproxify_everytime=True):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of scipy.minimize for common default
@@ -401,7 +402,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
             disp_k -- flattened displacement vector at the current optimization
                       step
             """
-            self.deproxyfied()
+            if deproxify_everytime:
+                self.deproxified()
             self.check_margins()
             return use_callback(disp_k)
 
@@ -410,7 +412,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
                 fun, x0=disp0, method=method, jac=gradient, tol=tol,
                 callback=compound_callback,
                 options=options)
-            self.deproxyfied()
+            #if deproxify_everytime:
+            self.deproxified()
         except self.FreeBoundaryError as err:
             print("Caught FreeBoundaryError. Reevaluating margins")
             self.check_margins()

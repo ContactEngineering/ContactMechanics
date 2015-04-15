@@ -118,7 +118,7 @@ class FastSystemTest(unittest.TestCase):
             result = minimize(fun, disp, jac=True,
                               method = 'L-BFGS-B', options=options)
             if system.is_proxy():
-                dummy, force, disp = S.deproxyfied()
+                dummy, force, disp = S.deproxified()
 
             else:
                 disp = S.shape_minimisation_output(result.x)

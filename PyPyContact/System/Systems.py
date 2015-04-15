@@ -271,8 +271,36 @@ class SmoothContactSystem(SystemBase):
                             Surface.Surface)
         return is_ok
 
+    def compute_repulsive_force(self):
+        return np.where(
+            self.interaction.force > 0, self.interaction.force, 0
+            ).sum()
+
+    def compute_attractive_force(self):
+        return np.where(
+            self.interaction.force < 0, self.interaction.force, 0
+            ).sum()
+
     def compute_normal_force(self):
         return self.interaction.force.sum()
+
+    def compute_contact_area(self):
+        return self.compute_nb_contact_pts()*self.area_per_pt
+
+    def compute_repulsive_contact_area(self):
+        return self.compute_nb_repulsive_contact_pts()*self.area_per_pt
+
+    def compute_attractive_contact_area(self):
+        return self.compute_nb_attractive_contact_pts()*self.area_per_pt
+
+    def compute_nb_contact_pts(self):
+        return np.where(self.interaction.force != 0., 1., 0.).sum()
+
+    def compute_nb_repulsive_contact_pts(self):
+        return np.where(self.interaction.force > 0., 1., 0.).sum()
+
+    def compute_nb_attractive_contact_pts(self):
+        return np.where(self.interaction.force < 0., 1., 0.).sum()
 
     def evaluate(self, disp, offset, pot=True, forces=False):
         """
