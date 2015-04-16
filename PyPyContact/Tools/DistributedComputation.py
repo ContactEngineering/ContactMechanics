@@ -123,11 +123,15 @@ class BaseResultManager(object, metaclass=abc.ABCMeta):
         this is the actual serving method. it fills the jobqueue and processes
         incoming results
         """
+        print("Start serving jobs and processing results")
         while not self.done:
             self.schedule_available_jobs()
             self.receive_results()
+        print("Signalling end of work to worker processes")
         self.work_done_flag.set()
+        print("Waiting for stragglers to hand in results")
         self.result_queue.join()
+        print("Wrapping this up")
         self.manager.shutdown()
 
     @abc.abstractmethod
@@ -246,7 +250,7 @@ class BaseWorker(multiprocessing.Process, metaclass=abc.ABCMeta):
         """
         standard method that any multiprocessing.Process must implement
         """
-        while True :
+        while not self.work_done_flag.is_set():
             try:
                 job_description, job_id = self.job_queue.get()
                 try:
