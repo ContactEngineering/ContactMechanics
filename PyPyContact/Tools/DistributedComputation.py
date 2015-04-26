@@ -45,8 +45,9 @@ class BaseResultManager(object, metaclass=abc.ABCMeta):
         """
 
         Keyword Arguments:
-        port -- listening port
-        key  -- auth_key
+        port    -- listening port
+        key     -- auth_key
+        verbose -- (default False) if set, outputs debugging messages
         """
         self.port = port
         self.key = key
@@ -90,6 +91,7 @@ class BaseResultManager(object, metaclass=abc.ABCMeta):
 
     def set_todo_counter(self, counter):
         self.todo_counter.set(counter)
+        self.done = (counter == 0)
 
     def get_todo_counter(self):
         return self.todo_counter.get()
@@ -127,6 +129,7 @@ class BaseResultManager(object, metaclass=abc.ABCMeta):
         while not self.done:
             self.schedule_available_jobs()
             self.receive_results()
+        print()
         print("Signalling end of work to worker processes")
         self.work_done_flag.set()
         print("Waiting for stragglers to hand in results")
@@ -168,13 +171,14 @@ class BaseWorker(multiprocessing.Process, metaclass=abc.ABCMeta):
     """
     Baseclass for distributed calculation worker threads
     """
-    def __init__(self, server_address, port, key):
+    def __init__(self, server_address, port, key, verbose=False):
         """
 
         Keyword Arguments:
         server_address -- ip or fully qualified hostname
         port           -- listening port
         key            -- auth_key
+        verbose        -- (default False) if set, outputs debugging messages
         """
         super().__init__()
         self.server_address = server_address
@@ -188,6 +192,7 @@ class BaseWorker(multiprocessing.Process, metaclass=abc.ABCMeta):
         self.manager = None
 
         self.create_manager()
+        self.verbose = verbose
 
     def create_manager(self):
         """
@@ -250,9 +255,15 @@ class BaseWorker(multiprocessing.Process, metaclass=abc.ABCMeta):
         """
         standard method that any multiprocessing.Process must implement
         """
+        if self.verbose:
+            print("Starting to run")
         while not self.work_done_flag.is_set():
             try:
+                if self.verbose:
+                    print("trying to get a job")
                 job_description, job_id = self.job_queue.get()
+                if self.verbose:
+                    print("got job {}".format(job_id))
                 try:
                     self.process(job_description, job_id)
                 except Exception as err:

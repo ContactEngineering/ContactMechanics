@@ -201,16 +201,18 @@ class FastSmoothContactSystem(SmoothContactSystem):
         if any(bnd < 0 for bnd in self.__babushka_offset):
             raise self.FreeBoundaryError(
                 ("With the current margin of {}, the system overlaps the lower"
-                 " bounds by {}").format(self.margin, self.__babushka_offset),
+                 " bounds by {}. Total resolution is {}").format(
+                     self.margin, self.__babushka_offset, self.resolution),
                 disp0)
         if any(res + self.__babushka_offset[i] > self.resolution[i] for i, res
                in enumerate(sm_res)):
             raise self.FreeBoundaryError(
                 ("With the current margin of {}, the system overlaps the upper"
-                 " bounds by {}").format(
+                 " bounds by {}. Total resolution is {}").format(
                      self.margin,
                      tuple(self.__babushka_offset[i] + res - self.resolution[i]
-                           for i, res in enumerate(sm_res))), disp0)
+                           for i, res in enumerate(sm_res)),
+                     self.resolution), disp0)
 
         self.compute_babushka_bounds(sm_res)
         sm_surf = self._get_babushka_array(self.surface.profile(),
