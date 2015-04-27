@@ -35,6 +35,8 @@ import multiprocessing
 import multiprocessing.managers
 import argparse
 import abc
+import datetime
+import sys
 
 
 class BaseResultManager(object, metaclass=abc.ABCMeta):
@@ -171,7 +173,7 @@ class BaseWorker(multiprocessing.Process, metaclass=abc.ABCMeta):
     """
     Baseclass for distributed calculation worker threads
     """
-    def __init__(self, server_address, port, key, verbose=False):
+    def __init__(self, server_address, port, key, verbose=False, walltime=None):
         """
 
         Keyword Arguments:
@@ -179,6 +181,8 @@ class BaseWorker(multiprocessing.Process, metaclass=abc.ABCMeta):
         port           -- listening port
         key            -- auth_key
         verbose        -- (default False) if set, outputs debugging messages
+        walltime       -- (default None) if set, worker commits suicide after
+                          walltime hours
         """
         super().__init__()
         self.server_address = server_address
@@ -193,6 +197,12 @@ class BaseWorker(multiprocessing.Process, metaclass=abc.ABCMeta):
 
         self.create_manager()
         self.verbose = verbose
+        self.commit_suicide = walltime is not None
+        self.time_of_death = None
+        if self.commit_suicide:
+            self.time_of_death = (datetime.datetime.now() +
+                                  datetime.timedelta(hours = walltime))
+
 
     def create_manager(self):
         """
@@ -257,7 +267,18 @@ class BaseWorker(multiprocessing.Process, metaclass=abc.ABCMeta):
         """
         if self.verbose:
             print("Starting to run")
-        while not self.work_done_flag.is_set():
+
+        if self.commit_suicide:
+            def gotta_commit_suicide():
+                do_I = datetime.datetime.now() > self.time_of_death
+                if do_I:
+                    print("Reached walltime, stopping accepting new jobs (zombie)")
+                return do_I
+        else:
+            def gotta_commit_suicide():
+                return False
+
+        while not self.work_done_flag.is_set() and not gotta_commit_suicide():
             try:
                 if self.verbose:
                     print("trying to get a job")
