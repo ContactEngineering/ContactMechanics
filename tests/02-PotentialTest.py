@@ -282,34 +282,36 @@ class LJTest(unittest.TestCase):
         sig = 3.253732668164946
         pot = LJ93SimpleSmooth(eps, sig, 3*sig)
 
-        import matplotlib.pyplot as plt
-        plt.figure()
-        r = np.linspace(pot.r_min*.7, pot.r_c*1.1, 100)
-        p = pot.evaluate(r)[0]
-        plt.plot(r, p)
-        pois = [pot.r_c, pot.r_min]
-        plt.scatter(pois, pot.evaluate(pois)[0])
-        plt.ylim(bottom=1.1*p.min(), top=-.3*p.min())
-        plt.grid(True)
-        plt.legend(loc='best')
-        plt.show()
+        # import matplotlib.pyplot as plt
+        # plt.figure()
+        # r = np.linspace(pot.r_min*.7, pot.r_c*1.1, 100)
+        # p = pot.evaluate(r)[0]
+        # plt.plot(r, p)
+        # pois = [pot.r_c, pot.r_min]
+        # plt.scatter(pois, pot.evaluate(pois)[0])
+        # plt.ylim(bottom=1.1*p.min(), top=-.3*p.min())
+        # plt.grid(True)
+        # plt.legend(loc='best')
+        # plt.show()
 
     def test_SimpleSmoothVDW(self):
         hamaker = 68.1e-21
-        c_sr = 2.1e-78#*1e-6
+        c_sr = 2.1e-78*1e-6
         r_c = 10e-10
         pot = VDW82SimpleSmooth(c_sr, hamaker, 10e-10)
 
-        import matplotlib.pyplot as plt
-        plt.figure()
-        r = np.linspace(pot.r_min*.7, pot.r_c*1.1, 100)
-        p = pot.evaluate(r)[0]
-        plt.plot(r, p)
-
-        pois = [pot.r_c, pot.r_min]
-        plt.scatter(pois, pot.evaluate(pois)[0])
-        plt.ylim(bottom=1.1*p.min(), top=-.3*p.min())
-        plt.grid(True)
-        plt.legend(loc='best')
-        plt.show()
-        raise Exception('\n'+str(pot.poly))
+        # import matplotlib.pyplot as plt
+        # r = np.linspace(pot.r_min*.7, pot.r_c*1.1, 1000)
+        # ps = pot.evaluate(r, pot=True, forces=True)
+        #
+        # for i, name in enumerate(('potential', 'force')):
+        #     plt.figure()
+        #     p = ps[i]
+        #     plt.plot(r, p, label=name)
+        #
+        #     pois = [pot.r_c, pot.r_min]
+        #     plt.scatter(pois, pot.evaluate(pois, pot=True, forces=True)[i])
+        #     plt.ylim(bottom=1.1*p.min(), top=-.3*p.min())
+        #     plt.grid(True)
+        #     plt.legend(loc='best')
+        # plt.show()

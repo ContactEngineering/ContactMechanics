@@ -193,5 +193,16 @@ class VDW82SimpleSmooth(VDW82, SimpleSmoothPotential):
         r_c     -- emposed cutoff radius
         """
         VDW82.__init__(self, c_sr, hamaker, r_c)
-        self.naive_r_min = VDW82(c_sr, hamaker).r_min
         SimpleSmoothPotential.__init__(self, r_c)
+
+    @property
+    def r_min(self):
+        """
+        convenience function returning the location of the energy minimum
+        """
+        return self._r_min
+
+    def __repr__(self, ):
+        return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
+                "r_c = {1}").format(
+                    self, self.r_c if self.has_cutoff else '∞')

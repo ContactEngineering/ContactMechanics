@@ -239,5 +239,11 @@ class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
         r_c     -- emposed cutoff radius
         """
         LJ93.__init__(self, epsilon, sigma, r_c)
-        self.naive_r_min = LJ93(epsilon, sigma).r_min
         SimpleSmoothPotential.__init__(self, r_c)
+
+    @property
+    def r_min(self):
+        """
+        convenience function returning the location of the energy minimum
+        """
+        return self._r_min

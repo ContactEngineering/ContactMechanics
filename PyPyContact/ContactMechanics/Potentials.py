@@ -765,27 +765,24 @@ class SimpleSmoothPotential(Potential):
 
         self.poly = None
         self.compute_poly()
-        self.__r_min = self.precompute_min()
+        self._r_min = self.precompute_min()
 
     def precompute_min(self):
         """
         computes r_min
         """
-        def obj_fun(r):
-            V, force, dummy = self.evaluate(
-                r, pot=True, forces=True)
-            return V#, -force
-        result = scipy.optimize.minimize(fun=obj_fun,
-                                         x0=self.naive_r_min,
-                                         jac=False)
-        return result.x
-
-    @property
-    def r_min(self):
-        """
-        convenience function returning the location of the energy minimum
-        """
-        return self.__r_min
+        result = scipy.optimize.fminbound(func=lambda r:self.evaluate(r)[0],
+                                          x1=0.01*self.r_c,
+                                          x2=self.r_c,
+                                          disp=1,
+                                          xtol=1e-5*self.r_c,
+                                          full_output=True)
+        error = result[2]
+        if error:
+            raise self.PotentialError(
+                ("Couldn't find minimum of potential, something went wrong. "
+                 "This was the full minimisation result: {}").format(result))
+        return float(result[0])
 
     def compute_poly(self):
         """
@@ -831,11 +828,13 @@ class SimpleSmoothPotential(Potential):
         def adjust_pot(r):
             V, dV, ddV = self.naive_pot(
                 r, pot, forces, curb)
-            for val, cond, fun in zip((V, dV, ddV),
-                                      (pot, -forces, curb),
-                                      (self.poly, self.dpoly, self.ddpoly)):
+            for val, cond, fun, sgn in zip(
+                    (V, dV, ddV),
+                    (pot, -forces, curb),
+                    (self.poly, self.dpoly, self.ddpoly),
+                    (1., -1., 1.)):
                 if cond:
-                    val += fun(r)
+                    val += sgn*fun(r)
             return V, dV, ddV
 
         if np.array_equal(sl_in_range, np.array([True])):
