@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 
 from . import Potential, SmoothPotential, MinimisationPotential
+from . import SimpleSmoothPotential
 
 
 class VDW82(Potential):
@@ -110,6 +111,18 @@ class VDW82(Potential):
         """
         return 2**(2./3)*3**(1./6)*(self.c_sr*np.pi/self.hamaker)**(1./6)
 
+    @property
+    def r_infl(self):
+        """convenience function returning the location of the potential's
+        inflection point (if applicable)
+
+                            ________
+                 3 ____    ╱ C_sr⋅π
+        r_infl = ╲╱ 12 ⋅6 ╱  ──────
+                        ╲╱     A
+        """
+        return (144*np.pi * self.c_sr / self.hamaker)**(1./6.)
+
 
 class VDW82smooth(VDW82, SmoothPotential):
     """
@@ -166,3 +179,19 @@ class VDW82smoothMin(VDW82smooth, MinimisationPotential):
 
     def __repr__(self):
         return super().__repr__()
+
+class VDW82SimpleSmooth(VDW82, SimpleSmoothPotential):
+    """
+    Uses the SimpleSmoothPotential smoothing in combination with VDW82
+    """
+    name = 'vdW8-2simple-smooth'
+    def __init__(self, c_sr, hamaker, r_c):
+        """
+        Keyword Arguments:
+        c_sr    -- coefficient for repulsive part
+        hamaker -- Hamaker constant for substrate
+        r_c     -- emposed cutoff radius
+        """
+        VDW82.__init__(self, c_sr, hamaker, r_c)
+        self.naive_r_min = VDW82(c_sr, hamaker).r_min
+        SimpleSmoothPotential.__init__(self, r_c)

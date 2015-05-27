@@ -85,7 +85,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    manager = Manager(args.port, args.auth_token, (100, 100))
+    manager = Manager(args.port, args.auth_token, (12, 12))
     manager.run()
 
 

@@ -137,6 +137,20 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
+    @abc.abstractproperty
+    def r_infl(self):
+        """
+        convenience function returning the location of the potential's
+        inflection point (if applicable)
+        """
+        raise NotImplementedError()
+
+    @property
+    def v_min(self):
+        """ convenience function returning the energy minimum
+        """
+        return float(self.evaluate(self.r_min)[0])
+
     @property
     def naive_min(self):
         """ convenience function returning the energy minimum of the bare
@@ -191,7 +205,8 @@ class SmoothPotential(Potential):
                    minimum of the potential. Note the sign. γ is assumed to be
                    non-negative value
         r_t     -- (default r_min) transition point, defaults to r_min (argmin
-                   of pontential)
+                   of pontential) can also be 'inflection' to transition at the
+                   inflection point
         """
         # pylint: disable=super-init-not-called
         # not calling the superclass's __init__ because this is used in diamond
@@ -207,6 +222,8 @@ class SmoothPotential(Potential):
                  "you specified and γ = {}.").format(
                      self.gamma))
 
+        if r_t == 'inflection':
+            r_t = self.r_infl
         self.r_t = r_t if r_t is not None else self.r_min
         # coefficients of the spline
         self.coeffs = np.zeros(5)
@@ -307,7 +324,9 @@ class SmoothPotential(Potential):
         (3): V_s (Δr_c) =  0, where Δr_c = r_c-r_o
         (4): V_s'(Δr_c) =  0
         (5): V_s"(Δr_c) =  0
-        (6): V_s (Δr_m) = -γ, where Δr_m = r_min-r_o
+        (6): V_s (Δr_m) = -γ, where Δr_m = r_min-r_o,           if r_t < r_m
+             V_s (Δr_t) = -γ + Δγ, where Δγ = V_lγ(r_t) - V_lγ(r_m) else
+
         The unknowns are C_i (i in {0,..4}) and r_c
         and choosing the origin of the spline r_o at the cut-off r_c, the
         coefficients C_i can be determined explicitly (see SplineHelper.py):
@@ -333,9 +352,38 @@ class SmoothPotential(Potential):
         Δr_t = -2⋅  ╱  ───────
                   ╲╱   V"(r_m)
 
-        this can be used as initial guess for solving f(Δrt). The derivative
-        f'(Δrt) is to bulky to pretty-print here, so look at SplineHelper.py if
+        this can be used as initial guess for solving f(Δrt). If r_t <= r_min.
+        The derivative f'(Δrt) is to bulky to pretty-print here, so look at
+        SplineHelper.py if
         you wish to see it.
+
+        If r_t > r_min, the solution is explicit (see SplineHelper.py):
+
+                            ____________________________
+                           ╱                          2
+                3⋅dV_t - ╲╱  -12⋅(Δγ-γ)⋅ddV_t + 9⋅dV_t
+        Δr_t = ────────────────────────────────────────, for r_t > r_min
+                                 ddV_t
+
+        The expressions for C₃ and C₄ remain the same.  This expression may
+        have numerical stability issues around the inflection point, where
+        ddV_t is close to zero and the fraction is essentially 0/0. At the
+        exact location of the the inflection point, the solution is
+
+               2⋅(Δγ-γ)
+        Δr_t = ────────, for r_t = r_infl.
+                 dV_t
+
+        In order to express the solution close to the inflection point, this
+        method uses the first order Taylor expansion. The derivative is
+
+        ∂(Δr_t)/∂(ddV_t) at zero :
+
+                           2
+                   2⋅(Δγ-γ)
+        Δr_t'(0) = ─────────
+                          3
+                    3⋅dV_t
 
         In conclusion, with the inputs of r_t, γ, V'(r_t) and V"(r_t), we can
         conpute the objective function f(Δrt) and its derivative f'(Δrt), which
@@ -352,8 +400,6 @@ class SmoothPotential(Potential):
         dummy, force_t, ddV_t = self.naive_pot(self.r_t, pot=False,
                                                forces=True, curb=True)
         dV_t = -force_t
-        dummy, dummy, ddV_m = self.naive_pot(self.r_min, pot=False,
-                                             forces=False, curb=True)
 
         def spline(Δrt):
             " from SplineHelper.py"
@@ -365,64 +411,82 @@ class SmoothPotential(Potential):
                           0, 0, 0]
             return np.poly1d(polycoeffs)
 
-        def inner_obj_fun(Δrt, gam_star):
-            " from SplineHelper.py"
-            return (Δrt*(3*dV_t - ddV_t*Δrt)**4/(12*(2*dV_t - ddV_t*Δrt)**3) +
-                    gam_star)
+        if self.r_t <= self.r_min:
+            dummy, dummy, ddV_m = self.naive_pot(self.r_min, pot=False,
+                                                 forces=False, curb=True)
 
-        def inner_obj_derivative(Δrt, dummy):
-            " from SplineHelper.py"
-            return ((3*dV_t - ddV_t*Δrt)**3*(3*ddV_t*Δrt*(3*dV_t - ddV_t*Δrt) +
-                                             (2*dV_t - ddV_t*Δrt) *
-                                             (3*dV_t - 5*ddV_t*Δrt)) /
-                    (12*(2*dV_t - ddV_t*Δrt)**4))
+            def inner_obj_fun(Δrt, gam_star):
+                " from SplineHelper.py"
+                return (Δrt*(3*dV_t - ddV_t*Δrt)**4/(12*(2*dV_t - ddV_t*Δrt)**3) +
+                        gam_star)
 
-        def Δrm(Δrt):
-            return Δrt*(3*dV_t - ddV_t*Δrt)/(2*dV_t - ddV_t*Δrt)
+            def inner_obj_derivative(Δrt, dummy):
+                " from SplineHelper.py"
+                return ((3*dV_t - ddV_t*Δrt)**3*(3*ddV_t*Δrt*(3*dV_t - ddV_t*Δrt) +
+                                                 (2*dV_t - ddV_t*Δrt) *
+                                                 (3*dV_t - 5*ddV_t*Δrt)) /
+                        (12*(2*dV_t - ddV_t*Δrt)**4))
 
-        # start with initial guess:
-        Δrt0 = -2*np.sqrt(3*self.gamma/ddV_m)
-        gam_star0 = self.gamma
+            def Δrm(Δrt):
+                return Δrt*(3*dV_t - ddV_t*Δrt)/(2*dV_t - ddV_t*Δrt)
 
-        options = dict(xtol=self.gamma*xtol)
-        Δrt = None
+            # start with initial guess:
+            Δrt0 = -2*np.sqrt(3*self.gamma/ddV_m)
+            gam_star0 = self.gamma
 
-        def outer_obj_fun(gam):
+            options = dict(xtol=self.gamma*xtol)
+            Δrt = None
+
+            def outer_obj_fun(gam):
+                sol = scipy.optimize.root(
+                    inner_obj_fun, Δrt0, args=(gam,),
+                    jac=inner_obj_derivative, options=options)
+                nonlocal Δrt
+                if sol.success:
+                    Δrt = sol.x
+                    offset = self.naive_pot(self.r_t)[0] - \
+                        np.array(spline(Δrt)(Δrt))
+                    error = self.naive_pot(self.r_min)[0] - offset + self.gamma
+
+                    return error
+                else:
+                    err_str = ("Evaluation of spline for potential '{}' failed. "
+                               "Please check whether the inputs make sense"
+                               "").format(self)
+                    raise self.PotentialError(err_str)
+
+            def outer_obj_derivative(gam):
+                return np.array([1.])
+
             sol = scipy.optimize.root(
-                inner_obj_fun, Δrt0, args=(gam,),
-                jac=inner_obj_derivative, options=options)
-            nonlocal Δrt
-            if sol.success:
-                Δrt = sol.x
-                offset = self.naive_pot(self.r_t)[0] - \
-                    np.array(spline(Δrt)(Δrt))
-                error = self.naive_pot(self.r_min)[0] - offset + self.gamma
+                    outer_obj_fun, gam_star0,
+                    jac=outer_obj_derivative, options=options)
 
-                return error
-            else:
-                err_str = ("Evaluation of spline for potential '{}' failed. "
-                           "Please check whether the inputs make sense"
-                           "").format(self)
+            if not sol.success:
+                err_str = ("Evaluation of spline for potential '{}' failed. Please"
+                           " check whether the inputs make sense").format(self)
                 raise self.PotentialError(err_str)
-
-        def outer_obj_derivative(gam):
-            return np.array([1.])
-
-        sol = scipy.optimize.root(
-                outer_obj_fun, gam_star0,
-                jac=outer_obj_derivative, options=options)
-
-        if sol.success:
-            self.r_c = self.r_t - Δrt
-            self.poly = spline(Δrt)
-            self.dpoly = np.polyder(self.poly)
-            self.ddpoly = np.polyder(self.dpoly)
-            self.offset = -(self.spline_pot(self.r_t)[0] -
-                            self.naive_pot(self.r_t)[0])
         else:
-            err_str = ("Evaluation of spline for potential '{}' failed. Please"
-                       " check whether the inputs make sense").format(self)
-            raise self.PotentialError(err_str)
+            V_m_t = self.naive_pot(np.array([self.r_t, self.r_min]))[0]
+            Δgamma = V_m_t[0]-V_m_t[1]
+            dgam = (Δgamma-self.gamma)
+            if abs(ddV_t) > 1e-10:
+                #general case
+                Δrt = ((3*dV_t - np.sqrt(9*dV_t**2-12*dgam*ddV_t))/
+                       ddV_t)
+            else:
+                # close to numerically difficult inflection point: Taylor
+                val = 2*dgam/dV_t
+                derivative = 2*dgam**2/(3*dV_t**3)
+                Δrt = val + derivative*ddV_t
+
+        self.r_c = self.r_t - Δrt
+        self.poly = spline(Δrt)
+        self.dpoly = np.polyder(self.poly)
+        self.ddpoly = np.polyder(self.dpoly)
+        self.offset = -(self.spline_pot(self.r_t)[0] -
+                    self.naive_pot(self.r_t)[0])
+
 
     def eval_poly_and_cutoff_legacy(self, xtol=1e-10):
         """ Seems to be a bad method, do not use in general, will likely
@@ -681,3 +745,105 @@ class MinimisationPotential(SmoothPotential):
         convenience function returning the location of the enery minimum
         """
         raise NotImplementedError()
+
+
+class SimpleSmoothPotential(Potential):
+    """
+    Implements a very simple smoothing of a potential, by complementing the
+    functional form of the potential with a parabola that brings to zero the
+    potential's zeroth, first and second derivative at an imposed (and freely
+    chosen) cut_off radius r_c
+    """
+
+    def __init__(self, r_c):
+        """
+        Keyword Arguments:
+        r_c -- user-defined cut-off radius
+        """
+
+        self.r_c = r_c
+
+        self.poly = None
+        self.compute_poly()
+        self.__r_min = self.precompute_min()
+
+    def precompute_min(self):
+        """
+        computes r_min
+        """
+        def obj_fun(r):
+            V, force, dummy = self.evaluate(
+                r, pot=True, forces=True)
+            return V#, -force
+        result = scipy.optimize.minimize(fun=obj_fun,
+                                         x0=self.naive_r_min,
+                                         jac=False)
+        return result.x
+
+    @property
+    def r_min(self):
+        """
+        convenience function returning the location of the energy minimum
+        """
+        return self.__r_min
+
+    def compute_poly(self):
+        """
+        computes the coefficients of the corrective parabola
+        """
+        deltaV, forces, deltaddV = [-float(dummy)
+                                    for dummy
+                                    in self.naive_pot(
+                                        self.r_c, pot=True,
+                                        forces=True,
+                                        curb=True)]
+        deltadV = -forces -deltaddV*self.r_c
+        deltaV -= deltaddV/2*self.r_c**2 + deltadV*self.r_c
+
+
+        self.poly = np.poly1d([deltaddV/2, deltadV, deltaV])
+        self.dpoly = np.polyder(self.poly)
+        self.ddpoly = np.polyder(self.dpoly)
+
+    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
+        """
+        Evaluates the potential and its derivatives
+        Keyword Arguments:
+        r          -- array of distances
+        pot        -- (default True) if true, returns potential energy
+        forces     -- (default False) if true, returns forces
+        curb       -- (default False) if true, returns second derivative
+        area_scale -- (default 1.) scale by this. (Interaction quantities are
+                      supposed to be expressed per unit area, so systems need
+                      to be able to scale their response for their resolution))
+        """
+        r = np.array(r)
+        nb_dim = len(r.shape)
+        if nb_dim == 0:
+            r.shape = (1,)
+        V = np.zeros_like(r) if pot else self.SliceableNone()
+        dV = np.zeros_like(r) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r) if curb else self.SliceableNone()
+
+
+        sl_in_range = r < self.r_c
+
+        def adjust_pot(r):
+            V, dV, ddV = self.naive_pot(
+                r, pot, forces, curb)
+            for val, cond, fun in zip((V, dV, ddV),
+                                      (pot, -forces, curb),
+                                      (self.poly, self.dpoly, self.ddpoly)):
+                if cond:
+                    val += fun(r)
+            return V, dV, ddV
+
+        if np.array_equal(sl_in_range, np.array([True])):
+            V, dV, ddV = adjust_pot(r)
+        else:
+            V[sl_in_range], dV[sl_in_range], ddV[sl_in_range] = adjust_pot(
+                r[sl_in_range])
+
+        return (area_scale*V if pot else None,
+                area_scale*dV if forces else None,
+                area_scale*ddV if curb else None)

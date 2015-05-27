@@ -36,10 +36,12 @@ try:
     from PyPyContact.ContactMechanics import LJ93
     from PyPyContact.ContactMechanics import LJ93smooth
     from PyPyContact.ContactMechanics import LJ93smoothMin
+    from PyPyContact.ContactMechanics import LJ93SimpleSmooth
 
     from PyPyContact.ContactMechanics import VDW82
     from PyPyContact.ContactMechanics import VDW82smooth
     from PyPyContact.ContactMechanics import VDW82smoothMin
+    from PyPyContact.ContactMechanics import VDW82SimpleSmooth
 
     import PyPyContact.Tools as Tools
 
@@ -273,3 +275,41 @@ class LJTest(unittest.TestCase):
         # plt.legend(loc='best')
         #plt.show()
 
+
+
+    def test_SimpleSmoothLJ(self):
+        eps = 1.7294663266397667
+        sig = 3.253732668164946
+        pot = LJ93SimpleSmooth(eps, sig, 3*sig)
+
+        import matplotlib.pyplot as plt
+        plt.figure()
+        r = np.linspace(pot.r_min*.7, pot.r_c*1.1, 100)
+        p = pot.evaluate(r)[0]
+        plt.plot(r, p)
+        pois = [pot.r_c, pot.r_min]
+        plt.scatter(pois, pot.evaluate(pois)[0])
+        plt.ylim(bottom=1.1*p.min(), top=-.3*p.min())
+        plt.grid(True)
+        plt.legend(loc='best')
+        plt.show()
+
+    def test_SimpleSmoothVDW(self):
+        hamaker = 68.1e-21
+        c_sr = 2.1e-78#*1e-6
+        r_c = 10e-10
+        pot = VDW82SimpleSmooth(c_sr, hamaker, 10e-10)
+
+        import matplotlib.pyplot as plt
+        plt.figure()
+        r = np.linspace(pot.r_min*.7, pot.r_c*1.1, 100)
+        p = pot.evaluate(r)[0]
+        plt.plot(r, p)
+
+        pois = [pot.r_c, pot.r_min]
+        plt.scatter(pois, pot.evaluate(pois)[0])
+        plt.ylim(bottom=1.1*p.min(), top=-.3*p.min())
+        plt.grid(True)
+        plt.legend(loc='best')
+        plt.show()
+        raise Exception('\n'+str(pot.poly))

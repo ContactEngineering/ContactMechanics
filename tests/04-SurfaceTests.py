@@ -71,6 +71,26 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
         self.assertTrue(np.array_equal(S1.profile(), S2.profile()))
         self.assertTrue(np.array_equal(S1.profile(), S3.profile()),)
 
+    def test_laplacian_estimation(self):
+        a = np.random.rand()-.5
+        b = np.random.rand()-.5
+        laplacian = 2*(a+b)
+
+        res = (5, 5)
+        size = (8.5, 8.5)
+        x = y = np.linspace(0, 8.5, 6)[:-1]
+        X, Y = np.meshgrid(x, y)
+        F = a*X**2 + b*Y**2
+        surf = NumpySurface(F, size=size)
+        L = np.zeros_like(F)
+        for i in range(L.shape[0]):
+            for j in range(L.shape[1]):
+                L[i,j] = surf.estimate_laplacian((i, j))
+        tol = 1e-10
+        self.assertTrue(
+            (abs(L-laplacian)).max() < tol,
+            "Fail: the array should only contain the value {}, but it is \n{}.\nThe array was \n{}".format(laplacian, L, F))
+
 class NumpyAscSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass

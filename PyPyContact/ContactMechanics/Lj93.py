@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.
 """
 
 from . import Potential, SmoothPotential, MinimisationPotential
+from . import SimpleSmoothPotential
 
 
 class LJ93(Potential):
@@ -64,7 +65,7 @@ class LJ93(Potential):
 
     @property
     def r_min(self):
-        """convenience function returning the location of the enery minimum
+        """convenience function returning the location of the energy minimum
 
                 6 ___  5/6
         r_min = ╲╱ 2 ⋅5   ⋅σ
@@ -72,6 +73,16 @@ class LJ93(Potential):
                      5
         """
         return self.sig*(2*5**5)**(1./6)/5.
+
+
+    @property
+    def r_infl(self):
+        """convenience function returning the location of the potential's
+        inflection point (if applicable)
+
+        r_infl = σ
+        """
+        return self.sig
 
     def naive_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the potential and its derivatives without cutoffs or
@@ -212,3 +223,21 @@ class LJ93smoothMin(LJ93smooth, MinimisationPotential):
                     ", γ = {.gamma}".format(self) if has_gamma else "",
                     ", r_t = {}".format(
                         self.r_t if has_r_t else "r_min"))
+
+
+class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
+    """
+    Uses the SimpleSmoothPotential smoothing in combination with LJ93
+    """
+    name = 'lj9-3simple-smooth'
+    def __init__(self, epsilon, sigma, r_c):
+        """
+        Keyword Arguments:
+        epsilon -- Lennard-Jones potential well ε (careful, not work of
+                   adhesion in this formulation)
+        sigma   -- Lennard-Jones distance parameter σ
+        r_c     -- emposed cutoff radius
+        """
+        LJ93.__init__(self, epsilon, sigma, r_c)
+        self.naive_r_min = LJ93(epsilon, sigma).r_min
+        SimpleSmoothPotential.__init__(self, r_c)

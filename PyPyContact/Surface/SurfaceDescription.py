@@ -106,6 +106,33 @@ class Surface(object, metaclass=abc.ABCMeta):
                 fname = fname + ".gz"
         np.savetxt(fname, self.profile())
 
+    def estimate_laplacian(self, coords):
+        """
+        estimate the local laplacian at coords by finite differences
+        Keyword Arguments:
+        coords --
+        """
+        laplacian = 0.
+        for i in range(self.dim):
+            pixel_size = self.size[i] / self.resolution[i]
+            coord = coords[i]
+            if coord == 0:
+                delta = 1
+            elif coord == self.resolution[i]-1:
+                delta = -1
+            else:
+                delta = 0
+            irange = (coords[i]-1+delta, coords[i]+delta, coords[i]+1+delta)
+            f = np.zeros(len(irange))
+            for j in range(len(irange)):
+                coord_copy = list(coords)
+                coord_copy[i] = irange[j]
+                try:
+                    f[j] = self.profile()[tuple(coord_copy)]
+                except IndexError as err:
+                    raise IndexError("{}:\ncoords = {}, i = {}, j = {}, irange = {}, coord_copy = {}".format(err, coords, i, j, irange, coord_copy))
+            laplacian += (f[0] + f[2] - 2*f[1])/pixel_size**2
+        return laplacian
 
 class ScaledSurface(Surface):
     """ used when geometries are scaled
