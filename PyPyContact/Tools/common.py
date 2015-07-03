@@ -88,3 +88,16 @@ def mean_err(arr1, arr2):
         raise Exception("The array shapes differ: a: {}, b:{}".format(
             arr1.shape, arr2.shape))
     return abs(np.ravel(arr1-arr2)).mean()
+
+
+def compute_wavevectors(resolution, size, nb_dims):
+    """
+    computes and returns the wavevectors q that exist for the surfaces size
+    and resolution as one vector of components per dimension
+    """
+    vectors = list()
+    for dim in range(nb_dims):
+        vectors.append(2*np.pi*np.fft.fftfreq(
+            resolution[dim],
+            size[dim]/resolution[dim]))
+    return vectors

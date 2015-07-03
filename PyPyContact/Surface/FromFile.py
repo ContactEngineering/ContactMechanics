@@ -43,7 +43,7 @@ class NumpyTxtSurface(NumpySurface):
     # pylint: disable=too-few-public-methods
     name = 'surface_from_np_file'
 
-    def __init__(self, fname):
+    def __init__(self, fname, size=None, factor=1.):
         """
         Keyword Arguments:
         fname -- filename
@@ -57,7 +57,7 @@ class NumpyTxtSurface(NumpySurface):
                     "No such file or directory: '{}(.gz)'".format(
                         fname))
         self.fname = fname
-        super().__init__(np.loadtxt(fname))
+        super().__init__(factor*np.loadtxt(fname), size)
 
 
 class NumpyAscSurface(NumpySurface):

@@ -48,6 +48,11 @@ class Surface(object, metaclass=abc.ABCMeta):
         self._size = size
         self.adjustment = adjustment
 
+    def h_rms(self):
+        delta = self.profile()
+        delta -= delta.mean()
+        return np.sqrt((delta**2).mean())
+
     def adjust(self):
         """
         shifts surface up or down so that a zero displacement would lead to a

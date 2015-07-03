@@ -59,3 +59,46 @@ class ToolTest(unittest.TestCase):
         msg.append("error = {}".format(error))
         msg.append("tol = {}".format(tol))
         self.assertTrue(error < tol, ", ".join(msg))
+
+    def test_random_surface(self):
+        tol = 1e-8
+        resolution = (5, 5)
+        size = 6.
+        hurst = .8
+        h_rms = 2
+        rs = Tools.RandomSurfaceExact(resolution, size, hurst, h_rms)
+        error = Tools.mean_err(np.fft.ifftn(rs.coeffs),
+                               rs.get_surface().profile())
+        self.assertTrue(error < tol)
+
+        rsGauss = Tools.RandomSurfaceGaussian(resolution, size, hurst, h_rms)
+        error = Tools.mean_err(np.fft.ifftn(rsGauss.coeffs*rsGauss.distribution),
+                               rsGauss.get_surface().profile())
+        msg = "error = {}, computed:\n{}\nfake\n{}:\noutput:\n{}".format(
+            error, np.fft.ifftn(rsGauss.coeffs*rsGauss.distribution),
+            np.fft.ifftn(rsGauss.coeffs),
+            rsGauss.get_surface())
+        self.assertTrue(error < tol, msg)
+
+
+    def test_surf_analysis(self):
+        resolution = (1000, 1000)
+        size = 12.
+        hurst = .8
+        h_rms = 2
+        rs = Tools.RandomSurfaceGaussian(resolution, size, hurst, h_rms)
+        surf_char = Tools.CharacterisePeriodicSurface(rs.get_surface(lambda_max=(2*np.pi/10),lambda_min=(2*np.pi/140)))
+        import matplotlib.pyplot as plt
+        q = surf_char.q
+        C = surf_char.C
+        fig = plt.figure()
+        ax=fig.add_subplot(111)
+        ax.set_yscale('log')
+        ax.set_xscale('log')
+        ax.set_ylim(bottom=1e-16)
+        plt.loglog(q, C, alpha=.1)
+        mean, err, q_g = surf_char.grouped_stats(100)
+        ax.errorbar(q_g, mean, yerr=err)
+        print(rs.get_surface().profile().mean())
+        print("(min, max)(C) : {}".format((C.min(), C.max())))
+        plt.show()
