@@ -57,22 +57,25 @@ def main():
     surf_char = Tools.CharacterisePeriodicSurface(surf)
     hurst_out, prefactor_out = surf_char.estimate_hurst(full_output=True, lambda_max=lam_max)
     h_rms_out = surf_char.h_rms()
-    h_rms_fromC = 2*np.pi*np.sqrt(surf_char.C.sum())
+    h_rms_fromC = np.sqrt(surf_char.C.sum())
     print("output values: H = {:.3f}, h_rms = {:.3f}, h_rms(C) = {:.3f}".format(hurst_out, h_rms_out, h_rms_fromC))
     q_min = 2*np.pi/size[0]
     alpha = surf_gen.compute_prefactor()
     print("alpha_in = {}, alpha_out = {}".format(alpha, prefactor_out))
     ax = plt.figure().add_subplot(111)
-    
-    ax.loglog(surf_char.q, alpha*surf_char.q**(-2*(hurst+1)), label="theoretical")
-    ax.loglog(surf_char.q, alpha*surf_char.q**(-2*(hurst+1))/np.pi, label="theoretical/2pi")
+
+    ax.loglog(surf_char.q, alpha**2*surf_char.q**(-2*(hurst+1)), label="theoretical")
+    theo=alpha**2*surf_char.q**(-2*(hurst+1))
+    print(theo)
     ax.loglog(surf_char.q, 4*np.pi*hurst*h_rms**2 *surf_char.q**(-2-2*hurst)/(q_min**(-2*hurst)), label="lars")
-    ax.loglog(surf_char.q, hurst/np.pi*h_rms**2 *surf_char.q**(-2-2*hurst)/(q_min**(-2*hurst)), ls = "--", label="lars/4pi**2")
-    ax.loglog(surf_char.q, surf_char.C, alpha=.5, label='full')
-    ax.loglog(surf_char.q, surf_char.q**(-2*(hurst_out+1))*prefactor_out, label="recovered")
+
+    #ax.loglog(surf_char.q, surf_char.C, alpha=.5, label='full')
+    ax.loglog(surf_char.q, surf_char.q**(-2*(hurst_out+1))*prefactor_out, label="recovered", ls = '--')
+    ax.loglog(surf_char.q, surf_char.q**(-2*(hurst_out+1))*alpha, label="theo", ls = '--')
+    print(prefactor_out, alpha)
     ax.legend(loc='best')
     ax.grid(True)
-    ax.set_ylim(bottom=surf_char.C[-1]/10)
+    #ax.set_ylim(bottom=surf_char.C[-1]/10)
 
 
 

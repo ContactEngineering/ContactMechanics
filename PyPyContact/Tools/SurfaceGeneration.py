@@ -118,22 +118,8 @@ class RandomSurfaceExact(object):
         square height assuming that the largest wave length is the full
         domain. This is described for the square of the factor on p R7
         """
-        alpha = self.q_min**(2*self.hurst)*self.hurst*self.h_rms**2/np.pi
-        return alpha
-
-    def generate_phases(self):
-        """
-        generates appropriate random phases (φ(-q) = -φ(q))
-        """
-        rand_phase = np.random.rand(*self.resolution)*2*np.pi
-        coeffs = np.exp(1j*rand_phase)
-        for pos_it, neg_it in self.get_negative_frequency_iterator():
-            if pos_it != (0, 0):
-                coeffs[neg_it] = coeffs[pos_it].conj()
-        if (self.resolution[0]%2 == 0):
-            r2= self.resolution[0]/2
-            coeffs[r2, 0] = coeffs[r2, r2] = coeffs[0, r2] = 1
-        return coeffs
+        q_max = np.pi*self.resolution[0]/self.size[0]
+        return 2*self.h_rms/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi)/self.size[0]
 
     def generate_amplitudes(self):
         """
@@ -151,13 +137,25 @@ class RandomSurfaceExact(object):
         # B = prefactor * 2*π/L*sqrt(C*(q))
         self.coeffs *= np.sqrt(self.prefactor)*2*np.pi/self.size[0]
 
+    def generate_phases(self):
+        """
+        generates appropriate random phases (φ(-q) = -φ(q))
+        """
+        rand_phase = np.random.rand(*self.resolution)*2*np.pi
+        coeffs = np.exp(1j*rand_phase)
+        for pos_it, neg_it in self.get_negative_frequency_iterator():
+            if pos_it != (0, 0):
+                coeffs[neg_it] = coeffs[pos_it].conj()
+        if (self.resolution[0]%2 == 0):
+            r2= self.resolution[0]/2
+            coeffs[r2, 0] = coeffs[r2, r2] = coeffs[0, r2] = 1
+        return coeffs
+
     def generate_amplitudes_alt(self):
         q2 = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
-        
-        q_max = np.pi*self.resolution[0]/self.size[0]
         q2[0, 0] = 1 # to avoid div by zeros, needs to be fixed after
 #        self.coeffs *= (q2)**(-(1+self.hurst)/2)*2*self.h_rms*self.q_min**self.hurst*np.sqrt(self.hurst*np.pi)/self.size[0]
-        self.coeffs *= (q2)**(-(1+self.hurst)/2)*2*self.h_rms/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi)/self.size[0]
+        self.coeffs *= (q2)**(-(1+self.hurst)/2)*self.prefactor
         self.coeffs[0, 0] = 0 # et voilà
         ## print("amplitudes:")
         ## print(abs(self.coeffs))
@@ -196,8 +194,6 @@ class RandomSurfaceExact(object):
             q2_max = (2*np.pi/lambda_min)**2
             active_coeffs[q_square > q2_max] = 0
         active_coeffs *= self.distribution
-        imag = np.prod(self.resolution)*abs(np.fft.ifftn(active_coeffs).imag).sum()
-        print("imag = {}".format(imag))
         profile = np.prod(self.resolution)*np.fft.ifftn(active_coeffs).real
         self.active_coeffs = active_coeffs
         return NumpySurface(profile, self.size)
@@ -231,4 +227,3 @@ class RandomSurfaceGaussian(RandomSurfaceExact):
         for pos_it, neg_it in self.get_negative_frequency_iterator():
                 distr[neg_it] = distr[pos_it]
         return distr
-

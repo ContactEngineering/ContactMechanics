@@ -58,8 +58,8 @@ class CharacterisePeriodicSurface(object):
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
         a2 = np.prod(size)/np.prod(res)
-        h_a = a2/((2**np.pi)**2)*np.fft.fftn(self.surface.profile())
-        C_q = ((2*np.pi)**2/np.prod(size)*np.conj(h_a)*h_a).real
+        h_a = np.fft.fftn(self.surface.profile())
+        C_q = (np.conj(h_a)*h_a).real/np.prod(res)
 
         q_vecs = compute_wavevectors(res, size, self.surface.dim)
         q_norm = np.sqrt((q_vecs[0]**2).reshape((-1, 1))+q_vecs[1]**2)
@@ -80,8 +80,8 @@ class CharacterisePeriodicSurface(object):
                        full_output=False):
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
-        exponent, offset =np.polyfit(np.log(self.q[sl]),
-                                     np.log(self.C[sl]), 1)
+        exponent, offset = np.polyfit(np.log(self.q[sl]),
+                                      np.log(self.C[sl]), 1)
         prefactor = np.exp(offset)
         Hurst= -(exponent+2)/2
         if full_output:
