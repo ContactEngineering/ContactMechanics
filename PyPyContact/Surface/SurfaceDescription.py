@@ -48,10 +48,18 @@ class Surface(object, metaclass=abc.ABCMeta):
         self._size = size
         self.adjustment = adjustment
 
-    def h_rms(self):
+    def compute_h_rms(self):
         delta = self.profile()
         delta -= delta.mean()
         return np.sqrt((delta**2).mean())
+
+    def compute_h_rms_fromReciprocSpace(self):
+        delta = self.profile()
+        delta -= delta.mean()
+        area = np.prod(self.size)
+        nb_pts = np.prod(self.resolution)
+        H = area/nb_pts*np.fft.fftn(delta)
+        return 1/area*np.sqrt((np.conj(H)*H).sum().real)
 
     def adjust(self):
         """

@@ -1,0 +1,120 @@
+\documentclass[a4paper,twosides]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+
+\newcommand{\pypycontact}{\texttt{PyPyContact}}
+\renewcommand{\d}{\ensuremath{\mathrm{d}}}
+\newcommand{\e}{\ensuremath{\mathrm{e}}}
+\renewcommand{\i}{\ensuremath{\mathrm{i}}}
+
+\renewcommand{\vec}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand{\abs}[1]{\ensuremath{\left|#1\right|}}
+\newcommand{\hrms}[1]{\ensuremath{h_{\mathrm{rms}}}}
+\usepackage{natbib}
+
+\usepackage[squaren]{SIunits}
+
+
+\title{Power Spectrum Conventions for \pypycontact}
+\author{Till Junge\\\texttt{till.junge@altermail.ch}}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+  This document defines the convention used for the handling of power spectra within \pypycontact. The conventions are based on the draft ``Surface roughness and power spectra metrology'' by Tevis Jacob and Lars Pastewka.
+\end{abstract}
+
+\section{Definition of Fourier Transforms}
+\label{sec:fourier_transforms}
+
+
+\begin{equation}
+  H(\vec q) = \mathcal{F}(h(\vec x)) = \int_Ah(\vec x)\e^{-\i\vec q\cdot\vec x}\d A,
+  \label{eq:four}
+\end{equation}
+and has dimension of $[\metre^3]$.
+\begin{equation}
+  h(\vec x) = \mathcal{F}^{-1}(H(\vec q)) = \frac{1}{A} \sum_{\vec q_i} H(\vec q_i)\e^{\i\vec q_i\cdot\vec x}
+ \label{eq:ifour}
+\end{equation}
+in $[\metre]$.
+
+With these definitions, we can derive their discretised versions for the use in \pypycontact. The Fourier transform becomes
+\begin{equation}
+  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)\e^{-\i\vec q_i\cdot\vec x_j},
+  \label{eq:fft}
+\end{equation}
+and its inverse is
+\begin{equation}
+  \label{eq:ifft}
+  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)\e^{\i\vec q_j\cdot\vec x_i}
+\end{equation}
+
+\section{Definition of Power Spectrum}
+\label{sec:power_spectrum}
+
+The continuous power spectrum $C(q)$ is defined as
+\begin{equation}
+  \label{eq:cont_pow_spec}
+  C(q) = \frac{1}{A} \abs{H(\vec q)}^2
+\end{equation}
+
+\section{Parseval's theorem}
+\label{sec:parseval}
+
+for continuous surfaces is 
+\begin{equation}
+  \label{eq:cont_parseval}
+  \int_A\abs{h(\vec x)}^2\d A = \frac{1}{A}\sum_{\vec q_i}\abs{H(\vec q_i)}^2
+\end{equation}
+its discretised version is
+\begin{equation}
+  \label{eq:parseval}
+  \frac{A}{N}\sum_{\vec x_i}\abs{h(\vec x_i)}^2 = \frac{1}{A}\sum_{\vec q_i}\abs{H(\vec q_i)}^2
+\end{equation}
+
+\section{Sythesis of Surfaces}
+\label{sec:synthesis}
+
+Only the more or less trivial case of a surface with an exact power spectrum is detailed here. The power spectrum $C(q)$ scales with $q$ as follows \citep{Persson2005}
+\begin{equation}
+  \label{eq:pow_spec_scale}
+  C(q) \sim q^{-2-2H}, \qquad \Rightarrow C(q) = \beta^2\,q^{-2-2H}.
+\end{equation}
+The definition of the power spectrum can be turned around:
+\begin{equation}
+  \label{eq:coeffs}
+  H(\vec q) = \sqrt{A\, C(q)} \e^{\i\phi},
+\end{equation}
+where $\phi$ in a randomly distributed phase. In order to obtain a real surface, the following symmetry must hold,
+
+\begin{equation}
+  \label{eq:symmetry}
+  H(\vec q) = H^*(-\vec q).
+\end{equation}
+The scaling factor $\beta$ can be chosen to fit the properties of the surface. On obvious choice is to fit the rms height \hrms.
+\begin{equation}
+  {\hrms{}}^2 = \frac1A\int_A\abs{\Delta h(\vec x)}^2\d A,
+\end{equation}
+where $\Delta h$ is the offset from the mean plane through the rough surface. By assuming an infinite surface size, we can use Parseval's theorem (for details, check the draft)
+\begin{equation}
+  \label{eq:h_rms_of_C}
+  {\hrms{}}^2 = \frac1{2\pi}\int_{q_0}^\infty q\, C(q)\,\d q,
+\end{equation}
+
+and substitute the scaling \eqref{eq:pow_spec_scale} into \eqref{eq:h_rms_of_C}
+\begin{align}
+  \label{eq:beta}
+  {\hrms{}}^2 &= \frac{\beta^2}{2\pi}\int_{q_0}^\infty q^{-1-2H}\,\d q \notag\\
+  &=\frac{\beta^2}{4H\pi q_0^{2H}}\\
+  &\Rightarrow \beta = \sqrt{4H{\hrms{}}^2\pi q_0^{2H}}
+\end{align}
+\bibliographystyle{elsarticle-harv}%plainnat}
+\bibliography{../biblio}
+\end{document}
+
+%%% Local Variables: 
+%%% ispell-local-dictionary: "british"
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

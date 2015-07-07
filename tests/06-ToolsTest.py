@@ -60,45 +60,41 @@ class ToolTest(unittest.TestCase):
         msg.append("tol = {}".format(tol))
         self.assertTrue(error < tol, ", ".join(msg))
 
-    def test_random_surface(self):
-        tol = 1e-8
-        resolution = (5, 5)
-        size = 6.
-        hurst = .8
-        h_rms = 2
-        rs = Tools.RandomSurfaceExact(resolution, size, hurst, h_rms)
-        error = Tools.mean_err(np.fft.ifftn(rs.coeffs),
-                               rs.get_surface().profile())
-        self.assertTrue(error < tol)
 
-        rsGauss = Tools.RandomSurfaceGaussian(resolution, size, hurst, h_rms)
-        error = Tools.mean_err(np.fft.ifftn(rsGauss.coeffs*rsGauss.distribution),
-                               rsGauss.get_surface().profile())
-        msg = "error = {}, computed:\n{}\nfake\n{}:\noutput:\n{}".format(
-            error, np.fft.ifftn(rsGauss.coeffs*rsGauss.distribution),
-            np.fft.ifftn(rsGauss.coeffs),
-            rsGauss.get_surface())
-        self.assertTrue(error < tol, msg)
+    def test_surf_param_recovery(self):
+        siz = 3
+        size = (siz, siz)
+        hurst = .9
+        h_rms = 1
+        res = 100
+        resolution = (res, res)
+        lam_max = .5
+        surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst,
+                                            h_rms, lambda_max=lam_max)
+        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        h_rms_fromC_in = surf.compute_h_rms_fromReciprocSpace()
 
+        error = abs(1-h_rms_fromC_in/h_rms)
+        rough_tol = .02
+        self.assertTrue(error < rough_tol,
+                        "Error = {}, h_rms_in = {}, h_rms_out = {}".format(
+                            error, h_rms_fromC_in, h_rms))
 
-    def test_surf_analysis(self):
-        resolution = (1000, 1000)
-        size = 12.
-        hurst = .8
-        h_rms = 2
-        rs = Tools.RandomSurfaceGaussian(resolution, size, hurst, h_rms)
-        surf_char = Tools.CharacterisePeriodicSurface(rs.get_surface(lambda_max=(2*np.pi/10),lambda_min=(2*np.pi/140)))
-        import matplotlib.pyplot as plt
-        q = surf_char.q
-        C = surf_char.C
-        fig = plt.figure()
-        ax=fig.add_subplot(111)
-        ax.set_yscale('log')
-        ax.set_xscale('log')
-        ax.set_ylim(bottom=1e-16)
-        plt.loglog(q, C, alpha=.1)
-        mean, err, q_g = surf_char.grouped_stats(100)
-        ax.errorbar(q_g, mean, yerr=err)
-        print(rs.get_surface().profile().mean())
-        print("(min, max)(C) : {}".format((C.min(), C.max())))
-        plt.show()
+        surf_char = Tools.CharacterisePeriodicSurface(surf)
+        h_rms_out = surf_char.compute_h_rms()
+        reproduction_tol = 1e-5
+        error = abs(1 - h_rms_out/h_rms_fromC_in)
+        self.assertTrue(error < reproduction_tol)
+
+        hurst_out, prefactor_out = surf_char.estimate_hurst(
+            full_output=True, lambda_max=lam_max)
+
+        error = abs(1-hurst/hurst_out)
+        self.assertTrue(error < reproduction_tol)
+
+        prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
+        error = abs(1-prefactor_in/prefactor_out)
+        self.assertTrue(error < reproduction_tol,
+                        "Error = {}, β_in = {}, β_out = {}".format(
+                            error, prefactor_in, prefactor_out))
+

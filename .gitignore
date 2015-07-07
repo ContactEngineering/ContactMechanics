@@ -7,3 +7,12 @@ dist
 /helpers/*.png
 /helpers/*.png.pdf
 /helpers/figs.pdf
+/notes/*/_region_*
+/notes/*/auto
+/notes/*/*.aux
+/notes/*/*.bbl
+/notes/*/*.blg
+/notes/*/*.log
+/notes/power_spectrum/power_spectrum.pdf
+/notes/power_spectrum/prv*
+/notes/auto/biblio.el

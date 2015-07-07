@@ -29,12 +29,13 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 import numpy as np
-from . import compute_wavevectors
+from . import compute_wavevectors, fftn
 
 class CharacterisePeriodicSurface(object):
     """
     Simple inverse FFT analysis without window. Do not use for measured surfs
     """
+    eval_at_init=True
     def __init__(self, surface):
         """
         Keyword Arguments:
@@ -51,15 +52,17 @@ class CharacterisePeriodicSurface(object):
         if self.surface.resolution[0] != self.surface.resolution[1]:
             raise Exception("Only square surfaces, for the time being")
 
-        self.C, self.q = self.eval()
-        self.size = self.C.size
+        self.window=1
+        if self.eval_at_init:
+            self.C, self.q = self.eval()
+            self.size = self.C.size
 
     def eval(self):
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
-        a2 = np.prod(size)/np.prod(res)
-        h_a = np.fft.fftn(self.surface.profile())
-        C_q = (np.conj(h_a)*h_a).real/np.prod(res)
+        area = np.prod(size)
+        h_a = fftn(self.surface.profile()*self.window, area)
+        C_q = 1/area*(np.conj(h_a)*h_a).real
 
         q_vecs = compute_wavevectors(res, size, self.surface.dim)
         q_norm = np.sqrt((q_vecs[0]**2).reshape((-1, 1))+q_vecs[1]**2)
@@ -89,8 +92,11 @@ class CharacterisePeriodicSurface(object):
         else:
             return Hurst
 
-    def h_rms(self):
-        return self.surface.h_rms()
+    def compute_h_rms(self):
+        return self.surface.compute_h_rms()
+
+    def compute_h_rms_fromReciprocSpace(self):
+        return self.surface.compute_h_rms_fromReciprocSpace()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95)):
         """
@@ -124,3 +130,31 @@ class CharacterisePeriodicSurface(object):
             bottom = top
 
         return C_g, C_g_std, q_g
+
+class CharacteriseSurface(CharacterisePeriodicSurface):
+    """
+    inverse FFT analysis with window. For analysis of measured surfaces
+    """
+    eval_at_init=False
+    def __init__(self, surface, window_type='hanning', window_params=dict()):
+        """
+        Keyword Arguments:
+        surface       -- Instance of PyPyContact.Surface or subclass with 
+                         specified size
+        window_type   -- (default 'hanning') numpy windowing function name
+        window_params -- (default dict())
+        """
+        super().__init__(surface)
+        self.window = self.get_window(window_type, window_params)
+        self.C, self.q = self.eval()
+        self.size = self.C.size
+
+    def get_window(self, window_type, window_params):
+        if window_type == 'hanning':
+            window = np.hanning(self.surface.resolution[0])
+        elif window_type == 'kaiser':
+            window = np.kaiser(self.surface.resolution[0], **window_params)
+        else:
+            raise Exception("Window type '{}' not known.".format(window_type))
+        window = window.reshape((-1, 1))*window
+        return window

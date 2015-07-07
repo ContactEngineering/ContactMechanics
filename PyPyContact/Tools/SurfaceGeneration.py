@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 import scipy.stats as stats
 from ..Surface import NumpySurface
-from . import compute_wavevectors
+from . import compute_wavevectors, ifftn
 
 class RandomSurfaceExact(object):
     def __init__(self, resolution, size, hurst, h_rms,
@@ -95,7 +95,7 @@ class RandomSurfaceExact(object):
 
         self.q = compute_wavevectors(self.resolution, self.size, self.dim)
         self.coeffs = self.generate_phases()
-        self.generate_amplitudes_alt()
+        self.generate_amplitudes()
         self.distribution = self.amplitude_distribution()
     def get_negative_frequency_iterator(self):
         def it():
@@ -119,23 +119,9 @@ class RandomSurfaceExact(object):
         domain. This is described for the square of the factor on p R7
         """
         q_max = np.pi*self.resolution[0]/self.size[0]
-        return 2*self.h_rms/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi)/self.size[0]
+        area = np.prod(self.size)
+        return 2*self.h_rms/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi*area)
 
-    def generate_amplitudes(self):
-        """
-        generates fourier coefficient amplitudes.
-        These are the B(q) in Appendix. Short version:
-        B(q) = prefactor * 2*π/L*sqrt(C*(q)), |C* = power spectrum without scaling
-        C*(q) =  q^(-2*(1+H))
-        """
-        # q^2
-        self.coeffs *= self.q[0].reshape(-1, 1)**2 + self.q[1]**2
-        self.coeffs[0, 0] = 1 # to avoid div by zeros, needs to be fixed after
-        # sqrt(C(q)) = sqrt((q^2)^(-1-H)) = (q^2)^((-1-H)/2)
-        self.coeffs **= (-1-self.hurst)/2
-        self.coeffs[0, 0] = 0 # et voilà
-        # B = prefactor * 2*π/L*sqrt(C*(q))
-        self.coeffs *= np.sqrt(self.prefactor)*2*np.pi/self.size[0]
 
     def generate_phases(self):
         """
@@ -151,10 +137,10 @@ class RandomSurfaceExact(object):
             coeffs[r2, 0] = coeffs[r2, r2] = coeffs[0, r2] = 1
         return coeffs
 
-    def generate_amplitudes_alt(self):
+    def generate_amplitudes(self):
         q2 = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
         q2[0, 0] = 1 # to avoid div by zeros, needs to be fixed after
-#        self.coeffs *= (q2)**(-(1+self.hurst)/2)*2*self.h_rms*self.q_min**self.hurst*np.sqrt(self.hurst*np.pi)/self.size[0]
+        # self.coeffs *= (q2)**(-(1+self.hurst)/2)*2*self.h_rms*self.q_min**self.hurst*np.sqrt(self.hurst*np.pi)/self.size[0]
         self.coeffs *= (q2)**(-(1+self.hurst)/2)*self.prefactor
         self.coeffs[0, 0] = 0 # et voilà
         ## print("amplitudes:")
@@ -194,7 +180,8 @@ class RandomSurfaceExact(object):
             q2_max = (2*np.pi/lambda_min)**2
             active_coeffs[q_square > q2_max] = 0
         active_coeffs *= self.distribution
-        profile = np.prod(self.resolution)*np.fft.ifftn(active_coeffs).real
+        area = np.prod(self.size)
+        profile = ifftn(active_coeffs, area)
         self.active_coeffs = active_coeffs
         return NumpySurface(profile, self.size)
 

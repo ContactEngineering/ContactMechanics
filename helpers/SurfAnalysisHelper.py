@@ -37,7 +37,7 @@ import PyPyContact.Surface as Surf
 
 
 def test_surf_analysis(surf, name):
-    surf_char = Tools.CharacterisePeriodicSurface(surf)
+    surf_char = Tools.CharacteriseSurface(surf)
     q = surf_char.q
     C = surf_char.C
     fig = plt.figure()

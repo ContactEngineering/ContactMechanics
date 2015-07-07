@@ -46,8 +46,15 @@ C = beta**2*q**(-2*(h+1))
 print("C(q):")
 pprint(C)
 print()
+expr = 1/(2*pi)*q*C
+print("integrand")
+pprint(expr)
+print()
 
-h2 = sympy.simplify(2*pi*sympy.integrate(q*C, q))#(q, q0, q1)))
+print('q*C')
+pprint(sympy.simplify(C*q))
+print()
+h2 = sympy.simplify(sympy.integrate(expr, q))#(q, q0, q1)))
 print("(h_rms)**2:")
 pprint(h2)
 print()
@@ -57,10 +64,10 @@ print("(h_rms)**2:")
 pprint(h2)
 print()
 
-beta_sol = sympy.solve(h2-h_rms**2, beta)[0]
-print("β:")
-pprint(beta_sol)
-print()
+#beta_sol = sympy.solve(h2-h_rms**2, beta)[0]
+#print("β:")
+#pprint(beta_sol)
+#print()
 
 beta_lim = h2.subs({q1: sympy.oo})
 beta_lim_sol = sympy.solve(beta_lim-h_rms**2, beta)[0]

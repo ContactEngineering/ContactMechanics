@@ -49,33 +49,31 @@ def main():
         surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst, h_rms, seed = i, lambda_max=lam_max)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
         print("q_min = {}".format(2*np.pi/lam_max))
-        h_rms_fromC_in = 2*np.pi*np.sqrt((abs(surf_gen.active_coeffs)**2/4/np.pi**2).sum())
+        h_rms_fromC_in = surf.compute_h_rms_fromReciprocSpace()
         #print("h_rms = {}".format(surf.h_rms()))
 
     print("input  values: H = {:.3f}, h_rms = {:.3f}, h_rms(C) = {:.3f}".format(hurst, h_rms, h_rms_fromC_in))
 
     surf_char = Tools.CharacterisePeriodicSurface(surf)
     hurst_out, prefactor_out = surf_char.estimate_hurst(full_output=True, lambda_max=lam_max)
-    h_rms_out = surf_char.h_rms()
-    h_rms_fromC = np.sqrt(surf_char.C.sum())
+    h_rms_out = surf_char.compute_h_rms()
+    h_rms_fromC = surf_char.compute_h_rms_fromReciprocSpace()
     print("output values: H = {:.3f}, h_rms = {:.3f}, h_rms(C) = {:.3f}".format(hurst_out, h_rms_out, h_rms_fromC))
     q_min = 2*np.pi/size[0]
-    alpha = surf_gen.compute_prefactor()
-    print("alpha_in = {}, alpha_out = {}".format(alpha, prefactor_out))
+    beta = surf_gen.compute_prefactor()/np.sqrt(np.prod(size))
+    print("alpha_in = {}, alpha_out = {}".format(beta, prefactor_out))
     ax = plt.figure().add_subplot(111)
 
-    ax.loglog(surf_char.q, alpha**2*surf_char.q**(-2*(hurst+1)), label="theoretical")
-    theo=alpha**2*surf_char.q**(-2*(hurst+1))
-    print(theo)
+    ax.loglog(surf_char.q, beta**2*surf_char.q**(-2*(hurst+1)), label="theoretical")
+
     ax.loglog(surf_char.q, 4*np.pi*hurst*h_rms**2 *surf_char.q**(-2-2*hurst)/(q_min**(-2*hurst)), label="lars")
 
-    #ax.loglog(surf_char.q, surf_char.C, alpha=.5, label='full')
+    ax.loglog(surf_char.q, surf_char.C, alpha=.5, label='full')
     ax.loglog(surf_char.q, surf_char.q**(-2*(hurst_out+1))*prefactor_out, label="recovered", ls = '--')
-    ax.loglog(surf_char.q, surf_char.q**(-2*(hurst_out+1))*alpha, label="theo", ls = '--')
-    print(prefactor_out, alpha)
     ax.legend(loc='best')
     ax.grid(True)
-    #ax.set_ylim(bottom=surf_char.C[-1]/10)
+    ax.set_ylim(bottom=surf_char.C[-1]/10)
+    print("prefactor_in, prefactor_out = {}, {}, rel_err = {}".format(beta, prefactor_out, abs(1-prefactor_out/beta)))
 
 
 

@@ -101,3 +101,32 @@ def compute_wavevectors(resolution, size, nb_dims):
             resolution[dim],
             size[dim]/resolution[dim]))
     return vectors
+
+
+def fftn(arr, integral):
+    """
+    n-dimensional fft according to the conventions detailed in
+    power_spectrum.tex in the notes folder.
+
+    Keyword Arguments:
+    arr      -- Input array, can be complex
+    integral -- depending of dimensionality:
+                1D: Length of domain
+                2D: Area
+                etc
+    """
+    return integral/np.prod(arr.shape)*np.fft.fftn(arr)
+
+def ifftn(arr, integral):
+    """
+    n-dimensional ifft according to the conventions detailed in
+    power_spectrum.tex in the notes folder.
+
+    Keyword Arguments:
+    arr      -- Input array, can be complex
+    integral -- depending of dimensionality:
+                1D: Length of domain
+                2D: Area
+                etc
+    """
+    return np.prod(arr.shape)/integral*np.fft.ifftn(arr)
