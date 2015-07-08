@@ -149,30 +149,49 @@ class CharacterisePeriodicSurface(object):
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
 
+        q = self.q[sl]
+        C = self.C[sl]
+        factor = 1.#/(C**2/q).sum()
+
         # The unique root of the gradient of the objective in C0 can be
         # explicitly expressed
         def C0_of_H(H):
-            return ((self.q[sl]**(-3-2*H) * self.C[sl]).sum() /
-                    (self.q[sl]**(-5-2*H)).sum())
+            return ((q**(-3-2*H) * C).sum() /
+                    (q**(-5-4*H)).sum())
 
         #this is the gradient of the objective in H
         def grad_in_H(H):
             C0 = C0_of_H(H)
-            denom = self.q[sl]**(self.surface.dim-1)
-            sim = self.q[sl]**(-2-H*2)
-            bracket = (self.C[sl] - C0*sim)
-            return (4*C0 * sim * bracket * np.log(self.q[sl]) /denom).sum()
+            return ((4*q**(-4*H) *
+                    (C*q**(2*H+2) -
+                     C0)*np.log(q)*C0/q**5).sum())*factor
 
-        def grad_in_H_prime(H):
+
+        def obj(H):
             C0 = C0_of_H(H)
-            denom = self.q[sl]**(self.surface.dim-1)
-            return ((8*C0* self.q[sl]**(-4-4*H) *
-                     (- self.C[sl]*self.q[sl]**(2+2*H) + 2*C0) *
-                     np.log(self.q[sl])**2)/denom)
+            return (((C-C0*q**(-2-2*H))**2/q).sum())*factor
 
         H0 = H_guess
+        h_s = np.linspace(.0, 2., 51)
+        o_s = np.zeros_like(h_s)
+        g_s = np.zeros_like(h_s)
+        for i, h in enumerate(h_s):
+            o_s[i] = obj(h)
+            g_s[i] = grad_in_H(h)
 
-        res = scipy.optimize.root(grad_in_H, H0, tol=tol)#, jac=grad_in_H_prime)
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(211)
+        ax.plot(h_s, o_s)
+        ax = fig.add_subplot(212)
+        ax.plot(h_s, g_s)
+        plt.show()
+
+
+
+        res = scipy.optimize.minimize_scalar(
+            obj, (0, 2), tol=tol)#y, jac=grad_in_H)
+        print(res)
         if not res.success:
             raise Exception(
                 ("Estimation of Hurst exponent did not succeed. Optimisation "

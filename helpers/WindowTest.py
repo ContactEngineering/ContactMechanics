@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.
 
 import numpy as np
 import scipy
+import os.path
 
 import matplotlib.pyplot as plt
 
@@ -83,7 +84,7 @@ def process(surf_name, surface):
         Cs = [np.sqrt(surfs[name].C[slice]) for name in names]
         sl_ax.hist(Cs, bins = 50, normed = True, label = names)
         sl_ax.set_xlabel("|h(q)| for {} at q = {:.2e}".format(surf_name, q_center))
-        
+
     ax.legend(loc='best')
     sl_ax.legend(loc='best')
     slice_fig.subplots_adjust(hspace=.3)
@@ -101,7 +102,7 @@ def plot_distro(name, surf):
     ax.set_ylabel("probability density")
     fig.suptitle(name)
     ax.legend(loc='best')
-    
+
     fig2 = plt.figure()
     ax = fig2.add_subplot(111, aspect='equal')
     ax.pcolormesh(surf)
@@ -111,13 +112,14 @@ def plot_distro(name, surf):
 def main():
     siz = 2000e-9
     size = (siz, siz)
-    surface = Surf.NumpyTxtSurface("SurfaceExampleUnfiltered.asc", size=size, factor=1e-9)
+    path = os.path.join(os.path.dirname(__file__), "SurfaceExampleUnfiltered.asc")
+    surface = Surf.NumpyTxtSurface(path, size=size, factor=1e-9)
     surfs = []
     #surfs.append(('Topo1', surface))
     arr, x, residual = Tools.shift_and_tilt(surface.profile(), full_output=True)
     print("ň = {[0]:.15e}, d = {}, residual = {}, mean(arr) = {}".format(
         (float(x[0]), float(x[1]), float(np.sqrt(1-x[0]**2 - x[1]**2))),
-        float(x[-1]), residual, arr.mean())) 
+        float(x[-1]), residual, arr.mean()))
     arr = Tools.shift_and_tilt_approx(surface.profile())
     surface = Surf.NumpySurface(arr, size=size)
     plot_distro('Topo1_corr', surface.profile())
@@ -127,7 +129,7 @@ def main():
     res = surface.resolution
     h_rms = 3.24e-8
 
-    surface = Tools.RandomSurfaceGaussian(res, size, hurst, h_rms).get_surface()
+    surface = Tools.RandomSurfaceExact(res, size, hurst, h_rms).get_surface()
     surfs.append(('Gauss periodic', surface))
 
     dsize = (2*siz, 2*siz)
@@ -140,7 +142,7 @@ def main():
         process(name, surf)
 
 
-    
+
 
 if __name__ == "__main__":
     main()

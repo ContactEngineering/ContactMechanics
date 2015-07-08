@@ -182,7 +182,7 @@ class RandomSurfaceExact(object):
             active_coeffs[q_square > q2_max] = 0
         active_coeffs *= self.distribution
         area = np.prod(self.size)
-        profile = ifftn(active_coeffs, area)
+        profile = ifftn(active_coeffs, area).real
         self.active_coeffs = active_coeffs
         return NumpySurface(profile, self.size)
 
