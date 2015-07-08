@@ -30,11 +30,14 @@ Boston, MA 02111-1307, USA.
 """
 
 import numpy as np
+import scipy
+
 import matplotlib.pyplot as plt
 
 import PyPyContact.Tools as Tools
 import PyPyContact.Surface as Surf
 
+counter = 0
 def process(surf_name, surface):
     surfs = dict()
     surfs["Hanning "] = Tools.CharacteriseSurface(surface)
@@ -47,26 +50,78 @@ def process(surf_name, surface):
     colors = ('r', 'b', 'g')
     q_max = 2e8
     lambda_min = 2*np.pi/q_max
-    for color, (name, surf) in zip(colors, surfs.items()):
+
+
+    names = ('Hanning ', 'Kaiser 8.6', 'periodic' )
+    for color, name in zip(colors, names):
+        surf = surfs[name]
         q = surf.q
         C = surf.C
-        H, alpha = surf.estimate_hurst(lambda_min=lambda_min, full_output=True)
-        plt.loglog(q, C, alpha=.1, color=color)
+        global counter
+        counter += 1
+        print('Hello {}'.format(counter))
+        H, alpha, res = surf.estimate_hurst_alt(lambda_min=lambda_min, full_output=True, H_guess=.5)
+        print(res)
+        ax.loglog(q, C, alpha=.1, color=color)
         mean, err, q_g = surf.grouped_stats(100)
 
         ax.errorbar(q_g, mean, yerr=err, color=color)
         ax.set_title("{}: H={:.2f}, h_rms={:.2e}".format(surf_name, H, np.sqrt((surface.profile()**2).mean())))
         a, b = np.polyfit(np.log(q), np.log(C), 1)
         ax.plot(q, q**(-2-2*H)*alpha, label="{}, H={:.2f}".format(name, H), color=color)
+    slice_fig = plt.figure()
+    slice_ax1_4 = slice_fig.add_subplot(311)
+    slice_ax1_2 = slice_fig.add_subplot(312)
+    slice_ax3_4 = slice_fig.add_subplot(313)
+    slices = ((slice_ax1_4, .25),
+              (slice_ax1_2, .50),
+              (slice_ax3_4, .75))
+    for sl_ax, location in slices:
+        q = surfs[names[0]].q
+        q_center = location*q[0] + (1-location)*q[-1]
+        slice = np.logical_and(q>.95*q_center, q< 1.05*q_center)
+        Cs = [np.sqrt(surfs[name].C[slice]) for name in names]
+        sl_ax.hist(Cs, bins = 50, normed = True, label = names)
+        sl_ax.set_xlabel("|h(q)| for {} at q = {:.2e}".format(surf_name, q_center))
+        
     ax.legend(loc='best')
+    sl_ax.legend(loc='best')
+    slice_fig.subplots_adjust(hspace=.3)
     ax.grid(True)
+
+def plot_distro(name, surf):
+    fig = plt.figure()
+    ax=fig.add_subplot(111)
+    ax.hist(1e9*surf.ravel(), normed=True, bins = 100, edgecolor='none', alpha=.5)
+    loc, scale = scipy.stats.norm.fit(1e9*surf.ravel())
+    print(scale)
+    x = np.linspace(surf.min(), surf.max(), 100)*1e9
+    ax.plot(x, scipy.stats.norm.pdf(x, loc, scale), label=r'Fit, $\sqrt{\sigma} = ' + "{:.2f}$ nm".format(scale))
+    ax.set_xlabel("height in [nm])")
+    ax.set_ylabel("probability density")
+    fig.suptitle(name)
+    ax.legend(loc='best')
+    
+    fig2 = plt.figure()
+    ax = fig2.add_subplot(111, aspect='equal')
+    ax.pcolormesh(surf)
+    ax.set_xlim(0, 1024)
+    ax.set_ylim(0, 1024)
 
 def main():
     siz = 2000e-9
     size = (siz, siz)
     surface = Surf.NumpyTxtSurface("SurfaceExampleUnfiltered.asc", size=size, factor=1e-9)
     surfs = []
-    surfs.append(('Topo1', surface))
+    #surfs.append(('Topo1', surface))
+    arr, x, residual = Tools.shift_and_tilt(surface.profile(), full_output=True)
+    print("ň = {[0]:.15e}, d = {}, residual = {}, mean(arr) = {}".format(
+        (float(x[0]), float(x[1]), float(np.sqrt(1-x[0]**2 - x[1]**2))),
+        float(x[-1]), residual, arr.mean())) 
+    arr = Tools.shift_and_tilt_approx(surface.profile())
+    surface = Surf.NumpySurface(arr, size=size)
+    plot_distro('Topo1_corr', surface.profile())
+    #surfs.append(('Topo1_corr', surface))
 
     hurst = .98
     res = surface.resolution
@@ -83,6 +138,9 @@ def main():
 
     for name, surf in surfs:
         process(name, surf)
+
+
+    
 
 if __name__ == "__main__":
     main()

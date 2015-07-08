@@ -86,7 +86,7 @@ class ToolTest(unittest.TestCase):
         error = abs(1 - h_rms_out/h_rms_fromC_in)
         self.assertTrue(error < reproduction_tol)
 
-        hurst_out, prefactor_out = surf_char.estimate_hurst(
+        hurst_out, prefactor_out = surf_char.estimate_hurst_naive(
             full_output=True, lambda_max=lam_max)
 
         error = abs(1-hurst/hurst_out)
@@ -98,3 +98,74 @@ class ToolTest(unittest.TestCase):
                         "Error = {}, β_in = {}, β_out = {}".format(
                             error, prefactor_in, prefactor_out))
 
+    def test_surf_param_recovery_weighted(self):
+        siz = 3
+        size = (siz, siz)
+        hurst = .9
+        h_rms = 1
+        res = 100
+        resolution = (res, res)
+        lam_max = .5
+        surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst,
+                                            h_rms, lambda_max=lam_max)
+        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        surf_char = Tools.CharacterisePeriodicSurface(surf)
+        prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
+        hurst_out, prefactor_out, dummy = surf_char.estimate_hurst(lambda_max=lam_max, H_guess = 0.1, full_output=True)
+        hurst_error = abs(1-hurst_out/hurst)
+        prefactor_error = abs(1-prefactor_out/prefactor_in)
+        reproduction_tol = 1e-5
+        self.assertTrue(hurst_error<reproduction_tol,
+                        "error = {}, h_out = {}, h_in = {}, tol = {}".format(
+                            hurst_error, hurst_out, hurst, reproduction_tol))
+        self.assertTrue(prefactor_error<reproduction_tol)
+
+    def test_surf_param_recovery_weighted_gaussian(self):
+        siz = 3
+        size = (siz, siz)
+        hurst = .9
+        h_rms = 1
+        res = 100
+        resolution = (res, res)
+        lam_max = .5
+        surf_gen = Tools.RandomSurfaceGaussian(resolution, size, hurst,
+                                               h_rms, lambda_max=lam_max)
+        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        surf_char = Tools.CharacterisePeriodicSurface(surf)
+        prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
+        hurst_out, prefactor_out, res = surf_char.estimate_hurst(lambda_max=lam_max, H_guess = 0.1, full_output=True)
+        hurst_error = abs(1-hurst_out/hurst)
+        prefactor_error = abs(1-prefactor_out/prefactor_in)
+        reproduction_tol = 1e-5
+        self.assertTrue(
+            hurst_error<reproduction_tol,
+            "error = {}, h_out = {}, h_in = {}, tol = {}, res = {}".format(
+                hurst_error, hurst_out, hurst, reproduction_tol, res))
+        self.assertTrue(prefactor_error<reproduction_tol)
+
+
+    def test_shift_and_tilt(self):
+        tol = 1e-10
+        a = 1.2
+        b = 2.5
+        d = .2
+        # 1D
+        arr = np.arange(5)*a+d
+        arr_out = Tools.shift_and_tilt(arr)
+        self.assertTrue(arr_out.sum() <tol, "{}".format(arr_out))
+
+        # 2D
+        arr = arr + np.arange(6).reshape((-1, 1))*b
+        arr_out = Tools.shift_and_tilt(arr)
+        error = arr_out.sum()
+        self.assertTrue(error <tol, "error = {}, tol = {}, arr_out = {}".format(
+            error, tol, arr_out))
+
+        self.assertTrue(arr.shape == arr_out.shape,
+                    "arr.shape = {}, arr_out.shape = {}".format(
+                        arr.shape, arr_out.shape))
+
+        arr_approx, x = Tools.shift_and_tilt_approx(arr, full_output=True)
+        error  =arr_approx.sum()
+        self.assertTrue(error < tol, "error = {}, tol = {}, arr_out = {}".format(
+            error, tol, arr_approx))

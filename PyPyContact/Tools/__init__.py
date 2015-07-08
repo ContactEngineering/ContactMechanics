@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.
 from .AugmentedLagrangian import augmented_lagrangian
 from .common import compare_containers, evaluate_gradient, mean_err
 from .common import compute_wavevectors, fftn, ifftn
+from .common import shift_and_tilt, shift_and_tilt_approx
 from .DistributedComputation import BaseResultManager, BaseWorker
 from .SurfaceGeneration import RandomSurfaceExact, RandomSurfaceGaussian
 from .SurfaceAnalysis import CharacterisePeriodicSurface, CharacteriseSurface

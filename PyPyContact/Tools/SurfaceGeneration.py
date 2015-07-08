@@ -35,6 +35,7 @@ from ..Surface import NumpySurface
 from . import compute_wavevectors, ifftn
 
 class RandomSurfaceExact(object):
+    Error = Exception
     def __init__(self, resolution, size, hurst, h_rms,
                  seed=None, lambda_max=None):
         """
@@ -186,7 +187,8 @@ class RandomSurfaceExact(object):
         return NumpySurface(profile, self.size)
 
 class RandomSurfaceGaussian(RandomSurfaceExact):
-    def __init__(self, resolution, size, hurst, h_rms, seed=None):
+    def __init__(self, resolution, size, hurst, h_rms, seed=None,
+                 lambda_max=None):
         """
         Generates a surface with an Gaussian amplitude distribution
         Keyword Arguments:
@@ -203,7 +205,7 @@ class RandomSurfaceGaussian(RandomSurfaceExact):
                       generator is seeded previous to outputting the generated
                       surface
         """
-        super().__init__(resolution, size, hurst, h_rms, seed)
+        super().__init__(resolution, size, hurst, h_rms, seed, lambda_max)
 
     def amplitude_distribution(self):
         """

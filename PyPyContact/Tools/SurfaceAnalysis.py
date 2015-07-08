@@ -29,6 +29,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 import numpy as np
+import scipy
 from . import compute_wavevectors, fftn
 
 class CharacterisePeriodicSurface(object):
@@ -79,8 +80,12 @@ class CharacterisePeriodicSurface(object):
         return q_min, q_max
 
 
-    def estimate_hurst(self, lambda_min = 0, lambda_max = float('inf'),
-                       full_output=False):
+    def estimate_hurst_naive(self, lambda_min = 0, lambda_max = float('inf'),
+                             full_output=False):
+        """
+        Naive way of estimating hurst exponent. biased towards short wave
+        lengths, here only for legacy purposes
+        """
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
         exponent, offset = np.polyfit(np.log(self.q[sl]),
@@ -91,6 +96,95 @@ class CharacterisePeriodicSurface(object):
             return Hurst, prefactor
         else:
             return Hurst
+
+
+    def estimate_hurst(self, H_guess=1., C0_guess=None,
+                       lambda_min=0, lambda_max = float('inf'),
+                       full_output=False, tol = 1e-9, factor=1):
+        """ When estimating Hurst for  more-than-one-dimensional surfs, we need to scale. E.g, 2d
+        C(q) = C_0*q^(-2-2H)
+        H, C_0 = argmin sum_i[|C(q_i)-self.C|^2/q_i]
+        """
+        q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
+        sl = np.logical_and(self.q<q_max, self.q>q_min)
+        # normalising_factor
+        k_norm = factor/self.C[sl].sum()
+        def objective(X):
+            H, C0 = X
+            return k_norm * ((self.C[sl] - C0*self.q[sl]**(-2-H*2))**2 /
+                    self.q[sl]**(self.surface.dim-1)).sum()
+
+
+        def jacobian(X):
+            H, C0 = X
+            sim = self.q[sl]**(-2-H*2)
+            bracket = (self.C[sl] - C0*sim)
+            denom = self.q[sl]**(self.surface.dim-1)
+            return np.array([(4*C0 * sim * bracket * np.log(self.q[sl]) /
+                              denom).sum(),
+                             (-2*sim*bracket/denom).sum()])*k_norm
+        H0 = H_guess
+        if C0_guess is None:
+            C0 = (self.C[sl]/self.q[sl]**(-2-H0*2)).mean()
+        else:
+            C0 = C0_guess
+        res = scipy.optimize.minimize(objective, [H0, C0], tol=tol)#, jac=jacobian)
+        if not res.success:
+            raise Exception(
+                ("Estimation of Hurst exponent did not succeed. Optimisation "
+                 "result is :\n{}").format(res))
+        Hurst, prefactor = res.x
+        if full_output:
+            return Hurst, prefactor, res
+        else:
+            return Hurst
+
+    def estimate_hurst_alt(self, H_guess=1.,
+                       lambda_min=0, lambda_max = float('inf'),
+                       full_output=False, tol = 1e-9):
+        """ When estimating Hurst for  more-than-one-dimensional surfs, we need to scale. E.g, 2d
+        C(q) = C_0*q^(-2-2H)
+        H, C_0 = argmin sum_i[|C(q_i)-self.C|^2/q_i]
+        """
+        q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
+        sl = np.logical_and(self.q<q_max, self.q>q_min)
+
+        # The unique root of the gradient of the objective in C0 can be
+        # explicitly expressed
+        def C0_of_H(H):
+            return ((self.q[sl]**(-3-2*H) * self.C[sl]).sum() /
+                    (self.q[sl]**(-5-2*H)).sum())
+
+        #this is the gradient of the objective in H
+        def grad_in_H(H):
+            C0 = C0_of_H(H)
+            denom = self.q[sl]**(self.surface.dim-1)
+            sim = self.q[sl]**(-2-H*2)
+            bracket = (self.C[sl] - C0*sim)
+            return (4*C0 * sim * bracket * np.log(self.q[sl]) /denom).sum()
+
+        def grad_in_H_prime(H):
+            C0 = C0_of_H(H)
+            denom = self.q[sl]**(self.surface.dim-1)
+            return ((8*C0* self.q[sl]**(-4-4*H) *
+                     (- self.C[sl]*self.q[sl]**(2+2*H) + 2*C0) *
+                     np.log(self.q[sl])**2)/denom)
+
+        H0 = H_guess
+
+        res = scipy.optimize.root(grad_in_H, H0, tol=tol)#, jac=grad_in_H_prime)
+        if not res.success:
+            raise Exception(
+                ("Estimation of Hurst exponent did not succeed. Optimisation "
+                 "result is :\n{}").format(res))
+        Hurst = res.x
+        if full_output:
+            prefactor = C0_of_H(Hurst)
+            return Hurst, prefactor, res
+        else:
+            return Hurst
+
+
 
     def compute_h_rms(self):
         return self.surface.compute_h_rms()
@@ -139,7 +233,7 @@ class CharacteriseSurface(CharacterisePeriodicSurface):
     def __init__(self, surface, window_type='hanning', window_params=dict()):
         """
         Keyword Arguments:
-        surface       -- Instance of PyPyContact.Surface or subclass with 
+        surface       -- Instance of PyPyContact.Surface or subclass with
                          specified size
         window_type   -- (default 'hanning') numpy windowing function name
         window_params -- (default dict())
