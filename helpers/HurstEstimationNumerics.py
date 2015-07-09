@@ -69,11 +69,11 @@ def plot_grad_C0(surface, H_in, lam_max):
     dim = 2
 
     def C0_of_H(H):
-        return ((q**(-3-2*H) * C).sum() /
-            (q**(-5-4*H)).sum())
+        return ((q**(-3-2*H)).sum() /
+            (q**(-5-4*H)/C).sum())
 
     def objective(H, C0):
-        return ((C - C0*q**(-2*H-2))**2 /
+        return ((1 - C0*q**(-2*H-2)/C)**2 /
                 q**(dim-1)).sum()
 
     C0 = C0_of_H(H_in)
@@ -97,26 +97,24 @@ def plot_grad_H(surface, lam_max):
     surf = Tools.CharacterisePeriodicSurface(surface)
     q_min = 2*np.pi/lam_max
     sl = surf.q > q_min
-    q = surf.q[sl]
-    C = surf.C[sl]
+    q = surf.q[sl]# np.array(surf.q[sl][0], surf.q[sl][-1])
+    C = surf.C[sl]# np.array(surf.C[sl][0], surf.C[sl][-1])
     dim = 2
 
     def C0_of_H(H):
-        return ((q**(-2-(dim-1)-2*H) * C).sum() /
-            (q**(-4-(dim-1)-4*H)).sum())
+        return ((C**2/q**(-5-dim-4*H)).sum() /
+            (C/q**(-3-dim-2*H)).sum())
 
     def grad_h(H, C0):
-        #return (4*C0*np.log(q)*(C-C0*q**(-2-2*H))/q).sum()
-        #return (4*q**(-4*H)*(C*q**(2*H+2) - C0)*np.log(q)*C0/q**(4+(dim-1))).sum()
-        return (4*C0*np.log(q)*q**(-1-2*H-dim)*(C - C0*q**(-2-2*H))).sum()
+        return (4*C0/C*np.log(q)*q**(-1-2*H-dim)*(1 - C0*q**(-2-2*H)/C)).sum()
 
     def objective(H, C0):
-        return ((C - C0*q**(-2*H-2))**2 /
+        return ((c/q**(-2*H-2) - C0)**2 /
                 q**(dim-1)).sum()
 
     def full_obj(H):
         C0 = C0_of_H(H)
-        return ((C - C0*q**(-2*H-2))**2 /
+        return ((1 - C0/C*q**(-2*H-2))**2 /
                 q**(dim-1)).sum()
 
     h_s = np.linspace(.0, 2., 51)
@@ -148,6 +146,7 @@ def plot_grad_H(surface, lam_max):
     #res = scipy.optimize.fmin
     #print("H_out = {}, obj0 = {}".format(C0, O0))
     ax.grid(True)
+
     return H_opt, C0_of_H(H_opt)
 
 def compare_to_PyPy(surface, lam_max, H_ref, C0_ref):
@@ -176,6 +175,11 @@ def compare_to_PyPy(surface, lam_max, H_ref, C0_ref):
     ax.plot(q[sl], q[sl]**(-2-2*H)*alpha, label="{}, H={:.4f}".format('fit', H), lw = 3)
     ax.plot(q[sl], q[sl]**(-2-2*H_ref)*C0_ref, label="{}, H={:.4f}".format('ref_fit', H_ref), lw = 3)
     ax.legend(loc='best')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.loglog(q[sl], C[sl]/(q[sl]**(-2-2*H_ref)*C0_ref), alpha=.1)
+    ax.errorbar(q_g, mean/(q_g**(-2-2*H_ref)*C0_ref), yerr=err/(q_g**(-2-2*H_ref)*C0_ref))
 
 def main():
     siz = 2000e-9

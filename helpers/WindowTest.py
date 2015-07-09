@@ -49,29 +49,31 @@ def process(surf_name, surface):
     ax.set_yscale('log')
     ax.set_xscale('log')
     colors = ('r', 'b', 'g')
-    q_max = 2e8
+    q_max = 4e8
     q_min = 2e7
     lambda_min = 2*np.pi/q_max
 
 
     names = ('Hanning ', 'Kaiser 8.6', 'periodic' )
+    #names = ('periodic', )
     for color, name in zip(colors, names):
         surf = surfs[name]
         q = surf.q
         C = surf.C
-        fit_sl = np.logical_and(q > q_min, q < q_max)
+        fit_sl = q>0#np.logical_and(q > q_min, q < q_max)
         global counter
         counter += 1
         print('Hello {}'.format(counter))
-        H, alpha, res = surf.estimate_hurst_alt(lambda_min=lambda_min, full_output=True, H_bracket=(0, 3))
-        print(res)
+        #H, alpha, res = surf.estimate_hurst_alt(lambda_min=lambda_min, full_output=True, H_bracket=(0, 3))
+        H, alpha = surf.estimate_hurst_naive(lambda_min=lambda_min, full_output=True)
+        #print(res)
         ax.loglog(q, C, alpha=.1, color=color)
         mean, err, q_g = surf.grouped_stats(100)
 
         ax.errorbar(q_g, mean, yerr=err, color=color)
         ax.set_title("{}: H={:.2f}, h_rms={:.2e}".format(surf_name, H, np.sqrt((surface.profile()**2).mean())))
         a, b = np.polyfit(np.log(q), np.log(C), 1)
-        ax.plot(q[fit_sl], q[fit_sl]**(-2-2*H)*alpha, label="{}, H={:.2f}".format(name, H), color=color)
+        ax.plot(q[fit_sl], q[fit_sl]**(-2-2*H)*alpha, label="{}, H={:.2f}".format(name, H), color=color, lw=3)
     slice_fig = plt.figure()
     slice_ax1_4 = slice_fig.add_subplot(311)
     slice_ax1_2 = slice_fig.add_subplot(312)
@@ -127,7 +129,7 @@ def main():
     plot_distro('Topo1_corr', surface.profile())
     surfs.append(('Topo1_corr', surface))
 
-    hurst = .98
+    hurst = .8
     res = surface.resolution
     h_rms = 3.24e-8
 
@@ -140,7 +142,7 @@ def main():
     surface = Surf.NumpySurface(dsurface.profile()[:res[0], :res[0]], size = size)
     surfs.append(('Gauss aperiodic', surface))
 
-    for name, surf in surfs[:1]:
+    for name, surf in (surfs[-1],):
         process(name, surf)
 
 

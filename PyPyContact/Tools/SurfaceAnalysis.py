@@ -89,7 +89,7 @@ class CharacterisePeriodicSurface(object):
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
         exponent, offset = np.polyfit(np.log(self.q[sl]),
-                                      np.log(self.C[sl]), 1)
+                                      np.log(self.C[sl]), 1, w=np.sqrt(1/self.q[sl]))
         prefactor = np.exp(offset)
         Hurst= -(exponent+2)/2
         if full_output:
