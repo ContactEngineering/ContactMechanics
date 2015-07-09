@@ -111,14 +111,16 @@ class ToolTest(unittest.TestCase):
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
         surf_char = Tools.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
-        hurst_out, prefactor_out, dummy = surf_char.estimate_hurst(lambda_max=lam_max, H_guess = 0.1, full_output=True)
+        hurst_out, prefactor_out, dummy = surf_char.estimate_hurst_alt(lambda_max=lam_max, H_guess = 0.1, full_output=True)
         hurst_error = abs(1-hurst_out/hurst)
         prefactor_error = abs(1-prefactor_out/prefactor_in)
         reproduction_tol = 1e-5
         self.assertTrue(hurst_error<reproduction_tol,
                         "error = {}, h_out = {}, h_in = {}, tol = {}".format(
                             hurst_error, hurst_out, hurst, reproduction_tol))
-        self.assertTrue(prefactor_error<reproduction_tol)
+        self.assertTrue(
+            prefactor_error<reproduction_tol,
+            "C0_err = {}, tol = {}".format(prefactor_error, reproduction_tol))
 
     def test_surf_param_recovery_weighted_gaussian(self):
         siz = 3
@@ -133,7 +135,7 @@ class ToolTest(unittest.TestCase):
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
         surf_char = Tools.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
-        hurst_out, prefactor_out, res = surf_char.estimate_hurst(lambda_max=lam_max, H_guess = 0.1, full_output=True)
+        hurst_out, prefactor_out, res = surf_char.estimate_hurst_alt(lambda_max=lam_max, H_guess = 0.1, full_output=True)
         hurst_error = abs(1-hurst_out/hurst)
         prefactor_error = abs(1-prefactor_out/prefactor_in)
         reproduction_tol = 1e-5

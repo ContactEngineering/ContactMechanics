@@ -50,6 +50,7 @@ def process(surf_name, surface):
     ax.set_xscale('log')
     colors = ('r', 'b', 'g')
     q_max = 2e8
+    q_min = 2e7
     lambda_min = 2*np.pi/q_max
 
 
@@ -58,10 +59,11 @@ def process(surf_name, surface):
         surf = surfs[name]
         q = surf.q
         C = surf.C
+        fit_sl = np.logical_and(q > q_min, q < q_max)
         global counter
         counter += 1
         print('Hello {}'.format(counter))
-        H, alpha, res = surf.estimate_hurst_alt(lambda_min=lambda_min, full_output=True, H_guess=.5)
+        H, alpha, res = surf.estimate_hurst_alt(lambda_min=lambda_min, full_output=True, H_bracket=(0, 3))
         print(res)
         ax.loglog(q, C, alpha=.1, color=color)
         mean, err, q_g = surf.grouped_stats(100)
@@ -69,7 +71,7 @@ def process(surf_name, surface):
         ax.errorbar(q_g, mean, yerr=err, color=color)
         ax.set_title("{}: H={:.2f}, h_rms={:.2e}".format(surf_name, H, np.sqrt((surface.profile()**2).mean())))
         a, b = np.polyfit(np.log(q), np.log(C), 1)
-        ax.plot(q, q**(-2-2*H)*alpha, label="{}, H={:.2f}".format(name, H), color=color)
+        ax.plot(q[fit_sl], q[fit_sl]**(-2-2*H)*alpha, label="{}, H={:.2f}".format(name, H), color=color)
     slice_fig = plt.figure()
     slice_ax1_4 = slice_fig.add_subplot(311)
     slice_ax1_2 = slice_fig.add_subplot(312)
@@ -115,7 +117,7 @@ def main():
     path = os.path.join(os.path.dirname(__file__), "SurfaceExampleUnfiltered.asc")
     surface = Surf.NumpyTxtSurface(path, size=size, factor=1e-9)
     surfs = []
-    #surfs.append(('Topo1', surface))
+    surfs.append(('Topo1', surface))
     arr, x, residual = Tools.shift_and_tilt(surface.profile(), full_output=True)
     print("ň = {[0]:.15e}, d = {}, residual = {}, mean(arr) = {}".format(
         (float(x[0]), float(x[1]), float(np.sqrt(1-x[0]**2 - x[1]**2))),
@@ -123,7 +125,7 @@ def main():
     arr = Tools.shift_and_tilt_approx(surface.profile())
     surface = Surf.NumpySurface(arr, size=size)
     plot_distro('Topo1_corr', surface.profile())
-    #surfs.append(('Topo1_corr', surface))
+    surfs.append(('Topo1_corr', surface))
 
     hurst = .98
     res = surface.resolution
@@ -138,7 +140,7 @@ def main():
     surface = Surf.NumpySurface(dsurface.profile()[:res[0], :res[0]], size = size)
     surfs.append(('Gauss aperiodic', surface))
 
-    for name, surf in surfs:
+    for name, surf in surfs[:1]:
         process(name, surf)
 
 

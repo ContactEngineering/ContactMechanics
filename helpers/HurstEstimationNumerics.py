@@ -58,7 +58,7 @@ def plot_naive(surface, lam_max):
     ax.set_title("Naive: H={:.2f}, h_rms={:.2e}".format(H, np.sqrt((surface.profile()**2).mean())))
     a, b = np.polyfit(np.log(q), np.log(C), 1)
     ax.plot(q, q**(-2-2*H)*alpha, label="{}, H={:.2f}".format('fit', H))
-
+    ax.legend(loc='best')
 
 def plot_grad_C0(surface, H_in, lam_max):
     surf = Tools.CharacterisePeriodicSurface(surface)
@@ -93,7 +93,7 @@ def plot_grad_C0(surface, H_in, lam_max):
     print("C0 = {}, obj0 = {}".format(C0, O0))
     return C0
 
-def plot_grad_H(surface, C0, lam_max):
+def plot_grad_H(surface, lam_max):
     surf = Tools.CharacterisePeriodicSurface(surface)
     q_min = 2*np.pi/lam_max
     sl = surf.q > q_min
@@ -113,6 +113,11 @@ def plot_grad_H(surface, C0, lam_max):
         return ((C - C0*q**(-2*H-2))**2 /
                 q**(dim-1)).sum()
 
+    def full_obj(H):
+        C0 = C0_of_H(H)
+        return ((C - C0*q**(-2*H-2))**2 /
+                q**(dim-1)).sum()
+
     h_s = np.linspace(.0, 2., 51)
     o_s = np.zeros_like(h_s)
     g_s = np.zeros_like(h_s)
@@ -122,16 +127,54 @@ def plot_grad_H(surface, C0, lam_max):
         o_s[i] = objective(h, c)
         g_s[i] = grad_h(h, c)
 
+    H_opt, obj_opt, err, nfeq = scipy.optimize.fminbound(full_obj, 0, 2, full_output=True)
+    if err != 0:
+        raise Exception()
+
     fig = plt.figure()
     ax=fig.add_subplot(211)
+    ax.set_xlim(h_s[0], h_s[-1])
     fig.suptitle('grad(H)')
     ax.plot(h_s, o_s, marker= '+')
+    ax.grid(True)
+    ax.scatter(H_opt, obj_opt, marker='x', label = 'root', c='r')
     ax=fig.add_subplot(212)
+    ax.set_xlim(h_s[0], h_s[-1])
+
     ax.plot(h_s, g_s, marker= '+')
+    grad_opt = grad_h(H_opt, C0_of_H(H_opt))
+    ax.scatter(H_opt, grad_opt, marker='x', label = 'root', c='r')
     #res = scipy.optimize.fmin
     #print("H_out = {}, obj0 = {}".format(C0, O0))
     ax.grid(True)
+    return H_opt, C0_of_H(H_opt)
 
+def compare_to_PyPy(surface, lam_max, H_ref, C0_ref):
+    fig = plt.figure()
+    ax=fig.add_subplot(111)
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+
+    surf = Tools.CharacterisePeriodicSurface(surface)
+    q_min = 2*np.pi/lam_max
+    sl = surf.q > q_min
+    q = surf.q
+    C = surf.C
+    H, alpha, res = surf.estimate_hurst_alt(lambda_max=lam_max, full_output=True)
+    print("H = {}, alpha = {}".format(H, alpha))
+    ax.loglog(q, C, alpha=.1)
+    mean, err, q_g = surf.grouped_stats(100)
+    mask = np.isfinite(mean)
+    mean = mean[mask]
+    err = err[:, mask]
+    q_g = q_g[mask]
+
+    ax.errorbar(q_g, mean, yerr=err)
+    ax.set_title("New: H_pypy={:.2f}, H_ref = {:.2f}, h_rms={:.2e}".format(H, H_ref, np.sqrt((surface.profile()**2).mean())))
+
+    ax.plot(q, q**(-2-2*H)*alpha, label="{}, H={:.2f}".format('fit', H))
+    ax.plot(q, q**(-2-2*H_ref)*C0_ref, label="{}, H={:.2f}".format('ref_fit', H))
+    ax.legend(loc='best')
 
 def main():
     siz = 2000e-9
@@ -140,7 +183,7 @@ def main():
     size = (siz, siz)
     hurst = .75
     h_rms = 3.24e-8
-    res = 256
+    res = 128
     resolution = (res, res)
 
     seed = 2
@@ -150,9 +193,10 @@ def main():
 
     plot_naive(surface, lam_max)
 
-    C0 = plot_grad_C0(surface, hurst, lam_max)
+    plot_grad_C0(surface, hurst, lam_max)
 
-    plot_grad_H(surface, C0, lam_max)
+    H, C0 = plot_grad_H(surface, lam_max)
+    compare_to_PyPy(surface, lam_max, H, C0)
 
 
 if __name__ == "__main__":

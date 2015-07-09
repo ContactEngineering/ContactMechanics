@@ -139,10 +139,11 @@ class CharacterisePeriodicSurface(object):
         else:
             return Hurst
 
-    def estimate_hurst_alt(self, H_guess=1.,
+    def estimate_hurst_alt(self, H_bracket=(0., 2.),
                        lambda_min=0, lambda_max = float('inf'),
                        full_output=False, tol = 1e-9):
-        """ When estimating Hurst for  more-than-one-dimensional surfs, we need to scale. E.g, 2d
+        """ When estimating Hurst for  more-than-one-dimensional surfs, we need
+        to scale. E.g, 2d
         C(q) = C_0*q^(-2-2H)
         H, C_0 = argmin sum_i[|C(q_i)-self.C|^2/q_i]
         """
@@ -171,32 +172,36 @@ class CharacterisePeriodicSurface(object):
             C0 = C0_of_H(H)
             return (((C-C0*q**(-2-2*H))**2/q).sum())*factor
 
-        H0 = H_guess
-        h_s = np.linspace(.0, 2., 51)
+        h_s = np.linspace(H_bracket[0], H_bracket[1], 51)
         o_s = np.zeros_like(h_s)
         g_s = np.zeros_like(h_s)
         for i, h in enumerate(h_s):
             o_s[i] = obj(h)
             g_s[i] = grad_in_H(h)
 
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot(211)
-        ax.plot(h_s, o_s)
-        ax = fig.add_subplot(212)
-        ax.plot(h_s, g_s)
-        plt.show()
 
-
-
-        res = scipy.optimize.minimize_scalar(
-            obj, (0, 2), tol=tol)#y, jac=grad_in_H)
-        print(res)
-        if not res.success:
+        res = scipy.optimize.fminbound(
+            obj, 0, 2, xtol=tol, full_output=True)#y, jac=grad_in_H)
+        H_opt, obj_opt, err, nfeq = res
+        if not err == 0:
             raise Exception(
                 ("Estimation of Hurst exponent did not succeed. Optimisation "
                  "result is :\n{}").format(res))
-        Hurst = res.x
+        Hurst = H_opt
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(211)
+        ax.grid(True)
+        ax.set_xlim(H_bracket)
+        ax.plot(h_s, o_s)
+        ax.scatter(Hurst, obj(Hurst), marker = 'x')
+        ax = fig.add_subplot(212)
+        ax.plot(h_s, g_s)
+        ax.grid(True)
+        ax.set_xlim(H_bracket)
+        ax.scatter(Hurst, grad_in_H(Hurst), marker = 'x')
+
         if full_output:
             prefactor = C0_of_H(Hurst)
             return Hurst, prefactor, res
