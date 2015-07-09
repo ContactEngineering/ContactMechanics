@@ -88,8 +88,18 @@ class CharacterisePeriodicSurface(object):
         """
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
-        exponent, offset = np.polyfit(np.log(self.q[sl]),
-                                      np.log(self.C[sl]), 1, w=np.sqrt(1/self.q[sl]))
+        weights = np.sqrt(1/self.q[sl]/((1/self.q[sl]).sum()))
+        # Note the weird definition of the weights here. this is due to
+        # numpy's polyfit interface. Since I suspect that numpy will change
+        # this, i avoid using polyfit
+        ## exponent, offset = np.polyfit(np.log(self.q[sl]),
+        ##                               np.log(self.C[sl]),
+        ##                               1,
+        ##                               w=np.sqrt(1/self.q[sl]))
+
+        # and do it 'by hand'
+        A = np.matrix(np.vstack((np.log(self.q[sl])*weights, weights))).T
+        exponent, offset = np.linalg.lstsq(A, np.log(self.C[sl])*weights)[0]
         prefactor = np.exp(offset)
         Hurst= -(exponent+2)/2
         if full_output:
