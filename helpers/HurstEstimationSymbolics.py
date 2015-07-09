@@ -44,7 +44,7 @@ obj = (C-C0*q**(-2-2*H))**2/denom
 pprint(obj)
 
 jacob = [sympy.diff(obj, var) for var in (H, C0)]
-
+print("jacobian:")
 pprint(jacob)
 
 sol_C0 = sympy.solve(jacob[1], C0)
@@ -53,3 +53,6 @@ pprint(sol_C0)
 fprime_h = sympy.diff(jacob[0], H)
 
 pprint(sympy.simplify(fprime_h))
+
+
+pprint(sympy.diff(q**(-2-2*H), H))

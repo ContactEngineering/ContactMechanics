@@ -102,12 +102,13 @@ def plot_grad_H(surface, lam_max):
     dim = 2
 
     def C0_of_H(H):
-        return ((q**(-3-2*H) * C).sum() /
-            (q**(-5-4*H)).sum())
+        return ((q**(-2-(dim-1)-2*H) * C).sum() /
+            (q**(-4-(dim-1)-4*H)).sum())
 
     def grad_h(H, C0):
         #return (4*C0*np.log(q)*(C-C0*q**(-2-2*H))/q).sum()
-        return (4*q**(-4*H)*(C*q**(2*H+2) - C0)*np.log(q)*C0/q**5).sum()
+        #return (4*q**(-4*H)*(C*q**(2*H+2) - C0)*np.log(q)*C0/q**(4+(dim-1))).sum()
+        return (4*C0*np.log(q)*q**(-1-2*H-dim)*(C - C0*q**(-2-2*H))).sum()
 
     def objective(H, C0):
         return ((C - C0*q**(-2*H-2))**2 /
@@ -171,9 +172,9 @@ def compare_to_PyPy(surface, lam_max, H_ref, C0_ref):
 
     ax.errorbar(q_g, mean, yerr=err)
     ax.set_title("New: H_pypy={:.2f}, H_ref = {:.2f}, h_rms={:.2e}".format(H, H_ref, np.sqrt((surface.profile()**2).mean())))
-
-    ax.plot(q, q**(-2-2*H)*alpha, label="{}, H={:.2f}".format('fit', H))
-    ax.plot(q, q**(-2-2*H_ref)*C0_ref, label="{}, H={:.2f}".format('ref_fit', H))
+    
+    ax.plot(q[sl], q[sl]**(-2-2*H)*alpha, label="{}, H={:.4f}".format('fit', H), lw = 3)
+    ax.plot(q[sl], q[sl]**(-2-2*H_ref)*C0_ref, label="{}, H={:.4f}".format('ref_fit', H_ref), lw = 3)
     ax.legend(loc='best')
 
 def main():
@@ -196,6 +197,7 @@ def main():
     plot_grad_C0(surface, hurst, lam_max)
 
     H, C0 = plot_grad_H(surface, lam_max)
+    print("H_ref = {}, C0_ref = {}".format(H, C0))
     compare_to_PyPy(surface, lam_max, H, C0)
 
 
