@@ -65,9 +65,10 @@ def process(surf_name, surface):
         counter += 1
         print('Hello {}'.format(counter))
         #H, alpha, res = surf.estimate_hurst_alt(lambda_min=lambda_min, full_output=True, H_bracket=(0, 3))
-        H, alpha = surf.estimate_hurst_naive(lambda_min=lambda_min, full_output=True)
+        H, alpha = surf.estimate_hurst(lambda_min=lambda_min, full_output=True)
         #print(res)
-        ax.loglog(q, C, alpha=.1, color=color)
+        sl = C>0
+        ax.loglog(q[sl], C[sl], alpha=.1, color=color)
         mean, err, q_g = surf.grouped_stats(100)
 
         ax.errorbar(q_g, mean, yerr=err, color=color)
@@ -129,11 +130,11 @@ def main():
     plot_distro('Topo1_corr', surface.profile())
     surfs.append(('Topo1_corr', surface))
 
-    hurst = .8
+    hurst = .85
     res = surface.resolution
-    h_rms = 3.24e-8
+    h_rms = 2.11e-8
 
-    surface = Tools.RandomSurfaceExact(res, size, hurst, h_rms).get_surface()
+    surface = Tools.RandomSurfaceGaussian(res, size, hurst, h_rms).get_surface()
     surfs.append(('Gauss periodic', surface))
 
     dsize = (2*siz, 2*siz)
@@ -142,7 +143,7 @@ def main():
     surface = Surf.NumpySurface(dsurface.profile()[:res[0], :res[0]], size = size)
     surfs.append(('Gauss aperiodic', surface))
 
-    for name, surf in (surfs[-1],):
+    for name, surf in surfs:#(surfs[-1],):
         process(name, surf)
 
 

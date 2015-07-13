@@ -80,8 +80,8 @@ class CharacterisePeriodicSurface(object):
         return q_min, q_max
 
 
-    def estimate_hurst_naive(self, lambda_min = 0, lambda_max = float('inf'),
-                             full_output=False):
+    def estimate_hurst(self, lambda_min = 0, lambda_max = float('inf'),
+                       full_output=False):
         """
         Naive way of estimating hurst exponent. biased towards short wave
         lengths, here only for legacy purposes
@@ -108,9 +108,9 @@ class CharacterisePeriodicSurface(object):
             return Hurst
 
 
-    def estimate_hurst(self, H_guess=1., C0_guess=None,
-                       lambda_min=0, lambda_max = float('inf'),
-                       full_output=False, tol = 1e-9, factor=1):
+    def estimate_hurst_bad(self, H_guess=1., C0_guess=None,
+                           lambda_min=0, lambda_max = float('inf'),
+                           full_output=False, tol = 1e-9, factor=1):
         """ When estimating Hurst for  more-than-one-dimensional surfs, we need to scale. E.g, 2d
         C(q) = C_0*q^(-2-2H)
         H, C_0 = argmin sum_i[|C(q_i)-self.C|^2/q_i]
@@ -226,7 +226,7 @@ class CharacterisePeriodicSurface(object):
     def compute_h_rms_fromReciprocSpace(self):
         return self.surface.compute_h_rms_fromReciprocSpace()
 
-    def grouped_stats(self, nb_groups, percentiles=(5, 95)):
+    def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):
         """
         Make nb_groups groups of the ordered C-q dataset and compute their means
         standard errors for plots with errorbars
@@ -257,6 +257,9 @@ class CharacterisePeriodicSurface(object):
 
             bottom = top
 
+        if filter_nan:
+            sl = np.isfinite(q_g)
+            return C_g[sl], C_g_std[:,sl], q_g[sl]
         return C_g, C_g_std, q_g
 
 class CharacteriseSurface(CharacterisePeriodicSurface):
