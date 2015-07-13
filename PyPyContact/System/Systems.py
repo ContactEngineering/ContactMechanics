@@ -301,6 +301,11 @@ class SmoothContactSystem(SystemBase):
 
     def compute_nb_attractive_contact_pts(self):
         return np.where(self.interaction.force < 0., 1., 0.).sum()
+    def compute_repulsive_coordinates(self):
+        return np.argwhere(self.interaction.force > 0.)
+    def compute_attractive_coordinates(self):
+        return np.argwhere(self.interaction.force < 0.)
+
 
     def evaluate(self, disp, offset, pot=True, forces=False):
         """
