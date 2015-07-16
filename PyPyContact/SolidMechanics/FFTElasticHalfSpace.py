@@ -83,8 +83,14 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.size = tuple(tmpsize)
         self.nb_pts = np.prod(self.resolution)
         self.area_per_pt = np.prod(self.size)/self.nb_pts
-        self.steps = tuple(
-            float(size)/res for size, res in zip(self.size, self.resolution))
+        try:
+            self.steps = tuple(
+                float(size)/res for size, res in zip(self.size, self.resolution))
+        except ZeroDivisionError as err:
+            raise ZeroDivisionError("""{}, when trying to handle
+            self.steps = tuple(
+                float(size)/res for size, res in zip(self.size, self.resolution))
+Parameters: self.size = {}, self.resolution = {}""".format(err, self.size, self.resolution))
         self.young = young
         if superclass:
             self._compute_fourier_coeffs()
