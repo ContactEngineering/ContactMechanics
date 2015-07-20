@@ -189,6 +189,29 @@ class FastSystemTest(unittest.TestCase):
                         "error = {} > tol = {}".format(
                             error, tol))
 
+    def test_babuschka_eval(self):
+        tol = 1e-6
+        # here, i deliberately avoid using the SystemFactory, because I want to
+        # explicitly test the dumb (yet safer) way of computing problems with a
+        # free, non-periodic  boundary. A user who invokes a system constructor
+        # directliy like this is almost certainly mistaken
+        S = FastSmoothContactSystem(self.substrate,
+                                    self.min_pot,
+                                    self.surface)
+        offset = .8 * S.interaction.r_c
+        S.create_babushka(offset)
+        S.babushka.evaluate(
+            np.zeros(S.babushka.substrate.computational_resolution), offset,
+            forces=True)
+        F_n = S.babushka.compute_normal_force()
+        S = SmoothContactSystem(self.substrate,
+                                self.min_pot,
+                                self.surface)
+        S.evaluate(np.zeros(S.substrate.computational_resolution), offset, forces=True)
+        F_n2 = S.compute_normal_force()
+
+        self.assertTrue(F_n == F_n2)
+
     def test_unit_neutrality(self):
         tol = 1e-7
         # runs the same problem in two unit sets and checks whether results are
@@ -293,3 +316,4 @@ class FastSystemTest(unittest.TestCase):
         error = Tools.mean_err(disps[0], disps[1])
         self.assertTrue(error < tol,
                         "error = {} ≥ tol = {}, (c = {})".format(error, tol, length_c))
+

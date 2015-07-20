@@ -286,6 +286,10 @@ class Sphere(NumpySurface):
             ry2 = (np.arange(resolution[1], dtype=float) *
                    size[1] / resolution[1] - centre[1])**2
             r2 = rx2 + ry2
+        else:
+            raise Exception(
+                ("Problem has to be 1- or 2-dimensional. "
+                 "Yours is {}-dimensional").format(dim))
         radius2 = radius**2  # avoid nans for small radiio
         outside = r2 > radius2
         r2[outside] = radius2
