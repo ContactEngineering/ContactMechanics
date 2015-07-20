@@ -37,11 +37,13 @@ class CharacterisePeriodicSurface(object):
     Simple inverse FFT analysis without window. Do not use for measured surfs
     """
     eval_at_init=True
-    def __init__(self, surface):
+    def __init__(self, surface, one_dimensional=False):
         """
         Keyword Arguments:
         surface -- Instance of PyPyContact.Surface or subclass with specified
                    size
+        one_dimensional -- (default False). if True, evaluation of 1D (line-
+                           scan) power spectrum is emulated
         """
         self.surface = surface
         if self.surface.size is None:
@@ -55,7 +57,10 @@ class CharacterisePeriodicSurface(object):
 
         self.window=1
         if self.eval_at_init:
-            self.C, self.q = self.eval()
+            if one_dimensional:
+                self.C, self.q = self.eval_1D()
+            else:
+                self.C, self.q = self.eval()
             self.size = self.C.size
 
     def eval(self):
@@ -70,6 +75,22 @@ class CharacterisePeriodicSurface(object):
         order = np.argsort(q_norm, axis=None)
         # The first entry (for |q| = 0) is rejected, since it's 0 by construction
         return C_q.flatten()[order][1:], q_norm.flatten()[order][1:]
+
+    def eval_1D(self):
+        res, size = self.surface.resolution, self.surface.size
+        # equivalent lattice constant**2
+        area = np.prod(size)
+        tmp = np.fft.fft(self.surface.profile()*self.window, axis=0)
+        D_q_x = np.conj(tmp)*tmp
+        D_q = np.mean(D_q_x, axis=1).real
+
+        q_x = abs(compute_wavevectors(res, size, self.surface.dim)[0])
+        print("q_x = {}".format(q_x))
+        order = np.argsort(q_x, axis=None)
+        print("order = {}".format(order))
+        # The first entry (for |q| = 0) is rejected, since it's 0 by construction
+        return D_q.flatten()[order][1:], q_x.flatten()[order][1:]
+
 
     def get_q_from_lambda(self, lambda_min, lambda_max):
         if lambda_min == 0:
