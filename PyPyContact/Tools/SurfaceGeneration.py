@@ -32,7 +32,8 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 import scipy.stats as stats
 from ..Surface import NumpySurface
-from . import compute_wavevectors, ifftn
+from . import compute_wavevectors, ifftn, fftn
+from . import CharacterisePeriodicSurface
 
 class RandomSurfaceExact(object):
     Error = Exception
@@ -112,6 +113,22 @@ class RandomSurfaceExact(object):
         stochastic distro in this case)
         """
         return 1.
+
+    @property
+    def C0(self):
+        return (self.compute_prefactor()/np.sqrt(np.prod(self.size)))**2
+
+    @property
+    def abs_q(self):
+        q_norm = np.sqrt((self.q[0]**2).reshape((-1, 1))+self.q[1]**2)
+        order = np.argsort(q_norm, axis=None)
+        # The first entry (for |q| = 0) is rejected, since it's 0 by construction
+        return q_norm.flatten()[order][1:]
+
+    @property
+    def lambdas(self):
+        return 2*np.pi/self.abs_q
+
 
     def compute_prefactor(self):
         """
@@ -216,3 +233,36 @@ class RandomSurfaceGaussian(RandomSurfaceExact):
         for pos_it, neg_it in self.get_negative_frequency_iterator():
                 distr[neg_it] = distr[pos_it]
         return distr
+
+class ModifyExistingPeriodicSurface(RandomSurfaceExact):
+    def __init__(self, surface):
+        """
+        Generates a surface with an Gaussian amplitude distribution
+        Keyword Arguments:
+        resolution -- Tuple containing number of points in spatial directions.
+                      The length of the tuple determines the spatial dimension
+                      of the problem (for the time being, only 1D or square 2D)
+        size       -- domain size. For multidimensional problems,
+                      a tuple can be provided to specify the lenths per
+                      dimension. If the tuple has less entries than dimensions,
+                      the last value in repeated.
+        hurst      -- Hurst exponent
+        h_rms      -- root mean square asperity height
+        seed       -- (default hash(None)) for repeatability, the random number
+                      generator is seeded previous to outputting the generated
+                      surface
+        """
+        self.surface = surface
+        surf_char = CharacterisePeriodicSurface(self.surface)
+        hurst = surf_char.estimate_hurst()
+        h_rms = self.surface.compute_h_rms()
+        super().__init__(surface.resolution, surface.size, hurst, h_rms,
+                         seed=None, lambda_max=None)
+
+    def generate_phases(self):
+        return 0
+
+    def generate_amplitudes(self):
+        area = np.prod(self.size)
+        self.coeffs = fftn(self.surface.profile(), area)
+
