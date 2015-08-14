@@ -38,7 +38,7 @@ import abc
 
 class Potential(SoftWall, metaclass=abc.ABCMeta):
     """ Describes the minimum interface to interaction potentials for
-        PyPyContact. These pontentials are purely 1D, which allows for a few
+        PyPyContact. These potentials are purely 1D, which allows for a few
         simplifications. For instance, the potential energy and forces can be
         computed at any point in the problem from just the one-dimensional gap
         (h(x,y)-z(x,y)) at that point
