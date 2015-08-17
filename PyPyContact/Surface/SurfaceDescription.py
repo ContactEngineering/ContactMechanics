@@ -90,6 +90,9 @@ class Surface(object, metaclass=abc.ABCMeta):
 
     __rmul__ = __mul__
 
+    def __getitem__(self, index):
+        return self._profile()[index]-self.adjustment
+
     @property
     def dim(self,):
         """ needs to be testable to make sure that geometry and halfspace are
