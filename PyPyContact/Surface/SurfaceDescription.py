@@ -62,9 +62,17 @@ class Surface(object, metaclass=abc.ABCMeta):
         return 1/area*np.sqrt((np.conj(H)*H).sum().real)
 
     def compute_rms_slope(self):
-        diffx = np.diff(self.profile(), n=2, axis=0)
-        diffy = np.diff(self.profile(), n=2, axis=1)
-        return np.sqrt((diffx[:,1:-1]**2+diffy[1:-1,:]**2).mean())
+        if self.dim is None:
+            dims = range(2)
+        else:
+            dims = range(self.dim)
+        if self.size is None:
+            grid_spacing = np.array([1., 1.])
+        else:
+            grid_spacing = self.size/np.array(self.resolution)
+        diff = [np.diff(self.profile(), n=2, axis=d)/grid_spacing[d]
+                for d in dims]
+        return np.sqrt((diff[0][:,1:-1]**2+diff[1][1:-1,:]**2).mean())
 
     def adjust(self):
         """
@@ -155,6 +163,7 @@ class Surface(object, metaclass=abc.ABCMeta):
             laplacian += (f[0] + f[2] - 2*f[1])/pixel_size**2
         return laplacian
 
+
 class ScaledSurface(Surface):
     """ used when geometries are scaled
     """
@@ -184,6 +193,13 @@ class ScaledSurface(Surface):
             compatible
         """
         return self.surf.resolution
+
+    @property
+    def size(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.size
 
     def _profile(self):
         """ Computes the combined profile.
