@@ -47,7 +47,7 @@ class RandomSurfaceExact(object):
                       The length of the tuple determines the spatial dimension
                       of the problem (for the time being, only 1D or square 2D)
         size       -- domain size. For multidimensional problems,
-                      a tuple can be provided to specify the lenths per
+                      a tuple can be provided to specify the length per
                       dimension. If the tuple has less entries than dimensions,
                       the last value in repeated.
         hurst      -- Hurst exponent
