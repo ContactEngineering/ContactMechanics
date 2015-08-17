@@ -61,6 +61,11 @@ class Surface(object, metaclass=abc.ABCMeta):
         H = area/nb_pts*np.fft.fftn(delta)
         return 1/area*np.sqrt((np.conj(H)*H).sum().real)
 
+    def compute_rms_slope(self):
+        diffx = np.diff(self.profile(), n=2, axis=0)
+        diffy = np.diff(self.profile(), n=2, axis=1)
+        return np.sqrt((diffx[:,1:-1]**2+diffy[1:-1,:]**2).mean())
+
     def adjust(self):
         """
         shifts surface up or down so that a zero displacement would lead to a
