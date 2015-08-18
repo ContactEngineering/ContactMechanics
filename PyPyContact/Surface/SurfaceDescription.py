@@ -70,9 +70,9 @@ class Surface(object, metaclass=abc.ABCMeta):
             grid_spacing = np.array([1., 1.])
         else:
             grid_spacing = self.size/np.array(self.resolution)
-        diff = [np.diff(self.profile(), n=2, axis=d)/grid_spacing[d]
+        diff = [np.diff(self.profile(), n=1, axis=d)/grid_spacing[d]
                 for d in dims]
-        return np.sqrt((diff[0][:,1:-1]**2+diff[1][1:-1,:]**2).mean())
+        return np.sqrt(2*((diff[0]**2).mean()+(diff[1]**2).mean()))
 
     def adjust(self):
         """
