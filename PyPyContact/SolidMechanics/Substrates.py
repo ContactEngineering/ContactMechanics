@@ -71,7 +71,7 @@ class ElasticSubstrate(Substrate):
     def compute(self, disp, pot=True, forces=False):
         """
         computes and stores the elastic energy and/or surface forces
-        the as fuction of the surface displacement. Note that forces, not
+        the as function of the surface displacement. Note that forces, not
         surface pressures are expected. This is contrary to most formulations
         in the literature, but convenient in the code (consistency with the
         softWall interaction potentials). This choice may come back to bite me.
@@ -86,7 +86,7 @@ class ElasticSubstrate(Substrate):
     def evaluate(self, disp, pot=True, forces=False):
         """
         computes and returns the elastic energy and/or surface forces
-        as fuction of the surface displacement. See docstring for 'compute' for
+        as function of the surface displacement. See docstring for 'compute' for
         more details
         Parameters:
         gap    -- array containing the point-wise gap values
