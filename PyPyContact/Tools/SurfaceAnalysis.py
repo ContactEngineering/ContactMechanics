@@ -121,10 +121,10 @@ class CharacterisePeriodicSurface(object):
         # and do it 'by hand'
         A = np.matrix(np.vstack((np.log(self.q[sl])*weights, weights))).T
         exponent, offset = np.linalg.lstsq(A, np.log(self.C[sl])*weights)[0]
-        prefactor = np.exp(offset)
+        C0 = np.exp(offset)
         Hurst= -(exponent+2)/2
         if full_output:
-            return Hurst, prefactor
+            return Hurst, C0
         else:
             return Hurst
 

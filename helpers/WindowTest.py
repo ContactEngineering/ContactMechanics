@@ -66,13 +66,15 @@ def process(surf_name, surface):
         print('Hello {}'.format(counter))
         #H, alpha, res = surf.estimate_hurst_alt(lambda_min=lambda_min, full_output=True, H_bracket=(0, 3))
         H, alpha = surf.estimate_hurst(lambda_min=lambda_min, full_output=True)
+        title="{}: H={:.2f}, h_rms={:.2e}".format(surf_name, H, np.sqrt((surface.profile()**2).mean()))
+        print("for '{}': Hurst = {}, C0 = {}".format(title, H, alpha))
         #print(res)
         sl = C>0
         ax.loglog(q[sl], C[sl], alpha=.1, color=color)
         mean, err, q_g = surf.grouped_stats(100)
 
         ax.errorbar(q_g, mean, yerr=err, color=color)
-        ax.set_title("{}: H={:.2f}, h_rms={:.2e}".format(surf_name, H, np.sqrt((surface.profile()**2).mean())))
+        ax.set_title(title)
         a, b = np.polyfit(np.log(q), np.log(C), 1)
         ax.plot(q[fit_sl], q[fit_sl]**(-2-2*H)*alpha, label="{}, H={:.2f}".format(name, H), color=color, lw=3)
     slice_fig = plt.figure()
