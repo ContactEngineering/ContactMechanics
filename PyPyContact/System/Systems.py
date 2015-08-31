@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.
 
 import numpy as np
 import scipy
+import abc
 
 from .. import ContactMechanics, SolidMechanics, Surface
 from ..Tools import compare_containers
@@ -46,7 +47,7 @@ class IncompatibleResolutionError(Exception):
     pass
 
 
-class SystemBase(object):
+class SystemBase(object, metaclass=abc.ABCMeta):
     "Base class for contact systems"
     def __init__(self, substrate, interaction, surface):
         """ Represents a contact problem
@@ -68,6 +69,14 @@ class SystemBase(object):
         self.gap = None
         self.disp = None
     _proxyclass = False
+
+    @abc.abstractmethod
+    def evaluate(self, disp, offset, pot=True, forces=False):
+        """
+        Compute the energies and forces in the system for a given displacement
+        field
+        """
+        raise NotImplementedError
 
     @classmethod
     def is_proxy(cls):
@@ -113,6 +122,7 @@ class SystemBase(object):
         return (offset - disp[:self.resolution[0], :self.resolution[1]] -
                 self.surface.profile(*profile_args, **profile_kwargs))
 
+    @abc.abstractmethod
     def compute_normal_force(self):
         "evaluates and returns the normal force between substrate and surface"
         raise NotImplementedError()
@@ -195,7 +205,8 @@ class SystemBase(object):
         self.evaluate(self.disp, offset, forces=gradient)
         return result
 
-    def objective(self, offset, gradient=False, disp_scale=1.):
+    @abc.abstractmethod
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -204,6 +215,8 @@ class SystemBase(object):
         interface. Returns a function of only disp
         Keyword Arguments:
         offset     -- determines indentation depth
+        disp0      -- preexisting displacement. influences e.g., the size of
+                      the proxy system in some 'smart' system subclasses
         gradient   -- (default False) whether the gradient is supposed to be
                       used
         disp_scale -- (default 1.) allows to specify a scaling of the
@@ -244,7 +257,7 @@ class SmoothContactSystem(SystemBase):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
                  "resolutions.").format(
-                     substrate.resolution, surface.resolution))
+                     substrate.resolution, surface.resolution))  # nopep8
         self.dim = len(self.substrate.resolution)
         self.energy = None
         self.force = None
@@ -272,40 +285,69 @@ class SmoothContactSystem(SystemBase):
         return is_ok
 
     def compute_repulsive_force(self):
+        "computes and returns the sum of all repulsive forces"
         return np.where(
             self.interaction.force > 0, self.interaction.force, 0
             ).sum()
 
     def compute_attractive_force(self):
+        "computes and returns the sum of all attractive forces"
         return np.where(
             self.interaction.force < 0, self.interaction.force, 0
             ).sum()
 
     def compute_normal_force(self):
+        "computes and returns the sum of all forces"
         return self.interaction.force.sum()
 
     def compute_contact_area(self):
+        "computes and returns the total contact area"
         return self.compute_nb_contact_pts()*self.area_per_pt
 
     def compute_repulsive_contact_area(self):
-        return self.compute_nb_repulsive_contact_pts()*self.area_per_pt
+        "computes and returns the area where contact pressure is repulsive"
+        return self.compute_nb_repulsive_pts()*self.area_per_pt
 
     def compute_attractive_contact_area(self):
-        return self.compute_nb_attractive_contact_pts()*self.area_per_pt
+        "computes and returns the are where contact pressure is attractive"
+        return self.compute_nb_contact_pts()*self.area_per_pt
 
     def compute_nb_contact_pts(self):
+        """
+        compute and return the number of contact points. Note that this is of
+        no physical interest, as it is a purely numerical artefact
+        """
         return np.where(self.interaction.force != 0., 1., 0.).sum()
 
-    def compute_nb_repulsive_contact_pts(self):
+    def compute_nb_repulsive_pts(self):
+        """
+        compute and return the number of contact points under repulsive
+        pressure. Note that this is of no physical interest, as it is a
+        purely numerical artefact
+        """
         return np.where(self.interaction.force > 0., 1., 0.).sum()
 
-    def compute_nb_attractive_contact_pts(self):
+    def compute_nb_attractive_pts(self):
+        """
+        compute and return the number of contact points under attractive
+        pressure. Note that this is of no physical interest, as it is a
+        purely numerical artefact
+        """
         return np.where(self.interaction.force < 0., 1., 0.).sum()
-    def compute_repulsive_coordinates(self):
-        return np.argwhere(self.interaction.force > 0.)
-    def compute_attractive_coordinates(self):
-        return np.argwhere(self.interaction.force < 0.)
 
+    def compute_repulsive_coordinates(self):
+        """
+        returns an array of all coordinates, where contact pressure is
+        repulsive. Useful for evaluating the number of contact islands etc.
+        """
+        return np.argwhere(self.interaction.force > 0.)
+
+    def compute_attractive_coordinates(self):
+        """
+        returns an array of all coordinates, where contact pressure is
+        attractive. Useful for evaluating the number of contact islands etc.
+        """
+        return np.argwhere(self.interaction.force < 0.)
 
     def evaluate(self, disp, offset, pot=True, forces=False):
         """
@@ -329,16 +371,16 @@ class SmoothContactSystem(SystemBase):
             self.force = self.substrate.force.copy()
             if self.dim == 1:
                 self.force[:self.resolution[0]] -= \
-                  self.interaction.force
+                  self.interaction.force  # nopep8
             else:
                 self.force[:self.resolution[0], :self.resolution[1]] -= \
-                  self.interaction.force
+                  self.interaction.force  # nopep8
         else:
             self.force = None
 
         return (self.energy, self.force)
 
-    def objective(self, offset, gradient=False, disp_scale=1.):
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -347,11 +389,14 @@ class SmoothContactSystem(SystemBase):
         interface. Returns a function of only disp
         Keyword Arguments:
         offset     -- determines indentation depth
+        disp0      -- unused variable, present only for interface compatibility
+                      with inheriting classes
         gradient   -- (default False) whether the gradient is supposed to be
                       used
         disp_scale -- (default 1.) allows to specify a scaling of the
                       dislacement before evaluation.
         """
+        dummy = disp0
         res = self.substrate.computational_resolution
         if gradient:
             def fun(disp):

@@ -29,7 +29,6 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-
 import numpy as np
 from scipy.fftpack import fftn, ifftn
 from collections import namedtuple
@@ -85,12 +84,16 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.area_per_pt = np.prod(self.size)/self.nb_pts
         try:
             self.steps = tuple(
-                float(size)/res for size, res in zip(self.size, self.resolution))
+                float(size)/res for size, res in
+                zip(self.size, self.resolution))
         except ZeroDivisionError as err:
-            raise ZeroDivisionError("""{}, when trying to handle
-            self.steps = tuple(
-                float(size)/res for size, res in zip(self.size, self.resolution))
-Parameters: self.size = {}, self.resolution = {}""".format(err, self.size, self.resolution))
+            raise ZeroDivisionError(
+                ("{}, when trying to handle "
+                 "    self.steps = tuple("
+                 "        float(size)/res for size, res in"
+                 "        zip(self.size, self.resolution))"
+                 "Parameters: self.size = {}, self.resolution = {}"
+                 "").format(err, self.size, self.resolution))
         self.young = young
         if superclass:
             self._compute_fourier_coeffs()
@@ -140,14 +143,14 @@ Parameters: self.size = {}, self.resolution = {}""".format(err, self.size, self.
         if self.dim == 1:
             for index in range(2, self.resolution[0]//2+2):
                 facts[-index+1] = facts[index - 1] = \
-                  self.size[0]/(self.young*index*np.pi)
+                    self.size[0]/(self.young*index*np.pi)
 
         if self.dim == 2:
             for idx_m in range(1, self.resolution[0]//2+2):
                 for idx_n in range(1, self.resolution[1]//2+2):
                     facts[-idx_m+1, -idx_n+1] = facts[-idx_m+1, idx_n-1] = \
                       facts[idx_m-1, -idx_n+1] = facts[idx_m-1, idx_n-1] = \
-                      1./(self.young*np.pi*((idx_m/self.size[0])**2 +
+                      1./(self.young*np.pi*((idx_m/self.size[0])**2 +  # nopep8
                                             (idx_n/self.size[1])**2)**.5)
             facts[0, 0] = 0
         self.weights = facts
@@ -167,7 +170,7 @@ Parameters: self.size = {}, self.resolution = {}""".format(err, self.size, self.
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
-                     forces.shape, self.computational_resolution))
+                     forces.shape, self.computational_resolution))  # nopep8
         return ifftn(self.weights * fftn(-forces)).real/self.area_per_pt
 
     def evaluate_force(self, disp):
@@ -179,7 +182,7 @@ Parameters: self.size = {}, self.resolution = {}""".format(err, self.size, self.
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
-                     disp.shape, self.computational_resolution))
+                     disp.shape, self.computational_resolution))  # nopep8
         return -ifftn(self.iweights*fftn(disp)).real*self.area_per_pt
 
     def evaluate_k_disp(self, forces):
@@ -191,7 +194,7 @@ Parameters: self.size = {}, self.resolution = {}""".format(err, self.size, self.
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
-                     forces.shape, self.computational_resolution))
+                     forces.shape, self.computational_resolution))  # nopep8
         return self.weights * fftn(forces)/self.area_per_pt
 
     def evaluate_k_force(self, disp):
@@ -203,7 +206,7 @@ Parameters: self.size = {}, self.resolution = {}""".format(err, self.size, self.
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
-                     disp.shape, self.computational_resolution))
+                     disp.shape, self.computational_resolution))  # nopep8
         return self.iweights*fftn(disp)*self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):

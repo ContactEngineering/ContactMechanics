@@ -58,7 +58,7 @@ class VDW82(Potential):
     def __repr__(self, ):
         return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
                 "r_c = {1}").format(
-                    self, self.r_c if self.has_cutoff else '∞')
+                    self, self.r_c if self.has_cutoff else '∞')  # nopep8
 
     def naive_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the potential and its derivatives without cutoffs or
@@ -150,7 +150,7 @@ class VDW82smooth(VDW82, SmoothPotential):
                     self,
                     ", γ = {.gamma}".format(self) if has_gamma else "",
                     ", r_t = {}".format(
-                        self.r_t if has_r_t else "r_min"))
+                        self.r_t if has_r_t else "r_min"))  # nopep8
 
 
 class VDW82smoothMin(VDW82smooth, MinimisationPotential):
@@ -180,11 +180,13 @@ class VDW82smoothMin(VDW82smooth, MinimisationPotential):
     def __repr__(self):
         return super().__repr__()
 
+
 class VDW82SimpleSmooth(VDW82, SimpleSmoothPotential):
     """
     Uses the SimpleSmoothPotential smoothing in combination with VDW82
     """
     name = 'vdW8-2simple-smooth'
+
     def __init__(self, c_sr, hamaker, r_c):
         """
         Keyword Arguments:
@@ -205,4 +207,4 @@ class VDW82SimpleSmooth(VDW82, SimpleSmoothPotential):
     def __repr__(self, ):
         return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
                 "r_c = {1}").format(
-                    self, self.r_c if self.has_cutoff else '∞')
+                    self, self.r_c if self.has_cutoff else '∞')  # nopep8

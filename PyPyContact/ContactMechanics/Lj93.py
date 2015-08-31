@@ -61,7 +61,7 @@ class LJ93(Potential):
     def __repr__(self, ):
         return ("Potential '{0.name}': ε = {0.eps}, σ = {0.sig}, "
                 "r_c = {1}").format(
-                    self, self.r_c if self.has_cutoff else '∞')
+                    self, self.r_c if self.has_cutoff else '∞')  # nopep8
 
     @property
     def r_min(self):
@@ -73,7 +73,6 @@ class LJ93(Potential):
                      5
         """
         return self.sig*(2*5**5)**(1./6)/5.
-
 
     @property
     def r_infl(self):
@@ -184,7 +183,7 @@ class LJ93smooth(LJ93, SmoothPotential):
         return ("Potential '{0.name}', ε = {0.eps}, σ = "
                 "{0.sig}{1}{2}").format(
                     self,
-                    ", γ = {.gamma}".format(self) if has_gamma else "",
+                    ", γ = {.gamma}".format(self) if has_gamma else "",  # nopep8
                     ", r_t = {}".format(
                         self.r_t if has_r_t else "r_min"))
 
@@ -222,7 +221,7 @@ class LJ93smoothMin(LJ93smooth, MinimisationPotential):
                     self,
                     ", γ = {.gamma}".format(self) if has_gamma else "",
                     ", r_t = {}".format(
-                        self.r_t if has_r_t else "r_min"))
+                        self.r_t if has_r_t else "r_min"))  # nopep8
 
 
 class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
@@ -230,6 +229,7 @@ class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
     Uses the SimpleSmoothPotential smoothing in combination with LJ93
     """
     name = 'lj9-3simple-smooth'
+
     def __init__(self, epsilon, sigma, r_c):
         """
         Keyword Arguments:

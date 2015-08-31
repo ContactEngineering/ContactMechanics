@@ -48,12 +48,17 @@ class Surface(object, metaclass=abc.ABCMeta):
         self._size = size
         self.adjustment = adjustment
 
-    def compute_h_rms(self):
+    def compute_rms_height(self):
+        "computes the rms height fluctuation of the surface"
         delta = self.profile()
         delta -= delta.mean()
         return np.sqrt((delta**2).mean())
 
-    def compute_h_rms_fromReciprocSpace(self):
+    def compute_rms_height_q_space(self):
+        """
+        computes the rms height fluctuation of the surface in the
+        frequency domain
+        """
         delta = self.profile()
         delta -= delta.mean()
         area = np.prod(self.size)
@@ -62,6 +67,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         return 1/area*np.sqrt((np.conj(H)*H).sum().real)
 
     def compute_rms_slope(self):
+        "computes the rms height gradient fluctuation of the surface"
         if self.dim is None:
             dims = range(2)
         else:
@@ -152,15 +158,18 @@ class Surface(object, metaclass=abc.ABCMeta):
             else:
                 delta = 0
             irange = (coords[i]-1+delta, coords[i]+delta, coords[i]+1+delta)
-            f = np.zeros(len(irange))
+            fun_val = np.zeros(len(irange))
             for j in range(len(irange)):
                 coord_copy = list(coords)
                 coord_copy[i] = irange[j]
                 try:
-                    f[j] = self.profile()[tuple(coord_copy)]
+                    fun_val[j] = self.profile()[tuple(coord_copy)]
                 except IndexError as err:
-                    raise IndexError("{}:\ncoords = {}, i = {}, j = {}, irange = {}, coord_copy = {}".format(err, coords, i, j, irange, coord_copy))
-            laplacian += (f[0] + f[2] - 2*f[1])/pixel_size**2
+                    raise IndexError(
+                        ("{}:\ncoords = {}, i = {}, j = {}, irange = {}, "
+                         "coord_copy = {}").format(
+                             err, coords, i, j, irange, coord_copy))  # nopep8
+            laplacian += (fun_val[0] + fun_val[2] - 2*fun_val[1])/pixel_size**2
         return laplacian
 
 

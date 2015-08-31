@@ -241,11 +241,14 @@ class CharacterisePeriodicSurface(object):
 
 
 
-    def compute_h_rms(self):
-        return self.surface.compute_h_rms()
+    def compute_rms_height(self):
+        return self.surface.compute_rms_height()
 
-    def compute_h_rms_fromReciprocSpace(self):
-        return self.surface.compute_h_rms_fromReciprocSpace()
+    def compute_rms_slope(self):
+        return self.surface.compute_rms_slope()
+
+    def compute_rms_height_fromReciprocSpace(self):
+        return self.surface.compute_rms_height_fromReciprocSpace()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):
         """

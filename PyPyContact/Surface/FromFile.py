@@ -92,7 +92,9 @@ class NumpyAscSurface(NumpySurface):
         xres = yres = xsiz = ysiz = None
 
         def process_comment(line):
+            "Find and interpret known comments in the header of the asc file"
             def check(line, reg, fun):
+                "Check whether line fits a known comment syntax"
                 match = reg.search(line)
                 if match is not None:
                     return fun(match.group(1))
@@ -112,8 +114,8 @@ class NumpyAscSurface(NumpySurface):
                 data = np.zeros((xres, yres))
 
         row_nu = 0
-        with open(self.fname) as fh:
-            for line in fh:
+        with open(self.fname) as file_handle:
+            for line in file_handle:
                 if line.startswith("#"):
                     process_comment(line)
                 else:

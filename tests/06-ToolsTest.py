@@ -65,25 +65,25 @@ class ToolTest(unittest.TestCase):
         siz = 3
         size = (siz, siz)
         hurst = .9
-        h_rms = 1
+        rms_height = 1
         res = 100
         resolution = (res, res)
         lam_max = .5
         surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst,
-                                            h_rms, lambda_max=lam_max)
+                                            rms_height, lambda_max=lam_max)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
-        h_rms_fromC_in = surf.compute_h_rms_fromReciprocSpace()
+        rms_height_fromC_in = surf.compute_rms_height_q_space()
 
-        error = abs(1-h_rms_fromC_in/h_rms)
+        error = abs(1-rms_height_fromC_in/rms_height)
         rough_tol = .02
         self.assertTrue(error < rough_tol,
-                        "Error = {}, h_rms_in = {}, h_rms_out = {}".format(
-                            error, h_rms_fromC_in, h_rms))
+                        "Error = {}, rms_height_in = {}, rms_height_out = {}".format(
+                            error, rms_height_fromC_in, rms_height))
 
         surf_char = Tools.CharacterisePeriodicSurface(surf)
-        h_rms_out = surf_char.compute_h_rms()
+        rms_height_out = surf_char.compute_rms_height()
         reproduction_tol = 1e-5
-        error = abs(1 - h_rms_out/h_rms_fromC_in)
+        error = abs(1 - rms_height_out/rms_height_fromC_in)
         self.assertTrue(error < reproduction_tol)
 
         hurst_out, prefactor_out = surf_char.estimate_hurst(
@@ -102,12 +102,12 @@ class ToolTest(unittest.TestCase):
         siz = 3
         size = (siz, siz)
         hurst = .9
-        h_rms = 1
+        rms_height = 1
         res = 100
         resolution = (res, res)
         lam_max = .5
         surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst,
-                                            h_rms, lambda_max=lam_max)
+                                            rms_height, lambda_max=lam_max)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
         surf_char = Tools.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
@@ -123,43 +123,43 @@ class ToolTest(unittest.TestCase):
             prefactor_error<reproduction_tol,
             "C0_err = {}, tol = {}".format(prefactor_error, reproduction_tol))
 
-    def test_compare_exact_1Dvs2D_power_spectrum(self):
-        siz = 3
-        size = (siz, siz)
-        hurst = .9
-        h_rms = 1
-        res = 100
-        resolution = (res, res)
-        lam_max = .5
-        surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst,
-                                            h_rms, lambda_max=lam_max)
-        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
-        surf_char2D = Tools.CharacterisePeriodicSurface(surf)
-        surf_char1D = Tools.CharacterisePeriodicSurface(surf, one_dimensional=True)
-
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.plot(surf_char1D.q, surf_char1D.C, label="1D")
-        ax.plot(surf_char2D.q, surf_char2D.C, label="2D", ls='--')
-        ax.legend(loc='best')
-        plt.show()
-        hurst_out2D, prefactor_out2D = surf_char2D.estimate_hurst(full_output=True)
-        hurst_out1D, prefactor_out1D = surf_char1D.estimate_hurst(full_output=True)
-
-        self.assertTrue(hurst_out1D == hurst_out2D, "1D: {},\n2D{}".format(hurst_out1D, hurst_out2D))
+##     def test_compare_exact_1Dvs2D_power_spectrum(self):
+##         siz = 3
+##         size = (siz, siz)
+##         hurst = .9
+##         rms_height = 1
+##         res = 100
+##         resolution = (res, res)
+##         lam_max = .5
+##         surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst,
+##                                             rms_height, lambda_max=lam_max)
+##         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+##         surf_char2D = Tools.CharacterisePeriodicSurface(surf)
+##         surf_char1D = Tools.CharacterisePeriodicSurface(surf, one_dimensional=True)
+## 
+##         import matplotlib.pyplot as plt
+##         fig = plt.figure()
+##         ax = fig.add_subplot(111)
+##         ax.plot(surf_char1D.q, surf_char1D.C, label="1D")
+##         ax.plot(surf_char2D.q, surf_char2D.C, label="2D", ls='--')
+##         ax.legend(loc='best')
+##         plt.show()
+##         hurst_out2D, prefactor_out2D = surf_char2D.estimate_hurst(full_output=True)
+##         hurst_out1D, prefactor_out1D = surf_char1D.estimate_hurst(full_output=True)
+## 
+##         self.assertTrue(hurst_out1D == hurst_out2D, "1D: {},\n2D{}".format(hurst_out1D, hurst_out2D))
 
 
     def test_surf_param_recovery_weighted_gaussian(self):
         siz = 3
         size = (siz, siz)
         hurst = .9
-        h_rms = 1
+        rms_height = 1
         res = 100
         resolution = (res, res)
         lam_max = .5
         surf_gen = Tools.RandomSurfaceGaussian(resolution, size, hurst,
-                                               h_rms, lambda_max=lam_max,
+                                               rms_height, lambda_max=lam_max,
                                                seed=10)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
         surf_char = Tools.CharacterisePeriodicSurface(surf)

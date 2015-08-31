@@ -166,10 +166,11 @@ class FastSmoothContactSystem(SmoothContactSystem):
         the contact area. returns both the objective and the adapted ininial
         guess as a tuple
         Keyword Arguments:
-        offset   -- determines indentation depth
-        gradient -- (default False) whether the gradient is supposed to be used
-        disp0    -- (default zero) initial guess for displacement field. If not
-                    chosen appropriately, results may be unreliable.
+        offset     -- determines indentation depth
+        gradient   -- (default False) whether the gradient is supposed to be
+                      used
+        disp0      -- (default zero) initial guess for displacement field. If
+                      not chosen appropriately, results may be unreliable.
         disp_scale -- (default 1.) allows to specify a scaling of the
                       dislacement before evaluation. This can be necessary when
                       using dumb minimizers with hardcoded convergence criteria
@@ -179,12 +180,16 @@ class FastSmoothContactSystem(SmoothContactSystem):
         return self.babushka.objective(offset, gradient, disp_scale)
 
     def create_babushka(self, offset, disp0=None, disp_scale=1.):
+        """
+        Create a (much smaller) system with just the contacting patch plus the
+        margin
+        """
         # this class needs to remember its offset since the evaluate method
         # does not accept it as argument anymore
         self.offset = offset
         if disp0 is None:
             disp0 = np.zeros(self.substrate.computational_resolution)
-        gap = self.compute_gap(disp0, offset)
+        gap = self.compute_gap(disp_scale*disp0, offset)
         contact = np.argwhere(gap < self.interaction.r_c)
         if contact.size == 0:
             contact = np.array(
@@ -203,7 +208,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                 ("With the current margin of {}, the system overlaps the lower"
                  " bounds by {}. Total resolution is {}").format(
                      self.margin, self.__babushka_offset, self.resolution),
-                disp0)
+                disp0)  # nopep8
         if any(res + self.__babushka_offset[i] > self.resolution[i] for i, res
                in enumerate(sm_res)):
             raise self.FreeBoundaryError(
@@ -212,7 +217,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                      self.margin,
                      tuple(self.__babushka_offset[i] + res - self.resolution[i]
                            for i, res in enumerate(sm_res)),
-                     self.resolution), disp0)
+                     self.resolution), disp0)  # nopep8
 
         self.compute_babushka_bounds(sm_res)
         sm_surf = self._get_babushka_array(self.surface.profile(),
@@ -253,7 +258,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
             self.force[:self.resolution[0]] -= self.interaction.force
         else:
             self.force[:self.resolution[0], :self.resolution[1]] -= \
-              self.interaction.force
+              self.interaction.force   # nopep8
         self.disp = self.substrate.evaluate_disp(self.substrate.force)
         return self.energy, self.force, self.disp
 
@@ -380,6 +385,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         disp_scale -- (default 1.) allows to specify a scaling of the
                       dislacement before evaluation.
         """
+        # pylint: disable=arguments-differ
         fun = self.objective(offset, disp0, gradient=gradient,
                              disp_scale=disp_scale)
         if disp0 is None:

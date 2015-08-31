@@ -37,7 +37,7 @@ from . import CharacterisePeriodicSurface
 
 class RandomSurfaceExact(object):
     Error = Exception
-    def __init__(self, resolution, size, hurst, h_rms,
+    def __init__(self, resolution, size, hurst, rms_height,
                  seed=None, lambda_max=None):
         """
         Generates a surface with an exact power spectrum (deterministic
@@ -51,7 +51,7 @@ class RandomSurfaceExact(object):
                       dimension. If the tuple has less entries than dimensions,
                       the last value in repeated.
         hurst      -- Hurst exponent
-        h_rms      -- root mean square asperity height
+        rms_height -- root mean square asperity height
         seed       -- (default hash(None)) for repeatability, the random number
                       generator is seeded previous to outputting the generated
                       surface
@@ -86,7 +86,7 @@ class RandomSurfaceExact(object):
                  ". You specified a size of {}").format(self.size))
         self.hurst = hurst
 
-        self.h_rms = h_rms
+        self.rms_height = rms_height
         if lambda_max is not None:
             self.q_min = 2*np.pi/lambda_max
         else:
@@ -138,7 +138,7 @@ class RandomSurfaceExact(object):
         """
         q_max = np.pi*self.resolution[0]/self.size[0]
         area = np.prod(self.size)
-        return 2*self.h_rms/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi*area)
+        return 2*self.rms_height/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi*area)
 
 
     def generate_phases(self):
@@ -158,7 +158,7 @@ class RandomSurfaceExact(object):
     def generate_amplitudes(self):
         q2 = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
         q2[0, 0] = 1 # to avoid div by zeros, needs to be fixed after
-        # self.coeffs *= (q2)**(-(1+self.hurst)/2)*2*self.h_rms*self.q_min**self.hurst*np.sqrt(self.hurst*np.pi)/self.size[0]
+        # self.coeffs *= (q2)**(-(1+self.hurst)/2)*2*self.rms_height*self.q_min**self.hurst*np.sqrt(self.hurst*np.pi)/self.size[0]
         self.coeffs *= (q2)**(-(1+self.hurst)/2)*self.prefactor
         self.coeffs[0, 0] = 0 # et voilà
         ## print("amplitudes:")
@@ -204,7 +204,7 @@ class RandomSurfaceExact(object):
         return NumpySurface(profile, self.size)
 
 class RandomSurfaceGaussian(RandomSurfaceExact):
-    def __init__(self, resolution, size, hurst, h_rms, seed=None,
+    def __init__(self, resolution, size, hurst, rms_height, seed=None,
                  lambda_max=None):
         """
         Generates a surface with an Gaussian amplitude distribution
@@ -217,12 +217,12 @@ class RandomSurfaceGaussian(RandomSurfaceExact):
                       dimension. If the tuple has less entries than dimensions,
                       the last value in repeated.
         hurst      -- Hurst exponent
-        h_rms      -- root mean square asperity height
+        rms_height -- root mean square asperity height
         seed       -- (default hash(None)) for repeatability, the random number
                       generator is seeded previous to outputting the generated
                       surface
         """
-        super().__init__(resolution, size, hurst, h_rms, seed, lambda_max)
+        super().__init__(resolution, size, hurst, rms_height, seed, lambda_max)
 
     def amplitude_distribution(self):
         """
@@ -247,7 +247,7 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
                       dimension. If the tuple has less entries than dimensions,
                       the last value in repeated.
         hurst      -- Hurst exponent
-        h_rms      -- root mean square asperity height
+        rms_height -- root mean square asperity height
         seed       -- (default hash(None)) for repeatability, the random number
                       generator is seeded previous to outputting the generated
                       surface
@@ -255,8 +255,8 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
         self.surface = surface
         surf_char = CharacterisePeriodicSurface(self.surface)
         hurst = surf_char.estimate_hurst()
-        h_rms = self.surface.compute_h_rms()
-        super().__init__(surface.resolution, surface.size, hurst, h_rms,
+        rms_height = self.surface.compute_rms_height()
+        super().__init__(surface.resolution, surface.size, hurst, rms_height,
                          seed=None, lambda_max=None)
 
     def generate_phases(self):

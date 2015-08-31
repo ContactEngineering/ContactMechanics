@@ -118,6 +118,7 @@ def fftn(arr, integral):
     """
     return integral/np.prod(arr.shape)*np.fft.fftn(arr)
 
+
 def ifftn(arr, integral):
     """
     n-dimensional ifft according to the conventions detailed in
@@ -150,77 +151,53 @@ def shift_and_tilt(arr, full_output=False):
     solution X_s = arg_min ((arr - ň.x + d)^2).sum()
     """
     nb_dim = len(arr.shape)
-    X_s = (np.arange(arr.shape[i]) for i in range(nb_dim))
+    x_grids = (np.arange(arr.shape[i]) for i in range(nb_dim))
     if nb_dim > 1:
-        X_s = np.meshgrid(*X_s, indexing='ij')
+        x_grids = np.meshgrid(*x_grids, indexing='ij')
 
-    columns = [x.reshape((-1, 1)) for x in X_s]
+    columns = [x.reshape((-1, 1)) for x in x_grids]
     columns.append(np.ones_like(columns[-1]))
-    A = np.matrix(np.hstack(columns))
-    b = arr.reshape(-1)
-    res = scipy.optimize.nnls(A,b)
-    x = np.matrix(res[0]).T
-    b = np.matrix(b.reshape((-1, 1)))
+    # linear regression model
+    location_matrix = np.matrix(np.hstack(columns))
+    offsets = arr.reshape(-1)
+    res = scipy.optimize.nnls(location_matrix, offsets)
+    coeffs = np.matrix(res[0]).T
+    offsets = np.matrix(offsets.reshape((-1, 1)))
     if full_output:
-        return (b-A*x).reshape(arr.shape), x, res[1]
+        return ((offsets-location_matrix*coeffs).reshape(arr.shape),
+                coeffs, res[1])
     else:
-        return (b-A*x).reshape(arr.shape)
+        return (offsets-location_matrix*coeffs).reshape(arr.shape)
+
 
 def shift_and_tilt_approx(arr, full_output=False):
     """
     does the same as shift_and_tilt, but computes an iterative approximation.
     Use in case of large surfaces.
     """
-
-    d = arr.mean()
     nb_dim = len(arr.shape)
-    X_s = (np.arange(arr.shape[i]) for i in range(nb_dim))
+    x_grids = (np.arange(arr.shape[i]) for i in range(nb_dim))
     if nb_dim > 1:
-        X_s = np.meshgrid(*X_s, indexing='ij')
+        x_grids = np.meshgrid(*x_grids, indexing='ij')
     if nb_dim == 2:
-        Sx  = X_s[0].sum()
-        Sy  = X_s[1].sum()
-        S   = np.prod(arr.shape)
-        Sxx = (X_s[0]**2).sum()
-        Sxy = (X_s[0]*X_s[1]).sum()
-        Syy = (X_s[1]**2).sum()
-        Sh  = arr.sum()
-        Shx = (arr*X_s[0]).sum()
-        Shy = (arr*X_s[1]).sum()
-        A = np.matrix(((Sxx, Sxy, Sx),
-                       (Sxy, Syy, Sy),
-                       ( Sx,  Sy,  S)))
-        b = np.matrix(((Shx,),
-                       (Shy,),
-                       ( Sh,)))
-        x = scipy.linalg.solve(A, b)
-        corrective = x[0]*X_s[0] + x[1]*X_s[1] + x[2]
+        sx_ = x_grids[0].sum()
+        sy_ = x_grids[1].sum()
+        s__ = np.prod(arr.shape)
+        sxx = (x_grids[0]**2).sum()
+        sxy = (x_grids[0]*x_grids[1]).sum()
+        syy = (x_grids[1]**2).sum()
+        sh_ = arr.sum()
+        shx = (arr*x_grids[0]).sum()
+        shy = (arr*x_grids[1]).sum()
+        location_matrix = np.matrix(((sxx, sxy, sx_),
+                                     (sxy, syy, sy_),
+                                     (sx_, sy_, s__)))
+        offsets = np.matrix(((shx,),
+                             (shy,),
+                             (sh_, )))
+        coeffs = scipy.linalg.solve(location_matrix, offsets)
+        corrective = coeffs[0]*x_grids[0] + coeffs[1]*x_grids[1] + coeffs[2]
         if full_output:
-            return arr - corrective, x
+            return arr - corrective, coeffs
         else:
             return arr - corrective
-    ## def objective(X):
-    ##     n_z = np.sqrt(1-(X[:nb_dim]**2).sum())
-    ##     n = X[:nb_dim]/n_z
-    ##     d = X[-1]/n_z
-    ## 
-    ##     ret_arr = arr - d
-    ##     for i in range(nb_dim):
-    ##         try:
-    ##             ret_arr -= n[i] * X_s[i]
-    ##         except Exception as err:
-    ##             raise Exception('{}\n{}'.format(err, X_s))
-    ##     return (ret_arr**2).sum()
-    ## def callback(X):
-    ##     n_z = np.sqrt(1-(X[:nb_dim]**2).sum())
-    ##     n = X[:nb_dim]/n_z
-    ##     d = X[-1]/n_z
-    ## 
-    ##     print("ň = {}, ň_z = {}, d = {}, f(ň, d) = {}, nb_dim = {}".format(n, n_z, d, objective(X), nb_dim))
-    ##     raise Exception()
-    ## 
-    ## X0 = np.zeros(nb_dim+1)
-    ## callback(X0)
-    ## res = scipy.optimize.minimize(objective, X0, tol=arr.size*tolerance, callback = callback)
-    ## print(res)
-    ## return res

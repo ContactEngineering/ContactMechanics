@@ -86,8 +86,8 @@ class ElasticSubstrate(Substrate):
     def evaluate(self, disp, pot=True, forces=False):
         """
         computes and returns the elastic energy and/or surface forces
-        as function of the surface displacement. See docstring for 'compute' for
-        more details
+        as function of the surface displacement. See docstring for 'compute'
+        for more details
         Parameters:
         gap    -- array containing the point-wise gap values
         pot    -- (default True) whether the energy should be evaluated
