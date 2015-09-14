@@ -34,9 +34,11 @@ import numpy as np
 import scipy
 
 # implemented as a custom minimizer for scipy
-def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=None,
-                         update_tol0=.1, multiplier0=0, penalty0=10, alpha=0.1,
-                         beta=0.9, tau=10, min_method='L-BFGS-B', **options):
+def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
+                         update_tol0=.1, multiplier0=None, penalty0=10, alpha=0.1,
+                         beta=0.9, tau=10, min_method='L-BFGS-B', callback=None,
+                         verbose = False, bounds=None, jac=None, hessp=None,
+                         hess=None, **options):
     """
     Custom minimizer that implements the LANCELOT (Conn et al., 1992) augmented
     Lagrangian minimizer. For documentation, see Bierlaire (2006)
@@ -53,8 +55,8 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=None,
     args        -- (default empty) additional arguments that need to be fed to fun
     constraints -- (default None) not optional. An exception will be raised if
                    this is not specified. A callable that is called as
-                   constraints(x, args=args) and returns a ndarray with the
-                   same shape as the return-vector of fun
+                   constraints(x, args=args) and returns an ndarray of same
+                   length as multiplier0
     tol         -- (default None) Convergence tolerance. Is used for both the
                    subjacent minimizer as well as for the outer (augmented
                    Lagrangian) loop.
@@ -62,7 +64,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=None,
                    minimum x_k is "sufficiently" admissible: if
                    ||constraints(x_k, args=args)|| < current update_tol, then
                    the multipliers are updated, else the penalty is increased.
-    multiplier0 -- (default 0) Initial guess for the Lagrange multipliers
+    multiplier0 -- (default None) Initial guess for the Lagrange multipliers
     penalty0    -- (default 10) Initial penalty value (default from LANCELOT)
     alpha       -- (default 0.1) defines how aggressively the update_tol is
                    reset everytime the penalty is increased. This is a
@@ -79,14 +81,47 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=None,
                    the method you choose handles the constraints, chances are
                    that the algo will not play nice with it). Is handed as
                    'method' keyword parameter to scipy.optimize.minimize.
+    callback    -- (default None) Called after each iteration, as callback(xk),
+                   where xk is the current parameter vector.
+    verbose     -- (default False) if True, prints a ton of debug info
+    bounds      -- (default None) Bounds for variables (only for L-BFGS-B, TNC
+                   and SLSQP). (min, max) pairs for each element in x, defining
+                   the bounds on that parameter. Use None for one of min or max
+                   when there is no bound in that direction.
+    jac         -- (default None) Jacobian (gradient) of objective function.
+                   Only for CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg,
+                   trust-ncg. If jac is a Boolean and is True, fun is assumed
+                   to return the gradient along with the objective function. If
+                   False, the gradient will be estimated numerically. jac can
+                   also be a callable returning the gradient of the objective.
+                   In this case, it must accept the same arguments as fun.
+    hess/hessp  -- (default None) Hessian (matrix of second-order derivatives)
+                   of objective function or Hessian of objective function times
+                   an arbitrary vector p. Only for Newton-CG, dogleg,
+                   trust-ncg. Only one of hessp or hess needs to be given. If
+                   hess is provided, then hessp will be ignored. If neither
+                   hess nor hessp is provided, then the Hessian product will be
+                   approximated using finite differences on jac. hessp must
+                   compute the Hessian times an arbitrary vector.
     **options   -- are handed through to min_method as is.
     """
     x = x0
+    mandatory_items = {'maxiter': 20,
+                       'disp': False}
+    for key, val in mandatory_items.items():
+        if not key in options.keys():
+            options[key] = val
+
+    if not isinstance(multiplier0, np.ndarray):
+        raise Exception(
+            "for sanity reasons, imma require multiplier0 to be an array, even "
+            "if it's scalar")
     multiplier = multiplier0  # 'lam' in the objective
     penalty = penalty0        # 'c_pen' in the objective
     update_tol0 = penalty**alpha*update_tol0
     update_tol = update_tol0/penalty**alpha
     current_tol = tol
+    constraints = constraints['fun']
 
     def mod_objective_no_args(x, lam, c_pen):
         """ Augmented lagrangian of the objective function
@@ -114,15 +149,23 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=None,
     else:
         mod_objective = mod_objective_no_args
 
+
+    # some of the option args get duplicated in _minimize.py (annoying design
+    # choice in scipy)
+    # del options['bounds']
+
     norm_grad = 2 * tol + 1
     norm_constraint = 2 * tol + 1
 
-    ## LANCELOT algo
-    while norm_grad > tol or norm_constraint > tol:
+    # LANCELOT algo
+    counter = 0
+    while norm_grad > tol or norm_constraint > tol or counter < options['maxiter']:
+        counter += 1
         ## evaluate the dual objective function)
         iterate = scipy.optimize.minimize(mod_objective, x,
-                                          args=(multiplier, penalty, *args),
+                                          args=(multiplier, penalty) + args,
                                           method=min_method, tol=current_tol,
+                                          bounds=bounds, jac=jac,
                                           options=options)
         if not iterate.success:
             raise Exception(
@@ -143,4 +186,21 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=None,
             penalty *= tau
             current_tol = tol/penalty
             update_tol = update_tol0/penalty**alpha
+
+        # run callback, usually a noop
+        if callback is not None:
+            callback(x)
+
+        # possibly swamp stdout
+        if options['disp']:
+            print(("{0[k]} | {0[x]} {0[lam]} {0[c]} {0[cur_tol]} "
+                   "{0[update_tol]} {0[nit]}").format(
+                       {'k': counter,
+                        'x': x,
+                        'lam': multiplier,
+                        'c': penalty,
+                        'cur_tol': current_tol,
+                        'update_tol': update_tol,
+                        'nit': iterate.nit}))
+
     return iterate
