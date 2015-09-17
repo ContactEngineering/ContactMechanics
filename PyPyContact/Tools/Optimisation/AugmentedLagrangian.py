@@ -8,8 +8,10 @@
 @date   27 Jan 2015
 
 @brief  Implements the AugmentedLagrangian as described in
-        Nocedal, Jorge; Wright, Stephen J. (2006), Numerical Optimization
-        (2nd ed.), Berlin, New York: Springer-Verlag, ISBN 978-0-387-30303-1
+        Bierlaire (2006):
+        Introduction à l'optimization différentiable, Michel Bierlaire, Presses
+        polytechniques et universitaires romandes, Lausanne 2006,
+        ISBN:2-88074-669-8
 
 @section LICENCE
 
@@ -32,13 +34,16 @@ Boston, MA 02111-1307, USA.
 """
 import numpy as np
 import scipy
+import scipy.optimize
+from copy import deepcopy
+from . import ReachedTolerance, ReachedMaxiter, FailedIterate
 
 # implemented as a custom minimizer for scipy
 def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
                          update_tol0=.1, multiplier0=None, penalty0=10, alpha=0.1,
                          beta=0.9, tau=10, min_method='L-BFGS-B', callback=None,
-                         verbose = False, bounds=None, jac=None, hessp=None,
-                         hess=None, **options):
+                         bounds=None, jac=None, hessp=None,
+                         hess=None, store_iterates=None, **options):
     """
     Custom minimizer that implements the LANCELOT (Conn et al., 1992) augmented
     Lagrangian minimizer. For documentation, see Bierlaire (2006)
@@ -83,7 +88,6 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
                    'method' keyword parameter to scipy.optimize.minimize.
     callback    -- (default None) Called after each iteration, as callback(xk),
                    where xk is the current parameter vector.
-    verbose     -- (default False) if True, prints a ton of debug info
     bounds      -- (default None) Bounds for variables (only for L-BFGS-B, TNC
                    and SLSQP). (min, max) pairs for each element in x, defining
                    the bounds on that parameter. Use None for one of min or max
@@ -103,10 +107,12 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
                    hess nor hessp is provided, then the Hessian product will be
                    approximated using finite differences on jac. hessp must
                    compute the Hessian times an arbitrary vector.
+    store_iterates -- (default None) if set to 'iterate' the full iterates are
+                   stored in module-level constant iterates
     **options   -- are handed through to min_method as is.
     """
     x = x0
-    mandatory_items = {'maxiter': 20,
+    mandatory_items = {'outer_maxiter': 20,
                        'disp': False}
     for key, val in mandatory_items.items():
         if not key in options.keys():
@@ -116,7 +122,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
         raise Exception(
             "for sanity reasons, imma require multiplier0 to be an array, even "
             "if it's scalar")
-    multiplier = multiplier0  # 'lam' in the objective
+    multiplier = np.array(multiplier0, dtype=float)  # 'lam' in the objective
     penalty = penalty0        # 'c_pen' in the objective
     update_tol0 = penalty**alpha*update_tol0
     update_tol = update_tol0/penalty**alpha
@@ -132,6 +138,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
         """
         constraints_eval = constraints(x)
         return fun(x) + lam*constraints_eval + c_pen/2*(constraints_eval**2).sum()
+
     def mod_objective_with_args(x, lam, c_pen, *args):
         """ Augmented lagrangian of the objective function
         Keyword Arguments:
@@ -159,48 +166,90 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
 
     # LANCELOT algo
     counter = 0
-    while norm_grad > tol or norm_constraint > tol or counter < options['maxiter']:
-        counter += 1
-        ## evaluate the dual objective function)
-        iterate = scipy.optimize.minimize(mod_objective, x,
-                                          args=(multiplier, penalty) + args,
-                                          method=min_method, tol=current_tol,
-                                          bounds=bounds, jac=jac,
-                                          options=options)
-        if not iterate.success:
-            raise Exception(
-                ("evaluation of dual objective function failed with the "
-                 "following message: '{}'. The full result is\n{}").format(
-                     iterate.message, iterate))
-        x = iterate.x
-        constraints_eval = constraints(x, *args)
-        norm_constraint = np.sqrt((constraints_eval**2).sum())
-        norm_grad = np.sqrt((iterate.jac**2).sum())
+    inner_options = deepcopy(options)
+    inner_options['disp']= False
+    del inner_options['outer_maxiter']
 
-        ## decide whether to update the multipliers or the penalty
-        if norm_grad <= update_tol:  # update multipliers
-            multiplier += penalty * constraints_eval
-            current_tol /= penalty
-            update_tol /= penalty**beta
-        else:
-            penalty *= tau
-            current_tol = tol/penalty
-            update_tol = update_tol0/penalty**alpha
+    if options['disp']:
+        print(("{0[k]} | {0[x]} {0[lam]} {0[c]} {0[cur_tol]} "
+               "{0[update_tol]} {0[nit]}").format(
+                   {'k': counter,
+                    'x': x,
+                    'lam': multiplier,
+                    'c': penalty,
+                    'cur_tol': current_tol,
+                    'update_tol': update_tol,
+                    'nit': '?'}))
+    iterates = list()
+    try:
+        while True:
+            if (norm_grad < tol and norm_constraint < tol):
+                raise ReachedTolerance((
+                    "{0} (norm_grad) < {2} (tol) and {1} (norm_constraint) < "
+                    "{2} (tol)").format(norm_grad, norm_constraint, tol))
+            if counter == options['outer_maxiter']:
+                raise ReachedMaxiter("reached maxiter ({})".format(
+                    options['outer_maxiter']))
 
-        # run callback, usually a noop
-        if callback is not None:
-            callback(x)
+            ## evaluate the dual objective function)
+            iterate = scipy.optimize.minimize(mod_objective, x,
+                                              args=(multiplier, penalty) + args,
+                                              method=min_method, tol=current_tol,
+                                              bounds=bounds, jac=jac,
+                                              options=inner_options)
+            if store_iterates == 'iterate':
+                iterates.append(iterate)
+            if not iterate.success:
+                raise FailedIterate(
+                    ("evaluation of dual objective function failed with the "
+                     "following message: '{}'. The full result is\n{}").format(
+                         iterate.message, iterate))
+            constraints_eval = constraints(x, *args)
+            norm_constraint = np.sqrt((constraints_eval**2).sum())
+            norm_grad = np.sqrt((iterate.jac**2).sum())
+            x = iterate.x
 
-        # possibly swamp stdout
-        if options['disp']:
-            print(("{0[k]} | {0[x]} {0[lam]} {0[c]} {0[cur_tol]} "
-                   "{0[update_tol]} {0[nit]}").format(
-                       {'k': counter,
-                        'x': x,
-                        'lam': multiplier,
-                        'c': penalty,
-                        'cur_tol': current_tol,
-                        'update_tol': update_tol,
-                        'nit': iterate.nit}))
+            ## decide whether to update the multipliers or the penalty
+            if norm_constraint <= update_tol:  # update multipliers
+                multiplier += penalty * constraints_eval
+                current_tol /= penalty
+                update_tol /= penalty**beta
+            else:
+                penalty *= tau
+                current_tol = tol/penalty
+                update_tol = update_tol0/penalty**alpha
 
-    return iterate
+            # run callback, usually a noop
+            counter += 1
+            if callback is not None:
+                callback(x)
+
+            # possibly swamp stdout
+            if options['disp']:
+                print(("{0[k]} | {0[x]} {0[lam]} {0[c]} {0[cur_tol]} "
+                       "{0[update_tol]} {0[nit]}").format(
+                           {'k': counter,
+                            'x': x,
+                            'lam': multiplier,
+                            'c': penalty,
+                            'cur_tol': current_tol,
+                            'update_tol': update_tol,
+                            'nit': iterate.nit}))
+
+    except (FailedIterate, ReachedMaxiter) as err:
+        message = str(err)
+        success = False
+    except(ReachedTolerance) as err:
+        message = str(err)
+        success = True
+
+    result = scipy.optimize.OptimizeResult({'message': message,
+                                            'success': success,
+                                            'x': iterate.x,
+                                            'fun': iterate.fun,
+                                            'jac': iterate.jac,
+                                            'nit': counter})
+    if iterates:
+        result['iterates'] = iterates
+
+    return result

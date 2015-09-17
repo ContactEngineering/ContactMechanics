@@ -5,9 +5,9 @@
 
 @author Till Junge <till.junge@kit.edu>
 
-@date   27 Jan 2015
+@date   17 Sep 2015
 
-@brief  Helper tools for PyPyContact
+@brief  optimisation helpers in PyPyContact
 
 @section LICENCE
 
@@ -29,11 +29,14 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-from .common import compare_containers, evaluate_gradient, mean_err
-from .common import compute_wavevectors, fftn, ifftn
-from .common import shift_and_tilt, shift_and_tilt_approx
-from .DistributedComputation import BaseResultManager, BaseWorker
-from .SurfaceAnalysis import CharacterisePeriodicSurface, CharacteriseSurface
-from .SurfaceGeneration import RandomSurfaceExact, RandomSurfaceGaussian
-from .SurfaceGeneration import ModifyExistingPeriodicSurface
-from . import Optimisation
+from .common import ReachedTolerance, ReachedMaxiter, FailedIterate
+from .common import intersection_confidence_region
+from .common import dogleg
+from .common import steihaug_toint
+from .common import modified_cholesky
+from .common import first_wolfe_condition
+from .common import second_wolfe_condition
+from .common import line_search
+from .AugmentedLagrangian import augmented_lagrangian
+from .NewtonLineSearch import newton_linesearch
+from .NewtonConfidenceRegion import newton_confidence_region
