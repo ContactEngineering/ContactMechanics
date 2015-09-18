@@ -44,8 +44,6 @@ class HardWall(Interaction):
 
 class SoftWall(Interaction):
     "base class for smooth contact mechanics"
-    # pylint: disable=abstract-class-not-used
-
     def __init__(self):
         self.energy = None
         self.force = None

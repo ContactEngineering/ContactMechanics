@@ -59,7 +59,6 @@ class Substrate(object):
 class ElasticSubstrate(Substrate):
     """ Generic baseclass for elastic substrates
     """
-    # pylint: disable=abstract-class-not-used
     name = 'generic_elastic_halfspace'
     # Since an elastic substrate essentially defines a Potential, a similar
     # internal structure is chosen

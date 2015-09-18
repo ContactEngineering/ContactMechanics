@@ -37,6 +37,7 @@ import scipy
 import scipy.optimize
 
 from . import ReachedTolerance, ReachedMaxiter, FailedIterate
+from . import modified_cholesky, line_search
 
 # implemented as a custom minimizer for scipy
 def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):

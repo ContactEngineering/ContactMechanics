@@ -126,3 +126,76 @@ class NewtonConfidenceRegionTest(unittest.TestCase):
         tol = 1e-7
         error = mean_err(iterates, solution)
         self.assertTrue(error < tol)
+
+    def test_newton_confidence_dogleg(self):
+        def fun(x):
+            return .5*x[0, 0]**2 + x[0, 0]* np.cos(x[1, 0])
+
+        def jac(x):
+            return np.array([[x[0, 0] + np.cos(x[1, 0])],
+                             [-x[0, 0] * np.sin(x[1, 0])]])
+
+        def hess(x):
+            return np.array([[           1.,        -np.sin(x[1, 0])],
+                             [-np.sin(x[1, 0]), -x[0, 0] * np.cos(x[1, 0])]])
+        x0 = np.array([1.,1.])
+        result = minimize(fun, x0=x0, method=newton_confidence_region,
+                          jac=jac, hess=hess, tol=1.e-8,
+                          options={'store_iterates': 'iterate',
+                                   'method': dogleg,
+                                   'radius0': 1})
+
+        solution = np.array([[  1.00000000e+00,  1.00000000e+00],
+                             [  1.22417438e-01,  1.47942554e+00],
+                             [ -1.01628508e-03,  1.57003091e+00],
+                             [ -5.36408473e-04,  1.56808690e+00],
+                             [ -5.08985118e-03,  1.56696289e+00],
+                             [ -2.68657257e-03,  1.55722709e+00],
+                             [ -2.54882093e-02,  1.55159842e+00],
+                             [ -1.34638337e-02,  1.50289394e+00],
+                             [ -1.27229935e-01,  1.47479503e+00],
+                             [ -6.84750086e-02,  1.23764063e+00],
+                             [ -5.88466219e-01,  1.10749811e+00],
+                             [ -4.02532665e-01,  4.16075205e-01],
+                             [ -4.02532665e-01,  4.16075205e-01],
+                             [ -1.09349862e+00, -4.33823827e-01],
+                             [ -1.10395413e+00,  3.38628972e-02],
+                             [ -1.00046611e+00,  3.16267561e-03],
+                             [ -1.00000500e+00,  1.44712180e-06],
+                             [ -1.00000000e+00,  7.23075033e-12]])
+        tol = 1e-7
+        iterates = np.array([it.x.reshape(-1) for it in result.iterates]).reshape((-1, 2))
+        error = mean_err(iterates, solution)
+        self.assertTrue(error < tol)
+
+    def test_newton_confidence_steihaug_toint(self):
+        def fun(x):
+            return .5*x[0, 0]**2 + x[0, 0]* np.cos(x[1, 0])
+
+        def jac(x):
+            return np.array([[x[0, 0] + np.cos(x[1, 0])],
+                             [-x[0, 0] * np.sin(x[1, 0])]])
+
+        def hess(x):
+            return np.array([[           1.,        -np.sin(x[1, 0])],
+                             [-np.sin(x[1, 0]), -x[0, 0] * np.cos(x[1, 0])]])
+        x0 = np.array([1.,1.])
+        result = minimize(fun, x0=x0, method=newton_confidence_region,
+                          jac=jac, hess=hess, tol=1.e-8,
+                          options={'store_iterates': 'iterate',
+                                   'method': steihaug_toint,
+                                   'radius0': 10})
+
+        solution = np.array([[ 1.        , 1.        ],
+                             [ 1.        , 1.        ],
+                             [ 1.        , 1.        ],
+                             [ 0.55023001, 3.4592086 ],
+                             [ 1.16790323, 2.76142209],
+                             [ 1.0636517 , 3.12536183],
+                             [ 1.000116  , 3.14062447],
+                             [ 1.00000047, 3.14159254],
+                             [ 1.        , 3.14159265]])
+        tol = 1e-7
+        iterates = np.array([it.x.reshape(-1) for it in result.iterates]).reshape((-1, 2))
+        error = mean_err(iterates, solution)
+        self.assertTrue(error < tol)
