@@ -40,6 +40,7 @@ from . import ReachedTolerance, ReachedMaxiter, FailedIterate
 from . import modified_cholesky, line_search
 
 # implemented as a custom minimizer for scipy
+# implemented as a custom minimizer for scipy
 def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
     """
     see Bierlaire (2006), p. 278
@@ -53,8 +54,8 @@ def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
                    stored in module-level constant iterates
     **options -- none of those will be used
     """
-    k = 0
-    x = x0.copy()
+
+    x = np.matrix(x0.copy()).reshape((-1, 1))
     fprime = jac(x)
 
     maxiter_key = 'maxiter'
@@ -74,7 +75,7 @@ def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
         iterates.append(iterate)
     try:
         while True:
-            norm_grad = (fprime**2).sum()
+            norm_grad = np.linalg.norm(fprime)
             if norm_grad < tol:
                 raise ReachedTolerance(
                     "||grad f(x)|| = {} < {} = tol".format(
@@ -88,11 +89,14 @@ def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
             fprime = jac(x)
             z = np.linalg.solve(L, fprime)
             # 3)
-            d = np.linalg.solve(L, z*-1)
+            d = np.linalg.solve(L.T, -z)
             # 4)
-            alpha = line_search(fun, x0, jac, d, alpha0 = 1)
+            result = line_search(fun, x, jac, d, alpha0 = 1, store_iterates='iterate')
+            alpha = result.x
+            violation = result.violation
+
             # 5)
-            x += alpha * d.ravel()
+            x += alpha * d
             counter += 1
 
             if store_iterates == 'iterate':
@@ -115,7 +119,7 @@ def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
 
     result = scipy.optimize.OptimizeResult({'message': message,
                                             'success': success,
-                                            'x': x,
+                                            'x': np.asarray(x).ravel(),
                                             'fun': fun(x),
                                             'jac': jac(x),
                                             'hess': hess(x),

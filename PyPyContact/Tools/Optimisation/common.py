@@ -165,7 +165,7 @@ def steihaug_toint(grad_f, hess_f, radius, tol = 1e-14):
 def modified_cholesky(symmat, maxiter = 20):
     """
     Modify a symmetric matrix A in order to make it positive definite. Returns
-    a lower triangular matrix L and a scalar τ > 0 so that 
+    a lower triangular matrix L and a scalar τ > 0 so that
               A + τI = LL^T
     Keyword Arguments:
     symmat -- symmetric matrix
@@ -193,13 +193,13 @@ def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
     Keyword Arguments:
     fun         -- objective function to minimize
     x0          -- initial guess for solution
-    fprime      -- Jacobian (gradient) 
+    fprime      -- Jacobian (gradient)
     direction   -- search direction (column vec)
     alpha       -- step size
     beta1       -- lower wolfe bound
     """
-    return fun(x0+alpha*direction.ravel()) <= fun(x0) + \
-        alpha * beta1 * (fprime(x0)* direction).sum()
+    return fun(x0+alpha*direction) <= fun(x0) + \
+        alpha * beta1 * float(fprime(x0).T * direction)
 
 def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     """
@@ -212,13 +212,13 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     alpha     -- step size
     beta2     -- upper wolfe bound
     """
-    return ((fprime(x0 + alpha*direction.ravel()) * direction).sum() >=
-            beta2*(fprime(x0) * direction).sum())
-
+    return (float(fprime(x0 + alpha*direction).T * direction) >=
+            beta2*float(fprime(x0).T * direction))
 
 # implements the line search, p. 273, algo 11.2
+# implements the line search, p. 273, algo 11.2
 def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
-                step_factor=3.):
+                step_factor=3., store_iterates=None):
     """
     find a step size alpha that satisfies both conditions of Wolfe
     Keyword Arguments:
@@ -230,6 +230,8 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
     beta1       -- (default 1e-4)
     beta2       -- (default 0.99)
     step_factor -- (default 3.) step increase when too short
+    store_iterates -- (default None) if set to 'iterate' the full iterates are
+                   stored in module-level constant iterates
     """
     alpha_l = 0
     alpha_r = float('inf')
@@ -238,18 +240,51 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
     wolfe1 = first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1)
     wolfe2 = second_wolfe_condition(x0, fprime, direction, alpha, beta2)
 
+    iterates = list()
+    counter = 0
+    violation = 0
+    if store_iterates == 'iterate':
+        iterate = scipy.optimize.OptimizeResult(
+            {'x': x.copy(),
+             'fun': fun(x),
+             'jac': fprime(x),
+             'alpha_i': alpha,
+             'alpha_r': alpha_r,
+             'alpha_l': alpha_l,
+             'violation': 0})
+        iterates.append(iterate)
     while not (wolfe1 and wolfe2):
         if not wolfe1: # step too long
             alpha_r = alpha
             alpha = .5*(alpha_l + alpha_r)
+            violation = 1
 
         else:
             alpha_l = alpha
+            violation = 2
             if np.isfinite(alpha_r):
                 alpha = .5*(alpha_l + alpha_r)
             else:
                 alpha *= step_factor
         wolfe1 = first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1)
         wolfe2 = second_wolfe_condition(x0, fprime, direction, alpha, beta2)
-    return alpha
+        if store_iterates == 'iterate':
+            iterate = scipy.optimize.OptimizeResult(
+                {'x': x.copy(),
+                 'fun': fun(x),
+                 'jac': fprime(x),
+                 'alpha_i': alpha,
+                 'alpha_r': alpha_r,
+                 'alpha_l': alpha_l,
+                 'violation': violation})
+            iterates.append(iterate)
+        counter += 1
 
+    result = scipy.optimize.OptimizeResult({'success': True,
+                                            'x': alpha,
+                                            'nit': counter,
+                                            'violation':violation})
+
+    if iterates:
+        result['iterates'] = iterates
+    return result
