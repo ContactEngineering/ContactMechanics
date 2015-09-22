@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.
 """
 
 import numpy as np
+import scipy.optimize
 
 class ReachedTolerance(StopIteration): pass
 class ReachedMaxiter(StopIteration): pass
@@ -198,7 +199,7 @@ def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
     alpha       -- step size
     beta1       -- lower wolfe bound
     """
-    return fun(x0+alpha*direction) <= fun(x0) + \
+    return float(fun(x0+alpha*direction)) <= float(fun(x0)) + \
         alpha * beta1 * float(fprime(x0).T * direction)
 
 def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
@@ -216,9 +217,8 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
             beta2*float(fprime(x0).T * direction))
 
 # implements the line search, p. 273, algo 11.2
-# implements the line search, p. 273, algo 11.2
 def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
-                step_factor=3., store_iterates=None):
+                step_factor=3., store_iterates=None, maxiter=40):
     """
     find a step size alpha that satisfies both conditions of Wolfe
     Keyword Arguments:
@@ -232,6 +232,8 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
     step_factor -- (default 3.) step increase when too short
     store_iterates -- (default None) if set to 'iterate' the full iterates are
                    stored in module-level constant iterates
+    maxiter     -- (default 20) abort and raise Exception after maxiter is
+                   reached
     """
     alpha_l = 0
     alpha_r = float('inf')
@@ -245,15 +247,20 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
     violation = 0
     if store_iterates == 'iterate':
         iterate = scipy.optimize.OptimizeResult(
-            {'x': x.copy(),
-             'fun': fun(x),
-             'jac': fprime(x),
+            {'x': x0.copy(),
+             'fun': fun(x0),
+             'jac': fprime(x0),
              'alpha_i': alpha,
              'alpha_r': alpha_r,
              'alpha_l': alpha_l,
              'violation': 0})
         iterates.append(iterate)
     while not (wolfe1 and wolfe2):
+        if counter == maxiter:
+            raise ReachedMaxiter(
+                ("Line search did not converge. Are your jacobians correct? "
+                 "wolfe1 = {}, wolfe2 = {}, alpha = {}, nit = {}").format(
+                     wolfe1, wolfe2, alpha, counter))
         if not wolfe1: # step too long
             alpha_r = alpha
             alpha = .5*(alpha_l + alpha_r)
@@ -270,9 +277,9 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
         wolfe2 = second_wolfe_condition(x0, fprime, direction, alpha, beta2)
         if store_iterates == 'iterate':
             iterate = scipy.optimize.OptimizeResult(
-                {'x': x.copy(),
-                 'fun': fun(x),
-                 'jac': fprime(x),
+                {'x': x0.copy(),
+                 'fun': fun(x0),
+                 'jac': fprime(x0),
                  'alpha_i': alpha,
                  'alpha_r': alpha_r,
                  'alpha_l': alpha_l,
