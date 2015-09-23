@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.
 """
 
 from .common import ReachedTolerance, ReachedMaxiter, FailedIterate
+from .common import ReachedMaxiterWarning
 from .common import intersection_confidence_region
 from .common import dogleg
 from .common import steihaug_toint

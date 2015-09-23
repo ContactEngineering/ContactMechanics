@@ -28,13 +28,14 @@ along with GNU Emacs; see the file COPYING. If not, write to the
 Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
-
+import warnings
 import numpy as np
 import scipy.optimize
 
 class ReachedTolerance(StopIteration): pass
 class ReachedMaxiter(StopIteration): pass
 class FailedIterate(StopIteration): pass
+class ReachedMaxiterWarning(RuntimeWarning): pass
 
 
 # The following helpers are from
@@ -256,6 +257,7 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
              'violation': 0})
         iterates.append(iterate)
     while not (wolfe1 and wolfe2):
+        print("Wolves: ({}, {}), alpha = {}, Δalpha = {} ".format(wolfe1, wolfe2, alpha, abs(alpha_l-alpha_r)))
         if counter == maxiter:
             raise ReachedMaxiter(
                 ("Line search did not converge. Are your jacobians correct? "
@@ -266,13 +268,18 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
             alpha = .5*(alpha_l + alpha_r)
             violation = 1
 
-        else:
+        elif wolfe1 and not wolfe2:
             alpha_l = alpha
             violation = 2
             if np.isfinite(alpha_r):
                 alpha = .5*(alpha_l + alpha_r)
             else:
                 alpha *= step_factor
+        else:
+            break
+            raise Exception(
+                "At a point where both wolfe conditions are violated. This "
+                "should not happen: step is both too long and too short")
         wolfe1 = first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1)
         wolfe2 = second_wolfe_condition(x0, fprime, direction, alpha, beta2)
         if store_iterates == 'iterate':
