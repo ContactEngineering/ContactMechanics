@@ -44,6 +44,7 @@ class ReachedMaxiterWarning(RuntimeWarning): pass
 # polytechniques et universitaires romandes, Lausanne 2006,
 # ISBN:2-88074-669-8
 
+# -----------------------------------------------------------------------------
 # Algorithm 12.1 (p. 297) Intersection with confidence region
 def intersection_confidence_region(x_start, direction, radius):
     """
@@ -62,6 +63,7 @@ def intersection_confidence_region(x_start, direction, radius):
     c = float(x_start.T * x_start - radius**2)
     return (-b + np.sqrt(b**2 - 4*a*c))/(2*a)
 
+# -----------------------------------------------------------------------------
 # Algorithm 12.2 (p.297) dogleg method
 def dogleg(grad_f, hess_f, radius):
     """
@@ -115,6 +117,7 @@ def dogleg(grad_f, hess_f, radius):
 
     return d_c + step_len * (d_d - d_c)
 
+# -----------------------------------------------------------------------------
 # Algorithm 12.3 (p.297) Steihaug-Toint method
 def steihaug_toint(grad_f, hess_f, radius, tol = 1e-14):
     """
@@ -163,6 +166,7 @@ def steihaug_toint(grad_f, hess_f, radius, tol = 1e-14):
         xk[:] = xkp1[:]
     return xk
 
+# -----------------------------------------------------------------------------
 # implements the modified Cholesky Factorisation, p. 278, algo 11.4
 def modified_cholesky(symmat, maxiter = 20):
     """
@@ -188,6 +192,7 @@ def modified_cholesky(symmat, maxiter = 20):
             tau = max(2*tau, .5*fronorm)
     raise Exception("Couldn't factor")
 
+# -----------------------------------------------------------------------------
 def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
     """
     p. 268, 11.19
@@ -203,6 +208,7 @@ def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
     return float(fun(x0+alpha*direction)) <= float(fun(x0)) + \
         alpha * beta1 * float(fprime(x0).T * direction)
 
+# -----------------------------------------------------------------------------
 def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     """
     p. 270, 11.21
@@ -217,6 +223,7 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     return (float(fprime(x0 + alpha*direction).T * direction) >=
             beta2*float(fprime(x0).T * direction))
 
+# -----------------------------------------------------------------------------
 # implements the line search, p. 273, algo 11.2
 def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
                 step_factor=3., store_iterates=None, maxiter=40):
@@ -257,12 +264,15 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
              'violation': 0})
         iterates.append(iterate)
     while not (wolfe1 and wolfe2):
-        print("Wolves: ({}, {}), alpha = {}, Δalpha = {} ".format(wolfe1, wolfe2, alpha, abs(alpha_l-alpha_r)))
         if counter == maxiter:
-            raise ReachedMaxiter(
+            warnings.warn(
                 ("Line search did not converge. Are your jacobians correct? "
-                 "wolfe1 = {}, wolfe2 = {}, alpha = {}, nit = {}").format(
-                     wolfe1, wolfe2, alpha, counter))
+                 "wolfe1 = {}, wolfe2 = {}, alpha = {}, nit = {}.\n"
+                 "If they are, machine precision has been reached. Currently,"
+                 " progress regarding funval would be {}").format(
+                     wolfe1, wolfe2, alpha, counter, float(alpha * fprime(x0).T*direction)),
+                ReachedMaxiterWarning)
+            break
         if not wolfe1: # step too long
             alpha_r = alpha
             alpha = .5*(alpha_l + alpha_r)
@@ -275,11 +285,6 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
                 alpha = .5*(alpha_l + alpha_r)
             else:
                 alpha *= step_factor
-        else:
-            break
-            raise Exception(
-                "At a point where both wolfe conditions are violated. This "
-                "should not happen: step is both too long and too short")
         wolfe1 = first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1)
         wolfe2 = second_wolfe_condition(x0, fprime, direction, alpha, beta2)
         if store_iterates == 'iterate':
@@ -302,3 +307,94 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
     if iterates:
         result['iterates'] = iterates
     return result
+
+
+# -----------------------------------------------------------------------------
+# Langrangian definitions
+def construct_augmented_lagrangian(fun, constraints):
+    """
+    According to 6.17, p. 164:
+    Given a function f(x) and equality constraints h(x)=0 this constructs and
+    returns the augmented Lagrangian L(x, λ, c).
+    Keyword Arguments:
+    fun           -- objective function to minimize
+    constraints   -- vector of equality constraint functions. A callable
+                     that is called as constraints(x, args=args) and returns
+                     an ndarray of same length as multiplier0. Rⁿ→Rᵐ
+    """
+    def objective(x, lam, c_pen, *args):
+        """ Augmented lagrangian of the objective function
+        Keyword Arguments:
+        x     -- argument of minimisation
+        lam   -- current vector of laplace multipliers
+        c_pen -- current penalty
+        *args -- additional arguments passed to the objective function and its
+                 derivatives
+        """
+        x = np.matrix(x, copy=False).reshape((-1, 1))
+        constraints_eval = constraints(x, *args)
+        return (fun(x, *args) + float(
+            (lam.T*constraints_eval +
+             c_pen/2*(constraints_eval.T*constraints_eval))))
+    return objective
+
+def construct_augmented_lagrangian_gradient(fun_jac, constraints_jac, constraints):
+    """
+    According to 20.4, p. 448:
+    Keyword Arguments:
+    fun_jac         -- gradient of objective function to minimize
+    constraints_jac -- gradient of constraints Rⁿ→Rᵐˣⁿ
+    constraints     -- vector of equality constraint functions. A callable
+                       that is called as constraints(x, args=args) and returns
+                       an ndarray of same length as multiplier0. Rⁿ→Rᵐ
+    """
+    def jac(x, lam, c_pen, *args):
+        """
+        jacobian of the augmented lagrangian of the objective function
+        Keyword Arguments:
+        x     -- argument of minimisation
+        lam   -- current vector of laplace multipliers
+        c_pen -- current penalty
+        *args -- additional arguments passed to the objective function and its
+        derivatives
+        """
+        x = np.matrix(x, copy=False).reshape((-1, 1))
+        constraints_eval = constraints(x, *args)
+        constraints_jac_eval = constraints_jac(x, *args)
+        retjac = fun_jac(x, *args) + constraints_jac_eval.T*lam + c_pen * constraints_jac_eval.T*constraints_eval
+        if not retjac.dtype.kind in np.typecodes['AllFloat']:
+            raise Exception("jac =\n{}\nlam_term =\n{}\nc_term =\n{}".format(jac(x, *args), constraints_jac_eval.T*lam,  c_pen * constraints_jac_eval.T*constraints_eval))
+        return retjac
+    return jac
+
+def construct_augmented_lagrangian_hessian(fun_hess, constraints_hess, constraints_jac, constraints):
+    """
+    According to 20.5, p. 448:
+    Keyword Arguments:
+    fun_hess         -- hessian of objective function to minimize
+    constraints_jac  -- gradient of constraints Rⁿ→Rᵐˣⁿ
+    constraints_hess -- hessian of constraints Rⁿ→Rᵐˣⁿˣⁿ
+    constraints      -- vector of equality constraint functions. A callable
+                        that is called as constraints(x, args=args) and returns
+                        an ndarray of same length as multiplier0. Rⁿ→Rᵐ
+    """
+    def lag_hess(x, lam, c_pen, *args):
+        """
+        jacobian of the augmented lagrangian of the objective function
+        Keyword Arguments:
+        x     -- argument of minimisation
+        lam   -- current vector of laplace multipliers
+        c_pen -- current penalty
+        *args -- additional arguments passed to the objective function and its
+                 derivatives
+        """
+        x = np.matrix(x, copy=False).reshape((-1, 1))
+        constraints_eval = constraints(x, *args)
+        constraints_jac_eval = constraints_jac(x, *args)
+        constraints_hess_eval = constraints_hess(x, *args)
+        return_hess = hess(x, *args) + c_pen * constraints_jac_eval.T*constraints_jac_eval
+        for i in range(lam.size):
+            return_hess += (lam[i] * constraints_hess_eval[i] +
+                            c_pen*constraints_jac_eval * constraints_jac_eval.T)
+            return return_hess
+    return lag_hess

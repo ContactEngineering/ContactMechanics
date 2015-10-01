@@ -38,12 +38,19 @@ import scipy.optimize
 from copy import deepcopy
 from . import ReachedTolerance, ReachedMaxiter, FailedIterate
 
+from . import construct_augmented_lagrangian
+from . import construct_augmented_lagrangian_gradient
+from . import construct_augmented_lagrangian_hessian
+
+
+# -----------------------------------------------------------------------------
 # implemented as a custom minimizer for scipy
 def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
                          update_tol0=.1, multiplier0=None, penalty0=10, alpha=0.1,
                          beta=0.9, tau=10, min_method='L-BFGS-B', callback=None,
-                         bounds=None, jac=None, hessp=None,
-                         hess=None, store_iterates=None, **options):
+                         bounds=None, jac=None, hess=None, constraints_jac=None,
+                         constraints_hess=None,
+                         hessp=None, store_iterates=None, **options):
     """
     Custom minimizer that implements the LANCELOT (Conn et al., 1992) augmented
     Lagrangian minimizer. For documentation, see Bierlaire (2006)
@@ -55,13 +62,13 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
     ISBN:2-88074-669-8
 
     Keyword Arguments:
-    fun         -- objective function to minimize
-    x0          -- initial guess for solution
+    fun         -- objective function to minimize. Rⁿ→R
+    x0          -- initial guess for solution, x0 in Rⁿ
     args        -- (default empty) additional arguments that need to be fed to fun
     constraints -- (default None) not optional. An exception will be raised if
                    this is not specified. A callable that is called as
                    constraints(x, args=args) and returns an ndarray of same
-                   length as multiplier0
+                   length as multiplier0. Rⁿ→Rᵐ
     tol         -- (default None) Convergence tolerance. Is used for both the
                    subjacent minimizer as well as for the outer (augmented
                    Lagrangian) loop.
@@ -69,7 +76,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
                    minimum x_k is "sufficiently" admissible: if
                    ||constraints(x_k, args=args)|| < current update_tol, then
                    the multipliers are updated, else the penalty is increased.
-    multiplier0 -- (default None) Initial guess for the Lagrange multipliers
+    multiplier0 -- (default None) Initial guess for the Lagrange multipliers. in Rᵐ (must be column vector)
     penalty0    -- (default 10) Initial penalty value (default from LANCELOT)
     alpha       -- (default 0.1) defines how aggressively the update_tol is
                    reset everytime the penalty is increased. This is a
@@ -99,7 +106,8 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
                    False, the gradient will be estimated numerically. jac can
                    also be a callable returning the gradient of the objective.
                    In this case, it must accept the same arguments as fun.
-    hess/hessp  -- (default None) Hessian (matrix of second-order derivatives)
+                   Rⁿ→Rⁿ (must me a column vector)
+    hess        -- (default None) Hessian (matrix of second-order derivatives)
                    of objective function or Hessian of objective function times
                    an arbitrary vector p. Only for Newton-CG, dogleg,
                    trust-ncg. Only one of hessp or hess needs to be given. If
@@ -107,6 +115,24 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
                    hess nor hessp is provided, then the Hessian product will be
                    approximated using finite differences on jac. hessp must
                    compute the Hessian times an arbitrary vector.
+                   Rⁿ→Rⁿˣⁿ
+    constraints_jac -- (default None) Jacobian (gradient) of constraints function.
+                   Only for CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg,
+                   trust-ncg. If jac is a Boolean and is True, fun is assumed
+                   to return the gradient along with the objective function. If
+                   False, the gradient will be estimated numerically. jac can
+                   also be a callable returning the gradient of the objective.
+                   In this case, it must accept the same arguments as fun.
+                   Rⁿ→Rᵐˣⁿ
+    constraints_hess -- (default None) Hessian (matrix of second-order derivatives)
+                   of constraints function or Hessian of objective function times
+                   an arbitrary vector p. Only for Newton-CG, dogleg,
+                   trust-ncg. Only one of hessp or hess needs to be given. If
+                   hess is provided, then hessp will be ignored. If neither
+                   hess nor hessp is provided, then the Hessian product will be
+                   approximated using finite differences on jac. hessp must
+                   compute the Hessian times an arbitrary vector.
+                   Rⁿ→Rᵐˣⁿˣⁿ
     store_iterates -- (default None) if set to 'iterate' the full iterates are
                    stored in module-level constant iterates
     **options   -- are handed through to min_method as is.
@@ -118,43 +144,25 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
         if not key in options.keys():
             options[key] = val
 
-    if not isinstance(multiplier0, np.ndarray):
+    if not isinstance(multiplier0, np.matrix):
         raise Exception(
-            "for sanity reasons, imma require multiplier0 to be an array, even "
-            "if it's scalar")
-    multiplier = np.array(multiplier0, dtype=float)  # 'lam' in the objective
+            "for sanity reasons, imma require multiplier0 to be column vector "
+            "of type  np.matrix, even if it's scalar. got a {}".format(type(multiplier0)))
+    if multiplier0.shape[1] != 1 or len(multiplier0.shape) != 2:
+        raise Exception(
+            "for sanity reasons, imma require multiplier0 to be column vector "
+            "of type  np.matrix, even if it's scalar")
+    multiplier = multiplier0  # 'lam' in the objective
     penalty = penalty0        # 'c_pen' in the objective
     update_tol0 = penalty**alpha*update_tol0
     update_tol = update_tol0/penalty**alpha
     current_tol = tol
     constraints = constraints['fun']
 
-    def mod_objective_no_args(x, lam, c_pen):
-        """ Augmented lagrangian of the objective function
-        Keyword Arguments:
-        x     -- argument of minimisation
-        lam   -- current vector of laplace multipliers
-        c_pen -- current penalty
-        """
-        constraints_eval = constraints(x)
-        return fun(x) + lam*constraints_eval + c_pen/2*(constraints_eval**2).sum()
-
-    def mod_objective_with_args(x, lam, c_pen, *args):
-        """ Augmented lagrangian of the objective function
-        Keyword Arguments:
-        x     -- argument of minimisation
-        lam   -- current vector of laplace multipliers
-        c_pen -- current penalty
-        *args -- additional arguments passed to the objective function and its
-                 derivatives
-        """
-        constraints_eval = constraints(x, *args)
-        return fun(x, *args) + lam*constraints_eval + c_pen/2*(constraints_eval**2).sum()
-
-    if args:
-        mod_objective = mod_objective_with_args
-    else:
-        mod_objective = mod_objective_no_args
+    mod_objective = construct_augmented_lagrangian(fun, constraints)
+    mod_jac = None if jac is None else construct_augmented_lagrangian_gradient(jac, constraints_jac, constraints)
+    mod_hess = None if hess is None else construct_augmented_lagrangian_hessian(
+        hess, constraints_hess, constraints_jac, constraints)
 
 
     # some of the option args get duplicated in _minimize.py (annoying design
@@ -169,18 +177,25 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
     inner_options = deepcopy(options)
     inner_options['disp']= False
     del inner_options['outer_maxiter']
-
     if options['disp']:
         print(("{0[k]} | {0[x]} {0[lam]} {0[c]} {0[cur_tol]} "
                "{0[update_tol]} {0[nit]}").format(
                    {'k': counter,
                     'x': x,
-                    'lam': multiplier,
+                    'lam': multiplier.copy(),
                     'c': penalty,
                     'cur_tol': current_tol,
                     'update_tol': update_tol,
                     'nit': '?'}))
     iterates = list()
+    if store_iterates == 'iterate':
+        iterates.append(scipy.optimize.OptimizeResult({'k': -1,
+                                                       'lam': multiplier.copy(),
+                                                       'c': penalty,
+                                                       'cur_tol': current_tol,
+                                                       'update_tol': update_tol,
+                                                       'nit_k': -1,
+                                                       'x':np.asarray(x).ravel()}))
     try:
         while True:
             if (norm_grad < tol and norm_constraint < tol):
@@ -195,23 +210,34 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
             iterate = scipy.optimize.minimize(mod_objective, x,
                                               args=(multiplier, penalty) + args,
                                               method=min_method, tol=current_tol,
-                                              bounds=bounds, jac=jac,
+                                              bounds=bounds, jac=mod_jac, hess=mod_hess,
                                               options=inner_options)
             if store_iterates == 'iterate':
-                iterates.append(iterate)
+                iterates.append(scipy.optimize.OptimizeResult(
+                    {'k': counter,
+                     'x': np.asarray(x).ravel(),
+                     'lam': multiplier.copy(),
+                     'c': penalty,
+                     'cur_tol': current_tol,
+                     'update_tol': update_tol,
+                     'nit_k': iterate['nit']}))
             if not iterate.success:
                 raise FailedIterate(
                     ("evaluation of dual objective function failed with the "
-                     "following message: '{}'. The full result is\n{}").format(
-                         iterate.message, iterate))
+                     "following message: '{}'. current tolerance is {} The full result is\n{}").format(
+                         iterate.message, current_tol, iterate))
             constraints_eval = constraints(x, *args)
             norm_constraint = np.sqrt((constraints_eval**2).sum())
-            norm_grad = np.sqrt((iterate.jac**2).sum())
-            x = iterate.x
+            norm_grad = np.linalg.norm(iterate.jac)
+            x = np.matrix(iterate.x, copy=False).reshape((-1, 1))
 
             ## decide whether to update the multipliers or the penalty
             if norm_constraint <= update_tol:  # update multipliers
-                multiplier += penalty * constraints_eval
+                try:
+                    multiplier += float(penalty * constraints_eval)
+                except Exception as err:
+                    print(multiplier, constraints_eval)
+                    raise
                 current_tol /= penalty
                 update_tol /= penalty**beta
             else:
@@ -230,7 +256,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
                        "{0[update_tol]} {0[nit]}").format(
                            {'k': counter,
                             'x': x,
-                            'lam': multiplier,
+                            'lam': multiplier.copy(),
                             'c': penalty,
                             'cur_tol': current_tol,
                             'update_tol': update_tol,
@@ -239,6 +265,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
     except (FailedIterate, ReachedMaxiter) as err:
         message = str(err)
         success = False
+        print('iterations: {}'.format(counter))
     except(ReachedTolerance) as err:
         message = str(err)
         success = True

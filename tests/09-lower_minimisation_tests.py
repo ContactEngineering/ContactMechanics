@@ -51,6 +51,8 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+
+# -----------------------------------------------------------------------------
 class NewtonConfidenceRegionTest(unittest.TestCase):
 
     def setUp(self):
@@ -199,3 +201,82 @@ class NewtonConfidenceRegionTest(unittest.TestCase):
         iterates = np.array([it.x.reshape(-1) for it in result.iterates]).reshape((-1, 2))
         error = mean_err(iterates, solution)
         self.assertTrue(error < tol)
+
+
+# -----------------------------------------------------------------------------
+class LinesearchTest(unittest.TestCase):
+
+    def setUp(self):
+        def test_fun(x):
+            x.shape=(-1, 1)
+            return .5*x[0, 0]**2 + x[0, 0]* np.cos(x[1, 0])
+
+        def test_jac(x):
+            x.shape=(-1, 1)
+            return np.matrix([[x[0, 0] + np.cos(x[1, 0])],
+                              [-x[0, 0] * np.sin(x[1, 0])]])
+
+        def test_hess(x):
+            x.shape=(-1, 1)
+            return np.matrix([[           1.,        -np.sin(x[1, 0])],
+                     [-np.sin(x[1, 0]), -x[0, 0] * np.cos(x[1, 0])]])
+
+        self.fun = test_fun
+        self.grad_f = test_jac
+        self.hess_f = test_hess
+
+
+    def test_line_search(self):
+        Q = np.matrix([[1., 0.],
+                       [0., 9.]])
+        obj = lambda x: float(0.5*x.T*Q*x)
+        grad = lambda x: Q*x
+        hess_st = lambda x: Q
+
+        x = np.matrix([10, 1.]).T
+        d = np.matrix([-2., 1,]).T/np.sqrt(5)
+        alpha0 = 1e-3
+        beta1, beta2 = 0.3, 0.7
+        step_factor = 20
+        result = line_search(obj, x, grad, d, alpha0, beta1, beta2, step_factor, store_iterates='iterate')
+
+        reference_solution = np.array([[+1.0000e-03, +0.0000e+00],
+                                       [+2.0000e-02, +1.0000e-03],
+                                       [+4.0000e-01, +2.0000e-02],
+                                       [+8.0000e+00, +4.0000e-01],
+                                       [+4.2000e+00, +4.0000e-01],
+                                       [+2.3000e+00, +4.0000e-01]])
+        solution = np.array([(it.alpha_i, it.alpha_l) for it in result.iterates])
+        tol = 1e-7
+        error = mean_err(reference_solution, solution)
+        self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
+
+
+    def test_newton_linesearch(self):
+        x0 = np.array([1.,1.])
+        result = minimize(self.fun, x0=x0, method=newton_linesearch,
+                          jac=self.grad_f, hess=self.hess_f, tol=1.e-14,
+                          options={'store_iterates': 'iterate'})
+
+        solution = np.array([(+1.0000000e+00, +1.0000000e+00),
+                             (+5.5127702e-01, +1.4196826e+00),
+                             (+5.3665860e-01, +2.1020785e+00),
+                             (+8.4578336e-01, +2.7823144e+00),
+                             (+1.1093558e+00, +3.2749356e+00),
+                             (+1.0073162e+00, +3.1531349e+00),
+                             (+1.0000657e+00, +3.1416752e+00),
+                             (+1.0000000e+00, +3.1415927e+00),
+                             (+1.0000000e+00, +3.1415927e+00),
+                             (+1.0000000e+00, +3.1415927e+00)])
+        tol = 1e-7
+        iterates = np.array([it.x.reshape(-1) for it in result.iterates]).reshape((-1, 2))
+        error = mean_err(iterates, solution)
+        self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
+
+
+# -----------------------------------------------------------------------------
+class AugmentedLagrangianTest(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_example

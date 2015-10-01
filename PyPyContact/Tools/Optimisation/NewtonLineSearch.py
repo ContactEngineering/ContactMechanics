@@ -39,9 +39,9 @@ import scipy.optimize
 from . import ReachedTolerance, ReachedMaxiter, FailedIterate
 from . import modified_cholesky, line_search
 
+# -----------------------------------------------------------------------------
 # implemented as a custom minimizer for scipy
-# implemented as a custom minimizer for scipy
-def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
+def newton_linesearch(fun, x0, jac, hess, tol, args=(), store_iterates=None, **options):
     """
     see Bierlaire (2006), p. 278
     Keyword Arguments:
@@ -56,26 +56,50 @@ def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
     """
 
     x = np.matrix(x0.copy()).reshape((-1, 1))
-    fprime = jac(x)
+    try:
+        fprime = jac(x, *args)
+    except Exception:
+        print(jac, type(jac))
+        raise
 
     maxiter_key = 'maxiter'
     if maxiter_key not in options.keys():
         options[maxiter_key] = 20
+
+    linesearch_maxiter_key = 'linesearch_maxiter'
+
+    if linesearch_maxiter_key not in options.keys():
+       options[linesearch_maxiter_key] = 20
 
     counter = 0
     iterates = list()
     if store_iterates == 'iterate':
         iterate = scipy.optimize.OptimizeResult(
             {'x': x.copy(),
-             'fun': fun(x),
-             'jac': jac(x),
-             'hess': hess(x),
+             'fun': fun(x, *args),
+             'jac': jac(x, *args),
+             'hess': hess(x, *args),
              'tau': float('nan'),
              'alpha': float('nan')})
         iterates.append(iterate)
+    if args:
+        use_fun = lambda x: fun(x, *args)
+        use_jac = lambda x: jac(x, *args)
+        use_hess = lambda x: hess(x, *args)
+    else:
+        use_fun = fun
+        use_jac = jac
+        use_hess = hess
     try:
         while True:
-            norm_grad = np.linalg.norm(fprime)
+            try:
+                norm_grad = np.linalg.norm(fprime)
+            except Exception:
+                print(fprime)
+                print(type(fprime))
+                print(fprime.dtype)
+                print(fprime.shape)
+                raise
             if norm_grad < tol:
                 raise ReachedTolerance(
                     "||grad f(x)|| = {} < {} = tol".format(
@@ -84,14 +108,14 @@ def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
                 raise ReachedMaxiter("reached maxiter ({})".format(
                     options['maxiter']))
             # 1)
-            L, tau = modified_cholesky(hess(x))
+            L, tau = modified_cholesky(hess(x, *args))
             # 2)
-            fprime = jac(x)
+            fprime = use_jac(x)
             z = np.linalg.solve(L, fprime)
             # 3)
             d = np.linalg.solve(L.T, -z)
             # 4)
-            result = line_search(fun, x, jac, d, alpha0 = 1, store_iterates='iterate')
+            result = line_search(use_fun, x, use_jac, d, alpha0=1, maxiter=options[linesearch_maxiter_key])
             alpha = result.x
             violation = result.violation
 
@@ -102,9 +126,9 @@ def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
             if store_iterates == 'iterate':
                 iterate = scipy.optimize.OptimizeResult(
                     {'x': x.copy(),
-                     'fun': fun(x),
-                     'jac': jac(x),
-                     'hess': hess(x),
+                     'fun': use_fun(x),
+                     'jac': use_jac(x),
+                     'hess': use_hess(x),
                      'tau': tau,
                      'alpha': alpha})
                 iterates.append(iterate)
@@ -120,9 +144,9 @@ def newton_linesearch(fun, x0, jac, hess, tol, store_iterates=None, **options):
     result = scipy.optimize.OptimizeResult({'message': message,
                                             'success': success,
                                             'x': np.asarray(x).ravel(),
-                                            'fun': fun(x),
-                                            'jac': jac(x),
-                                            'hess': hess(x),
+                                            'fun': use_fun(x),
+                                            'jac': use_jac(x),
+                                            'hess': use_hess(x),
                                             'nit': counter})
 
     if iterates:

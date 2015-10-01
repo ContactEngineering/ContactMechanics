@@ -38,6 +38,10 @@ from .common import modified_cholesky
 from .common import first_wolfe_condition
 from .common import second_wolfe_condition
 from .common import line_search
+from .common import construct_augmented_lagrangian
+from .common import construct_augmented_lagrangian_gradient
+from .common import construct_augmented_lagrangian_hessian
 from .AugmentedLagrangian import augmented_lagrangian
 from .NewtonLineSearch import newton_linesearch
 from .NewtonConfidenceRegion import newton_confidence_region
+
