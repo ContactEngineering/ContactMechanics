@@ -279,4 +279,46 @@ class AugmentedLagrangianTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_example
+    def test_example(self):
+        """
+        Example 20.5: Minimise the fuction $f(x)$
+        $$\min_{x\in\mathbb{R}^2} 2(x_1^2+x_2^2 -1)-x_1$$
+        under the constraint
+        $$ x_1^2 + x_2^2 = 1$$
+        """
+        Q = np.matrix([[4, 0], [0, 4.]])
+        b = np.matrix([[-1., 0]]).T
+        c = -1.
+        def fun(x):
+            return .5*x.T*Q*x + x.T*b + c
+        def jac(x):
+            return(Q*x+b)
+
+        def hess(x):
+            return Q
+
+        cQ = .5*Q
+        cb = np.matrix(((0, 0.))).T
+        cc = -1.
+        def constraint(x):
+            return .5*x.T*cQ*x + x.T*cb + cc
+        def constraint_jac(x):
+            return (cQ*x + cb).T
+        def constraint_hess(x):
+            return Q
+
+        tol = 1.e-2
+        print(constraint_jac(np.matrix(([-1], [.1]))))
+
+        multiplier0 = np.matrix(((0.)))
+        print("multiplier0 = {}".format(multiplier0))
+        maxiter=1000
+        result = scipy.optimize.minimize(
+            fun, x0=np.matrix(([-1], [.1])),
+       	    constraints={'type':'eq','fun':constraint},
+	    method=augmented_lagrangian, tol=tol,
+	    options={'multiplier0': multiplier0,
+                     'store_iterates': 'iterate',
+                     'maxiter':maxiter,
+                     'outer_maxiter':maxiter})
+
