@@ -76,21 +76,13 @@ class RandomSurfaceExact(object):
             tmpsize.append(size[min(i, len(size)-1)])
         self.size = tuple(tmpsize)
 
-        if self.dim == 2 and self.resolution[0] != self.resolution[1]:
-            raise self.Error(
-                ("Two-dimensional domains need to be square for the time being"
-                 ". You specified a resolution of {}").format(self.resolution))
-        if self.dim == 2 and self.size[0] != self.size[1]:
-            raise self.Error(
-                ("Two-dimensional domains need to be square for the time being"
-                 ". You specified a size of {}").format(self.size))
         self.hurst = hurst
 
         self.rms_height = rms_height
         if lambda_max is not None:
             self.q_min = 2*np.pi/lambda_max
         else:
-            self.q_min = 2*np.pi/self.size[0]
+            self.q_min = 2*np.pi*max(1/self.size[0], 1/self.size[1])
 
 
         self.prefactor = self.compute_prefactor()
@@ -136,7 +128,7 @@ class RandomSurfaceExact(object):
         square height assuming that the largest wave length is the full
         domain. This is described for the square of the factor on p R7
         """
-        q_max = np.pi*self.resolution[0]/self.size[0]
+        q_max = np.pi*min(self.resolution[0]/self.size[0], self.resolution[1]/self.size[1])
         area = np.prod(self.size)
         return 2*self.rms_height/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi*area)
 
@@ -188,7 +180,7 @@ class RandomSurfaceExact(object):
         q_square = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
         if lambda_max is not None:
             q2_min = (2*np.pi/lambda_max)**2
-            ampli_max = (self.prefactor*2*np.pi/self.size[0] *
+            ampli_max = (self.prefactor*2*max(np.pi/self.size[0], np.pi/self.size[1]) *
                          q2_min**((-1-self.hurst)/2))
             sl = q_square < q2_min
             ampli = abs(active_coeffs[sl])
