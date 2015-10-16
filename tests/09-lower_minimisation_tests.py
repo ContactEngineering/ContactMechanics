@@ -313,7 +313,7 @@ class AugmentedLagrangianTest(unittest.TestCase):
         multiplier0 = np.matrix(((0.)))
         print("multiplier0 = {}".format(multiplier0))
         maxiter=1000
-        result = scipy.optimize.minimize(
+        result = minimize(
             fun, x0=np.matrix(([-1], [.1])),
        	    constraints={'type':'eq','fun':constraint},
 	    method=augmented_lagrangian, tol=tol,

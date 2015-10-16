@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 import scipy
 from . import compute_wavevectors, fftn
+from ..Surface import NumpySurface
 
 class CharacterisePeriodicSurface(object):
     """
@@ -247,8 +248,15 @@ class CharacterisePeriodicSurface(object):
     def compute_rms_slope(self):
         return self.surface.compute_rms_slope()
 
-    def compute_rms_height_fromReciprocSpace(self):
-        return self.surface.compute_rms_height_fromReciprocSpace()
+    def compute_rms_height_q_space(self):
+        tmp_surf = NumpySurface(self.surface.profile*self.window,
+                                size = self.surface.size)
+        return tmp_surf.compute_rms_height_q_space()
+
+    def compute_rms_slope_q_space(self):
+        tmp_surf = NumpySurface(self.surface.profile()*self.window,
+                                size = self.surface.size)
+        return tmp_surf.compute_rms_slope_q_space()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):
         """

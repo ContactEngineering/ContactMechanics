@@ -247,7 +247,6 @@ class SystemTest(unittest.TestCase):
         nb_scales = 5
         n_iter = np.zeros(nb_scales, dtype=int)
         n_force = np.zeros(nb_scales, dtype=float)
-        
         for i in range(nb_scales):
             scale = 10**(i-2)
             res = S.minimize_proxy(offset, disp_scale=scale, tol = 1e-40,
@@ -257,6 +256,29 @@ class SystemTest(unittest.TestCase):
             n_force[i] = S.compute_normal_force()
         print("N_iter = ", n_iter)
         print("N_force = ", n_force)
+
+    def test_minimize_proxy_tol(self):
+        res = self.res
+        size = self.size
+        substrate = Solid.PeriodicFFTElasticHalfSpace(
+            res, 25*self.young, self.size[0])
+        sphere = Surface.Sphere(self.radius, res, size)
+        S = SmoothContactSystem(substrate, self.smooth, sphere)
+        offset = self.sig
+
+        res = S.minimize_proxy(offset, tol = 1e-20,
+                               gradient=True, callback=True)
+        print(res.message)
+
+        rep_force = np.where(
+            S.interaction.force > 0, S.interaction.force, 0
+            )
+        alt_rep_force = np.where(
+            S.substrate.force > 0, S.substrate.force, 0
+            )
+
+        error = Tools.mean_err(rep_force, alt_rep_force)
+        self.assertTrue(error < 1e-6, "error = {}".format(error))
 
 
 class FreeElasticHalfSpaceSystemTest(unittest.TestCase):

@@ -80,6 +80,23 @@ class Surface(object, metaclass=abc.ABCMeta):
                 for d in dims]
         return np.sqrt(2*((diff[0]**2).mean()+(diff[1]**2).mean()))
 
+    def compute_rms_slope_q_space(self):
+        """
+        taken from roughness in pycontact
+        """
+        nx, ny = self.resolution
+        sx, sy = self.size
+        qx = np.arange(nx, dtype=np.float64)
+        qx = np.where(qx <= nx/2, 2*np.pi*qx/sx, 2*np.pi*(nx-qx)/sx)
+        qy = np.arange(ny, dtype=np.float64)
+        qy = np.where(qy <= ny/2, 2*np.pi*qy/sy, 2*np.pi*(ny-qy)/sy)
+        q  = np.sqrt( (qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1) )
+
+        h_q = np.fft.fft2(self.profile())
+        return np.sqrt(
+            np.mean(q**2 * h_q*np.conj(h_q)).real/(float(self.profile().shape[0])*float(self.profile().shape[1])))
+
+
     def adjust(self):
         """
         shifts surface up or down so that a zero displacement would lead to a
