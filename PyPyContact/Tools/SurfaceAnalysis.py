@@ -428,7 +428,7 @@ def power_spectrum_1D(surface_xy, size=None, window=None):
         win = get_window(window, nx)
         # Normalize window
         win /= win.mean()
-        surface_xy *= win.reshape(-1,1)
+        surface_xy = win.reshape(-1,1)*surface_xy
     
     # Pixel size
     len0 = sx/nx
@@ -490,7 +490,7 @@ def power_spectrum_2D(surface_xy, nbins=100, size=None, window=None,
         win = np.outer(get_window(window, nx), get_window(window, ny))**exponent
         # Normalize window
         win /= win.mean()
-        surface_xy *= win
+        surface_xy = win*surface_xy
 
     # Pixel size
     area0 = (sx/nx)*(sy/ny)
