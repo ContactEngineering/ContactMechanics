@@ -28,8 +28,13 @@ along with GNU Emacs; see the file COPYING. If not, write to the
 Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
+
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 import scipy
+from math import pi
+from scipy.signal import get_window
 from . import compute_wavevectors, fftn
 from ..Surface import NumpySurface
 
@@ -321,3 +326,181 @@ class CharacteriseSurface(CharacterisePeriodicSurface):
             raise Exception("Window type '{}' not known.".format(window_type))
         window = window.reshape((-1, 1))*window
         return window
+
+
+def radial_average(C_xy, rmax, nbins, size=None):
+    """
+    Compute radial average of quantities reported on a 2D grid.
+
+    Parameters
+    ----------
+    C_xy : array_like
+        2D-array of values to be averaged.
+    rmax : float
+        Maximum radius.
+    nbins : int
+        Number of bins for averaging.
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+
+    Returns
+    -------
+    r : array
+        Array of radial grid points.
+    n : array
+        Number of data points per radial grid.
+    C_r : array
+        Averaged values.    
+    """
+    nx, ny = C_xy.shape
+    sx = sy = 1.
+    x = np.arange(nx)
+    x = np.where(x > nx//2, nx-x, x)
+    y = np.arange(ny)
+    y = np.where(y > ny//2, ny-y, y)
+
+    rmin = 0.0
+    
+    if size is not None:
+        sx, sy = size
+        x = 2*pi*x/sx
+        y = 2*pi*y/sy
+        rmin = min(2*pi/sx, 2*pi/sy)
+    dr_xy = np.sqrt((x**2).reshape(-1,1)+(y**2).reshape(1,-1))
+
+    # Quadratic -> similar statistics for each data point
+    #dr_r        = np.sqrt( np.linspace(0, rmax**2, nbins) )
+
+    # Power law -> equally spaced on a log-log plot
+    dr_r = rmax**np.linspace(np.log(rmin)/np.log(rmax), 1.0, nbins)
+
+    dr_max = np.max(dr_xy)
+    # Keep dr_max sorted
+    if dr_max > dr_r[-1]:
+        dr_r = np.append(dr_r, [dr_max+0.1])
+    else:
+        dr_r = np.append(dr_r, [dr_r[-1]+0.1])
+
+    # Linear interpolation
+    dr_xy = np.ravel(dr_xy)
+    C_xy = np.ravel(C_xy)
+    i_xy = np.searchsorted(dr_r, dr_xy)
+
+    n_r = np.bincount(i_xy, minlength=len(dr_r))
+    C_r = np.bincount(i_xy, weights=C_xy, minlength=len(dr_r))
+
+    C_r /= np.where(n_r == 0, np.ones_like(n_r), n_r)
+
+    return np.append([0.0], dr_r), n_r, C_r
+
+
+def power_spectrum_1D(surface_xy, size=None, window=None):
+    """
+    Compute power spectrum from 1D FFT.
+
+    Parameters
+    ----------
+    surface_xy : array_like
+        2D-array of surface topography
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+    window : str, optional
+        Window for eliminating edge effect. See scipy.signal.get_window.
+        (Default: None)
+
+    Returns
+    -------
+    q : array_like
+        Reciprocal space vectors.
+    C_all : array_like
+        Power spectrum. (Units: length**3)
+    """
+    nx, ny = surface_xy.shape
+    if size is not None:
+        sx, sy = size
+    else:
+        sx, sy = surface_xy.shape
+        
+    # Construct and apply window
+    if window is not None:
+        win = get_window(window, nx)
+        # Normalize window
+        win /= win.mean()
+        surface_xy *= win.reshape(-1,1)
+    
+    # Pixel size
+    len0 = sx/nx
+
+    # Compute FFT and normalize
+    surface_qy = len0*np.fft.fft(surface_xy, axis=0)
+    dq = 2*pi/sx
+    q = dq*np.arange(nx/2)
+
+    # This is the raw power spectral density
+    C_raw = (abs(surface_qy)**2)/sx
+
+    # Fold +q and -q branches. Note: Entry q=0 appears just once, hence exclude from average!
+    C_all = C_raw[:nx//2, :]
+    C_all[1:nx//2, :] += C_raw[nx-1:nx//2:-1, :]
+    C_all /= 2
+
+    return q, C_all.mean(axis=1)
+
+
+def power_spectrum_2D(surface_xy, nbins=100, size=None, window=None,
+                      exponent=1/2):
+    """
+    Compute power spectrum from 2D FFT and radial average.
+
+    Parameters
+    ----------
+    surface_xy : array_like
+        2D-array of surface topography
+    nbins : int
+        Number of bins for radial average.
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+    window : str, optional
+        Window for eliminating edge effect. See scipy.signal.get_window.
+        (Default: None)
+    exponent : float, optional
+        Exponent :math:`\alpha` for constructing 2D window :math:`w_{2D}` from
+        1D window :math:`w_{1D}`.
+
+        .. math:: w_{2D}(x,y) = (w_{1D}(x) w_{1D}(y))^\alpha
+
+    Returns
+    -------
+    q : array_like
+        Reciprocal space vectors.
+    C_all : array_like
+        Power spectrum. (Units: length**3)
+    """
+    nx, ny = surface_xy.shape
+    if size is not None:
+        sx, sy = size
+    else:
+        sx, sy = surface_xy.shape
+        
+    # Construct and apply window
+    if window is not None:
+        win = np.outer(get_window(window, nx), get_window(window, ny))**exponent
+        # Normalize window
+        win /= win.mean()
+        surface_xy *= win
+
+    # Pixel size
+    area0 = (sx/nx)*(sy/ny)
+    
+    # Compute FFT and normalize
+    surface_qk = area0*np.fft.fft2(surface_xy)
+    C_qk = abs(surface_qk)**2/(sx*sy)
+
+    # Radial average
+    qedges, n, C = radial_average(C_qk, 2*pi*nx/(2*sx), nbins, size=(sx, sy))
+
+    q = (qedges[:-1] + qedges[1:])/2
+    return q, C
