@@ -477,7 +477,7 @@ def power_spectrum_2D(surface_xy, nbins=100, size=None, window=None,
     q : array_like
         Reciprocal space vectors.
     C_all : array_like
-        Power spectrum. (Units: length**3)
+        Power spectrum. (Units: length**4)
     """
     nx, ny = surface_xy.shape
     if size is not None:
