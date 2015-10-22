@@ -421,20 +421,23 @@ def power_spectrum_1D(surface_xy, size=None, window=None):
     if size is not None:
         sx, sy = size
     else:
-        sx, sy = surface_xy.shape
+        try:
+            sx, sy = surface_xy.size
+        except:
+            sx, sy = surface_xy.shape
         
     # Construct and apply window
     if window is not None:
         win = get_window(window, nx)
         # Normalize window
         win /= win.mean()
-        surface_xy = win.reshape(-1,1)*surface_xy
+        surface_xy = win.reshape(-1,1)*surface_xy[:, :]
     
     # Pixel size
     len0 = sx/nx
 
     # Compute FFT and normalize
-    surface_qy = len0*np.fft.fft(surface_xy, axis=0)
+    surface_qy = len0*np.fft.fft(surface_xy[:, :], axis=0)
     dq = 2*pi/sx
     q = dq*np.arange(nx/2)
 
@@ -483,20 +486,23 @@ def power_spectrum_2D(surface_xy, nbins=100, size=None, window=None,
     if size is not None:
         sx, sy = size
     else:
-        sx, sy = surface_xy.shape
+        try:
+            sx, sy = surface_xy.size
+        except:
+            sx, sy = surface_xy.shape
         
     # Construct and apply window
     if window is not None:
         win = np.outer(get_window(window, nx), get_window(window, ny))**exponent
         # Normalize window
         win /= win.mean()
-        surface_xy = win*surface_xy
+        surface_xy = win*surface_xy[:, :]
 
     # Pixel size
     area0 = (sx/nx)*(sy/ny)
     
     # Compute FFT and normalize
-    surface_qk = area0*np.fft.fft2(surface_xy)
+    surface_qk = area0*np.fft.fft2(surface_xy[:, :])
     C_qk = abs(surface_qk)**2/(sx*sy)
 
     # Radial average
