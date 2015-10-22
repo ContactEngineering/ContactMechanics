@@ -142,6 +142,7 @@ class Surface(object, metaclass=abc.ABCMeta):
             compatible
         """
         return self._resolution
+    shape = resolution
 
     @property
     def size(self,):
@@ -219,6 +220,7 @@ class ScaledSurface(Surface):
             compatible
         """
         return self.surf.resolution
+    shape = resolution
 
     @property
     def size(self,):
