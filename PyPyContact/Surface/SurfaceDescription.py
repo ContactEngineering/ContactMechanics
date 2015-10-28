@@ -271,6 +271,8 @@ class CompoundSurface(Surface):
         self._dim = combined_val(surf_a.dim, surf_b.dim, 'dim')
         self._resolution = combined_val(surf_a.resolution,
                                         surf_b.resolution, 'resolution')
+        self._size = combined_val(surf_a.size,
+                                  surf_b.size, 'size')
         self.surf_a = surf_a
         self.surf_b = surf_b
 
@@ -304,7 +306,7 @@ class Sphere(NumpySurface):
     """
     name = 'sphere'
 
-    def __init__(self, radius, resolution, size, centre=None, standoff=0):
+    def __init__(self, radius, resolution, size, centre=None, standoff=0, periodic=False):
         """
         Simple shere geometry.
         Parameters:
@@ -317,6 +319,7 @@ class Sphere(NumpySurface):
                       the radius, you might want to set the surface outside of
                       the spere to far away, maybe even pay the price of inf,
                       if your interaction has no cutoff
+        periodic   -- whether the sphere can wrap around. tricky for large spheres
         """
         # pylint: disable=invalid-name
         if not hasattr(resolution, "__iter__"):
@@ -329,14 +332,26 @@ class Sphere(NumpySurface):
         if not hasattr(centre, "__iter__"):
             centre = (centre, )
 
+        if not periodic:
+            def get_r(res, size, centre):
+                return np.linspace(-centre, size-centre, res, endpoint=False)
+        else:
+            def get_r(res, size, centre):
+                return np.linspace(-centre +   size/2,
+                                   -centre + 3*size/2,
+                                   res, endpoint=False)%size - size/2
+
         if dim == 1:
-            r2 = (np.arange(resolution[0], dtype=float) *
-                  size[0] / resolution[0] - centre[0])**2
+            r2 = get_r(resolution[0],
+                       size[0],
+                       centre[0])**2
         elif dim == 2:
-            rx2 = ((np.arange(resolution[0], dtype=float) *
-                    size[0] / resolution[0] - centre[0])**2).reshape((-1, 1))
-            ry2 = (np.arange(resolution[1], dtype=float) *
-                   size[1] / resolution[1] - centre[1])**2
+            rx2 = (get_r(resolution[0],
+                         size[0],
+                         centre[0])**2).reshape((-1, 1))
+            ry2 = (get_r(resolution[1],
+                         size[1],
+                         centre[1]))**2
             r2 = rx2 + ry2
         else:
             raise Exception(
