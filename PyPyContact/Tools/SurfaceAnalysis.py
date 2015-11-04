@@ -446,7 +446,7 @@ def power_spectrum_1D(surface_xy, size=None, window=None):
 
     # Fold +q and -q branches. Note: Entry q=0 appears just once, hence exclude from average!
     C_all = C_raw[:nx//2, :]
-    C_all[1:nx//2, :] += C_raw[nx-1:nx//2:-1, :]
+    C_all[1:nx//2, :] += C_raw[nx-1:(nx+1)//2:-1, :]
     C_all /= 2
 
     return q, C_all.mean(axis=1)
