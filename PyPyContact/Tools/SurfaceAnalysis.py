@@ -439,7 +439,7 @@ def power_spectrum_1D(surface_xy, size=None, window=None):
     # Compute FFT and normalize
     surface_qy = len0*np.fft.fft(surface_xy[:, :], axis=0)
     dq = 2*pi/sx
-    q = dq*np.arange(nx/2)
+    q = dq*np.arange(nx//2)
 
     # This is the raw power spectral density
     C_raw = (abs(surface_qy)**2)/sx
