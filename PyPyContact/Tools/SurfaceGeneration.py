@@ -193,8 +193,9 @@ class RandomSurfaceExact(object):
         q_square = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
         if lambda_max is not None:
             q2_min = (2*np.pi/lambda_max)**2
-            ampli_max = (self.prefactor*2*np.pi/self.size[0] *
-                         q2_min**((-1-self.hurst)/2))
+            #ampli_max = (self.prefactor*2*np.pi/self.size[0] *
+            #             q2_min**((-1-self.hurst)/2))
+            ampli_max = (q2_min)**(-(1+self.hurst)/2)*self.prefactor
             sl = q_square < q2_min
             ampli = abs(active_coeffs[sl])
             ampli[0] = 1
