@@ -176,6 +176,28 @@ class CharacterisePeriodicSurface(object):
         else:
             return Hurst
 
+    def estimate_hurst_from_mean(self, lambda_min = 0, lambda_max = float('inf'),
+                       full_output=False):
+        """
+        Naive way of estimating hurst exponent. biased towards short wave
+        lengths, here only for legacy purposes
+        """
+        if lambda_min == 0:
+            lambda_min = 2*self.surface.size[0]/self.surface.resolution[0]
+
+        C_m, dummy, q_m = self.grouped_stats(100)
+        q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
+        sl = np.logical_and(q_m<q_max, q_m>q_min)
+        A = np.ones((sl.sum(), 2))
+        A[:,0] = np.log(q_m[sl])
+        exponent, offset = np.linalg.lstsq(A, np.log(C_m[sl]))[0]
+        C0 = np.exp(offset)
+        Hurst= -(exponent+2)/2
+        if full_output:
+            return Hurst, C0
+        else:
+            return Hurst
+
     def estimate_hurst_alt(self, H_bracket=(0., 2.),
                        lambda_min=0, lambda_max = float('inf'),
                        full_output=False, tol = 1e-9):
@@ -319,7 +341,7 @@ class CharacteriseSurface(CharacterisePeriodicSurface):
 
     def get_window(self, window_type, window_params):
         if window_type == 'hanning':
-            window = np.hanning(self.surface.resolution[0])
+            window = 2*np.hanning(self.surface.resolution[0])
         elif window_type == 'kaiser':
             window = np.kaiser(self.surface.resolution[0], **window_params)
         else:
