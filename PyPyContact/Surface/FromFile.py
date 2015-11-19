@@ -58,7 +58,7 @@ class NumpyTxtSurface(NumpySurface):
                         fname))
         self.fname = fname
         super().__init__(factor*np.loadtxt(fname), size)
-
+read_matrix = NumpyTxtSurface
 
 class NumpyAscSurface(NumpySurface):
     """ Reads a surface profile from an asc file and presents in in a Surface-
@@ -126,3 +126,32 @@ class NumpyAscSurface(NumpySurface):
                 ("The number of rows read from the file '{}' does not match "
                  "the declared resolution").format(self.fname))
         return data, (xsiz, ysiz)
+read_asc = NumpyAscSurface
+
+def read_xyz(fn):
+    x, y, z = np.loadtxt(fn, unpack=True)
+    
+    # Sort x-values into bins. Assume that points on surface are equally spaced.
+    dx = x[1]-x[0]
+    binx = np.array(x/dx+0.5, dtype=int)
+    n = np.bincount(binx)
+    ny = n[0]
+    assert np.all(n == ny)
+
+    # Sort y-values into bins.
+    dy = y[binx==0][1]-y[binx==0][0]
+    biny = np.array(y/dy+0.5, dtype=int)
+    n = np.bincount(biny)
+    nx = n[0]
+    assert np.all(n == nx)
+
+    # Sort data into bins.
+    data = np.zeros((nx, ny))
+    data[binx, biny] = z
+
+    # Sanity check. Should be covered by above asserts.
+    value_present = np.zeros((nx, ny), dtype=bool)
+    value_present[binx, biny] = True
+    assert np.all(value_present)
+
+    return NumpySurface(data, size=(dx*nx, dy*ny))
