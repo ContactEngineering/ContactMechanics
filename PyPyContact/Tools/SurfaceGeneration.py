@@ -100,6 +100,9 @@ class RandomSurfaceExact(object):
         else:
             self.q_min = 2*np.pi/self.size[0]
 
+        max_pixelsize = max((siz/res for siz, res in zip(self.size, self.resolution)))
+        self.q_max = np.pi/max_pixelsize
+
 
         self.prefactor = self.compute_prefactor()
 
@@ -174,6 +177,8 @@ class RandomSurfaceExact(object):
         # self.coeffs *= (q2)**(-(1+self.hurst)/2)*2*self.rms_height*self.q_min**self.hurst*np.sqrt(self.hurst*np.pi)/self.size[0]
         self.coeffs *= (q2)**(-(1+self.hurst)/2)*self.prefactor
         self.coeffs[0, 0] = 0 # et voilà
+        # Fix Shannon limit:
+        self.coeffs[q2>self.q_max**2] = 0
         ## print("amplitudes:")
         ## print(abs(self.coeffs))
         ## print("|q|")
@@ -201,8 +206,9 @@ class RandomSurfaceExact(object):
         q_square = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
         if lambda_max is not None:
             q2_min = (2*np.pi/lambda_max)**2
-            ampli_max = (self.prefactor*2*np.pi/self.size[0] *
-                         q2_min**((-1-self.hurst)/2))
+            #ampli_max = (self.prefactor*2*np.pi/self.size[0] *
+            #             q2_min**((-1-self.hurst)/2))
+            ampli_max = (q2_min)**(-(1+self.hurst)/2)*self.prefactor
             sl = q_square < q2_min
             ampli = abs(active_coeffs[sl])
             ampli[0] = 1

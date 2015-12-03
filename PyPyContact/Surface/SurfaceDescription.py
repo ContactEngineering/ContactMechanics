@@ -48,6 +48,20 @@ class Surface(object, metaclass=abc.ABCMeta):
         self._size = size
         self.adjustment = adjustment
 
+    def __getstate__(self):
+        """ is called and the returned object is pickled as the contents for
+            the instance
+        """
+        state = (self._resolution, self._dim, self._size, self.adjustment)
+        return state
+
+    def __setstate__(self, state):
+        """ Upon unpickling, it is called with the unpickled state
+        Keyword Arguments:
+        state -- result of __getstate__
+        """
+        (self._resolution, self._dim, self._size, self.adjustment) = state
+
     def compute_rms_height(self):
         "computes the rms height fluctuation of the surface"
         delta = self.profile()
@@ -152,7 +166,8 @@ class Surface(object, metaclass=abc.ABCMeta):
         return self._size
 
     def save(self, fname, compress=True):
-        """ saves the surface as a NumpyTxtSurface
+        """ saves the surface as a NumpyTxtSurface. Warning: This only saves
+            the profile; the size is not contained in the file
         """
         if compress:
             if not fname.endswith('.gz'):
@@ -300,6 +315,20 @@ class NumpySurface(Surface):
     def _profile(self):
         return self.__h
 
+    def __getstate__(self):
+        """ is called and the returned object is pickled as the contents for
+            the instance
+        """
+        state = (super().__getstate__(), self.__h)
+        return state
+
+    def __setstate__(self, state):
+        """ Upon unpickling, it is called with the unpickled state
+        Keyword Arguments:
+        state -- result of __getstate__
+        """
+        super().__setstate__(state[0])
+        self.__h = state[1]
 
 class Sphere(NumpySurface):
     """ Spherical surface. Corresponds to a cylinder in 2D
