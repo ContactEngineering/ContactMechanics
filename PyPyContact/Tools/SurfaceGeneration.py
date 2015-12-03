@@ -37,7 +37,7 @@ from . import CharacterisePeriodicSurface
 
 class RandomSurfaceExact(object):
     Error = Exception
-    def __init__(self, resolution, size, hurst, rms_height,
+    def __init__(self, resolution, size, hurst, rms_height=None, rms_slope=None,
                  seed=None, lambda_max=None):
         """
         Generates a surface with an exact power spectrum (deterministic
@@ -52,6 +52,7 @@ class RandomSurfaceExact(object):
                       the last value in repeated.
         hurst      -- Hurst exponent
         rms_height -- root mean square asperity height
+        rms_slope  -- root mean square slope of surface
         seed       -- (default hash(None)) for repeatability, the random number
                       generator is seeded previous to outputting the generated
                       surface
@@ -86,7 +87,14 @@ class RandomSurfaceExact(object):
                  ". You specified a size of {}").format(self.size))
         self.hurst = hurst
 
+        if rms_height is None and rms_slope is None:
+            raise self.Error('Please specify either rms height or rms slope.')
+        if rms_height is not None and rms_slope is not None:
+            raise self.Error('Please specify either rms height or rms slope, '
+                             'not both.')
+
         self.rms_height = rms_height
+        self.rms_slope = rms_slope
         if lambda_max is not None:
             self.q_min = 2*np.pi/lambda_max
         else:
@@ -138,7 +146,12 @@ class RandomSurfaceExact(object):
         """
         q_max = np.pi*self.resolution[0]/self.size[0]
         area = np.prod(self.size)
-        return 2*self.rms_height/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi*area)
+        if self.rms_height is not None:
+            return 2*self.rms_height/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi*area)
+        elif self.rms_slope is not None:
+            return 2*self.rms_slope/np.sqrt(q_max**(2-2*self.hurst)-self.q_min**(2-2*self.hurst))*np.sqrt((1-self.hurst)*np.pi*area)
+        else:
+            self.Error('Neither rms height nor rms slope is defined!')
 
 
     def generate_phases(self):
@@ -204,8 +217,8 @@ class RandomSurfaceExact(object):
         return NumpySurface(profile, self.size)
 
 class RandomSurfaceGaussian(RandomSurfaceExact):
-    def __init__(self, resolution, size, hurst, rms_height, seed=None,
-                 lambda_max=None):
+    def __init__(self, resolution, size, hurst, rms_height=None, rms_slope=None,
+                 seed=None, lambda_max=None):
         """
         Generates a surface with an Gaussian amplitude distribution
         Keyword Arguments:
@@ -222,7 +235,8 @@ class RandomSurfaceGaussian(RandomSurfaceExact):
                       generator is seeded previous to outputting the generated
                       surface
         """
-        super().__init__(resolution, size, hurst, rms_height, seed, lambda_max)
+        super().__init__(resolution, size, hurst, rms_height, rms_slope, seed,
+                         lambda_max)
 
     def amplitude_distribution(self):
         """
