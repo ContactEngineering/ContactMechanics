@@ -78,7 +78,7 @@ class Surface(object, metaclass=abc.ABCMeta):
             grid_spacing = self.size/np.array(self.resolution)
         diff = [np.diff(self.profile(), n=1, axis=d)/grid_spacing[d]
                 for d in dims]
-        return np.sqrt(2*((diff[0]**2).mean()+(diff[1]**2).mean()))
+        return np.sqrt((diff[0]**2).mean()+(diff[1]**2).mean())
 
     def compute_rms_slope_q_space(self):
         """
