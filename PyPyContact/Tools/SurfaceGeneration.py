@@ -38,7 +38,7 @@ from . import CharacterisePeriodicSurface
 class RandomSurfaceExact(object):
     Error = Exception
     def __init__(self, resolution, size, hurst, rms_height=None, rms_slope=None,
-                 seed=None, lambda_max=None):
+                 seed=None, lambda_min=None, lambda_max=None):
         """
         Generates a surface with an exact power spectrum (deterministic
         amplitude)
@@ -56,6 +56,8 @@ class RandomSurfaceExact(object):
         seed       -- (default hash(None)) for repeatability, the random number
                       generator is seeded previous to outputting the generated
                       surface
+        lambda_min -- (default None) min wavelength to consider when scaling
+                      power spectral density
         lambda_max -- (default None) max wavelength to consider when scaling
                       power spectral density
         """
@@ -95,6 +97,8 @@ class RandomSurfaceExact(object):
 
         self.rms_height = rms_height
         self.rms_slope = rms_slope
+        self.lambda_min = lambda_min
+        self.lambda_max = lambda_max
         if lambda_max is not None:
             self.q_min = 2*np.pi/lambda_max
         else:
@@ -147,7 +151,10 @@ class RandomSurfaceExact(object):
         square height assuming that the largest wave length is the full
         domain. This is described for the square of the factor on p R7
         """
-        q_max = np.pi*self.resolution[0]/self.size[0]
+        if self.lambda_min is not None:
+            q_max = 2*np.pi/self.lambda_min
+        else:
+            q_max = np.pi*self.resolution[0]/self.size[0]
         area = np.prod(self.size)
         if self.rms_height is not None:
             return 2*self.rms_height/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi*area)
@@ -202,6 +209,11 @@ class RandomSurfaceExact(object):
                       wavelength. by default this is determined by Shannon's
                       Theorem.
         """
+        if lambda_max is None:
+            lambda_max = self.lambda_max
+        if lambda_min is None:
+            lambda_min = self.lambda_min
+
         active_coeffs = self.coeffs.copy()
         q_square = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
         if lambda_max is not None:
@@ -224,7 +236,7 @@ class RandomSurfaceExact(object):
 
 class RandomSurfaceGaussian(RandomSurfaceExact):
     def __init__(self, resolution, size, hurst, rms_height=None, rms_slope=None,
-                 seed=None, lambda_max=None):
+                 seed=None, lambda_min=None, lambda_max=None):
         """
         Generates a surface with an Gaussian amplitude distribution
         Keyword Arguments:
@@ -237,12 +249,18 @@ class RandomSurfaceGaussian(RandomSurfaceExact):
                       the last value in repeated.
         hurst      -- Hurst exponent
         rms_height -- root mean square asperity height
+        rms_slope  -- root mean square slope of surface
         seed       -- (default hash(None)) for repeatability, the random number
                       generator is seeded previous to outputting the generated
                       surface
+        lambda_min -- (default None) min wavelength to consider when scaling
+                      power spectral density
+        lambda_max -- (default None) max wavelength to consider when scaling
+                      power spectral density
         """
-        super().__init__(resolution, size, hurst, rms_height, rms_slope, seed,
-                         lambda_max)
+        super().__init__(resolution, size, hurst, rms_height=rms_height,
+                         rms_slope=rms_slope, seed=seed, lambda_min=lambda_min,
+                         lambda_max=lambda_max)
 
     def amplitude_distribution(self):
         """
