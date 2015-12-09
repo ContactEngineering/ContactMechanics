@@ -35,6 +35,7 @@ import abc
 
 from .. import ContactMechanics, SolidMechanics, Surface
 from ..Tools import compare_containers
+from ..Tools.Optimisation import constrained_conjugate_gradients
 
 
 class IncompatibleFormulationError(Exception):
@@ -591,5 +592,17 @@ class NonSmoothContactSystem(SystemBase):
         return fun
 
 
+    def minimize_proxy(self, offset, logger=None):
+        """
+        Convenience function. Eliminates boilerplate code for most minimisation
+        problems by encapsulating the use of constrained minimisation.
+
+        Parameters:
+        offset     -- determines indentation depth
+        """
+
+        return constrained_conjugate_gradients(self.substrate,
+                                               self.surface[:, :]+offset,
+                                               logger=logger)
 
 
