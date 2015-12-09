@@ -41,20 +41,17 @@ class Surface(object, metaclass=abc.ABCMeta):
         pass
     name = 'generic_geom'
 
-    def __init__(self, resolution=None, dim=None, size=None, unit=None,
-                 adjustment=0.):
+    def __init__(self, resolution=None, dim=None, size=None, adjustment=0.):
         self._resolution = resolution
         self._dim = dim
         self._size = size
-        self._unit = unit
         self.adjustment = adjustment
 
     def __getstate__(self):
         """ is called and the returned object is pickled as the contents for
             the instance
         """
-        state = (self._resolution, self._dim, self._size, self._unit,
-                 self.adjustment)
+        state = (self._resolution, self._dim, self._size, self.adjustment)
         return state
 
     def __setstate__(self, state):
@@ -62,8 +59,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         Keyword Arguments:
         state -- result of __getstate__
         """
-        (self._resolution, self._dim, self._size, self._unit, 
-            self.adjustment) = state
+        (self._resolution, self._dim, self._size, self.adjustment) = state
 
     def compute_rms_height(self):
         "computes the rms height fluctuation of the surface"
@@ -173,10 +169,6 @@ class Surface(object, metaclass=abc.ABCMeta):
             compatible
         """
         return self._size
-
-    @property
-    def unit(self,):
-        return self._unit
 
     def save(self, fname, compress=True):
         """ saves the surface as a NumpyTxtSurface. Warning: This only saves
@@ -316,14 +308,14 @@ class NumpySurface(Surface):
     """
     name = 'surface_from_np_array'
 
-    def __init__(self, profile, size=None, unit=None):
+    def __init__(self, profile, size=None):
         """
         Keyword Arguments:
         profile -- surface profile
         """
         self.__h = profile
         super().__init__(resolution=self.__h.shape, dim=len(self.__h.shape),
-                         size=size, unit=unit)
+                         size=size)
 
     def _profile(self):
         return self.__h
@@ -355,7 +347,7 @@ class Sphere(NumpySurface):
         radius     -- self-explanatory
         resolution -- self-explanatory
         size       -- self-explanatory
-        centre     -- specifies the coordinates (in lenght units, not pixels).
+        centre     -- specifies the coordinates (in length units, not pixels).
                       by default, the sphere is centred in the surface
         standoff   -- when using interaction forces with ranges of the order
                       the radius, you might want to set the surface outside of
