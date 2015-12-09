@@ -42,6 +42,7 @@ from .common import construct_augmented_lagrangian
 from .common import construct_augmented_lagrangian_gradient
 from .common import construct_augmented_lagrangian_hessian
 from .AugmentedLagrangian import augmented_lagrangian
+from .ConstrainedConjugateGradients import constrained_conjugate_gradients
 from .NewtonLineSearch import newton_linesearch
 from .NewtonConfidenceRegion import newton_confidence_region
 
