@@ -67,7 +67,8 @@ class NumpyAscSurface(NumpySurface):
         conformant manner.
     """
     name = 'surface_from_asc_file'
-    _units = {'m': 1.0, 'mm': 1e-3, 'um': 1e-6, 'nm': 1e-9, 'A': 1e-10}
+    _units = {'m': 1.0, 'mm': 1e-3, 'μm': 1e-6, 'um': 1e-6, 'nm': 1e-9,
+              'A': 1e-10}
 
     def __init__(self, fobj, unit=None, x_unit=1.0, z_unit=1.0):
         """
