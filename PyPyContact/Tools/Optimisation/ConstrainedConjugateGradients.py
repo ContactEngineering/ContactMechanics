@@ -97,50 +97,43 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
     delta_str = 'reset'
     G_old = 1.0
     t_r = np.zeros_like(u_r)
-    t_r_real = t_r[comp_slice]
-    u_r_real = u_r[comp_slice]
-    p_r_real = p_r[comp_slice]
     for it in range(1, maxiter+1):
         # Reset contact area (area that feels compressive stress)
-        c_r = p_r_real < 0.0
+        c_r = p_r < 0.0
 
         # Compute total contact area (area with compressive pressure)
         A = np.sum(c_r)
 
         # Compute G = sum(g*g) (over contact area only)
-        g_r = u_r_real-surface
-        G = np.sum(c_r*g_r*g_r)
+        g_r = u_r[comp_slice]-surface
+        G = np.sum(c_r[comp_slice]*g_r*g_r)
 
         # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
         if delta > 0 and G_old > 0:
-            t_r_real = c_r*(g_r + delta*(G/G_old)*t_r_real)
+            t_r[comp_slice] = c_r[comp_slice]*(g_r + delta*(G/G_old)*t_r[comp_slice])
         else:
-            t_r_real = c_r*g_r
+            t_r[comp_slice] = c_r[comp_slice]*g_r
 
         # Compute elastic displacement that belong to t_r
         #substrate (Nelastic manifold: r_r is negative of Polonsky, Kerr's r)
         #r_r = -np.fft.ifft2(gf_q*np.fft.fft2(t_r)).real
         r_r = substrate.evaluate_disp(t_r)
-        r_r_real = r_r[comp_slice]
         # Note: Sign reversed from Polonsky, Keer because this r_r is negative
         # of theirs.
         tau = 0.0
         if A > 0:
             # tau = -sum(g*t)/sum(r*t) where sum is only over contact region
-            x = -np.sum(c_r*r_r_real*t_r_real)
+            x = -np.sum(c_r*r_r*t_r)
             if x > 0.0:
-                tau = np.sum(c_r*g_r*t_r_real)/x
+                tau = np.sum(c_r[comp_slice]*g_r*t_r[comp_slice])/x
             else:
                 G = 0.0
 
-        # Save forces for later
-        fold_r = p_r.copy()
-
-        p_r_real += tau*c_r*t_r_real
+        p_r += tau*c_r*t_r
 
         # Find area with tensile stress and negative gap
         # (i.e. penetration of the two surfaces)
-        nc_r = np.logical_and(p_r_real >= 0.0, g_r < 0.0)
+        nc_r = np.logical_and(p_r[comp_slice] >= 0.0, g_r < 0.0)
 
         # Find maximum pressure outside contacting region. This should go to
         # zero.
@@ -155,7 +148,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         if np.sum(nc_r) > 0:
             # nc_r contains area that just jumped into contact. Update their
             # forces.
-            p_r += tau*nc_r*g_r
+            p_r[comp_slice] += tau*nc_r*g_r
 
             delta = 0
             delta_str = 'sd'
@@ -176,21 +169,23 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
             rms_pen = sqrt(G/A)
         else:
             rms_pen = sqrt(G)
-        max_pen = max(0.0, np.max(c_r*(surface-u_r_real)))
+        max_pen = max(0.0, np.max(c_r[comp_slice]*(surface-u_r[comp_slice])))
 
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)
 
         if rms_pen < pentol and max_pen < pentol and max_pres < prestol:
             if logger is not None:
-                logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen'],
-                          ['CONVERGED', it, A, tau, rms_pen, max_pen],
+                logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen',
+                           'max_pres'],
+                          ['CONVERGED', it, A, tau, rms_pen, max_pen, max_pres],
                           force_print=True)
-            return u_r, p_r
+            return u_r[comp_slice], p_r[comp_slice]
 
         if logger is not None:
-            logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen'],
-                      [delta_str, it, A, tau, rms_pen, max_pen])
+            logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen',
+                       'max_pres'],
+                      [delta_str, it, A, tau, rms_pen, max_pen, max_pres])
 
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
