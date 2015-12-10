@@ -158,7 +158,6 @@ class Surface(object, metaclass=abc.ABCMeta):
     shape = resolution
 
     def set_size(self, size, sy=None):
-        """ set the size of the surface """
         if sy is not None:
             size = (size, sy)
         self._size = size
@@ -169,6 +168,20 @@ class Surface(object, metaclass=abc.ABCMeta):
             compatible
         """
         return self._size
+
+    @size.setter
+    def size(self, size):
+        """ set the size of the surface """
+        if not hasattr(size, "__iter__"):
+            size = (size, )
+        else:
+            size = tuple(size)
+        if len(size) != self.dim:
+            raise self.Error(
+                ("The dimension of this surface is {}, you have specified an "
+                 "incompatible size of dimension {} ({}).").format(
+                     self.dim, len(size), size))
+        self._size = size
 
     def save(self, fname, compress=True):
         """ saves the surface as a NumpyTxtSurface. Warning: This only saves

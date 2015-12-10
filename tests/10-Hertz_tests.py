@@ -29,15 +29,20 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import unittest
-import numpy as np
-import time
-import math
-from PyPyContact.ContactMechanics import HardWall
-from PyPyContact.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyPyContact.Surface import Sphere
-from PyPyContact.System import SystemFactory
-from PyPyContact.Tools.Logger import screen
+try:
+    import unittest
+    import numpy as np
+    import time
+    import math
+    from PyPyContact.ContactMechanics import HardWall
+    from PyPyContact.SolidMechanics import PeriodicFFTElasticHalfSpace
+    from PyPyContact.Surface import Sphere
+    from PyPyContact.System import SystemFactory
+    from PyPyContact.Tools.Logger import screen
+except ImportError as err:
+    import sys
+    print(err)
+    sys.exit(-1)
 
 # -----------------------------------------------------------------------------
 # Taken from matscipy
