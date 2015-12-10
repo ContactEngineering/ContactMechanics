@@ -39,7 +39,7 @@ import numpy as np
 ###
 
 def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
-                                    maxiter=100000, logger=None):
+                                    prestol=1e-5, maxiter=100000, logger=None):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium
     configuration deflection of an elastic manifold. The conjugate gradient
@@ -131,6 +131,13 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         # (i.e. penetration of the two surfaces)
         nc_r = np.logical_and(p_r >= 0.0, g_r < 0.0)
 
+        # Find maximum pressure outside contacting region. This should go to
+        # zero.
+        max_pres = 0
+        mask = p_r>0
+        if mask.sum() > 0:
+            max_pres = p_r[mask].max()
+
         # Set all compressive stresses to zero
         p_r *= p_r < 0.0
 
@@ -163,7 +170,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)
 
-        if rms_pen < pentol and max_pen < pentol:
+        if rms_pen < pentol and max_pen < pentol and max_pres < prestol:
             if logger is not None:
                 logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen'],
                           ['CONVERGED', it, A, tau, rms_pen, max_pen],
