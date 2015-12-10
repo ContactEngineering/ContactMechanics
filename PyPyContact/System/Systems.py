@@ -592,7 +592,7 @@ class NonSmoothContactSystem(SystemBase):
         return fun
 
 
-    def minimize_proxy(self, offset, logger=None):
+    def minimize_proxy(self, offset, **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of constrained minimisation.
@@ -603,6 +603,6 @@ class NonSmoothContactSystem(SystemBase):
 
         return constrained_conjugate_gradients(self.substrate,
                                                self.surface[:, :]+offset,
-                                               logger=logger)
+                                               **kwargs)
 
 
