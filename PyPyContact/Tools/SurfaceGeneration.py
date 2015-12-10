@@ -154,7 +154,7 @@ class RandomSurfaceExact(object):
             if pos_it != (0, 0):
                 coeffs[neg_it] = coeffs[pos_it].conj()
         if (self.resolution[0]%2 == 0):
-            r2= self.resolution[0]/2
+            r2= self.resolution[0]//2
             coeffs[r2, 0] = coeffs[r2, r2] = coeffs[0, r2] = 1
         return coeffs
 
@@ -271,4 +271,3 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
     def generate_amplitudes(self):
         area = np.prod(self.size)
         self.coeffs = fftn(self.surface.profile(), area)
-

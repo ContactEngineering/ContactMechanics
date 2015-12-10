@@ -34,6 +34,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 import scipy
 from math import pi
+import matplotlib.pyplot as plt
 from scipy.signal import get_window
 from . import compute_wavevectors, fftn
 from ..Surface import NumpySurface
@@ -114,6 +115,7 @@ class CharacterisePeriodicSurface(object):
         lengths, here only for legacy purposes
         """
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
+        q_max = min(q_max, self.q_shannon)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
         weights = np.sqrt(1/self.q[sl]/((1/self.q[sl]).sum()))
         # Note the weird definition of the weights here. this is due to
@@ -143,6 +145,7 @@ class CharacterisePeriodicSurface(object):
         H, C_0 = argmin sum_i[|C(q_i)-self.C|^2/q_i]
         """
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
+        q_max = max(q_max, self.q_shannon)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
         # normalising_factor
         k_norm = factor/self.C[sl].sum()
@@ -182,8 +185,7 @@ class CharacterisePeriodicSurface(object):
         Naive way of estimating hurst exponent. biased towards short wave
         lengths, here only for legacy purposes
         """
-        if lambda_min == 0:
-            lambda_min = 2*self.surface.size[0]/self.surface.resolution[0]
+        lambda_min = max(lambda_min, self.lambda_shannon)
 
         C_m, dummy, q_m = self.grouped_stats(100)
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
@@ -248,7 +250,6 @@ class CharacterisePeriodicSurface(object):
                  "result is :\n{}").format(res))
         Hurst = H_opt
 
-        import matplotlib.pyplot as plt
         fig = plt.figure()
         ax = fig.add_subplot(211)
         ax.grid(True)
@@ -320,6 +321,56 @@ class CharacterisePeriodicSurface(object):
             sl = np.isfinite(q_g)
             return C_g[sl], C_g_std[:,sl], q_g[sl]
         return C_g, C_g_std, q_g
+
+    @property
+    def lambda_shannon(self):
+        return 2*self.surface.size[0]/self.surface.resolution[0]
+    @property
+    def q_shannon(self):
+        return 2*np.pi/self.lambda_shannon
+
+    def simple_spectrum_plot(self, title=None, q_minmax=(0, float('inf')), y_min=None,
+                             n_bins=100):
+        color = 'b'
+        lw = 3
+        lam_shannon = self.lambda_shannon
+        q_sh = self.q_shannon
+        def corrector(q):
+            if q == 0:
+                return float('inf')
+            elif q == float('inf'):
+                q = q_sh
+            return 2*np.pi/q
+        lam_max, lam_min = (corrector(q) for q in q_minmax)
+        try:
+            q_minmax = tuple((2*np.pi/l for l in (lam_max, lam_min)))
+        except TypeError as err:
+            raise TypeError("{}: lam_max = {}, lam_min = {}, q_minmax = {}".format(err, lam_max, lam_min, q_minmax))
+        Hurst, C0 = self.estimate_hurst_from_mean(lambda_min=lam_min,
+                                                  lambda_max=lam_max,
+                                                  full_output=True)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.grid(True)
+        mean, err, q_g= self.grouped_stats(n_bins)
+        fit_q = q_g[np.logical_and(q_g < q_minmax[1], q_g > q_minmax[0])]
+        ax.errorbar(q_g, mean, yerr = err, color = color)
+        ax.set_title(title)
+        ax.loglog(fit_q, C0*fit_q**(-2-2*Hurst), color='r', lw=lw,
+                  label=(r"$H = {:.3f}$, $C_0 = {:.3e}$".format(Hurst, C0)+
+                         r""))
+        ax.set_xlabel(r"$\left|q\right|$ in [rad/m]")
+        ax.set_ylabel(r"$C(\left|q\right|)$ in [$\mathrm{m}^4$]")
+        ax.set_yscale('log')
+        ax.set_xscale('log')
+        ylims = ax.get_ylim()
+        ax.plot((q_sh, q_sh), ylims, color='k', label=r'$\lambda_\mathrm{Shannon}$')
+        ax.legend(loc='best')
+        if y_min is not None:
+            ax.set_ylim(bottom=y_min)
+        fig.subplots_adjust(left=.19, bottom = .16, top=.85)
+        return fig, ax
+
 
 class CharacteriseSurface(CharacterisePeriodicSurface):
     """
