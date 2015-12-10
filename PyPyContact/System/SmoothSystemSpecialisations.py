@@ -420,7 +420,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                 fun, x0=disp0, method=method, jac=gradient, tol=tol,
                 callback=compound_callback,
                 options=options)
-            #if deproxify_everytime:
+            # if deproxify_everytime:
             self.deproxified()
         except self.FreeBoundaryError as err:
             print("Caught FreeBoundaryError. Reevaluating margins")

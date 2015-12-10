@@ -28,9 +28,16 @@ along with GNU Emacs; see the file COPYING. If not, write to the
 Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
+
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 import scipy
+from math import pi
+import matplotlib.pyplot as plt
+from scipy.signal import get_window
 from . import compute_wavevectors, fftn
+from ..Surface import NumpySurface
 
 class CharacterisePeriodicSurface(object):
     """
@@ -108,6 +115,7 @@ class CharacterisePeriodicSurface(object):
         lengths, here only for legacy purposes
         """
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
+        q_max = min(q_max, self.q_shannon)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
         weights = np.sqrt(1/self.q[sl]/((1/self.q[sl]).sum()))
         # Note the weird definition of the weights here. this is due to
@@ -137,6 +145,7 @@ class CharacterisePeriodicSurface(object):
         H, C_0 = argmin sum_i[|C(q_i)-self.C|^2/q_i]
         """
         q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
+        q_max = max(q_max, self.q_shannon)
         sl = np.logical_and(self.q<q_max, self.q>q_min)
         # normalising_factor
         k_norm = factor/self.C[sl].sum()
@@ -167,6 +176,27 @@ class CharacterisePeriodicSurface(object):
         Hurst, prefactor = res.x
         if full_output:
             return Hurst, prefactor, res
+        else:
+            return Hurst
+
+    def estimate_hurst_from_mean(self, lambda_min = 0, lambda_max = float('inf'),
+                       full_output=False):
+        """
+        Naive way of estimating hurst exponent. biased towards short wave
+        lengths, here only for legacy purposes
+        """
+        lambda_min = max(lambda_min, self.lambda_shannon)
+
+        C_m, dummy, q_m = self.grouped_stats(100)
+        q_min, q_max = self.get_q_from_lambda(lambda_min, lambda_max)
+        sl = np.logical_and(q_m<q_max, q_m>q_min)
+        A = np.ones((sl.sum(), 2))
+        A[:,0] = np.log(q_m[sl])
+        exponent, offset = np.linalg.lstsq(A, np.log(C_m[sl]))[0]
+        C0 = np.exp(offset)
+        Hurst= -(exponent+2)/2
+        if full_output:
+            return Hurst, C0
         else:
             return Hurst
 
@@ -220,7 +250,6 @@ class CharacterisePeriodicSurface(object):
                  "result is :\n{}").format(res))
         Hurst = H_opt
 
-        import matplotlib.pyplot as plt
         fig = plt.figure()
         ax = fig.add_subplot(211)
         ax.grid(True)
@@ -247,8 +276,15 @@ class CharacterisePeriodicSurface(object):
     def compute_rms_slope(self):
         return self.surface.compute_rms_slope()
 
-    def compute_rms_height_fromReciprocSpace(self):
-        return self.surface.compute_rms_height_fromReciprocSpace()
+    def compute_rms_height_q_space(self):
+        tmp_surf = NumpySurface(self.surface.profile*self.window,
+                                size = self.surface.size)
+        return tmp_surf.compute_rms_height_q_space()
+
+    def compute_rms_slope_q_space(self):
+        tmp_surf = NumpySurface(self.surface.profile()*self.window,
+                                size = self.surface.size)
+        return tmp_surf.compute_rms_slope_q_space()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):
         """
@@ -286,6 +322,56 @@ class CharacterisePeriodicSurface(object):
             return C_g[sl], C_g_std[:,sl], q_g[sl]
         return C_g, C_g_std, q_g
 
+    @property
+    def lambda_shannon(self):
+        return 2*self.surface.size[0]/self.surface.resolution[0]
+    @property
+    def q_shannon(self):
+        return 2*np.pi/self.lambda_shannon
+
+    def simple_spectrum_plot(self, title=None, q_minmax=(0, float('inf')), y_min=None,
+                             n_bins=100):
+        color = 'b'
+        lw = 3
+        lam_shannon = self.lambda_shannon
+        q_sh = self.q_shannon
+        def corrector(q):
+            if q == 0:
+                return float('inf')
+            elif q == float('inf'):
+                q = q_sh
+            return 2*np.pi/q
+        lam_max, lam_min = (corrector(q) for q in q_minmax)
+        try:
+            q_minmax = tuple((2*np.pi/l for l in (lam_max, lam_min)))
+        except TypeError as err:
+            raise TypeError("{}: lam_max = {}, lam_min = {}, q_minmax = {}".format(err, lam_max, lam_min, q_minmax))
+        Hurst, C0 = self.estimate_hurst_from_mean(lambda_min=lam_min,
+                                                  lambda_max=lam_max,
+                                                  full_output=True)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.grid(True)
+        mean, err, q_g= self.grouped_stats(n_bins)
+        fit_q = q_g[np.logical_and(q_g < q_minmax[1], q_g > q_minmax[0])]
+        ax.errorbar(q_g, mean, yerr = err, color = color)
+        ax.set_title(title)
+        ax.loglog(fit_q, C0*fit_q**(-2-2*Hurst), color='r', lw=lw,
+                  label=(r"$H = {:.3f}$, $C_0 = {:.3e}$".format(Hurst, C0)+
+                         r""))
+        ax.set_xlabel(r"$\left|q\right|$ in [rad/m]")
+        ax.set_ylabel(r"$C(\left|q\right|)$ in [$\mathrm{m}^4$]")
+        ax.set_yscale('log')
+        ax.set_xscale('log')
+        ylims = ax.get_ylim()
+        ax.plot((q_sh, q_sh), ylims, color='k', label=r'$\lambda_\mathrm{Shannon}$')
+        ax.legend(loc='best')
+        if y_min is not None:
+            ax.set_ylim(bottom=y_min)
+        fig.subplots_adjust(left=.19, bottom = .16, top=.85)
+        return fig, ax
+
+
 class CharacteriseSurface(CharacterisePeriodicSurface):
     """
     inverse FFT analysis with window. For analysis of measured surfaces
@@ -306,10 +392,194 @@ class CharacteriseSurface(CharacterisePeriodicSurface):
 
     def get_window(self, window_type, window_params):
         if window_type == 'hanning':
-            window = np.hanning(self.surface.resolution[0])
+            window = 2*np.hanning(self.surface.resolution[0])
         elif window_type == 'kaiser':
             window = np.kaiser(self.surface.resolution[0], **window_params)
         else:
             raise Exception("Window type '{}' not known.".format(window_type))
         window = window.reshape((-1, 1))*window
         return window
+
+
+def radial_average(C_xy, rmax, nbins, size=None):
+    """
+    Compute radial average of quantities reported on a 2D grid.
+
+    Parameters
+    ----------
+    C_xy : array_like
+        2D-array of values to be averaged.
+    rmax : float
+        Maximum radius.
+    nbins : int
+        Number of bins for averaging.
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+
+    Returns
+    -------
+    r : array
+        Array of radial grid points.
+    n : array
+        Number of data points per radial grid.
+    C_r : array
+        Averaged values.    
+    """
+    nx, ny = C_xy.shape
+    sx = sy = 1.
+    x = np.arange(nx)
+    x = np.where(x > nx//2, nx-x, x)
+    y = np.arange(ny)
+    y = np.where(y > ny//2, ny-y, y)
+
+    rmin = 0.0
+    
+    if size is not None:
+        sx, sy = size
+        x = 2*pi*x/sx
+        y = 2*pi*y/sy
+        rmin = min(2*pi/sx, 2*pi/sy)
+    dr_xy = np.sqrt((x**2).reshape(-1,1)+(y**2).reshape(1,-1))
+
+    # Quadratic -> similar statistics for each data point
+    #dr_r        = np.sqrt( np.linspace(0, rmax**2, nbins) )
+
+    # Power law -> equally spaced on a log-log plot
+    dr_r = rmax**np.linspace(np.log(rmin)/np.log(rmax), 1.0, nbins)
+
+    dr_max = np.max(dr_xy)
+    # Keep dr_max sorted
+    if dr_max > dr_r[-1]:
+        dr_r = np.append(dr_r, [dr_max+0.1])
+    else:
+        dr_r = np.append(dr_r, [dr_r[-1]+0.1])
+
+    # Linear interpolation
+    dr_xy = np.ravel(dr_xy)
+    C_xy = np.ravel(C_xy)
+    i_xy = np.searchsorted(dr_r, dr_xy)
+
+    n_r = np.bincount(i_xy, minlength=len(dr_r))
+    C_r = np.bincount(i_xy, weights=C_xy, minlength=len(dr_r))
+
+    C_r /= np.where(n_r == 0, np.ones_like(n_r), n_r)
+
+    return np.append([0.0], dr_r), n_r, C_r
+
+
+def power_spectrum_1D(surface_xy, size=None, window=None):
+    """
+    Compute power spectrum from 1D FFT.
+
+    Parameters
+    ----------
+    surface_xy : array_like
+        2D-array of surface topography
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+    window : str, optional
+        Window for eliminating edge effect. See scipy.signal.get_window.
+        (Default: None)
+
+    Returns
+    -------
+    q : array_like
+        Reciprocal space vectors.
+    C_all : array_like
+        Power spectrum. (Units: length**3)
+    """
+    nx, ny = surface_xy.shape
+    if size is not None:
+        sx, sy = size
+    else:
+        try:
+            sx, sy = surface_xy.size
+        except:
+            sx, sy = surface_xy.shape
+        
+    # Construct and apply window
+    if window is not None:
+        win = get_window(window, nx)
+        # Normalize window
+        win /= win.mean()
+        surface_xy = win.reshape(-1,1)*surface_xy[:, :]
+    
+    # Pixel size
+    len0 = sx/nx
+
+    # Compute FFT and normalize
+    surface_qy = len0*np.fft.fft(surface_xy[:, :], axis=0)
+    dq = 2*pi/sx
+    q = dq*np.arange(nx//2)
+
+    # This is the raw power spectral density
+    C_raw = (abs(surface_qy)**2)/sx
+
+    # Fold +q and -q branches. Note: Entry q=0 appears just once, hence exclude from average!
+    C_all = C_raw[:nx//2, :]
+    C_all[1:nx//2, :] += C_raw[nx-1:(nx+1)//2:-1, :]
+    C_all /= 2
+
+    return q, C_all.mean(axis=1)
+
+
+def power_spectrum_2D(surface_xy, nbins=100, size=None, window=None,
+                      exponent=1/2):
+    """
+    Compute power spectrum from 2D FFT and radial average.
+
+    Parameters
+    ----------
+    surface_xy : array_like
+        2D-array of surface topography
+    nbins : int
+        Number of bins for radial average.
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+    window : str, optional
+        Window for eliminating edge effect. See scipy.signal.get_window.
+        (Default: None)
+    exponent : float, optional
+        Exponent :math:`\alpha` for constructing 2D window :math:`w_{2D}` from
+        1D window :math:`w_{1D}`.
+
+        .. math:: w_{2D}(x,y) = (w_{1D}(x) w_{1D}(y))^\alpha
+
+    Returns
+    -------
+    q : array_like
+        Reciprocal space vectors.
+    C_all : array_like
+        Power spectrum. (Units: length**4)
+    """
+    nx, ny = surface_xy.shape
+    if size is not None:
+        sx, sy = size
+    else:
+        try:
+            sx, sy = surface_xy.size
+        except:
+            sx, sy = surface_xy.shape
+        
+    # Construct and apply window
+    if window is not None:
+        win = np.outer(get_window(window, nx), get_window(window, ny))**exponent
+        # Normalize window
+        win /= win.mean()
+        surface_xy = win*surface_xy[:, :]
+
+    # Pixel size
+    area0 = (sx/nx)*(sy/ny)
+    
+    # Compute FFT and normalize
+    surface_qk = area0*np.fft.fft2(surface_xy[:, :])
+    C_qk = abs(surface_qk)**2/(sx*sy)
+
+    # Radial average
+    qedges, n, C = radial_average(C_qk, 2*pi*nx/(2*sx), nbins, size=(sx, sy))
+
+    q = (qedges[:-1] + qedges[1:])/2
+    return q, C

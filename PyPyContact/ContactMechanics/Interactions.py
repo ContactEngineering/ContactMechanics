@@ -39,13 +39,20 @@ class Interaction(object):
 class HardWall(Interaction):
     "base class for non-smooth contact mechanics"
     # pylint: disable=too-few-public-methods
-    pass
+    def __init__(self):
+        self.penetration = None
+
+    def compute(self, gap, tol=0.):
+        """
+        Keyword Arguments:
+        gap -- array containing the point-wise gap values
+        tol -- tolerance for determining whether the gap is closed
+        """
+        self.penetration = np.where(gap < tol, -gap, 0)
 
 
 class SoftWall(Interaction):
     "base class for smooth contact mechanics"
-    # pylint: disable=abstract-class-not-used
-
     def __init__(self):
         self.energy = None
         self.force = None

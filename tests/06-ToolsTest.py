@@ -34,6 +34,7 @@ try:
     import numpy as np
 
     import PyPyContact.Tools as Tools
+    import warnings
 except ImportError as err:
     import sys
     print(err)
@@ -62,6 +63,7 @@ class ToolTest(unittest.TestCase):
 
 
     def test_surf_param_recovery(self):
+        warnings.filterwarnings("error")
         siz = 3
         size = (siz, siz)
         hurst = .9
@@ -90,7 +92,7 @@ class ToolTest(unittest.TestCase):
             full_output=True, lambda_max=lam_max)
 
         error = abs(1-hurst/hurst_out)
-        self.assertTrue(error < reproduction_tol)
+        self.assertTrue(error < reproduction_tol, "Error = {}, reproduction_tol = {}, hurst = {}, hurst_out= {}".format(error, reproduction_tol, hurst, hurst_out))
 
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
         error = abs(1-prefactor_in/prefactor_out)

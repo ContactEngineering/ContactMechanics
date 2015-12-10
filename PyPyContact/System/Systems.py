@@ -35,6 +35,7 @@ import abc
 
 from .. import ContactMechanics, SolidMechanics, Surface
 from ..Tools import compare_containers
+from ..Tools.Optimisation import constrained_conjugate_gradients
 
 
 class IncompatibleFormulationError(Exception):
@@ -442,3 +443,166 @@ class SmoothContactSystem(SystemBase):
                 print("at it {}, e = {}".format(
                     counter, self.energy))
         return fun
+
+
+class NonSmoothContactSystem(SystemBase):
+    """
+    For non-smooth contact mechanics (i.e, the equlibrium is the solution to a
+    constrained optimisation problem with a non-zero gradient of the energy
+    functional at the solution). The classic contact problems, for which the
+    interaction between the tribopartners is just non-penetration without
+    adhesion, belong to this type of system
+    """
+
+    def __init__(self, substrate, interaction, surface):
+        """ Represents a contact problem
+        Keyword Arguments:
+        substrate   -- An instance of HalfSpace. Defines the solid mechanics in
+                       the substrate
+        interaction -- An instance of Interaction. Defines the contact
+                       formulation. If this computes interaction energies,
+                       forces etc, these are supposed to be expressed per unit
+                       area in whatever units you use. The conversion is
+                       performed by the system
+        surface     -- An instance of Surface, defines the profile.
+        """
+        super().__init__(substrate, interaction, surface)
+        if not compare_containers(surface.resolution, substrate.resolution):
+            raise IncompatibleResolutionError(
+                ("the substrate ({}) and the surface ({}) have incompatible "
+                 "resolutions.").format(
+                     substrate.resolution, surface.resolution))  # nopep8
+        self.dim = len(self.substrate.resolution)
+        self.energy = None
+        self.force = None
+
+    @staticmethod
+    def handles(substrate_type, interaction_type, surface_type):
+        """
+        determines whether this class can handle the proposed system
+        composition
+        Keyword Arguments:
+        substrate_type   -- instance of ElasticSubstrate subclass
+        interaction_type -- instance of Interaction
+        surface_type     --
+        """
+        is_ok = True
+        # any periodic type of substrate formulation should do
+        is_ok &= issubclass(substrate_type,
+                            SolidMechanics.ElasticSubstrate)
+        if is_ok:
+            is_ok &= substrate_type.is_periodic()
+        # only soft interactions allowed
+        is_ok &= issubclass(interaction_type,
+                            ContactMechanics.HardWall)
+
+        # any surface should do
+        is_ok &= issubclass(surface_type,
+                            Surface.Surface)
+        return is_ok
+
+
+    @property
+    def resolution(self):
+        # pylint: disable=missing-docstring
+        return self.surface.resolution
+
+    def compute_normal_force(self):
+        "computes and returns the sum of all forces"
+        return self.substrate.force.sum()
+
+    def compute_nb_contact_pts(self):
+        """
+        compute and return the number of contact points. Note that this is of
+        no physical interest, as it is a purely numerical artefact
+        """
+        return np.where(self.substrate.penetration != 0., 1., 0.).sum()
+
+    def compute_contact_area(self):
+        "computes and returns the total contact area"
+        return self.compute_nb_contact_pts()*self.area_per_pt
+
+    def compute_contact_coordinates(self):
+        """
+        returns an array of all coordinates, where contact pressure is
+        repulsive. Useful for evaluating the number of contact islands etc.
+        """
+        return np.argwhere(self.substrate.penetration != 0.)
+
+    def evaluate(self, disp, offset, pot=True, forces=False, tol=0.):
+        """
+        Compute the energies and forces in the system for a given displacement
+        field
+        tol -- tolerance for determining whether the gap is closed
+        """
+        # attention: the substrate may have a higher resolution than the gap
+        # and the interaction (e.g. FreeElasticHalfSpace)
+        self.gap = self.compute_gap(disp, offset)
+        self.interaction.compute(self.gap,
+                                 area_scale=self.area_per_pt)
+        self.substrate.compute(disp, pot, forces)
+
+        self.energy = self.substrate.energy if pot else None
+        if forces:
+            self.force = self.substrate.force
+        else:
+            self.force = None
+
+        return (self.energy, self.force)
+
+
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
+                  tol=0):
+        """
+        This helper method exposes a scipy.optimize-friendly interface to the
+        evaluate() method. Use this for optimization purposes, it makes sure
+        that the shape of disp is maintained and lets you set the offset and
+        'forces' flag without using scipy's cumbersome argument passing
+        interface. Returns a function of only disp
+        Keyword Arguments:
+        offset     -- determines indentation depth
+        disp0      -- unused variable, present only for interface compatibility
+                      with inheriting classes
+        gradient   -- (default False) whether the gradient is supposed to be
+                      used
+        disp_scale -- (default 1.) allows to specify a scaling of the
+                      dislacement before evaluation.
+        """
+        dummy = disp0
+        res = self.substrate.computational_resolution
+        if gradient:
+            def fun(disp):
+                # pylint: disable=missing-docstring
+                try:
+                    self.evaluate(
+                        disp_scale * disp.reshape(res), offset, forces=True,
+                        tol=tol)
+                except ValueError as err:
+                    raise ValueError(
+                        "{}: disp.shape: {}, res: {}".format(
+                            err, disp.shape, res))
+                return (self.energy, -self.force.reshape(-1)*disp_scale)
+        else:
+            def fun(disp):
+                # pylint: disable=missing-docstring
+                return self.evaluate(
+                    disp_scale * disp.reshape(res), offset, forces=False,
+                    tol=tol)[0]
+
+        return fun
+
+
+    def minimize_proxy(self, offset, **kwargs):
+        """
+        Convenience function. Eliminates boilerplate code for most minimisation
+        problems by encapsulating the use of constrained minimisation.
+
+        Parameters:
+        offset     -- determines indentation depth
+        """
+
+        return constrained_conjugate_gradients(self.substrate,
+                                               self.surface[:, :]+offset,
+                                               **kwargs)
+
+

@@ -204,13 +204,19 @@ class FastSystemTest(unittest.TestCase):
             np.zeros(S.babushka.substrate.computational_resolution), offset,
             forces=True)
         F_n = S.babushka.compute_normal_force()
+        babushka = S.babushka
         S = SmoothContactSystem(self.substrate,
                                 self.min_pot,
                                 self.surface)
         S.evaluate(np.zeros(S.substrate.computational_resolution), offset, forces=True)
         F_n2 = S.compute_normal_force()
 
-        self.assertTrue(F_n == F_n2)
+        error = abs(1 - F_n/F_n2)
+        tol = 1e-14
+        self.assertTrue(error < tol,
+                        ("F_n = {}, F_n2 = {}, should be equal. type(S) = {}. "
+                         "type(S.babushka) = {}, err = {}").format(
+                             F_n, F_n2, type(S), type(babushka), error))
 
     def test_unit_neutrality(self):
         tol = 1e-7

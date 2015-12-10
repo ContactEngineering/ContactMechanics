@@ -479,7 +479,7 @@ class SmoothPotential(Potential):
             Δgamma = V_m_t[0]-V_m_t[1]
             dgam = (Δgamma-self.gamma)
             if abs(ddV_t) > 1e-10:
-                #general case
+                # general case
                 Δrt = ((3*dV_t - np.sqrt(9*dV_t**2-12*dgam*ddV_t)) /
                        ddV_t)
             else:

@@ -32,4 +32,5 @@ Boston, MA 02111-1307, USA.
 from .SurfaceDescription import Surface, ScaledSurface, CompoundSurface
 from .SurfaceDescription import NumpySurface
 from .SurfaceDescription import Sphere
-from .FromFile import NumpyTxtSurface, NumpyAscSurface
+from .FromFile import (NumpyTxtSurface, NumpyAscSurface, read_asc, read_matrix,
+					   read_xyz)
