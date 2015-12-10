@@ -225,54 +225,42 @@ class HertzTest(unittest.TestCase):
         u = surface_displacements(r) / (self.p_0/self.E_s*self.r_c)
         sig = surface_stress(r)[0]/self.p_0
 
-    def test_constrained_conjugate_gradients_periodic(self):
-        nx = 512
-        sx = 15.0
-        disp0 = 0.1
-        substrate = PeriodicFFTElasticHalfSpace((nx, nx), self.E_s, (sx, sx))
-        interaction = HardWall()
-        surface = Sphere(self.r_s, (nx, nx), (sx, sx))
-        system = SystemFactory(substrate, interaction, surface)
-
-        disp, forces = system.minimize_proxy(disp0, logger=screen)
-
-        print(forces.sum(), forces[forces>0].sum(), forces[forces<0].sum())
-        normal_force = -forces.sum()
-        a, p0 = radius_and_pressure(normal_force, self.r_s, self.E_s)
-        print(a, p0, a/self.r_s)
-
-        import matplotlib.pyplot as plt
-        x = (np.arange(nx)-nx/2)*sx/nx
-        plt.subplot(2,1,1)
-        plt.plot(x, disp[:,nx//2])
-        plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
-        plt.subplot(2,1,2)
-        plt.plot(x, -forces[:,nx//2]*(nx/sx)**2)
-        plt.plot(x[abs(x)<a], p0*np.sqrt(1-(x[abs(x)<a]/a)**2))
-        plt.show()
-
     def test_constrained_conjugate_gradients(self):
-        nx = 512
-        sx = 15.0
+        nx = 256
+        sx = 5.0
         disp0 = 0.1
         substrate = FreeFFTElasticHalfSpace((nx, nx), self.E_s, (sx, sx))
         interaction = HardWall()
         surface = Sphere(self.r_s, (nx, nx), (sx, sx))
         system = SystemFactory(substrate, interaction, surface)
 
-        disp, forces = system.minimize_proxy(disp0, logger=screen)
+        disp, forces = system.minimize_proxy(disp0)
 
-        print(forces.sum(), forces[forces>0].sum(), forces[forces<0].sum())
         normal_force = -forces.sum()
         a, p0 = radius_and_pressure(normal_force, self.r_s, self.E_s)
-        print(a, p0, a/self.r_s)
 
-        import matplotlib.pyplot as plt
-        x = (np.arange(nx)-nx/2)*sx/nx
-        plt.subplot(2,1,1)
-        plt.plot(x, disp[:nx,nx//2])
-        plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
-        plt.subplot(2,1,2)
-        plt.plot(x, -forces[:nx,nx//2]*(nx/sx)**2)
-        plt.plot(x[abs(x)<a], p0*np.sqrt(1-(x[abs(x)<a]/a)**2))
-        plt.show()
+        x = ((np.arange(nx)-nx/2)*sx/nx).reshape(1,-1)
+        y = ((np.arange(nx)-nx/2)*sx/nx).reshape(-1,1)
+        p_numerical = -forces*(nx/sx)**2
+        p_analytical = np.zeros_like(p_numerical)
+        r = np.sqrt(x**2+y**2)
+        p_analytical[r<a] = p0*np.sqrt(1-(r[r<a]/a)**2)
+
+        self.assertTrue(abs(p_analytical[r<0.99*a]-
+                            p_numerical[r<0.99*a]).max()/self.E_s < 1e-3)
+
+        #import matplotlib.pyplot as plt
+        #plt.pcolormesh(p_analytical-p_numerical)
+        #plt.colorbar()
+        #plt.show()
+
+        #plt.subplot(2,1,1)
+        #plt.plot(x, disp[:nx,nx//2])
+        #plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
+        #plt.subplot(2,1,2)
+        #plt.plot(x, p_analytical)
+        #plt.plot(x, p_numerical)
+        #plt.show()
+
+if __name__ == '__main__':
+    unittest.main()
