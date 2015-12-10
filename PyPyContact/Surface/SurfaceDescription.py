@@ -158,6 +158,7 @@ class Surface(object, metaclass=abc.ABCMeta):
     shape = resolution
 
     def set_size(self, size, sy=None):
+        """ set the size of the surface """
         if sy is not None:
             size = (size, sy)
         self._size = size

@@ -71,7 +71,37 @@ def radius_and_pressure(N, R, Es):
 
     a = R*(3./4*( N/(Es*R**2) ))**(1./3)
     p0 = 3*N/(2*math.pi*a*a)
-    
+
+    return a, p0
+
+# -----------------------------------------------------------------------------
+# Taken from matscipy
+def radius_and_pressure(N, R, Es):
+    """
+    Given normal load, sphere radius and contact modulus compute contact radius
+    and peak pressure.
+
+    Parameters
+    ----------
+    N : float
+        Normal force.
+    R : float
+        Sphere radius.
+    Es : float
+        Contact modulus: Es = E/(1-nu**2) with Young's modulus E and Poisson
+        number nu.
+
+    Returns
+    -------
+    a : float
+        Contact radius.
+    p0 : float
+        Maximum pressure inside the contacting area (right under the apex).
+    """
+
+    a = R*(3./4*( N/(Es*R**2) ))**(1./3)
+    p0 = 3*N/(2*math.pi*a*a)
+
     return a, p0
 
 # -----------------------------------------------------------------------------
@@ -219,7 +249,3 @@ class HertzTest(unittest.TestCase):
         plt.plot(x, -forces[:,nx/2]*(nx/sx)**2)
         plt.plot(x, p0*np.sqrt(1-(x/a)**2))
         plt.show()
-
-
-if __name__ == '__main__':
-    unittest.main()
