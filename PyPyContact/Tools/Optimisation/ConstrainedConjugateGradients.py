@@ -75,11 +75,18 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         logger.pr('pentol = {0}'.format(pentol))
 
     if disp0 is None:
-        u_r = np.zeros_like(surface)
+        u_r = np.zeros(substrate.computational_resolution)
     else:
         u_r = disp0.copy()
 
-    u_r[:, :] = np.where(u_r < surface, surface, u_r)
+
+    comp_slice = [slice(0, substrate.resolution[i]) for i in range(substrate.dim)]
+    if substrate.dim not in (1, 2):
+        raise Exception(
+            ("Constrained conjugate gradient currently only implemented for 1 "
+             "or 2 dimensions (Your substrate has {}.).").format(
+                 substrate.dim))
+    u_r[comp_slice] = np.where(u_r[comp_slice] < surface, surface, u_r[comp_slice])
 
     # Compute forces
     #p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real
@@ -89,47 +96,51 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
     delta = 0
     delta_str = 'reset'
     G_old = 1.0
+    t_r = np.zeros_like(u_r)
+    t_r_real = t_r[comp_slice]
+    u_r_real = u_r[comp_slice]
+    p_r_real = p_r[comp_slice]
     for it in range(1, maxiter+1):
         # Reset contact area (area that feels compressive stress)
-        c_r = p_r < 0.0
+        c_r = p_r_real < 0.0
 
         # Compute total contact area (area with compressive pressure)
         A = np.sum(c_r)
 
         # Compute G = sum(g*g) (over contact area only)
-        g_r = u_r-surface
+        g_r = u_r_real-surface
         G = np.sum(c_r*g_r*g_r)
 
         # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
         if delta > 0 and G_old > 0:
-            t_r = c_r*(g_r + delta*(G/G_old)*t_r)
+            t_r_real = c_r*(g_r + delta*(G/G_old)*t_r_real)
         else:
-            t_r = c_r*g_r
+            t_r_real = c_r*g_r
 
         # Compute elastic displacement that belong to t_r
         #substrate (Nelastic manifold: r_r is negative of Polonsky, Kerr's r)
         #r_r = -np.fft.ifft2(gf_q*np.fft.fft2(t_r)).real
         r_r = substrate.evaluate_disp(t_r)
-
+        r_r_real = r_r[comp_slice]
         # Note: Sign reversed from Polonsky, Keer because this r_r is negative
         # of theirs.
         tau = 0.0
         if A > 0:
             # tau = -sum(g*t)/sum(r*t) where sum is only over contact region
-            x = -np.sum(c_r*r_r*t_r)
+            x = -np.sum(c_r*r_r_real*t_r_real)
             if x > 0.0:
-                tau = np.sum(c_r*g_r*t_r)/x
+                tau = np.sum(c_r*g_r*t_r_real)/x
             else:
                 G = 0.0
 
         # Save forces for later
         fold_r = p_r.copy()
 
-        p_r += tau*c_r*t_r
+        p_r_real += tau*c_r*t_r_real
 
         # Find area with tensile stress and negative gap
         # (i.e. penetration of the two surfaces)
-        nc_r = np.logical_and(p_r >= 0.0, g_r < 0.0)
+        nc_r = np.logical_and(p_r_real >= 0.0, g_r < 0.0)
 
         # Find maximum pressure outside contacting region. This should go to
         # zero.
@@ -145,7 +156,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
             # nc_r contains area that just jumped into contact. Update their
             # forces.
             p_r += tau*nc_r*g_r
-        
+
             delta = 0
             delta_str = 'sd'
         else:
@@ -155,17 +166,17 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         # Compute new displacements from updated forces
         #u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
         u_r = substrate.evaluate_disp(p_r)
-       
+
         # Store G for next step
         G_old = G
-        
+
         # Compute root-mean square penetration, max penetration and max force
         # difference between the steps
         if A > 0:
             rms_pen = sqrt(G/A)
         else:
             rms_pen = sqrt(G)
-        max_pen = max(0.0, np.max(c_r*(surface-u_r)))
+        max_pen = max(0.0, np.max(c_r*(surface-u_r_real)))
 
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)
@@ -186,4 +197,3 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
 
     raise RuntimeError('Maximum number of iterations ({0}) exceeded.' \
                            .format(maxiter))
-

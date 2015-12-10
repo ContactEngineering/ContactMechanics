@@ -487,12 +487,10 @@ class NonSmoothContactSystem(SystemBase):
         surface_type     --
         """
         is_ok = True
-        # any periodic type of substrate formulation should do
+        # any type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
                             SolidMechanics.ElasticSubstrate)
-        if is_ok:
-            is_ok &= substrate_type.is_periodic()
-        # only soft interactions allowed
+        # only hard interactions allowed
         is_ok &= issubclass(interaction_type,
                             ContactMechanics.HardWall)
 

@@ -66,6 +66,7 @@ def SystemFactory(substrate, interaction, surface):
 
     check_subclasses(SystemBase, subclasses)
     for cls in subclasses:
+        print('dealing with class {}'.format(cls))
         if cls.handles(*(type(arg) for arg in args)):
             return cls(*args)
     raise IncompatibleFormulationError(
