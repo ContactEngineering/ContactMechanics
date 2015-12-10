@@ -29,18 +29,45 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
+import unittest
+import numpy as np
+import time
+import math
+from PyPyContact.ContactMechanics import HardWall
+from PyPyContact.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyPyContact.Surface import Sphere
+from PyPyContact.System import SystemFactory
+from PyPyContact.Tools.Logger import screen
 
-try:
-    import unittest
-    import numpy as np
-    import time
-    import math
+# -----------------------------------------------------------------------------
+# Taken from matscipy
+def radius_and_pressure(N, R, Es):
+    """
+    Given normal load, sphere radius and contact modulus compute contact radius
+    and peak pressure.
 
-    from PyPyContact.System import SystemFactory
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+    Parameters
+    ----------
+    N : float
+        Normal force.
+    R : float
+        Sphere radius.
+    Es : float
+        Contact modulus: Es = E/(1-nu**2) with Young's modulus E and Poisson
+        number nu.
+
+    Returns
+    -------
+    a : float
+        Contact radius.
+    p0 : float
+        Maximum pressure inside the contacting area (right under the apex).
+    """
+
+    a = R*(3./4*( N/(Es*R**2) ))**(1./3)
+    p0 = 3*N/(2*math.pi*a*a)
+    
+    return a, p0
 
 # -----------------------------------------------------------------------------
 # Taken from matscipy
@@ -143,11 +170,13 @@ def surface_displacements(r):
     return uz
 
 
+
+
 # -----------------------------------------------------------------------------
 class HertzTest(unittest.TestCase):
     def setUp(self):
         # sphere radius:
-        self.r_s = 1.2
+        self.r_s = 20.0
         # contact radius
         self.r_c = .2
         # peak pressure
@@ -159,3 +188,33 @@ class HertzTest(unittest.TestCase):
         r = np.linspace(0, self.r_s, 6)/self.r_c
         u = surface_displacements(r) / (self.p_0/self.E_s*self.r_c)
         sig = surface_stress(r)[0]/self.p_0
+
+    def test_constrained_conjugate_gradients(self):
+        nx = 512
+        sx = 15.0
+        disp0 = 0.1
+        substrate = PeriodicFFTElasticHalfSpace((nx, nx), self.E_s)
+        interaction = HardWall()
+        surface = Sphere(self.r_s, (nx, nx), (sx, sx))
+        system = SystemFactory(substrate, interaction, surface)
+
+        disp, forces = system.minimize_proxy(disp0, logger=screen)
+
+        print(forces.sum(), forces[forces>0].sum(), forces[forces<0].sum())
+        normal_force = -forces.sum()
+        a, p0 = radius_and_pressure(normal_force, self.r_s, self.E_s)
+        print(a, p0, a/self.r_s)
+
+        import matplotlib.pyplot as plt
+        x = (np.arange(nx)-nx/2)*sx/nx
+        plt.subplot(2,1,1)
+        plt.plot(x, disp[:,nx/2])
+        plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
+        plt.subplot(2,1,2)
+        plt.plot(x, -forces[:,nx/2]*(nx/sx)**2)
+        plt.plot(x, p0*np.sqrt(1-(x/a)**2))
+        plt.show()
+
+
+if __name__ == '__main__':
+    unittest.main()

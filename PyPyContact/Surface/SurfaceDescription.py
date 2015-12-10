@@ -41,8 +41,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         pass
     name = 'generic_geom'
 
-    def __init__(self, resolution=None, dim=None, size=None,
-                 adjustment=0.):
+    def __init__(self, resolution=None, dim=None, size=None, adjustment=0.):
         self._resolution = resolution
         self._dim = dim
         self._size = size
@@ -92,7 +91,7 @@ class Surface(object, metaclass=abc.ABCMeta):
             grid_spacing = self.size/np.array(self.resolution)
         diff = [np.diff(self.profile(), n=1, axis=d)/grid_spacing[d]
                 for d in dims]
-        return np.sqrt(2*((diff[0]**2).mean()+(diff[1]**2).mean()))
+        return np.sqrt((diff[0]**2).mean()+(diff[1]**2).mean())
 
     def compute_rms_slope_q_space(self):
         """
@@ -157,6 +156,12 @@ class Surface(object, metaclass=abc.ABCMeta):
         """
         return self._resolution
     shape = resolution
+
+    def set_size(self, size, sy=None):
+        """ set the size of the surface """
+        if sy is not None:
+            size = (size, sy)
+        self._size = size
 
     @property
     def size(self,):
@@ -342,7 +347,7 @@ class Sphere(NumpySurface):
         radius     -- self-explanatory
         resolution -- self-explanatory
         size       -- self-explanatory
-        centre     -- specifies the coordinates (in lenght units, not pixels).
+        centre     -- specifies the coordinates (in length units, not pixels).
                       by default, the sphere is centred in the surface
         standoff   -- when using interaction forces with ranges of the order
                       the radius, you might want to set the surface outside of

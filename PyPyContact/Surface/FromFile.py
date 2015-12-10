@@ -43,43 +43,50 @@ class NumpyTxtSurface(NumpySurface):
     # pylint: disable=too-few-public-methods
     name = 'surface_from_np_file'
 
-    def __init__(self, fname, size=None, factor=1.):
+    def __init__(self, fobj, size=None, factor=1.):
         """
         Keyword Arguments:
-        fname -- filename
+        fobj -- filename or file object
         """
-        if not os.path.isfile(fname):
-            zfname = fname + ".gz"
-            if os.path.isfile(zfname):
-                fname = zfname
-            else:
-                raise FileNotFoundError(
-                    "No such file or directory: '{}(.gz)'".format(
-                        fname))
-        self.fname = fname
-        super().__init__(factor*np.loadtxt(fname), size)
+        if not hasattr(fobj, 'read'):
+            if not os.path.isfile(fobj):
+                zfobj = fobj + ".gz"
+                if os.path.isfile(zfobj):
+                    fobj = zfobj
+                else:
+                    raise FileNotFoundError(
+                        "No such file or directory: '{}(.gz)'".format(
+                            fobj))
+            self.fname = fobj
+        self.fobj = fobj
+        super().__init__(factor*np.loadtxt(fobj), size=size)
 read_matrix = NumpyTxtSurface
 
 class NumpyAscSurface(NumpySurface):
-    """ Reads a surface profile from an asc file and presents in in a Surface-
+    """ Reads a surface profile from an asc file and presents it in a Surface-
         conformant manner.
     """
-    name = 'surface_from_nc_file'
+    name = 'surface_from_asc_file'
+    _units = {'m': 1.0, 'mm': 1e-3, 'μm': 1e-6, 'um': 1e-6, 'nm': 1e-9,
+              'A': 1e-10}
 
-    def __init__(self, fname, x_unit=1e-6, z_unit=1e-9):
+    def __init__(self, fobj, unit=None, x_unit=1.0, z_unit=1.0):
         """
         Keyword Arguments:
-        fname -- filename
+        fobj -- filename or file object
         """
-        if not os.path.isfile(fname):
-            raise FileNotFoundError(
-                "No such file or directory: '{}(.gz)'".format(
-                    fname))
-        self.fname = fname
-        profile, size = self.load()
-        super().__init__(profile*z_unit, tuple((x_unit*s for s in size)))
+        if not hasattr(fobj, 'read'):
+            if not os.path.isfile(fobj):
+                raise FileNotFoundError(
+                    "No such file or directory: '{}(.gz)'".format(
+                        fobj))
+            self.fname = fobj
+            fobj = open(self.fname)
+        self.fobj = fobj
+        profile, size = self.load(unit)
+        super().__init__(profile*z_unit, size=tuple((x_unit*s for s in size)))
 
-    def load(self, ):
+    def load(self, unit):
         """ read in a surface file
         """
         checks = list()
@@ -87,9 +94,12 @@ class NumpyAscSurface(NumpySurface):
         checks.append((re.compile("y-pixels = ([0-9]+)"), int, "y_res"))
         checks.append((re.compile("x-length = ([0-9.]+)"), float, "x_siz"))
         checks.append((re.compile("y-length = ([0-9.]+)"), float, "y_siz"))
+        checks.append((re.compile(r"x-unit = (\w+)"), str, "x_unit"))
+        checks.append((re.compile(r"y-unit = (\w+)"), str, "y_unit"))
+        checks.append((re.compile(r"z-unit = (\w+)"), str, "z_unit"))
 
         data = None
-        xres = yres = xsiz = ysiz = None
+        xres = yres = xsiz = ysiz = xunit = yunit = zunit = None
 
         def process_comment(line):
             "Find and interpret known comments in the header of the asc file"
@@ -99,7 +109,7 @@ class NumpyAscSurface(NumpySurface):
                 if match is not None:
                     return fun(match.group(1))
                 return None
-            nonlocal xres, yres, xsiz, ysiz, data
+            nonlocal xres, yres, xsiz, ysiz, xunit, yunit, zunit, data
             matches = {key: check(line, reg, fun)
                        for (reg, fun, key) in checks}
             if matches['x_res'] is not None:
@@ -110,11 +120,17 @@ class NumpyAscSurface(NumpySurface):
                 xsiz = matches['x_siz']
             elif matches['y_siz'] is not None:
                 ysiz = matches['y_siz']
+            elif matches['x_unit'] is not None:
+                xunit = matches['x_unit']
+            elif matches['y_unit'] is not None:
+                yunit = matches['y_unit']
+            elif matches['z_unit'] is not None:
+                zunit = matches['z_unit']
             if xres is not None and yres is not None:
                 data = np.zeros((xres, yres))
 
         row_nu = 0
-        with open(self.fname) as file_handle:
+        with self.fobj as file_handle:
             for line in file_handle:
                 if line.startswith("#"):
                     process_comment(line)
@@ -125,6 +141,21 @@ class NumpyAscSurface(NumpySurface):
             raise Exception(
                 ("The number of rows read from the file '{}' does not match "
                  "the declared resolution").format(self.fname))
+
+        # Handle units -> convert to target unit
+        if xunit is None and zunit is not None:
+            xunit = zunit
+        if yunit is None and zunit is not None:
+            yunit = zunit
+
+        if unit is not None:
+            if xunit is not None:
+                xsiz *= self._units[xunit]/self._units[unit]
+            if yunit is not None:
+                ysiz *= self._units[yunit]/self._units[unit]
+            if zunit is not None:
+                data *= self._units[zunit]/self._units[unit]
+
         return data, (xsiz, ysiz)
 read_asc = NumpyAscSurface
 
