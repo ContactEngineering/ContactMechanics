@@ -36,8 +36,8 @@ import numpy as np
 import scipy
 import scipy.optimize
 
-from . import ReachedTolerance, ReachedMaxiter, FailedIterate
-from . import modified_cholesky, line_search
+from .common import ReachedTolerance, ReachedMaxiter, FailedIterate
+from .common import modified_cholesky, line_search
 
 # -----------------------------------------------------------------------------
 # implemented as a custom minimizer for scipy

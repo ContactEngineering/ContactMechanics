@@ -37,8 +37,8 @@ import numpy as np
 import scipy
 import scipy.optimize
 
-from . import ReachedTolerance, ReachedMaxiter, FailedIterate
-from . import steihaug_toint
+from .common import ReachedTolerance, ReachedMaxiter, FailedIterate
+from .common import steihaug_toint
 
 
 # Algorithm 12.4 (p.301) Newton method with confidence interval

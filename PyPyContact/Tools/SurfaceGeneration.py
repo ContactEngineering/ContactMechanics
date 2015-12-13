@@ -32,8 +32,8 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 import scipy.stats as stats
 from ..Surface import NumpySurface
-from . import compute_wavevectors, ifftn, fftn
-from . import CharacterisePeriodicSurface
+from .common import compute_wavevectors, ifftn, fftn
+from .SurfaceAnalysis import CharacterisePeriodicSurface
 
 class RandomSurfaceExact(object):
     Error = Exception
