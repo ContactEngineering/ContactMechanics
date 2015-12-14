@@ -66,6 +66,8 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         2d-array of displacements.
     p : array
         2d-array of pressure.
+    converged : bool
+        True if iteration stopped due to convergence criterion.
     """
 
     # Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays
@@ -180,7 +182,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
                            'max_pres'],
                           ['CONVERGED', it, A, tau, rms_pen, max_pen, max_pres],
                           force_print=True)
-            return u_r[comp_slice], p_r[comp_slice]
+            return u_r[comp_slice], p_r[comp_slice], True
 
         if logger is not None:
             logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen',
@@ -190,5 +192,4 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
 
-    raise RuntimeError('Maximum number of iterations ({0}) exceeded.' \
-                           .format(maxiter))
+    return u_r[comp_slice], p_r[comp_slice], False
