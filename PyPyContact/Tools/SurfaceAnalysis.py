@@ -330,8 +330,7 @@ class CharacterisePeriodicSurface(object):
         return 2*np.pi/self.lambda_shannon
 
     def simple_spectrum_plot(self, title=None, q_minmax=(0, float('inf')), y_min=None,
-                             n_bins=100):
-        color = 'b'
+                             n_bins=100, ax=None, color = 'b'):
         lw = 3
         lam_shannon = self.lambda_shannon
         q_sh = self.q_shannon
@@ -349,9 +348,12 @@ class CharacterisePeriodicSurface(object):
         Hurst, C0 = self.estimate_hurst_from_mean(lambda_min=lam_min,
                                                   lambda_max=lam_max,
                                                   full_output=True)
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.grid(True)
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.grid(True)
+        else:
+            fig = None
         mean, err, q_g= self.grouped_stats(n_bins)
         fit_q = q_g[np.logical_and(q_g < q_minmax[1], q_g > q_minmax[0])]
         ax.errorbar(q_g, mean, yerr = err, color = color)
@@ -365,10 +367,11 @@ class CharacterisePeriodicSurface(object):
         ax.set_xscale('log')
         ylims = ax.get_ylim()
         ax.plot((q_sh, q_sh), ylims, color='k', label=r'$\lambda_\mathrm{Shannon}$')
-        ax.legend(loc='best')
         if y_min is not None:
             ax.set_ylim(bottom=y_min)
-        fig.subplots_adjust(left=.19, bottom = .16, top=.85)
+        if fig is not None:
+            ax.legend(loc='best')
+            fig.subplots_adjust(left=.19, bottom = .16, top=.85)
         return fig, ax
 
 
