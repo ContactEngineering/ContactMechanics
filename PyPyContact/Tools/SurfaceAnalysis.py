@@ -36,7 +36,7 @@ import scipy
 from math import pi
 import matplotlib.pyplot as plt
 from scipy.signal import get_window
-from . import compute_wavevectors, fftn
+from .common import compute_wavevectors, fftn
 from ..Surface import NumpySurface
 
 class CharacterisePeriodicSurface(object):

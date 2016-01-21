@@ -36,11 +36,11 @@ import numpy as np
 import scipy
 import scipy.optimize
 from copy import deepcopy
-from . import ReachedTolerance, ReachedMaxiter, FailedIterate
+from .common import ReachedTolerance, ReachedMaxiter, FailedIterate
 
-from . import construct_augmented_lagrangian
-from . import construct_augmented_lagrangian_gradient
-from . import construct_augmented_lagrangian_hessian
+from .common import construct_augmented_lagrangian
+from .common import construct_augmented_lagrangian_gradient
+from .common import construct_augmented_lagrangian_hessian
 
 
 # -----------------------------------------------------------------------------

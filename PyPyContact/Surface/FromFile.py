@@ -33,7 +33,7 @@ import numpy as np
 import os
 import re
 
-from . import NumpySurface
+from .SurfaceDescription import NumpySurface
 
 
 class NumpyTxtSurface(NumpySurface):
