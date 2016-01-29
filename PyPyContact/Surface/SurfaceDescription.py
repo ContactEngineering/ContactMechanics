@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.
 
 import numpy as np
 import abc
-
+#from ..Tools.SurfaceAnalysis import compute_rms_slope
 
 class Surface(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
@@ -81,17 +81,8 @@ class Surface(object, metaclass=abc.ABCMeta):
 
     def compute_rms_slope(self):
         "computes the rms height gradient fluctuation of the surface"
-        if self.dim is None:
-            dims = range(2)
-        else:
-            dims = range(self.dim)
-        if self.size is None:
-            grid_spacing = np.array([1., 1.])
-        else:
-            grid_spacing = self.size/np.array(self.resolution)
-        diff = [np.diff(self.profile(), n=1, axis=d)/grid_spacing[d]
-                for d in dims]
-        return np.sqrt((diff[0]**2).mean()+(diff[1]**2).mean())
+        return compute_rms_slope(self.profile(), resolution=self.resolution,
+                                 size=self.size, dim=self.dim)
 
     def compute_rms_slope_q_space(self):
         """

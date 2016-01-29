@@ -39,6 +39,25 @@ from scipy.signal import get_window
 from .common import compute_wavevectors, fftn
 from ..Surface import NumpySurface
 
+def compute_rms_slope(profile, resolution=None, size=None, dim=None):
+    "computes the rms height gradient fluctuation of the surface"
+    if resolution is None:
+        resolution = profile.shape
+    if size is None:
+        try:
+            size = profile.size
+        except:
+            size = profile.shape
+
+    grid_spacing = np.array(size)/np.array(resolution)
+    if dim is None:
+        dims = range(len(profile.shape))
+    else:
+        dims = range(dim)
+    diff = [np.diff(profile[:, :], n=1, axis=d)/grid_spacing[d]
+            for d in dims]
+    return np.sqrt((diff[0]**2).mean()+(diff[1]**2).mean())
+
 class CharacterisePeriodicSurface(object):
     """
     Simple inverse FFT analysis without window. Do not use for measured surfs
