@@ -43,7 +43,9 @@ except ImportError as err:
     sys.exit(-1)
 
 from PyPyContact.Surface import NumpyTxtSurface, NumpySurface, Sphere
-from PyPyContact.Surface import NumpyAscSurface
+from PyPyContact.Surface import NumpyAscSurface, read_asc
+from PyPyContact.Tools.SurfaceAnalysis import compute_rms_slope
+
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
@@ -94,5 +96,18 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
 class NumpyAscSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
-    def test_loading(self):
-        surf = NumpyAscSurface('tests/TopoRef.asc')
+    def test_format1(self):
+        surf = NumpyAscSurface('tests/file_format_examples/format1.asc')
+        self.assertEqual(surf.shape, (1024, 1024))
+        self.assertAlmostEqual(surf.size[0], 2e-6)
+        self.assertAlmostEqual(surf.size[1], 2e-6)
+        self.assertAlmostEqual(surf.compute_rms_height(), 1.72295048557e-08)
+        self.assertAlmostEqual(compute_rms_slope(surf), 0.45604053876290829)
+    def test_format2(self):
+        surf = read_asc('tests/file_format_examples/format2.txt')
+        self.assertEqual(surf.shape, (650, 650))
+        self.assertAlmostEqual(surf.size[0], 0.0002404103)
+        self.assertAlmostEqual(surf.size[1], 0.0002404103)
+        self.assertAlmostEqual(surf.compute_rms_height(), 2.7722350402740072e-07)
+        self.assertAlmostEqual(compute_rms_slope(surf), 0.35157901772258338)
+

@@ -36,128 +36,167 @@ import re
 from .SurfaceDescription import NumpySurface
 
 
-class NumpyTxtSurface(NumpySurface):
-    """ Reads a surface profile from file and presents in in a Surface-
-        conformant manner.
+def read_matrix(fobj, size=None, factor=1.):
     """
-    # pylint: disable=too-few-public-methods
-    name = 'surface_from_np_file'
+    Reads a surface profile from a text file and presents in in a
+    Surface-conformant manner. No additional parsing of meta-information is
+    carried out.
 
-    def __init__(self, fobj, size=None, factor=1.):
-        """
-        Keyword Arguments:
-        fobj -- filename or file object
-        """
-        if not hasattr(fobj, 'read'):
-            if not os.path.isfile(fobj):
-                zfobj = fobj + ".gz"
-                if os.path.isfile(zfobj):
-                    fobj = zfobj
-                else:
-                    raise FileNotFoundError(
-                        "No such file or directory: '{}(.gz)'".format(
-                            fobj))
-            self.fname = fobj
-        self.fobj = fobj
-        super().__init__(factor*np.loadtxt(fobj), size=size)
-read_matrix = NumpyTxtSurface
-
-class NumpyAscSurface(NumpySurface):
-    """ Reads a surface profile from an asc file and presents it in a Surface-
-        conformant manner.
+    Keyword Arguments:
+    fobj -- filename or file object
     """
-    name = 'surface_from_asc_file'
-    _units = {'m': 1.0, 'mm': 1e-3, 'μm': 1e-6, 'um': 1e-6, 'nm': 1e-9,
-              'A': 1e-10}
-
-    def __init__(self, fobj, unit=None, x_unit=1.0, z_unit=1.0):
-        """
-        Keyword Arguments:
-        fobj -- filename or file object
-        """
-        if not hasattr(fobj, 'read'):
-            if not os.path.isfile(fobj):
+    if not hasattr(fobj, 'read'):
+        if not os.path.isfile(fobj):
+            zfobj = fobj + ".gz"
+            if os.path.isfile(zfobj):
+                fobj = zfobj
+            else:
                 raise FileNotFoundError(
                     "No such file or directory: '{}(.gz)'".format(
                         fobj))
-            self.fname = fobj
-            fobj = open(self.fname)
-        self.fobj = fobj
-        profile, size = self.load(unit)
-        super().__init__(profile*z_unit, size=tuple((x_unit*s for s in size)))
+    return NumpySurface(factor*np.loadtxt(fobj), size=size)
+NumpyTxtSurface = read_matrix
 
-    def load(self, unit):
-        """ read in a surface file
-        """
-        checks = list()
-        checks.append((re.compile("x-pixels = ([0-9]+)"), int, "x_res"))
-        checks.append((re.compile("y-pixels = ([0-9]+)"), int, "y_res"))
-        checks.append((re.compile("x-length = ([0-9.]+)"), float, "x_siz"))
-        checks.append((re.compile("y-length = ([0-9.]+)"), float, "y_siz"))
-        checks.append((re.compile(r"x-unit = (\w+)"), str, "x_unit"))
-        checks.append((re.compile(r"y-unit = (\w+)"), str, "y_unit"))
-        checks.append((re.compile(r"z-unit = (\w+)"), str, "z_unit"))
+def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
+    """
+    Reads a surface profile from an generic asc file and presents it in a
+    surface-conformant manner. Applies some heuristic to extract
+    meta-information for different file formats. All units of the returned
+    surface are in meters.
 
-        data = None
-        xres = yres = xsiz = ysiz = xunit = yunit = zunit = None
+    Keyword Arguments:
+    fobj -- filename or file object
+    unit -- name of surface units, one of m, mm, μm/um, nm, A
+    x_factor -- multiplication factor for size
+    z_factor -- multiplication factor for height
+    """
+    _units = {'m': 1.0, 'mm': 1e-3, 'μm': 1e-6, 'um': 1e-6, 'nm': 1e-9,
+              'A': 1e-10}
 
-        def process_comment(line):
-            "Find and interpret known comments in the header of the asc file"
-            def check(line, reg, fun):
-                "Check whether line fits a known comment syntax"
-                match = reg.search(line)
-                if match is not None:
-                    return fun(match.group(1))
-                return None
-            nonlocal xres, yres, xsiz, ysiz, xunit, yunit, zunit, data
-            matches = {key: check(line, reg, fun)
-                       for (reg, fun, key) in checks}
-            if matches['x_res'] is not None:
-                xres = matches['x_res']
-            elif matches['y_res'] is not None:
-                yres = matches['y_res']
-            elif matches['x_siz'] is not None:
-                xsiz = matches['x_siz']
-            elif matches['y_siz'] is not None:
-                ysiz = matches['y_siz']
-            elif matches['x_unit'] is not None:
-                xunit = matches['x_unit']
-            elif matches['y_unit'] is not None:
-                yunit = matches['y_unit']
-            elif matches['z_unit'] is not None:
-                zunit = matches['z_unit']
-            if xres is not None and yres is not None:
-                data = np.zeros((xres, yres))
+    if not hasattr(fobj, 'read'):
+        if not os.path.isfile(fobj):
+            raise FileNotFoundError(
+                "No such file or directory: '{}(.gz)'".format(
+                    fobj))
+        fname = fobj
+        fobj = open(fname)
 
-        row_nu = 0
-        with self.fobj as file_handle:
-            for line in file_handle:
-                if line.startswith("#"):
+    _float_regex = '[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
+
+    checks = list()
+    # Resolution keywords
+    checks.append((re.compile(r"\b(?:x-pixels|h)\b\s*=\s*([0-9]+)"), int,
+                   "xres"))
+    checks.append((re.compile(r"\b(?:y-pixels|w)\b\s*=\s*([0-9]+)"), int,
+                   "yres"))
+
+    # Size keywords
+    checks.append((re.compile(r"\b(?:x-length)\b\s*=\s*("+_float_regex+")"),
+                   float, "xsiz"))
+    checks.append((re.compile(r"\b(?:y-length)\b\s*=\s*("+_float_regex+")"),
+                   float, "ysiz"))
+
+    # Unit keywords
+    checks.append((re.compile(r"\b(?:x-unit)\b\s*=\s*(\w+)"), str, "xunit"))
+    checks.append((re.compile(r"\b(?:y-unit)\b\s*=\s*(\w+)"), str, "yunit"))
+    checks.append((re.compile(r"\b(?:z-unit)\b\s*=\s*(\w+)"), str, "zunit"))
+
+    # Scale factor keywords
+    checks.append((re.compile(r"(?:pixel\s+size)\s*=\s*("+_float_regex+")"),
+                   float, "xfac"))
+    checks.append((re.compile(r"(?:height\s+conversion\s+factor\s+\(->\s+m\))\s*=\s*("+_float_regex+")"),
+                   float, "zfac"))
+
+    xres = yres = xsiz = ysiz = xunit = yunit = zunit = xfac = yfac = zfac = None
+
+    def process_comment(line):
+        "Find and interpret known comments in the header of the asc file"
+        def check(line, reg, fun):
+            "Check whether line fits a known comment syntax"
+            match = reg.search(line)
+            if match is not None:
+                return fun(match.group(1))
+            return None
+        nonlocal xres, yres, xsiz, ysiz, xunit, yunit, zunit, data, xfac, yfac
+        nonlocal zfac
+        matches = {key: check(line, reg, fun)
+                   for (reg, fun, key) in checks}
+        if matches['xres'] is not None:
+            xres = matches['xres']
+        if matches['yres'] is not None:
+            yres = matches['yres']
+        if matches['xsiz'] is not None:
+            xsiz = matches['xsiz']
+        if matches['ysiz'] is not None:
+            ysiz = matches['ysiz']
+        if matches['xunit'] is not None:
+            xunit = matches['xunit']
+        if matches['yunit'] is not None:
+            yunit = matches['yunit']
+        if matches['zunit'] is not None:
+            zunit = matches['zunit']
+        if matches['xfac'] is not None:
+            xfac = matches['xfac']
+        if matches['zfac'] is not None:
+            zfac = matches['zfac']
+    
+    data = []
+    with fobj as file_handle:
+        for line in file_handle:
+            line_elements = line.strip().split()
+            if len(line) > 0:
+                try:
+                    first_value = float(line_elements[0])
+                    data += [[float(strval) for strval in line_elements]]
+                except ValueError:
                     process_comment(line)
-                else:
-                    data[row_nu, :] = line.strip().split()
-                    row_nu += 1
-        if row_nu != xres:
-            raise Exception(
-                ("The number of rows read from the file '{}' does not match "
-                 "the declared resolution").format(self.fname))
+    data = np.array(data)
+    nx, ny = data.shape
+    if xres is not None and xres != nx:
+        raise Exception("The number of rows (={}) read from the file '{}' does "
+                        "not match the resolution in the file's metadata (={})."
+                        .format(nx, fname, xres))
+    if yres is not None and yres != ny:
+        raise Exception("The number of columns (={}) read from the file '{}' "
+                        "does not match the resolution in the file's metadata "
+                        "(={}).".format(ny, fname, yres))
 
-        # Handle units -> convert to target unit
-        if xunit is None and zunit is not None:
-            xunit = zunit
-        if yunit is None and zunit is not None:
-            yunit = zunit
+    # Handle scale factors
+    if xfac is not None and yfac is None:
+        yfac = xfac
+    elif xfac is None and yfac is not None:
+        xfac = yfac
+    if xfac is not None:
+        if xsiz is None:
+            xsiz = xfac*nx
+        else:
+            xsiz *= xfac
+    if yfac is not None:
+        if ysiz is None:
+            ysiz = yfac*ny
+        else:
+            ysiz *= yfac
+    if zfac is not None:
+        data *= zfac
+   
+    # Handle units -> convert to target unit
+    if xunit is None and zunit is not None:
+        xunit = zunit
+    if yunit is None and zunit is not None:
+        yunit = zunit
 
-        if unit is not None:
-            if xunit is not None:
-                xsiz *= self._units[xunit]/self._units[unit]
-            if yunit is not None:
-                ysiz *= self._units[yunit]/self._units[unit]
-            if zunit is not None:
-                data *= self._units[zunit]/self._units[unit]
+    if xunit is not None:
+        xsiz *= _units[xunit]/_units[unit]
+    if yunit is not None:
+        ysiz *= _units[yunit]/_units[unit]
+    if zunit is not None:
+        data *= _units[zunit]/_units[unit]
 
-        return data, (xsiz, ysiz)
-read_asc = NumpyAscSurface
+    if xsiz is None or ysiz is None:
+        return NumpySurface(z_factor*data)
+    else:
+        return NumpySurface(z_factor*data, size=(x_factor*xsiz, x_factor*ysiz))
+NumpyAscSurface = read_asc
 
 def read_xyz(fn):
     x, y, z = np.loadtxt(fn, unpack=True)
