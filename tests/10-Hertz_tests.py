@@ -234,7 +234,8 @@ class HertzTest(unittest.TestCase):
         surface = Sphere(self.r_s, (nx, nx), (sx, sx))
         system = SystemFactory(substrate, interaction, surface)
 
-        disp, forces = system.minimize_proxy(disp0)
+        disp, forces, converged = system.minimize_proxy(disp0)
+        self.assertTrue(converged)
 
         normal_force = -forces.sum()
         a, p0 = radius_and_pressure(normal_force, self.r_s, self.E_s)
