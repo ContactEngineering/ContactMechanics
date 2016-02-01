@@ -228,7 +228,7 @@ class HertzTest(unittest.TestCase):
     def test_constrained_conjugate_gradients(self):
         nx = 256
         sx = 5.0
-        disp0 = 0.1
+        disp0 = -0.1
         substrate = FreeFFTElasticHalfSpace((nx, nx), self.E_s, (sx, sx))
         interaction = HardWall()
         surface = Sphere(self.r_s, (nx, nx), (sx, sx))
