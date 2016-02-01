@@ -228,7 +228,7 @@ class HertzTest(unittest.TestCase):
     def test_constrained_conjugate_gradients(self):
         nx = 256
         sx = 5.0
-        disp0 = 0.1
+        disp0 = -0.1
         substrate = FreeFFTElasticHalfSpace((nx, nx), self.E_s, (sx, sx))
         interaction = HardWall()
         surface = Sphere(self.r_s, (nx, nx), (sx, sx))
@@ -247,21 +247,25 @@ class HertzTest(unittest.TestCase):
         r = np.sqrt(x**2+y**2)
         p_analytical[r<a] = p0*np.sqrt(1-(r[r<a]/a)**2)
 
+        import matplotlib.pyplot as plt
+        plt.pcolormesh(p_analytical-p_numerical)
+        plt.colorbar()
+
+        #plt.subplot(2,1,1)
+        #try:
+        #    plt.plot(x.ravel(), disp[:nx,nx//2].ravel())
+        #except ValueError as err:
+        #    raise ValueError("{}: x.shape = {}, disp.shape = {}".format(err, x.shape, disp[:nx,nx//2].shape))
+        plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
+        plt.subplot(2,1,1)
+        plt.pcolormesh(p_analytical)
+        plt.subplot(2,1,2)
+        plt.pcolormesh(p_numerical)
+        plt.show()
+        
         self.assertTrue(abs(p_analytical[r<0.99*a]-
                             p_numerical[r<0.99*a]).max()/self.E_s < 1e-3)
 
-        #import matplotlib.pyplot as plt
-        #plt.pcolormesh(p_analytical-p_numerical)
-        #plt.colorbar()
-        #plt.show()
-
-        #plt.subplot(2,1,1)
-        #plt.plot(x, disp[:nx,nx//2])
-        #plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
-        #plt.subplot(2,1,2)
-        #plt.plot(x, p_analytical)
-        #plt.plot(x, p_numerical)
-        #plt.show()
 
 if __name__ == '__main__':
     unittest.main()
