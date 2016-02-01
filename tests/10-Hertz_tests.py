@@ -247,22 +247,22 @@ class HertzTest(unittest.TestCase):
         r = np.sqrt(x**2+y**2)
         p_analytical[r<a] = p0*np.sqrt(1-(r[r<a]/a)**2)
 
-        import matplotlib.pyplot as plt
-        plt.pcolormesh(p_analytical-p_numerical)
-        plt.colorbar()
-
+        #import matplotlib.pyplot as plt
+        #plt.pcolormesh(p_analytical-p_numerical)
+        #plt.colorbar()
+        #
         #plt.subplot(2,1,1)
         #try:
         #    plt.plot(x.ravel(), disp[:nx,nx//2].ravel())
         #except ValueError as err:
         #    raise ValueError("{}: x.shape = {}, disp.shape = {}".format(err, x.shape, disp[:nx,nx//2].shape))
-        plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
-        plt.subplot(2,1,1)
-        plt.pcolormesh(p_analytical)
-        plt.subplot(2,1,2)
-        plt.pcolormesh(p_numerical)
-        plt.show()
-        
+        #plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
+        #plt.subplot(2,1,1)
+        #plt.pcolormesh(p_analytical)
+        #plt.subplot(2,1,2)
+        #plt.pcolormesh(p_numerical)
+        #plt.show()
+
         self.assertTrue(abs(p_analytical[r<0.99*a]-
                             p_numerical[r<0.99*a]).max()/self.E_s < 1e-3)
 
