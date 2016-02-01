@@ -598,10 +598,8 @@ class NonSmoothContactSystem(SystemBase):
         Parameters:
         offset     -- determines indentation depth
         """
-        neg_disp, pressure, success = constrained_conjugate_gradients(
+        self.disp, pressure, success = constrained_conjugate_gradients(
             self.substrate,
             self.surface[:, :] - offset,
             **kwargs)
-        self.disp = -neg_disp
-
         return self.disp, pressure, success
