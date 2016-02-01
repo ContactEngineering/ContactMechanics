@@ -600,7 +600,7 @@ class NonSmoothContactSystem(SystemBase):
         """
 
         return constrained_conjugate_gradients(self.substrate,
-                                               self.surface[:, :]+offset,
+                                               self.surface[:, :]-offset,
                                                **kwargs)
 
 
