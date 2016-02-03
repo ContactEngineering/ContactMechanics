@@ -3,7 +3,7 @@
 """
 @file   ConstrainedConjugateGradients.py
 
-@author Till Junge <till.junge@kit.edu>
+@author Lars Pastewka <lars.pastewka@kit.edu>
 
 @date   08 Dec 2015
 
@@ -12,7 +12,7 @@
 
 @section LICENCE
 
- Copyright (C) 2015 Till Junge, Lars Pastewka
+ Copyright (C) 2015-2016 Till Junge, Lars Pastewka
 
 PyCo is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
