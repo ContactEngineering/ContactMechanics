@@ -611,7 +611,7 @@ class NonSmoothContactSystem(SystemBase):
         # pylint: disable=arguments-differ
         self.disp, pressure, success = constrained_conjugate_gradients(
             self.substrate,
-            self.surface[:, :] - offset,
+            self.surface[:, :] + offset,
             disp0=disp0,
             pentol=pentol,
             prestol=prestol,

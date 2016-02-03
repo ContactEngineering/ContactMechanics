@@ -107,7 +107,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         A = np.sum(c_r)
 
         # Compute G = sum(g*g) (over contact area only)
-        g_r = -u_r[comp_slice]-surface
+        g_r = u_r[comp_slice]-surface
         G = np.sum(c_r[comp_slice]*g_r*g_r)
 
         # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
@@ -160,7 +160,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
 
         # Compute new displacements from updated forces
         #u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
-        u_r = -substrate.evaluate_disp(p_r)
+        u_r = substrate.evaluate_disp(p_r)
 
         # Store G for next step
         G_old = G
@@ -171,7 +171,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
             rms_pen = sqrt(G/A)
         else:
             rms_pen = sqrt(G)
-        max_pen = max(0.0, np.max(c_r[comp_slice]*(surface+u_r[comp_slice])))
+        max_pen = max(0.0, np.max(c_r[comp_slice]*(surface-u_r[comp_slice])))
 
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)

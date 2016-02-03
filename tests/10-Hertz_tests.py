@@ -39,7 +39,7 @@ try:
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
     from PyCo.Surface import Sphere
     from PyCo.System import SystemFactory
-    from PyCo.Tools.Logger import screen
+    #from PyCo.Tools.Logger import screen
 except ImportError as err:
     import sys
     print(err)
@@ -228,7 +228,7 @@ class HertzTest(unittest.TestCase):
     def test_constrained_conjugate_gradients(self):
         nx = 256
         sx = 5.0
-        disp0 = -0.1
+        disp0 = 0.1
         substrate = FreeFFTElasticHalfSpace((nx, nx), self.E_s, (sx, sx))
         interaction = HardWall()
         surface = Sphere(self.r_s, (nx, nx), (sx, sx))
@@ -248,19 +248,16 @@ class HertzTest(unittest.TestCase):
         p_analytical[r<a] = p0*np.sqrt(1-(r[r<a]/a)**2)
 
         #import matplotlib.pyplot as plt
+        #plt.subplot(1,3,1)
         #plt.pcolormesh(p_analytical-p_numerical)
-        #plt.colorbar()
-        #
-        #plt.subplot(2,1,1)
-        #try:
-        #    plt.plot(x.ravel(), disp[:nx,nx//2].ravel())
-        #except ValueError as err:
-        #    raise ValueError("{}: x.shape = {}, disp.shape = {}".format(err, x.shape, disp[:nx,nx//2].shape))
+        #plt.colorbar()       
         #plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
-        #plt.subplot(2,1,1)
+        #plt.subplot(1,3,2)
         #plt.pcolormesh(p_analytical)
-        #plt.subplot(2,1,2)
+        #plt.colorbar()       
+        #plt.subplot(1,3,3)
         #plt.pcolormesh(p_numerical)
+        #plt.colorbar()       
         #plt.show()
 
         self.assertTrue(abs(p_analytical[r<0.99*a]-
