@@ -29,9 +29,12 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import numpy as np
 import abc
-#from ..Tools.SurfaceAnalysis import compute_rms_slope
+
+import numpy as np
+
+from ..Tools import compute_rms_slope
+
 
 class Surface(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
@@ -88,18 +91,19 @@ class Surface(object, metaclass=abc.ABCMeta):
         """
         taken from roughness in pycontact
         """
+        # pylint: disable=invalid-name
         nx, ny = self.resolution
         sx, sy = self.size
         qx = np.arange(nx, dtype=np.float64)
         qx = np.where(qx <= nx/2, 2*np.pi*qx/sx, 2*np.pi*(nx-qx)/sx)
         qy = np.arange(ny, dtype=np.float64)
         qy = np.where(qy <= ny/2, 2*np.pi*qy/sy, 2*np.pi*(ny-qy)/sy)
-        q  = np.sqrt( (qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1) )
+        q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
 
         h_q = np.fft.fft2(self.profile())
         return np.sqrt(
-            np.mean(q**2 * h_q*np.conj(h_q)).real/(float(self.profile().shape[0])*float(self.profile().shape[1])))
-
+            np.mean(q**2 * h_q*np.conj(h_q)).real/(
+                float(self.profile().shape[0])*float(self.profile().shape[1])))
 
     def adjust(self):
         """
@@ -148,10 +152,11 @@ class Surface(object, metaclass=abc.ABCMeta):
         return self._resolution
     shape = resolution
 
-    def set_size(self, size, sy=None):
-        """ set the size of the surface """
-        if sy is not None:
-            size = (size, sy)
+    def set_size(self, size, s_y=None):
+        """ Deprecated, do not use.
+        set the size of the surface """
+        if s_y is not None:
+            size = (size, s_y)
         self._size = size
 
     @property
@@ -202,9 +207,9 @@ class Surface(object, metaclass=abc.ABCMeta):
                 delta = 0
             irange = (coords[i]-1+delta, coords[i]+delta, coords[i]+1+delta)
             fun_val = np.zeros(len(irange))
-            for j in range(len(irange)):
+            for j, i_val in enumerate(irange):
                 coord_copy = list(coords)
-                coord_copy[i] = irange[j]
+                coord_copy[i] = i_val
                 try:
                     fun_val[j] = self.profile()[tuple(coord_copy)]
                 except IndexError as err:
@@ -340,12 +345,14 @@ class NumpySurface(Surface):
         super().__setstate__(state[0])
         self.__h = state[1]
 
+
 class Sphere(NumpySurface):
     """ Spherical surface. Corresponds to a cylinder in 2D
     """
     name = 'sphere'
 
-    def __init__(self, radius, resolution, size, centre=None, standoff=0, periodic=False):
+    def __init__(self, radius, resolution, size, centre=None, standoff=0,
+                 periodic=False):
         """
         Simple shere geometry.
         Parameters:
@@ -358,7 +365,8 @@ class Sphere(NumpySurface):
                       the radius, you might want to set the surface outside of
                       the spere to far away, maybe even pay the price of inf,
                       if your interaction has no cutoff
-        periodic   -- whether the sphere can wrap around. tricky for large spheres
+        periodic   -- whether the sphere can wrap around. tricky for large
+                      spheres
         """
         # pylint: disable=invalid-name
         if not hasattr(resolution, "__iter__"):
@@ -373,12 +381,14 @@ class Sphere(NumpySurface):
 
         if not periodic:
             def get_r(res, size, centre):
+                " computes the non-periodic radii to evaluate"
                 return np.linspace(-centre, size-centre, res, endpoint=False)
         else:
             def get_r(res, size, centre):
-                return np.linspace(-centre +   size/2,
+                " computes the periodic radii to evaluate"
+                return np.linspace(-centre + size/2,
                                    -centre + 3*size/2,
-                                   res, endpoint=False)%size - size/2
+                                   res, endpoint=False) % size - size/2
 
         if dim == 1:
             r2 = get_r(resolution[0],

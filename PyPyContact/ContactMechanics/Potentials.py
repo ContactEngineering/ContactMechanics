@@ -29,11 +29,13 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-from .Interactions import SoftWall
 import math
+import abc
+
 import numpy as np
 import scipy.optimize
-import abc
+
+from .Interactions import SoftWall
 
 
 class Potential(SoftWall, metaclass=abc.ABCMeta):

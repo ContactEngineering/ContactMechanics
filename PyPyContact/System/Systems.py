@@ -29,9 +29,10 @@ Free Software Foundation, Inc., 59 Temple Place - Su ite 330,
 Boston, MA 02111-1307, USA.
 """
 
+import abc
+
 import numpy as np
 import scipy
-import abc
 
 from .. import ContactMechanics, SolidMechanics, Surface
 from ..Tools import compare_containers
@@ -453,6 +454,7 @@ class NonSmoothContactSystem(SystemBase):
     interaction between the tribopartners is just non-penetration without
     adhesion, belong to this type of system
     """
+    # pylint: disable=abstract-method
 
     def __init__(self, substrate, interaction, surface):
         """ Represents a contact problem
@@ -498,7 +500,6 @@ class NonSmoothContactSystem(SystemBase):
         is_ok &= issubclass(surface_type,
                             Surface.Surface)
         return is_ok
-
 
     @property
     def resolution(self):
@@ -548,7 +549,6 @@ class NonSmoothContactSystem(SystemBase):
 
         return (self.energy, self.force)
 
-
     def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
                   tol=0):
         """
@@ -566,6 +566,7 @@ class NonSmoothContactSystem(SystemBase):
         disp_scale -- (default 1.) allows to specify a scaling of the
                       dislacement before evaluation.
         """
+        # pylint: disable=arguments-differ
         dummy = disp0
         res = self.substrate.computational_resolution
         if gradient:
@@ -589,17 +590,32 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
-
-    def minimize_proxy(self, offset, **kwargs):
+    def minimize_proxy(self, offset, disp0=None, pentol=1e-6,
+                       prestol=1e-5, maxiter=100000, logger=None):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of constrained minimisation.
 
         Parameters:
         offset     -- determines indentation depth
+        disp0      -- initial guess for surface displacement. If not set, zero
+                      displacement of shape
+                      self.substrate.computational_resolution is used
+        pentol     -- maximum penetration of contacting regions required for
+                      convergence
+        prestol    -- maximum pressure outside the contact region allowed for
+                      convergence
+        maxiter    -- maximum number of iterations allowed for convergence
+        logger     -- optional logger, to be used with a logger from
+                      PyPyContact.Tools.Logger
         """
+        # pylint: disable=arguments-differ
         self.disp, pressure, success = constrained_conjugate_gradients(
             self.substrate,
             self.surface[:, :] - offset,
-            **kwargs)
+            disp0=disp0,
+            pentol=pentol,
+            prestol=prestol,
+            maxiter=maxiter,
+            logger=logger)
         return self.disp, pressure, success

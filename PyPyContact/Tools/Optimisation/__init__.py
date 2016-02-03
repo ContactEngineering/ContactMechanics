@@ -39,8 +39,8 @@ from .common import first_wolfe_condition
 from .common import second_wolfe_condition
 from .common import line_search
 from .common import construct_augmented_lagrangian
-from .common import construct_augmented_lagrangian_gradient
-from .common import construct_augmented_lagrangian_hessian
+from .common import construct_augm_lag_grad
+from .common import construct_augm_lag_hess
 from .AugmentedLagrangian import augmented_lagrangian
 from .ConstrainedConjugateGradients import constrained_conjugate_gradients
 from .NewtonLineSearch import newton_linesearch

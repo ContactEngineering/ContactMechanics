@@ -37,7 +37,7 @@ import numpy as np
 import scipy
 import scipy.optimize
 
-from .common import ReachedTolerance, ReachedMaxiter, FailedIterate
+from .common import ReachedTolerance, ReachedMaxiter
 from .common import steihaug_toint
 
 
@@ -51,13 +51,13 @@ def newton_confidence_region(fun, x0, jac, hess, tol, store_iterates=None,
     fun            -- objective function to minimize
     x0             -- initial guess for solution
     jac            -- Jacobian (gradient) of objective function
-    hess           -- Hessian (matrix of second-order derivatives) of objective 
+    hess           -- Hessian (matrix of second-order derivatives) of objective
                       function
     tol            -- Tolerance for termination
     store_iterates -- (default None) if set to 'iterate' the full iterates are
                       stored in module-level constant iterates
     radius0        -- (default 10) size of initial confidence region size
-    eta1/eta2      -- (default 0.01, 0.9) heuristics for step length 
+    eta1/eta2      -- (default 0.01, 0.9) heuristics for step length
                       modifications. Defaults from Bierlaire (2006)
     method         -- (default 'steihaug_toint') solver for confidence region
                       sub-problem. can be either steihaug_toint or dogleg
@@ -86,10 +86,10 @@ def newton_confidence_region(fun, x0, jac, hess, tol, store_iterates=None,
         iterates.append(iterate)
     try:
         while True:
-            b = np.matrix(jac(x))
+            b = np.matrix(jac(x))  # pylint: disable=invalid-name
             norm_grad = np.linalg.norm(b)
             if norm_grad < tol:
-                raise  ReachedTolerance(
+                raise ReachedTolerance(
                     "||grad f(x)|| = {} < {} = tol".format(
                         norm_grad, tol))
             if counter == options['maxiter']:
@@ -97,7 +97,7 @@ def newton_confidence_region(fun, x0, jac, hess, tol, store_iterates=None,
                     options['maxiter']))
 
             # 1) solve sub-problem
-            Q = np.matrix(hess(x))
+            Q = np.matrix(hess(x))  # pylint: disable=invalid-name
             direction = method(b, Q, radius)
 
             # 2)

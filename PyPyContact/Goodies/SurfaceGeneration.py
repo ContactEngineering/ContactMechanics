@@ -32,13 +32,16 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 import scipy.stats as stats
 from ..Surface import NumpySurface
-from .common import compute_wavevectors, ifftn, fftn
+from ..Tools.common import compute_wavevectors, ifftn, fftn
 from .SurfaceAnalysis import CharacterisePeriodicSurface
 
+
 class RandomSurfaceExact(object):
+    """ Metasurface with exact power spectrum"""
     Error = Exception
-    def __init__(self, resolution, size, hurst, rms_height=None, rms_slope=None,
-                 seed=None, lambda_min=None, lambda_max=None):
+
+    def __init__(self, resolution, size, hurst, rms_height=None,
+                 rms_slope=None, seed=None, lambda_min=None, lambda_max=None):
         """
         Generates a surface with an exact power spectrum (deterministic
         amplitude)
@@ -96,24 +99,28 @@ class RandomSurfaceExact(object):
         else:
             self.q_min = 2*np.pi*max(1/self.size[0], 1/self.size[1])
 
-        max_pixelsize = max((siz/res for siz, res in zip(self.size, self.resolution)))
+        max_pixelsize = max(
+            (siz/res for siz, res in zip(self.size, self.resolution)))
         self.q_max = np.pi/max_pixelsize
-
 
         self.prefactor = self.compute_prefactor()
 
-        self.q = compute_wavevectors(self.resolution, self.size, self.dim)
+        self.q = compute_wavevectors(  # pylint: disable=invalid-name
+            self.resolution, self.size, self.dim)
         self.coeffs = self.generate_phases()
         self.generate_amplitudes()
         self.distribution = self.amplitude_distribution()
+        self.active_coeffs = None
+
     def get_negative_frequency_iterator(self):
-        def it():
+        " frequency complement"
+        def iterator():  # pylint: disable=missing-docstring
             for i in range(self.resolution[0]):
                 for j in range(self.resolution[1]//2+1):
-                    yield (i,j), (-i,-j)
-        return it()
+                    yield (i, j), (-i, -j)
+        return iterator()
 
-    def amplitude_distribution(self):
+    def amplitude_distribution(self):  # pylint: disable=no-self-use
         """
         returns a multiplicative factor to apply to the fourier coeffs before
         computing the inverse transform (trivial in this case, since there's no
@@ -123,19 +130,21 @@ class RandomSurfaceExact(object):
 
     @property
     def C0(self):
+        " prefactor of psd"
         return (self.compute_prefactor()/np.sqrt(np.prod(self.size)))**2
 
     @property
     def abs_q(self):
+        " radial distances in q-space"
         q_norm = np.sqrt((self.q[0]**2).reshape((-1, 1))+self.q[1]**2)
         order = np.argsort(q_norm, axis=None)
-        # The first entry (for |q| = 0) is rejected, since it's 0 by construction
+        # The first entry (for |q| = 0) is rejected, since it's 0 by construct
         return q_norm.flatten()[order][1:]
 
     @property
     def lambdas(self):
+        " radial wavelengths in grid"
         return 2*np.pi/self.abs_q
-
 
     def compute_prefactor(self):
         """
@@ -150,12 +159,15 @@ class RandomSurfaceExact(object):
                               self.resolution[1]/self.size[1])
         area = np.prod(self.size)
         if self.rms_height is not None:
-            return 2*self.rms_height/np.sqrt(self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst))*np.sqrt(self.hurst*np.pi*area)
+            return 2*self.rms_height/np.sqrt(
+                self.q_min**(-2*self.hurst)-q_max**(-2*self.hurst)) * \
+                np.sqrt(self.hurst*np.pi*area)
         elif self.rms_slope is not None:
-            return 2*self.rms_slope/np.sqrt(q_max**(2-2*self.hurst)-self.q_min**(2-2*self.hurst))*np.sqrt((1-self.hurst)*np.pi*area)
+            return 2*self.rms_slope/np.sqrt(
+                q_max**(2-2*self.hurst)-self.q_min**(2-2*self.hurst)) * \
+                np.sqrt((1-self.hurst)*np.pi*area)
         else:
             self.Error('Neither rms height nor rms slope is defined!')
-
 
     def generate_phases(self):
         """
@@ -166,29 +178,24 @@ class RandomSurfaceExact(object):
         for pos_it, neg_it in self.get_negative_frequency_iterator():
             if pos_it != (0, 0):
                 coeffs[neg_it] = coeffs[pos_it].conj()
-        if (self.resolution[0]%2 == 0):
-            r2= self.resolution[0]//2
-            coeffs[r2, 0] = coeffs[r2, r2] = coeffs[0, r2] = 1
+        if self.resolution[0] % 2 == 0:
+            r_2 = self.resolution[0]//2
+            coeffs[r_2, 0] = coeffs[r_2, r_2] = coeffs[0, r_2] = 1
         return coeffs
 
     def generate_amplitudes(self):
-        q2 = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
-        q2[0, 0] = 1 # to avoid div by zeros, needs to be fixed after
-        # self.coeffs *= (q2)**(-(1+self.hurst)/2)*2*self.rms_height*self.q_min**self.hurst*np.sqrt(self.hurst*np.pi)/self.size[0]
-        self.coeffs *= (q2)**(-(1+self.hurst)/2)*self.prefactor
-        self.coeffs[0, 0] = 0 # et voilà
+        "compute an amplitude distribution"
+        q_2 = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
+        q_2[0, 0] = 1  # to avoid div by zeros, needs to be fixed after
+        self.coeffs *= (q_2)**(-(1+self.hurst)/2)*self.prefactor
+        self.coeffs[0, 0] = 0  # et voilà
         # Fix Shannon limit:
-        self.coeffs[q2>self.q_max**2] = 0
-        ## print("amplitudes:")
-        ## print(abs(self.coeffs))
-        ## print("|q|")
-        ## print(np.sqrt(q2))
-        ## print()
+        self.coeffs[q_2 > self.q_max**2] = 0
 
-    def get_surface(self, lambda_max=None, lambda_min=None, roll_off = 1):
+    def get_surface(self, lambda_max=None, lambda_min=None, roll_off=1):
         """
-        Computes and returs a NumpySurface object with the specified properties.
-        This follows appendices A and B of Persson et al. (2005)
+        Computes and returs a NumpySurface object with the specified
+        properties. This follows appendices A and B of Persson et al. (2005)
 
         Persson et al., On the nature of surface roughness with application to
         contact mechanics, sealing, rubber friction and adhesion, J. Phys.:
@@ -211,7 +218,7 @@ class RandomSurfaceExact(object):
         q_square = self.q[0].reshape(-1, 1)**2 + self.q[1]**2
         if lambda_max is not None:
             q2_min = (2*np.pi/lambda_max)**2
-            #ampli_max = (self.prefactor*2*np.pi/self.size[0] *
+            # ampli_max = (self.prefactor*2*np.pi/self.size[0] *
             #             q2_min**((-1-self.hurst)/2))
             ampli_max = (q2_min)**(-(1+self.hurst)/2)*self.prefactor
             sl = q_square < q2_min
@@ -227,9 +234,11 @@ class RandomSurfaceExact(object):
         self.active_coeffs = active_coeffs
         return NumpySurface(profile, self.size)
 
+
 class RandomSurfaceGaussian(RandomSurfaceExact):
-    def __init__(self, resolution, size, hurst, rms_height=None, rms_slope=None,
-                 seed=None, lambda_min=None, lambda_max=None):
+    """ Metasurface with Gaussian height distribution"""
+    def __init__(self, resolution, size, hurst, rms_height=None,
+                 rms_slope=None, seed=None, lambda_min=None, lambda_max=None):
         """
         Generates a surface with an Gaussian amplitude distribution
         Keyword Arguments:
@@ -260,12 +269,14 @@ class RandomSurfaceGaussian(RandomSurfaceExact):
         updates the amplitudes to be a Gaussian distribution around B(q) from
         Appendix B.
         """
-        distr =  stats.norm.rvs(size=self.coeffs.shape)
+        distr = stats.norm.rvs(size=self.coeffs.shape)
         for pos_it, neg_it in self.get_negative_frequency_iterator():
-                distr[neg_it] = distr[pos_it]
+            distr[neg_it] = distr[pos_it]
         return distr
 
+
 class ModifyExistingPeriodicSurface(RandomSurfaceExact):
+    """ Metasurface based on existing surface"""
     def __init__(self, surface):
         """
         Generates a surface with an Gaussian amplitude distribution

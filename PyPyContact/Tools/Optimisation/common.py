@@ -32,10 +32,25 @@ import warnings
 import numpy as np
 import scipy.optimize
 
-class ReachedTolerance(StopIteration): pass
-class ReachedMaxiter(StopIteration): pass
-class FailedIterate(StopIteration): pass
-class ReachedMaxiterWarning(RuntimeWarning): pass
+
+class ReachedTolerance(StopIteration):
+    # pylint: disable=missing-docstring
+    pass
+
+
+class ReachedMaxiter(StopIteration):
+    # pylint: disable=missing-docstring
+    pass
+
+
+class FailedIterate(StopIteration):
+    # pylint: disable=missing-docstring
+    pass
+
+
+class ReachedMaxiterWarning(RuntimeWarning):
+    # pylint: disable=missing-docstring
+    pass
 
 
 # The following helpers are from
@@ -58,10 +73,12 @@ def intersection_confidence_region(x_start, direction, radius):
     direction -- search direction != 0
     radius    -- scalar > 0
     """
+    # pylint: disable=invalid-name
     a = float(direction.T * direction)
     b = float(2 * x_start.T * direction)
     c = float(x_start.T * x_start - radius**2)
     return (-b + np.sqrt(b**2 - 4*a*c))/(2*a)
+
 
 # -----------------------------------------------------------------------------
 # Algorithm 12.2 (p.297) dogleg method
@@ -104,7 +121,7 @@ def dogleg(grad_f, hess_f, radius):
 
     # Dogleg point
     # 1)
-    eta = 0.2 + (0.8 * alpha**2) / (beta * float(abs( grad_f.T * d_n)))
+    eta = 0.2 + (0.8 * alpha**2) / (beta * float(abs(grad_f.T * d_n)))
     d_d = eta * d_n
 
     # 2)
@@ -117,9 +134,10 @@ def dogleg(grad_f, hess_f, radius):
 
     return d_c + step_len * (d_d - d_c)
 
+
 # -----------------------------------------------------------------------------
 # Algorithm 12.3 (p.297) Steihaug-Toint method
-def steihaug_toint(grad_f, hess_f, radius, tol = 1e-14):
+def steihaug_toint(grad_f, hess_f, radius, tol=1e-14):
     """
     Finds an approximation to the solution of the confidence region sub-problem
     Keyword Arguments:
@@ -127,12 +145,13 @@ def steihaug_toint(grad_f, hess_f, radius, tol = 1e-14):
     hess_f -- value of the hessian matrix (square matrix)
     radius -- radius of the confidence region
     """
+    # pylint: disable=invalid-name
     # initialisation
     direction = -grad_f.copy()
     xk = np.zeros_like(direction)
     xkp1 = np.zeros_like(direction)
 
-    for i in range(grad_f.size + 1):
+    for _ in range(grad_f.size + 1):
         # 1) Computation of the curvature in steepest descent direction
         if float(direction.T * hess_f * direction) <= 0:
             step_len = intersection_confidence_region(xk, direction, radius)
@@ -166,9 +185,10 @@ def steihaug_toint(grad_f, hess_f, radius, tol = 1e-14):
         xk[:] = xkp1[:]
     return xk
 
+
 # -----------------------------------------------------------------------------
 # implements the modified Cholesky Factorisation, p. 278, algo 11.4
-def modified_cholesky(symmat, maxiter = 20):
+def modified_cholesky(symmat, maxiter=20):
     """
     Modify a symmetric matrix A in order to make it positive definite. Returns
     a lower triangular matrix L and a scalar τ > 0 so that
@@ -181,16 +201,17 @@ def modified_cholesky(symmat, maxiter = 20):
         tau = 0
     else:
         tau = .5*fronorm
-    success = False
-    I = np.eye(symmat.shape[0])
+    I = np.eye(symmat.shape[0])  # pylint: disable=invalid-name
 
-    for i in range(maxiter):
+    for _ in range(maxiter):
         try:
-            L = np.linalg.cholesky(symmat + tau*I)
+            L = np.linalg.cholesky(  # pylint: disable=invalid-name
+                symmat + tau*I)
             return L, tau
         except np.linalg.LinAlgError:
             tau = max(2*tau, .5*fronorm)
     raise Exception("Couldn't factor")
+
 
 # -----------------------------------------------------------------------------
 def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
@@ -208,6 +229,7 @@ def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
     return float(fun(x0+alpha*direction)) <= float(fun(x0)) + \
         alpha * beta1 * float(fprime(x0).T * direction)
 
+
 # -----------------------------------------------------------------------------
 def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     """
@@ -222,6 +244,7 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     """
     return (float(fprime(x0 + alpha*direction).T * direction) >=
             beta2*float(fprime(x0).T * direction))
+
 
 # -----------------------------------------------------------------------------
 # implements the line search, p. 273, algo 11.2
@@ -270,10 +293,11 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
                  "wolfe1 = {}, wolfe2 = {}, alpha = {}, nit = {}.\n"
                  "If they are, machine precision has been reached. Currently,"
                  " progress regarding funval would be {}").format(
-                     wolfe1, wolfe2, alpha, counter, float(alpha * fprime(x0).T*direction)),
+                     wolfe1, wolfe2, alpha, counter,
+                     float(alpha * fprime(x0).T*direction)),
                 ReachedMaxiterWarning)
             break
-        if not wolfe1: # step too long
+        if not wolfe1:  # step too long
             alpha_r = alpha
             alpha = .5*(alpha_l + alpha_r)
             violation = 1
@@ -285,7 +309,8 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
                 alpha = .5*(alpha_l + alpha_r)
             else:
                 alpha *= step_factor
-        wolfe1 = first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1)
+        wolfe1 = first_wolfe_condition(fun, x0, fprime, direction, alpha,
+                                       beta1)
         wolfe2 = second_wolfe_condition(x0, fprime, direction, alpha, beta2)
         if store_iterates == 'iterate':
             iterate = scipy.optimize.OptimizeResult(
@@ -302,7 +327,7 @@ def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
     result = scipy.optimize.OptimizeResult({'success': True,
                                             'x': alpha,
                                             'nit': counter,
-                                            'violation':violation})
+                                            'violation': violation})
 
     if iterates:
         result['iterates'] = iterates
@@ -338,7 +363,8 @@ def construct_augmented_lagrangian(fun, constraints):
              c_pen/2*(constraints_eval.T*constraints_eval))))
     return objective
 
-def construct_augmented_lagrangian_gradient(fun_jac, constraints_jac, constraints):
+
+def construct_augm_lag_grad(fun_jac, constraints_jac, constraints):
     """
     According to 20.4, p. 448:
     Keyword Arguments:
@@ -361,13 +387,18 @@ def construct_augmented_lagrangian_gradient(fun_jac, constraints_jac, constraint
         x = np.matrix(x, copy=False).reshape((-1, 1))
         constraints_eval = constraints(x, *args)
         constraints_jac_eval = constraints_jac(x, *args)
-        retjac = fun_jac(x, *args) + constraints_jac_eval.T*lam + c_pen * constraints_jac_eval.T*constraints_eval
-        if not retjac.dtype.kind in np.typecodes['AllFloat']:
-            raise Exception("jac =\n{}\nlam_term =\n{}\nc_term =\n{}".format(jac(x, *args), constraints_jac_eval.T*lam,  c_pen * constraints_jac_eval.T*constraints_eval))
+        retjac = fun_jac(x, *args) + constraints_jac_eval.T*lam + c_pen * \
+            constraints_jac_eval.T*constraints_eval
+        if retjac.dtype.kind not in np.typecodes['AllFloat']:
+            raise Exception("jac =\n{}\nlam_term =\n{}\nc_term =\n{}".format(
+                jac(x, *args), constraints_jac_eval.T*lam,
+                c_pen * constraints_jac_eval.T*constraints_eval))
         return retjac
     return jac
 
-def construct_augmented_lagrangian_hessian(fun_hess, constraints_hess, constraints_jac, constraints):
+
+def construct_augm_lag_hess(fun_hess, constraints_hess,
+                            constraints_jac, constraints):
     """
     According to 20.5, p. 448:
     Keyword Arguments:
@@ -390,11 +421,14 @@ def construct_augmented_lagrangian_hessian(fun_hess, constraints_hess, constrain
         """
         x = np.matrix(x, copy=False).reshape((-1, 1))
         constraints_eval = constraints(x, *args)
+        dummy = constraints_eval
         constraints_jac_eval = constraints_jac(x, *args)
         constraints_hess_eval = constraints_hess(x, *args)
-        return_hess = hess(x, *args) + c_pen * constraints_jac_eval.T*constraints_jac_eval
+        return_hess = fun_hess(x, *args) + c_pen * constraints_jac_eval.T * \
+            constraints_jac_eval
         for i in range(lam.size):
             return_hess += (lam[i] * constraints_hess_eval[i] +
-                            c_pen*constraints_jac_eval * constraints_jac_eval.T)
+                            c_pen*constraints_jac_eval *
+                            constraints_jac_eval.T)
             return return_hess
     return lag_hess

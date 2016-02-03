@@ -7,9 +7,6 @@
 # pygtk.require().
 #init-hook=
 
-# Profiled execution.
-profile=no
-
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
 ignore=CVS
@@ -85,10 +82,6 @@ reports=yes
 # (RP0004).
 evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
 
-# Add a comment according to your evaluation note. This is used by the global
-# evaluation report (RP0004).
-comment=yes
-
 # Template used to display messages. This is a python new-style format string
 # used to format the message information. See doc for all details
 #msg-template=
@@ -114,14 +107,11 @@ callbacks=cb_,_cb
 
 [BASIC]
 
-# Required attributes for module, separated by a comma
-required-attributes=
-
 # List of builtins function names that should not be used, separated by a comma
 bad-functions=map,filter
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i,j,k,ex,Run,_,r,V,dV,ddV,ddV_t,dV_t,Δrt,C_i,Δrt0,ddV_m,Δrm,Δgamma,V_m_t,ΔV,ΔdV,ΔddV,H
+good-names=i,j,k,ex,Run,_,r,V,dV,ddV,ddV_t,dV_t,Δrt,C_i,Δrt0,ddV_m,Δrm,Δgamma,V_m_t,ΔV,ΔdV,ΔddV,H,nx,ny,x0,x,C_q,D_q,D_q_x,sl,C_g,C_g_std,q_g,Hurst,C0,ax,sx,sy
 
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
@@ -218,15 +208,11 @@ ignore-mixin-members=yes
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis
-ignored-modules=numpy
+ignored-modules=numpy,numpy.random,scipy,scipy.stats
 
 # List of classes names for which member attributes should not be checked
 # (useful for classes with attributes dynamically set).
 ignored-classes=SQLObject,.*Error
-
-# When zope mode is activated, add a predefined set of Zope acquired attributes
-# to generated-members.
-zope=no
 
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E0201 when accessed. Python regular
@@ -357,7 +343,7 @@ int-import-graph=
 
 # List of interface methods to ignore, separated by a comma. This is used for
 # instance to not check methods defines in Zope's Interface base class.
-ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
+# ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
 
 # List of method names used to declare (i.e. assign) instance attributes.
 defining-attr-methods=__init__,__new__,setUp

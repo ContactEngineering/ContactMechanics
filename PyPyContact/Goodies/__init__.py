@@ -5,9 +5,9 @@
 
 @author Till Junge <till.junge@kit.edu>
 
-@date   26 Jan 2015
+@date   27 Jan 2015
 
-@brief  a simple reimplementation of pycontact by Lars Pastewka
+@brief  Helper tools for PyPyContact
 
 @section LICENCE
 
@@ -29,4 +29,6 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-from . import ContactMechanics, SolidMechanics, System, Surface
+from .SurfaceAnalysis import CharacterisePeriodicSurface, CharacteriseSurface
+from .SurfaceGeneration import RandomSurfaceExact, RandomSurfaceGaussian
+from .SurfaceGeneration import ModifyExistingPeriodicSurface

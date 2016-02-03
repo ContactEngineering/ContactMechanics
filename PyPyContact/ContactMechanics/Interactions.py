@@ -29,6 +29,8 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
+import numpy as np
+
 
 class Interaction(object):
     "base class for all interactions, e.g. interatomic potentials"

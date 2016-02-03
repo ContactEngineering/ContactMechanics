@@ -29,9 +29,9 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
+from collections import namedtuple
 import numpy as np
 from scipy.fftpack import fftn, ifftn
-from collections import namedtuple
 
 from .Substrates import ElasticSubstrate
 

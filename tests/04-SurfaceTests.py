@@ -37,14 +37,16 @@ try:
     import tempfile, os
     from tempfile import TemporaryDirectory as tmp_dir
     import os
+
+    from PyPyContact.Surface import NumpyTxtSurface, NumpySurface, Sphere
+    from PyPyContact.Surface import NumpyAscSurface, read_asc
+    from PyPyContact.Tools import compute_rms_slope
+
 except ImportError as err:
     import sys
     print(err)
     sys.exit(-1)
 
-from PyPyContact.Surface import NumpyTxtSurface, NumpySurface, Sphere
-from PyPyContact.Surface import NumpyAscSurface, read_asc
-from PyPyContact.Tools.SurfaceAnalysis import compute_rms_slope
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):

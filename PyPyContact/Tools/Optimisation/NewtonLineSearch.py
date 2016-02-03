@@ -36,25 +36,28 @@ import numpy as np
 import scipy
 import scipy.optimize
 
-from .common import ReachedTolerance, ReachedMaxiter, FailedIterate
+from .common import ReachedTolerance, ReachedMaxiter
 from .common import modified_cholesky, line_search
+
 
 # -----------------------------------------------------------------------------
 # implemented as a custom minimizer for scipy
-def newton_linesearch(fun, x0, jac, hess, tol, args=(), store_iterates=None, **options):
+def newton_linesearch(fun, x0, jac, hess, tol, args=(), store_iterates=None,
+                      **options):
     """
     see Bierlaire (2006), p. 278
     Keyword Arguments:
     fun       -- objective function to minimize
     x0        -- initial guess for solution
     jac       -- Jacobian (gradient) of objective function
-    hess      -- Hessian (matrix of second-order derivatives) of objective function
+    hess      -- Hessian (matrix of second-order derivatives) of objective
+                 function
     tol       -- Tolerance for termination
     store_iterates -- (default None) if set to 'iterate' the full iterates are
                    stored in module-level constant iterates
     **options -- none of those will be used
     """
-
+    # pylint: disable=too-many-branches
     x = np.matrix(x0.copy()).reshape((-1, 1))
     try:
         fprime = jac(x, *args)
@@ -69,7 +72,7 @@ def newton_linesearch(fun, x0, jac, hess, tol, args=(), store_iterates=None, **o
     linesearch_maxiter_key = 'linesearch_maxiter'
 
     if linesearch_maxiter_key not in options.keys():
-       options[linesearch_maxiter_key] = 20
+        options[linesearch_maxiter_key] = 20
 
     counter = 0
     iterates = list()
@@ -83,9 +86,14 @@ def newton_linesearch(fun, x0, jac, hess, tol, args=(), store_iterates=None, **o
              'alpha': float('nan')})
         iterates.append(iterate)
     if args:
-        use_fun = lambda x: fun(x, *args)
-        use_jac = lambda x: jac(x, *args)
-        use_hess = lambda x: hess(x, *args)
+        def use_fun(x):  # pylint: disable=missing-docstring
+            return fun(x, *args)
+
+        def use_jac(x):  # pylint: disable=missing-docstring
+            return jac(x, *args)
+
+        def use_hess(x):  # pylint: disable=missing-docstring
+            return hess(x, *args)
     else:
         use_fun = fun
         use_jac = jac
@@ -108,16 +116,18 @@ def newton_linesearch(fun, x0, jac, hess, tol, args=(), store_iterates=None, **o
                 raise ReachedMaxiter("reached maxiter ({})".format(
                     options['maxiter']))
             # 1)
-            L, tau = modified_cholesky(hess(x, *args))
+            L, tau = modified_cholesky(  # pylint: disable=invalid-name
+                hess(x, *args))
             # 2)
             fprime = use_jac(x)
-            z = np.linalg.solve(L, fprime)
+            z = np.linalg.solve(L, fprime)  # pylint: disable=invalid-name
             # 3)
-            d = np.linalg.solve(L.T, -z)
+            d = np.linalg.solve(L.T, -z)  # pylint: disable=invalid-name
             # 4)
-            result = line_search(use_fun, x, use_jac, d, alpha0=1, maxiter=options[linesearch_maxiter_key])
+            result = line_search(use_fun, x, use_jac, d, alpha0=1,
+                                 maxiter=options[linesearch_maxiter_key])
             alpha = result.x
-            violation = result.violation
+            # violation = result.violation
 
             # 5)
             x += alpha * d
@@ -132,7 +142,6 @@ def newton_linesearch(fun, x0, jac, hess, tol, args=(), store_iterates=None, **o
                      'tau': tau,
                      'alpha': alpha})
                 iterates.append(iterate)
-
 
     except ReachedMaxiter as err:
         message = str(err)

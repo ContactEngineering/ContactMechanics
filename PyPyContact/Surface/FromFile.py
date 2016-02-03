@@ -29,9 +29,10 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import numpy as np
 import os
 import re
+
+import numpy as np
 
 from .SurfaceDescription import NumpySurface
 
@@ -55,9 +56,12 @@ def read_matrix(fobj, size=None, factor=1.):
                     "No such file or directory: '{}(.gz)'".format(
                         fobj))
     return NumpySurface(factor*np.loadtxt(fobj), size=size)
-NumpyTxtSurface = read_matrix
+
+NumpyTxtSurface = read_matrix  # pylint: disable=invalid-name
+
 
 def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
+    # pylint: disable=too-many-branches,too-many-statements,invalid-name
     """
     Reads a surface profile from an generic asc file and presents it in a
     surface-conformant manner. Applies some heuristic to extract
@@ -81,7 +85,7 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
         fname = fobj
         fobj = open(fname)
 
-    _float_regex = '[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
+    _float_regex = r'[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
 
     checks = list()
     # Resolution keywords
@@ -104,10 +108,13 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
     # Scale factor keywords
     checks.append((re.compile(r"(?:pixel\s+size)\s*=\s*("+_float_regex+")"),
                    float, "xfac"))
-    checks.append((re.compile(r"(?:height\s+conversion\s+factor\s+\(->\s+m\))\s*=\s*("+_float_regex+")"),
+    checks.append((re.compile(
+        (r"(?:height\s+conversion\s+factor\s+\(->\s+m\))\s*=\s*(" +
+         _float_regex+")")),
                    float, "zfac"))
 
-    xres = yres = xsiz = ysiz = xunit = yunit = zunit = xfac = yfac = zfac = None
+    xres = yres = xsiz = ysiz = xunit = yunit = zunit = xfac = yfac = None
+    zfac = None
 
     def process_comment(line):
         "Find and interpret known comments in the header of the asc file"
@@ -139,23 +146,24 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
             xfac = matches['xfac']
         if matches['zfac'] is not None:
             zfac = matches['zfac']
-    
+
     data = []
     with fobj as file_handle:
         for line in file_handle:
             line_elements = line.strip().split()
             if len(line) > 0:
                 try:
-                    first_value = float(line_elements[0])
+                    dummy = float(line_elements[0])
                     data += [[float(strval) for strval in line_elements]]
                 except ValueError:
                     process_comment(line)
     data = np.array(data)
     nx, ny = data.shape
     if xres is not None and xres != nx:
-        raise Exception("The number of rows (={}) read from the file '{}' does "
-                        "not match the resolution in the file's metadata (={})."
-                        .format(nx, fname, xres))
+        raise Exception(
+            "The number of rows (={}) read from the file '{}' does "
+            "not match the resolution in the file's metadata (={})."
+            .format(nx, fname, xres))
     if yres is not None and yres != ny:
         raise Exception("The number of columns (={}) read from the file '{}' "
                         "does not match the resolution in the file's metadata "
@@ -178,7 +186,7 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
             ysiz *= yfac
     if zfac is not None:
         data *= zfac
-   
+
     # Handle units -> convert to target unit
     if xunit is None and zunit is not None:
         xunit = zunit
@@ -196,12 +204,21 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
         return NumpySurface(z_factor*data)
     else:
         return NumpySurface(z_factor*data, size=(x_factor*xsiz, x_factor*ysiz))
-NumpyAscSurface = read_asc
+
+NumpyAscSurface = read_asc  # pylint: disable=invalid-name
+
 
 def read_xyz(fn):
-    x, y, z = np.loadtxt(fn, unpack=True)
-    
-    # Sort x-values into bins. Assume that points on surface are equally spaced.
+    """
+    Load xyz-file
+    TODO: LARS_DOC
+    Keyword Arguments:
+    fn -- filename
+    """
+    # pylint: disable=invalid-name
+    x, y, z = np.loadtxt(fn, unpack=True)  # pylint: disable=invalid-name
+
+    # Sort x-values into bins. Assume points on surface are equally spaced.
     dx = x[1]-x[0]
     binx = np.array(x/dx+0.5, dtype=int)
     n = np.bincount(binx)
@@ -209,7 +226,7 @@ def read_xyz(fn):
     assert np.all(n == ny)
 
     # Sort y-values into bins.
-    dy = y[binx==0][1]-y[binx==0][0]
+    dy = y[binx == 0][1]-y[binx == 0][0]
     biny = np.array(y/dy+0.5, dtype=int)
     n = np.bincount(biny)
     nx = n[0]

@@ -201,3 +201,34 @@ def shift_and_tilt_approx(arr, full_output=False):
             return arr - corrective, coeffs
         else:
             return arr - corrective
+
+
+def compute_rms_slope(profile, resolution=None, size=None, dim=None):
+    "computes the rms height gradient fluctuation of the surface"
+    if resolution is None:
+        resolution = profile.shape
+    if size is None:
+        try:
+            size = profile.size
+        except:
+            size = profile.shape
+
+    grid_spacing = np.array(size)/np.array(resolution)
+    if dim is None:
+        dims = range(len(profile.shape))
+    else:
+        dims = range(dim)
+    diff = [np.diff(profile[:, :], n=1, axis=d)/grid_spacing[d]
+            for d in dims]
+    return np.sqrt((diff[0]**2).mean()+(diff[1]**2).mean())
+
+
+def get_q_from_lambda(lambda_min, lambda_max):
+    """ Conversion between wavelength and angular frequency
+    """
+    if lambda_min == 0:
+        q_max = float('inf')
+    else:
+        q_max = 2*np.pi/lambda_min
+    q_min = 2*np.pi/lambda_max
+    return q_min, q_max
