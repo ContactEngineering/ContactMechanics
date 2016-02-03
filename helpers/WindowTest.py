@@ -35,8 +35,8 @@ import os.path
 
 import matplotlib.pyplot as plt
 
-import PyPyContact.Tools as Tools
-import PyPyContact.Surface as Surf
+import PyCo.Tools as Tools
+import PyCo.Surface as Surf
 
 counter = 0
 def process(surf_name, surface):

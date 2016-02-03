@@ -13,12 +13,12 @@
 
  Copyright (C) 2015 Till Junge
 
-PyPyContact is free software; you can redistribute it and/or
+PyCo is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3, or (at
 your option) any later version.
 
-PyPyContact is distributed in the hope that it will be useful, but
+PyCo is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 General Public License for more details.
@@ -47,13 +47,13 @@ try:
     import os
     from netCDF4 import Dataset
 
-    from PyPyContact.System import SystemFactory, IncompatibleFormulationError
-    from PyPyContact.System import IncompatibleResolutionError
-    from PyPyContact.System.Systems import SmoothContactSystem
-    import PyPyContact.SolidMechanics as Solid
-    import PyPyContact.ContactMechanics as Contact
-    import PyPyContact.Surface as Surface
-    import PyPyContact.Tools as Tools
+    from PyCo.System import SystemFactory, IncompatibleFormulationError
+    from PyCo.System import IncompatibleResolutionError
+    from PyCo.System.Systems import SmoothContactSystem
+    import PyCo.SolidMechanics as Solid
+    import PyCo.ContactMechanics as Contact
+    import PyCo.Surface as Surface
+    import PyCo.Tools as Tools
 except ImportError as err:
     import sys
     print(err)
@@ -365,7 +365,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         self.assertTrue(
             error < tol,
             ("computation of lj93smooth cut-off radius differs from pycontact "
-             "reference: PyPyContact: {}, pycontact: {}, error: {}, tol: "
+             "reference: PyCo: {}, pycontact: {}, error: {}, tol: "
             "{}").format(potential.r_c, ref_data.lj_rc2, error, tol))
         ## 2. replicate substrate
         res = (ref_data.size//2, ref_data.size//2)
@@ -446,7 +446,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         self.assertTrue(
             error < tol,
             ("computation of lj93smooth cut-off radius differs from pycontact "
-             "reference: PyPyContact: {}, pycontact: {}, error: {}, tol: "
+             "reference: PyCo: {}, pycontact: {}, error: {}, tol: "
             "{}").format(potential.r_c, ref_data.lj_rc2, error, tol))
         nb_compars = 3
         normalforce = np.zeros(nb_compars)

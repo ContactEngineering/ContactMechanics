@@ -13,12 +13,12 @@
 
  Copyright (C) 2015 Till Junge
 
-PyPyContact is free software; you can redistribute it and/or
+PyCo is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3, or (at
 your option) any later version.
 
-PyPyContact is distributed in the hope that it will be useful, but
+PyCo is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 General Public License for more details.
@@ -48,20 +48,20 @@ class ImportabilityChecks(unittest.TestCase):
         except ImportError: pass
         return return_code
 
-    def test_PyPyContact(self):
-        self.assertEqual(self.import_module("PyPyContact"), 0)
+    def test_PyCo(self):
+        self.assertEqual(self.import_module("PyCo"), 0)
 
     def test_ContactMechanics(self):
-        self.assertEqual(self.import_module("PyPyContact.ContactMechanics"), 0)
+        self.assertEqual(self.import_module("PyCo.ContactMechanics"), 0)
 
     def test_SolidMechanics(self):
-        self.assertEqual(self.import_module("PyPyContact.SolidMechanics"), 0)
+        self.assertEqual(self.import_module("PyCo.SolidMechanics"), 0)
 
     def test_Solver(self):
-        self.assertEqual(self.import_module("PyPyContact.System"), 0)
+        self.assertEqual(self.import_module("PyCo.System"), 0)
 
     def test_Surface(self):
-        self.assertEqual(self.import_module("PyPyContact.Surface"), 0)
+        self.assertEqual(self.import_module("PyCo.Surface"), 0)
 
 if __name__ == '__main__':
     unittest.main()

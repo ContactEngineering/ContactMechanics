@@ -7,18 +7,18 @@
 
 @date   02 Feb 2016
 
-@brief  Tests for PyPyContact Goodies
+@brief  Tests for PyCo Goodies
 
 @section LICENCE
 
  Copyright (C) 2016 Till Junge
 
-PyPyContact is free software; you can redistribute it and/or
+PyCo is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3, or (at
 your option) any later version.
 
-PyPyContact is distributed in the hope that it will be useful, but
+PyCo is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 General Public License for more details.
@@ -34,7 +34,7 @@ try:
     import numpy as np
     import warnings
 
-    import PyPyContact.Goodies as Goodies
+    import PyCo.Goodies as Goodies
 except ImportError as err:
     import sys
     print(err)

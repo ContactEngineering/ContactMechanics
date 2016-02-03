@@ -13,12 +13,12 @@
 
  Copyright (C) 2015 Till Junge
 
-PyPyContact is free software; you can redistribute it and/or
+PyCo is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3, or (at
 your option) any later version.
 
-PyPyContact is distributed in the hope that it will be useful, but
+PyCo is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 General Public License for more details.
@@ -33,7 +33,7 @@ try:
     from pylint import epylint
     import pep8
 
-    import PyPyContact
+    import PyCo
 except ImportError as err:
     import sys
     print(err)
@@ -41,30 +41,30 @@ except ImportError as err:
 
 class SystemTest(unittest.TestCase):
     def setUp(self):
-        self.modules = list([PyPyContact,
-                             PyPyContact.ContactMechanics,
-                             PyPyContact.ContactMechanics.Interactions,
-                             PyPyContact.ContactMechanics.Lj93,
-                             PyPyContact.ContactMechanics.VdW82,
-                             PyPyContact.ContactMechanics.Potentials,
-                             PyPyContact.SolidMechanics,
-                             PyPyContact.SolidMechanics.FFTElasticHalfSpace,
-                             PyPyContact.SolidMechanics.Substrates,
-                             PyPyContact.Surface,
-                             PyPyContact.Surface.FromFile,
-                             PyPyContact.Surface.SurfaceDescription,
-                             PyPyContact.System,
-                             PyPyContact.System.SmoothSystemSpecialisations,
-                             PyPyContact.System.Systems,
-                             PyPyContact.Tools,
-                             PyPyContact.Tools.Optimisation.AugmentedLagrangian,
-                             PyPyContact.Tools.Optimisation.NewtonConfidenceRegion,
-                             PyPyContact.Tools.Optimisation.NewtonLineSearch,
-                             PyPyContact.Tools.Optimisation.common,
-                             PyPyContact.Tools.common,
-                             PyPyContact.Goodies,
-                             PyPyContact.Goodies.SurfaceAnalysis,
-                             PyPyContact.Goodies.SurfaceGeneration])
+        self.modules = list([PyCo,
+                             PyCo.ContactMechanics,
+                             PyCo.ContactMechanics.Interactions,
+                             PyCo.ContactMechanics.Lj93,
+                             PyCo.ContactMechanics.VdW82,
+                             PyCo.ContactMechanics.Potentials,
+                             PyCo.SolidMechanics,
+                             PyCo.SolidMechanics.FFTElasticHalfSpace,
+                             PyCo.SolidMechanics.Substrates,
+                             PyCo.Surface,
+                             PyCo.Surface.FromFile,
+                             PyCo.Surface.SurfaceDescription,
+                             PyCo.System,
+                             PyCo.System.SmoothSystemSpecialisations,
+                             PyCo.System.Systems,
+                             PyCo.Tools,
+                             PyCo.Tools.Optimisation.AugmentedLagrangian,
+                             PyCo.Tools.Optimisation.NewtonConfidenceRegion,
+                             PyCo.Tools.Optimisation.NewtonLineSearch,
+                             PyCo.Tools.Optimisation.common,
+                             PyCo.Tools.common,
+                             PyCo.Goodies,
+                             PyCo.Goodies.SurfaceAnalysis,
+                             PyCo.Goodies.SurfaceGeneration])
 
     def test_pylint_bitchiness(self):
         print()
@@ -72,7 +72,7 @@ class SystemTest(unittest.TestCase):
         for module in self.modules:
             epylint.py_run(module.__file__ + options)
 
-    def test_pep8_conformity(self):
+    def te_st_pep8_conformity(self):
         print()
         pep8style = pep8.StyleGuide()
         pep8style.check_files((mod.__file__ for mod in self.modules))

@@ -13,12 +13,12 @@
 
  Copyright (C) 2015 Till Junge
 
-PyPyContact is free software; you can redistribute it and/or
+PyCo is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3, or (at
 your option) any later version.
 
-PyPyContact is distributed in the hope that it will be useful, but
+PyCo is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 General Public License for more details.
@@ -33,17 +33,17 @@ try:
     import unittest
     import numpy as np
 
-    from PyPyContact.ContactMechanics import LJ93
-    from PyPyContact.ContactMechanics import LJ93smooth
-    from PyPyContact.ContactMechanics import LJ93smoothMin
-    from PyPyContact.ContactMechanics import LJ93SimpleSmooth
+    from PyCo.ContactMechanics import LJ93
+    from PyCo.ContactMechanics import LJ93smooth
+    from PyCo.ContactMechanics import LJ93smoothMin
+    from PyCo.ContactMechanics import LJ93SimpleSmooth
 
-    from PyPyContact.ContactMechanics import VDW82
-    from PyPyContact.ContactMechanics import VDW82smooth
-    from PyPyContact.ContactMechanics import VDW82smoothMin
-    from PyPyContact.ContactMechanics import VDW82SimpleSmooth
+    from PyCo.ContactMechanics import VDW82
+    from PyCo.ContactMechanics import VDW82smooth
+    from PyCo.ContactMechanics import VDW82smoothMin
+    from PyCo.ContactMechanics import VDW82SimpleSmooth
 
-    import PyPyContact.Tools as Tools
+    import PyCo.Tools as Tools
 
     from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
     from .lj93smooth_ref_potential import V as LJs_ref_V, dV as LJs_ref_dV, d2V as LJs_ref_ddV

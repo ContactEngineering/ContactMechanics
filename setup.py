@@ -32,8 +32,8 @@ Boston, MA 02111-1307, USA.
 from setuptools import setup, find_packages
 
 setup(
-    name = "PyPyContact",
-    version = "0.1",
+    name = "PyCo",
+    version = "0.9",
     packages = find_packages(),
     # metadata for upload to PyPI
     author = "Till Junge",

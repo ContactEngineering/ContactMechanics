@@ -32,10 +32,10 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 import matplotlib.pyplot as plt
 
-from PyPyContact.System import SystemFactory
-from PyPyContact.Surface import Sphere
-from PyPyContact.ContactMechanics import VDW82smoothMin as VdwPot
-from PyPyContact.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
+from PyCo.System import SystemFactory
+from PyCo.Surface import Sphere
+from PyCo.ContactMechanics import VDW82smoothMin as VdwPot
+from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
 
 
 plt.ion()

@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.
 """
 
 import numpy as np
-from PyPyContact.ContactMechanics import VDW82
+from PyCo.ContactMechanics import VDW82
 
 
 import matplotlib.pyplot as plt

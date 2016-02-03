@@ -13,12 +13,12 @@
 
  Copyright (C) 2015 Till Junge
 
-PyPyContact is free software; you can redistribute it and/or
+PyCo is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3, or (at
 your option) any later version.
 
-PyPyContact is distributed in the hope that it will be useful, but
+PyCo is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 General Public License for more details.
@@ -34,17 +34,17 @@ try:
     import numpy as np
     from scipy.optimize import minimize
 
-    from PyPyContact.Tools.Optimisation import intersection_confidence_region
-    from PyPyContact.Tools.Optimisation import dogleg
-    from PyPyContact.Tools.Optimisation import steihaug_toint
-    from PyPyContact.Tools.Optimisation import modified_cholesky
-    from PyPyContact.Tools.Optimisation import first_wolfe_condition
-    from PyPyContact.Tools.Optimisation import second_wolfe_condition
-    from PyPyContact.Tools.Optimisation import line_search
-    from PyPyContact.Tools.Optimisation import augmented_lagrangian
-    from PyPyContact.Tools.Optimisation import newton_linesearch
-    from PyPyContact.Tools.Optimisation import newton_confidence_region
-    from PyPyContact.Tools import mean_err
+    from PyCo.Tools.Optimisation import intersection_confidence_region
+    from PyCo.Tools.Optimisation import dogleg
+    from PyCo.Tools.Optimisation import steihaug_toint
+    from PyCo.Tools.Optimisation import modified_cholesky
+    from PyCo.Tools.Optimisation import first_wolfe_condition
+    from PyCo.Tools.Optimisation import second_wolfe_condition
+    from PyCo.Tools.Optimisation import line_search
+    from PyCo.Tools.Optimisation import augmented_lagrangian
+    from PyCo.Tools.Optimisation import newton_linesearch
+    from PyCo.Tools.Optimisation import newton_confidence_region
+    from PyCo.Tools import mean_err
 
 except ImportError as err:
     import sys

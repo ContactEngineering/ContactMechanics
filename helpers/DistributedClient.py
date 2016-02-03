@@ -7,7 +7,7 @@
 
 @date   19 Mar 2015
 
-@brief  example for using the  multiprocessing capabilities of PyPyContact, clientside
+@brief  example for using the  multiprocessing capabilities of PyCo, clientside
 
 @section LICENCE
 
@@ -29,7 +29,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-from PyPyContact.Tools import BaseWorker
+from PyCo.Tools import BaseWorker
 
 class Worker(BaseWorker):
     def __init__(self, address, port, key, worker_id):

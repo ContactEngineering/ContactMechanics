@@ -31,8 +31,8 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 import matplotlib.pyplot as plt
 
-import PyPyContact.Tools as Tools
-import PyPyContact.Surface as Surf
+import PyCo.Tools as Tools
+import PyCo.Surface as Surf
 
 from SurfAnalysisHelper import test_surf_analysis
 
