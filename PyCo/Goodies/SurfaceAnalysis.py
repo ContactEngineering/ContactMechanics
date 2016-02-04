@@ -490,7 +490,7 @@ def radial_average(C_xy, rmax, nbins, size=None):
 
 
 def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
-                      size=None, window=None):
+                      size=None, window=None, fold=True):
     """
     Compute power spectrum from 1D FFT.
 
@@ -542,11 +542,15 @@ def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
 
     # Fold +q and -q branches. Note: Entry q=0 appears just once, hence exclude
     # from average!
-    C_all = C_raw[:nx//2, :]
-    C_all[1:nx//2, :] += C_raw[nx-1:(nx+1)//2:-1, :]
-    C_all /= 2
-
-    return q, C_all.mean(axis=1)
+    if fold:
+        C_all = C_raw[:nx//2, :]
+        C_all[1:nx//2, :] += C_raw[nx-1:(nx+1)//2:-1, :]
+        C_all /= 2
+    
+        return q, C_all.mean(axis=1)
+    else:
+        return np.roll(np.append(np.append(q, [2*pi*(nx//2)/sx]), -q[:0:-1]), nx//2), \
+               np.roll(C_raw.mean(axis=1), nx//2)
 
 
 def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
@@ -602,6 +606,9 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
     # Compute FFT and normalize
     surface_qk = area0*np.fft.fft2(surface_xy[:, :])
     C_qk = abs(surface_qk)**2/(sx*sy)  # pylint: disable=invalid-name
+
+    if nbins is None:
+        return C_qk
 
     # Radial average
     qedges, dummy_n, C_val = radial_average(  # pylint: disable=invalid-name
