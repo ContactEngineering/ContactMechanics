@@ -312,7 +312,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         kforce = fftn(force)
         np_pts = np.prod(self.res)
         area_per_pt = np.prod(self.size)/np_pts
-        energy = .5*np.vdot(kforce, kdisp)/np_pts
+        energy = .5*np.vdot(-kforce, kdisp)/np_pts
         error = abs(energy.imag)
         tol = 1e-10
         self.assertTrue(error < tol,
@@ -320,8 +320,10 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
                              error, tol))
         error = abs(energy-hs.evaluate_elastic_energy_k_space(kforce, kdisp))
         self.assertTrue(error < tol,
-                         "error (comparison) = {}, tol = {}".format(
-                             error, tol))
+                        ("error (comparison) = {}, tol = {}, energy = {}, "
+                         "kenergy = {}").format(
+                             error, tol, energy,
+                             hs.evaluate_elastic_energy_k_space(kforce, kdisp)))
 
     def test_energy(self):
         tol = 1e-10
@@ -330,7 +332,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         E = 4 + rand() # Young's Mod
         for res in [4, 8, 16]:
             area_per_pt = l/res
-            x = np.arange(res)*l/res
+            x = np.arange(res)*area_per_pt
             force = a*np.cos(2*np.pi/l*x)
 
             ## theoretical FFT of force
@@ -358,6 +360,9 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             disp = hs.evaluate_disp(force)
             e =  hs.evaluate_elastic_energy(force, disp)
             kdisp = hs.evaluate_k_disp(force)
+            self.assertTrue(abs(disp - ifftn(kdisp)).sum()<tol,
+                            ("disp   = {}\n"
+                             "ikdisp = {}").format(disp, ifftn(kdisp)))
             ee = hs.evaluate_elastic_energy_k_space(fforce, kdisp)
             self.assertTrue(
                 abs(e-ee) < tol,

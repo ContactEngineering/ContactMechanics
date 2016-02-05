@@ -54,6 +54,9 @@ try:
     import PyCo.ContactMechanics as Contact
     import PyCo.Surface as Surface
     import PyCo.Tools as Tools
+
+
+    import matplotlib.pyplot as plt
 except ImportError as err:
     import sys
     print(err)
@@ -394,8 +397,9 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         error = Tools.mean_err(ref_profile-correction, gap)
         self.assertTrue(
             error < tol,
-            "initial profiles differ (mean error ē = {} > tol = {})".format(
-                error, tol))
+            ("initial profiles differ (mean error ē = {} > tol = {}, mean gap = {}"
+            "mean ref_profile = {})").format(
+                error, tol, gap.mean(), (ref_profile-correction).mean()))
         # pycontact does not save the offset in the nc, so this one has to be
         # taken on faith
         fun = S.objective(offset+correction, gradient=True)
@@ -404,9 +408,14 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ## initial guess (cheating) is the solution of pycontact
         disp = np.zeros(S.substrate.computational_resolution)
         disp[:ref_data.size, :ref_data.size] = ref_data.variables['u'][0]
-
+        gap = S.compute_gap(disp, offset)
+        print("gap:     min, max = {}, offset = {}".format((gap.min(), gap.max()), offset))
+        print("profile: min, max = {}".format((S.surface.profile().min(), S.surface.profile().max())))
         options = dict(ftol = 1e-12, gtol = 1e-10)
         result = minimize(fun, disp, jac=True, callback=S.callback(force=True), method = 'L-BFGS-B', options=options)
+
+        # options = dict(ftol = 1e-12, gtol = 1e-10, maxiter=100000)
+        # result = minimize(fun_hard, disp, jac=False, callback=S.callback(force=False), method = 'L-BFGS-B', options=options)
 
         e, force = fun(result.x)
 
@@ -415,10 +424,36 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         error = abs(ref_N - S.compute_normal_force())
         # here the answers differ slightly, relaxing the tol for this one
         ftol = 1e-7
+
+        fig = plt.figure()
+        CS = plt.contourf(ref_data.variables['f'][0])
+        plt.colorbar(CS)
+        plt.title("ref")
+        fig = plt.figure()
+        CS = plt.contourf(S.substrate.force[:32, :32])
+        plt.colorbar(CS)
+        plt.title("substrate")
+        fig = plt.figure()
+        CS = plt.contourf(S.interaction.force[:32, :32])
+        plt.colorbar(CS)
+        plt.title("interaction")
+        plt.show()
+
+        # fig = plt.figure()
+        # CS = plt.contourf(ref_data.variables['u'][0][:32, :32])
+        # plt.colorbar(CS)
+        # plt.title("ref_u")
+        # fig = plt.figure()
+        # CS = plt.contourf(result.x.reshape([64, 64])[:32, :32])
+        # plt.colorbar(CS)
+        # plt.title("my_u")
+        # plt.show()
+
         self.assertTrue(
             error < ftol,
-            "resulting normal forces differ: error = {} > tol = {}".format(
-                error, ftol))
+            ("resulting normal forces differ: error = {} > tol = {}, "
+             "ref_force_n = {}, my_force_n = {}\nOptimResult was {}\nelast energy = {}").format(
+                error, ftol, ref_N, S.compute_normal_force(), result, S.substrate.energy))
         error = Tools.mean_err(
             disp, result.x.reshape(S.substrate.computational_resolution))
         self.assertTrue(

@@ -119,8 +119,14 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         non-penetrating contact has gap >= 0
         """
         if self.dim == 1:
+            ##return (disp[:self.resolution[0]] -
+            ##        (self.surface.profile(*profile_args, **profile_kwargs) +
+            ##         offset))
             return (offset - disp[:self.resolution[0]] -
                     self.surface.profile(*profile_args, **profile_kwargs))
+        ##return (disp[:self.resolution[0], :self.resolution[1]] -
+        ##        (self.surface.profile(*profile_args, **profile_kwargs) +
+        ##         offset))
         return (offset - disp[:self.resolution[0], :self.resolution[1]] -
                 self.surface.profile(*profile_args, **profile_kwargs))
 
