@@ -33,7 +33,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "PyCo",
-    version = "0.9",
+    version = "0.9.1",
     packages = find_packages(),
     # metadata for upload to PyPI
     author = "Till Junge",

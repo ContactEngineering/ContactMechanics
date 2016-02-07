@@ -119,16 +119,12 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         non-penetrating contact has gap >= 0
         """
         if self.dim == 1:
-            ##return (disp[:self.resolution[0]] -
-            ##        (self.surface.profile(*profile_args, **profile_kwargs) +
-            ##         offset))
-            return (-disp[:self.resolution[0]] -
-                    (self.surface.profile(*profile_args, **profile_kwargs) + offset))
-        ##return (disp[:self.resolution[0], :self.resolution[1]] -
-        ##        (self.surface.profile(*profile_args, **profile_kwargs) +
-        ##         offset))
-        return (-disp[:self.resolution[0], :self.resolution[1]] -
-                (self.surface.profile(*profile_args, **profile_kwargs) + offset))
+            return (disp[:self.resolution[0]] -
+                    (self.surface.profile(*profile_args, **profile_kwargs) +
+                     offset))
+        return (disp[:self.resolution[0], :self.resolution[1]] -
+                (self.surface.profile(*profile_args, **profile_kwargs) +
+                 offset))
 
     @abc.abstractmethod
     def compute_normal_force(self):
@@ -369,19 +365,16 @@ class SmoothContactSystem(SystemBase):
                                  area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
 
-        # attention: the gradient of the interaction has the wrong sign,
-        # because the derivative of the gap with respect to displacement
-        # introduces a -1 factor. Hence the minus sign in the 'sum' of forces:
         self.energy = (self.interaction.energy +
                        self.substrate.energy
                        if pot else None)
         if forces:
             self.force = self.substrate.force.copy()
             if self.dim == 1:
-                self.force[:self.resolution[0]] -= \
+                self.force[:self.resolution[0]] += \
                   self.interaction.force  # nopep8
             else:
-                self.force[:self.resolution[0], :self.resolution[1]] -= \
+                self.force[:self.resolution[0], :self.resolution[1]] += \
                   self.interaction.force  # nopep8
         else:
             self.force = None

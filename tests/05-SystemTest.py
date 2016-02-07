@@ -174,14 +174,14 @@ class SystemTest(unittest.TestCase):
                 f_combo, V, error, tol))
 
 
-        g_combo = -i['g'] + s['g'] ## -minus sign comes from derivative of gap
+        g_combo = i['g'] + s['g']
         error = Tools.mean_err(g_combo, g)
         self.assertTrue(
             error < tol,
             "g_combo = {}, g = {}, error = {}, tol = {}".format(
                 g_combo, g, error, tol))
 
-        approx_g_combo = -i['a'] + s['a'] ## minus sign comes from derivative of gap
+        approx_g_combo = i['a'] + s['a']
         error = Tools.mean_err(approx_g_combo, approx_g)
         self.assertTrue(
             error < tol,
@@ -276,11 +276,30 @@ class SystemTest(unittest.TestCase):
         rep_force = np.where(
             S.interaction.force > 0, S.interaction.force, 0
             )
-        alt_rep_force = np.where(
-            S.substrate.force > 0, S.substrate.force, 0
+        alt_rep_force = -np.where(
+            S.substrate.force < 0, S.substrate.force, 0
             )
 
         error = Tools.mean_err(rep_force, alt_rep_force)
+
+
+        ## fig = plt.figure()
+        ## CS = plt.contourf(S.interaction.force)
+        ## plt.colorbar(CS)
+        ## plt.title("interaction")
+        ## fig = plt.figure()
+        ## CS = plt.contourf(S.substrate.force)
+        ## plt.colorbar(CS)
+        ## plt.title("substrate")
+        ## plt.show()
+
+        self.assertTrue(error < 1e-6, "error = {}".format(error))
+
+        error = rep_force.sum() - S.compute_repulsive_force()
+        self.assertTrue(error < 1e-6, "error = {}".format(error))
+
+        error = (rep_force.sum() + S.compute_attractive_force() -
+                 S.compute_normal_force())
         self.assertTrue(error < 1e-6, "error = {}".format(error))
 
 
@@ -407,11 +426,11 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
         ## initial guess (cheating) is the solution of pycontact
         disp = np.zeros(S.substrate.computational_resolution)
-        disp[:ref_data.size, :ref_data.size] = ref_data.variables['u'][0]
+        disp[:ref_data.size, :ref_data.size] = -ref_data.variables['u'][0]
         gap = S.compute_gap(disp, offset)
         print("gap:     min, max = {}, offset = {}".format((gap.min(), gap.max()), offset))
         print("profile: min, max = {}".format((S.surface.profile().min(), S.surface.profile().max())))
-        options = dict(ftol = 1e-12, gtol = 1e-10)
+        options = dict(ftol = 1e-15, gtol = 1e-12)
         result = minimize(fun, disp, jac=True, callback=S.callback(force=True), method = 'L-BFGS-B', options=options)
 
         # options = dict(ftol = 1e-12, gtol = 1e-10, maxiter=100000)
@@ -439,15 +458,19 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ## plt.title("interaction")
         ## plt.show()
 
-        # fig = plt.figure()
-        # CS = plt.contourf(ref_data.variables['u'][0][:32, :32])
-        # plt.colorbar(CS)
-        # plt.title("ref_u")
-        # fig = plt.figure()
-        # CS = plt.contourf(result.x.reshape([64, 64])[:32, :32])
-        # plt.colorbar(CS)
-        # plt.title("my_u")
-        # plt.show()
+        ## fig = plt.figure()
+        ## CS = plt.contourf(-ref_data.variables['u'][0][:32, :32])
+        ## plt.colorbar(CS)
+        ## plt.title("ref_u")
+        ## fig = plt.figure()
+        ## CS = plt.contourf(result.x.reshape([64, 64])[:32, :32])
+        ## plt.colorbar(CS)
+        ## plt.title("my_u")
+        ## fig = plt.figure()
+        ## CS = plt.contourf(result.x.reshape([64, 64])[:32, :32] + ref_data.variables['u'][0][:32, :32])
+        ## plt.colorbar(CS)
+        ## plt.title("my_u - ref_u")
+        ## plt.show()
 
         self.assertTrue(
             error < ftol,
@@ -459,9 +482,9 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         error = Tools.mean_err(
             disp, result.x.reshape(S.substrate.computational_resolution))
         self.assertTrue(
-            error < tol,
+            error < ftol,
             "resulting displacements differ: error = {} > tol = {}".format(
-                error, tol))
+                error, ftol))
 
     def test_size_insensitivity(self):
         tol = 1e-6
