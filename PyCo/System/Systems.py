@@ -122,13 +122,13 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             ##return (disp[:self.resolution[0]] -
             ##        (self.surface.profile(*profile_args, **profile_kwargs) +
             ##         offset))
-            return (offset - disp[:self.resolution[0]] -
-                    self.surface.profile(*profile_args, **profile_kwargs))
+            return (-disp[:self.resolution[0]] -
+                    (self.surface.profile(*profile_args, **profile_kwargs) + offset))
         ##return (disp[:self.resolution[0], :self.resolution[1]] -
         ##        (self.surface.profile(*profile_args, **profile_kwargs) +
         ##         offset))
-        return (offset - disp[:self.resolution[0], :self.resolution[1]] -
-                self.surface.profile(*profile_args, **profile_kwargs))
+        return (-disp[:self.resolution[0], :self.resolution[1]] -
+                (self.surface.profile(*profile_args, **profile_kwargs) + offset))
 
     @abc.abstractmethod
     def compute_normal_force(self):

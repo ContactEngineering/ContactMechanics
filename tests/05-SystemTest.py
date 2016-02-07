@@ -106,7 +106,7 @@ class SystemTest(unittest.TestCase):
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         disp = random(res)*self.sig/10
         disp -= disp.mean()
-        offset = self.sig
+        offset = -self.sig
         gap = S.compute_gap(disp, offset)
 
         ## check subgradient of potential
@@ -316,7 +316,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         # free, non-periodic  boundary. A user who invokes a system constructor
         # directliy like this is almost certainly mistaken
         S = SmoothContactSystem(substrate, self.smooth, sphere)
-        offset = self.sig
+        offset = -self.sig
         disp = np.zeros(substrate.computational_resolution)
 
         fun_jac = S.objective(offset, gradient=True)
@@ -389,21 +389,21 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
         ref_profile = np.array(
             ref_data.variables['h']+ref_data.variables['avgh'][0])[:32, :32]
-        offset = .8*potential.r_c
+        offset = -.8*potential.r_c
         gap = S.compute_gap(np.zeros(substrate.computational_resolution), offset)
         diff = ref_profile-gap
         # pycontact centres spheres at (n + 0.5, m + 0.5). need to correct for test
-        correction = np.sqrt(radius**2-.5)-radius
-        error = Tools.mean_err(ref_profile-correction, gap)
+        correction = radius - np.sqrt(radius**2-.5)
+        error = Tools.mean_err(ref_profile + correction, gap)
         self.assertTrue(
             error < tol,
             ("initial profiles differ (mean error ē = {} > tol = {}, mean gap = {}"
             "mean ref_profile = {})").format(
-                error, tol, gap.mean(), (ref_profile-correction).mean()))
+                error, tol, gap.mean(), (ref_profile + correction).mean()))
         # pycontact does not save the offset in the nc, so this one has to be
         # taken on faith
-        fun = S.objective(offset+correction, gradient=True)
-        fun_hard = S.objective(offset, gradient=False)
+        fun = S.objective(offset + correction, gradient=True)
+        fun_hard = S.objective(offset + correction, gradient=False)
 
         ## initial guess (cheating) is the solution of pycontact
         disp = np.zeros(S.substrate.computational_resolution)
@@ -425,19 +425,19 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         # here the answers differ slightly, relaxing the tol for this one
         ftol = 1e-7
 
-        fig = plt.figure()
-        CS = plt.contourf(ref_data.variables['f'][0])
-        plt.colorbar(CS)
-        plt.title("ref")
-        fig = plt.figure()
-        CS = plt.contourf(S.substrate.force[:32, :32])
-        plt.colorbar(CS)
-        plt.title("substrate")
-        fig = plt.figure()
-        CS = plt.contourf(S.interaction.force[:32, :32])
-        plt.colorbar(CS)
-        plt.title("interaction")
-        plt.show()
+        ## fig = plt.figure()
+        ## CS = plt.contourf(ref_data.variables['f'][0])
+        ## plt.colorbar(CS)
+        ## plt.title("ref")
+        ## fig = plt.figure()
+        ## CS = plt.contourf(S.substrate.force[:32, :32])
+        ## plt.colorbar(CS)
+        ## plt.title("substrate")
+        ## fig = plt.figure()
+        ## CS = plt.contourf(S.interaction.force[:32, :32])
+        ## plt.colorbar(CS)
+        ## plt.title("interaction")
+        ## plt.show()
 
         # fig = plt.figure()
         # CS = plt.contourf(ref_data.variables['u'][0][:32, :32])
@@ -452,8 +452,10 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         self.assertTrue(
             error < ftol,
             ("resulting normal forces differ: error = {} > tol = {}, "
-             "ref_force_n = {}, my_force_n = {}\nOptimResult was {}\nelast energy = {}").format(
-                error, ftol, ref_N, S.compute_normal_force(), result, S.substrate.energy))
+             "ref_force_n = {}, my_force_n = {}\nOptimResult was {}\nelast energy = {}\ninteraction_force = {}\nsubstrate_force = {}\n System type = '{}'").format(
+                 error, ftol, ref_N, S.compute_normal_force(), result,
+                 S.substrate.energy, S.interaction.force.sum(),
+                 S.substrate.force.sum(), type(S)))
         error = Tools.mean_err(
             disp, result.x.reshape(S.substrate.computational_resolution))
         self.assertTrue(
@@ -502,7 +504,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
             S = SmoothContactSystem(substrate, potential, surface)
             # pycontact does not save the offset in the nc, so this one has to be
             # taken on faith
-            offset = .8*potential.r_c
+            offset = -.8*potential.r_c
             fun = S.objective(offset, gradient=True)
             disp = np.zeros(np.prod(res)*4)
             result = minimize(fun, disp, jac=True,
