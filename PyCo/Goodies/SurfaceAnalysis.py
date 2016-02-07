@@ -546,11 +546,11 @@ def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
         C_all = C_raw[:nx//2, :]
         C_all[1:nx//2, :] += C_raw[nx-1:(nx+1)//2:-1, :]
         C_all /= 2
-    
+
         return q, C_all.mean(axis=1)
     else:
-        return np.roll(np.append(np.append(q, [2*pi*(nx//2)/sx]), -q[:0:-1]), nx//2), \
-               np.roll(C_raw.mean(axis=1), nx//2)
+        return (np.roll(np.append(np.append(q, [2*pi*(nx//2)/sx]), -q[:0:-1]),
+                        nx//2), np.roll(C_raw.mean(axis=1), nx//2))
 
 
 def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
