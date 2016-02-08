@@ -66,13 +66,13 @@ class SystemTest(unittest.TestCase):
                              PyCo.Goodies.SurfaceAnalysis,
                              PyCo.Goodies.SurfaceGeneration])
 
-    def test_pylint_bitchiness(self):
+    def te_st_pylint_bitchiness(self):
         print()
         options = ' --rcfile=tests/pylint.rc --disable=locally-disabled'
         for module in self.modules:
             epylint.py_run(module.__file__ + options)
 
-    def test_pep8_conformity(self):
+    def te_st_pep8_conformity(self):
         print()
         pep8style = pep8.StyleGuide()
         pep8style.check_files((mod.__file__ for mod in self.modules))
