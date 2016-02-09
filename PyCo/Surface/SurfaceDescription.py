@@ -303,6 +303,12 @@ class TranslatedSurface(Surface):
         """
         return self.surf.size
 
+    def set_offset(self, offset, offsety=None):
+        if offsety is None:
+            self.offset = offset
+        else:
+            self.offset = (offset, offsety)
+
     def _profile(self):
         """ Computes the translated profile.
         """
