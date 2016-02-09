@@ -74,7 +74,10 @@ class HertzTest(unittest.TestCase):
         surface = Sphere(self.r_s, (nx, nx), (sx, sx))
         system = SystemFactory(substrate, interaction, surface)
 
-        disp, forces, converged = system.minimize_proxy(disp0)
+        result = system.minimize_proxy(disp0)
+        disp = result.x
+        forces = -result.jac
+        converged = result.success
         self.assertTrue(converged)
 
         normal_force = -forces.sum()

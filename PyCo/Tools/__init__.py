@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.
 from .common import compare_containers, evaluate_gradient, mean_err
 from .common import compute_wavevectors, fftn, ifftn
 from .common import shift_and_tilt, shift_and_tilt_approx
-from .common import compute_rms_slope
+from .common import compute_rms_slope, get_q_from_lambda
 from .DistributedComputation import BaseResultManager, BaseWorker
 from .Logger import Logger
 from . import Optimisation
