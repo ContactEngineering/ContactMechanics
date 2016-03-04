@@ -29,11 +29,13 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
+import versioneer
 from setuptools import setup, find_packages
 
 setup(
     name = "PyCo",
-    version = "0.9.1",
+    version = versioneer.get_version(),
+    cmdclass = versioneer.get_cmdclass(),
     packages = find_packages(),
     # metadata for upload to PyPI
     author = "Till Junge",

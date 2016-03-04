@@ -1,0 +1,2 @@
+include versioneer.py
+include PyCo/_version.py
