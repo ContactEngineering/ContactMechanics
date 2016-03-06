@@ -31,6 +31,8 @@ Boston, MA 02111-1307, USA.
 
 import os
 import re
+import xml.etree.ElementTree as ElementTree
+from zipfile import ZipFile
 
 import numpy as np
 
@@ -242,3 +244,64 @@ def read_xyz(fn):
     assert np.all(value_present)
 
     return NumpySurface(data, size=(dx*nx, dy*ny))
+
+
+def read_x3p(fn):
+    """
+    Load x3p-file.
+
+    FIXME: Descriptive error messages. Probably needs to be made more robust.
+
+    Keyword Arguments:
+    fn -- filename
+    """
+
+    # Data types of binary container
+    # See: https://sourceforge.net/p/open-gps/mwiki/X3p/
+    dtype_map = {'I': np.dtype('<u2'),
+                 'L': np.dtype('<u4'),
+                 'F': np.dtype('f4'),
+                 'D': np.dtype('f8')}
+
+    with ZipFile(fn, 'r') as x3p:
+        xmlroot = ElementTree.parse(x3p.open('main.xml')).getroot()
+        record1 = xmlroot.find('Record1')
+        record3 = xmlroot.find('Record3')
+
+        assert record1 is not None
+        assert record3 is not None
+
+        # Parse record1
+
+        feature_type = record1.find('FeatureType')
+        assert feature_type.text == 'SUR'
+        axes = record1.find('Axes')
+        cx = axes.find('CX')
+        cy = axes.find('CY')
+        cz = axes.find('CZ')
+
+        assert cx.find('AxisType').text == 'I'
+        assert cy.find('AxisType').text == 'I'
+
+        xinc = float(cx.find('Increment').text)
+        yinc = float(cy.find('Increment').text)
+
+        datatype = cz.find('DataType').text
+        dtype = dtype_map[datatype]
+
+        # Parse record3
+        matrix_dimension = record3.find('MatrixDimension')
+        nx = int(matrix_dimension.find('SizeX').text)
+        ny = int(matrix_dimension.find('SizeY').text)
+        nz = int(matrix_dimension.find('SizeZ').text)
+
+        assert nz == 1
+
+        data_link = record3.find('DataLink')
+        binfn = data_link.find('PointDataLink').text
+
+        rawdata = x3p.open(binfn).read(nx*ny*dtype.itemsize)
+        data = np.frombuffer(rawdata, count=nx*ny*nz,
+                             dtype=dtype).reshape(nx, ny)
+
+    return NumpySurface(data, size=(xinc*nx, yinc*ny))

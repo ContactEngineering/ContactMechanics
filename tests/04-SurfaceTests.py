@@ -39,7 +39,7 @@ try:
     import os
 
     from PyCo.Surface import NumpyTxtSurface, NumpySurface, Sphere
-    from PyCo.Surface import NumpyAscSurface, read_asc
+    from PyCo.Surface import NumpyAscSurface, read_asc, read_x3p
     from PyCo.Tools import compute_rms_slope
 
 except ImportError as err:
@@ -113,3 +113,14 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.compute_rms_height(), 2.7722350402740072e-07)
         self.assertAlmostEqual(compute_rms_slope(surf), 0.35157901772258338)
 
+class x3pSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_read(self):
+        surface = read_x3p('tests/file_format_examples/example.x3p')
+        nx, ny = surface.shape
+        self.assertEqual(nx, 1035)
+        self.assertEqual(ny, 777)
+        sx, sy = surface.size
+        self.assertAlmostEqual(sx, 0.00068724)
+        self.assertAlmostEqual(sy, 0.00051593)

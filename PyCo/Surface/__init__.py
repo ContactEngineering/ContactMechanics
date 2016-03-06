@@ -34,4 +34,4 @@ from .SurfaceDescription import (Surface, ScaledSurface, TranslatedSurface,
 from .SurfaceDescription import NumpySurface
 from .SurfaceDescription import Sphere
 from .FromFile import (NumpyTxtSurface, NumpyAscSurface, read_asc, read_matrix,
-                       read_xyz)
+                       read_x3p, read_xyz)
