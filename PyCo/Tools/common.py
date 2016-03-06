@@ -97,6 +97,9 @@ def compute_wavevectors(resolution, size, nb_dims):
     and resolution as one vector of components per dimension
     """
     vectors = list()
+    if nb_dims == 1:
+        resolution = [resolution]
+        size = [size]
     for dim in range(nb_dims):
         vectors.append(2*np.pi*np.fft.fftfreq(
             resolution[dim],
