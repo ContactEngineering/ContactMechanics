@@ -210,15 +210,15 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
 NumpyAscSurface = read_asc  # pylint: disable=invalid-name
 
 
-def read_xyz(fn):
+def read_xyz(fobj):
     """
     Load xyz-file
     TODO: LARS_DOC
     Keyword Arguments:
-    fn -- filename
+    fobj -- filename or file object
     """
     # pylint: disable=invalid-name
-    x, y, z = np.loadtxt(fn, unpack=True)  # pylint: disable=invalid-name
+    x, y, z = np.loadtxt(fobj, unpack=True)  # pylint: disable=invalid-name
 
     # Sort x-values into bins. Assume points on surface are equally spaced.
     dx = x[1]-x[0]
@@ -246,14 +246,14 @@ def read_xyz(fn):
     return NumpySurface(data, size=(dx*nx, dy*ny))
 
 
-def read_x3p(fn):
+def read_x3p(fobj):
     """
     Load x3p-file.
 
     FIXME: Descriptive error messages. Probably needs to be made more robust.
 
     Keyword Arguments:
-    fn -- filename
+    fobj -- filename or file object
     """
 
     # Data types of binary container
@@ -263,7 +263,7 @@ def read_x3p(fn):
                  'F': np.dtype('f4'),
                  'D': np.dtype('f8')}
 
-    with ZipFile(fn, 'r') as x3p:
+    with ZipFile(fobj, 'r') as x3p:
         xmlroot = ElementTree.parse(x3p.open('main.xml')).getroot()
         record1 = xmlroot.find('Record1')
         record3 = xmlroot.find('Record3')
@@ -282,6 +282,7 @@ def read_x3p(fn):
 
         assert cx.find('AxisType').text == 'I'
         assert cy.find('AxisType').text == 'I'
+        assert cz.find('AxisType').text == 'A'
 
         xinc = float(cx.find('Increment').text)
         yinc = float(cy.find('Increment').text)
@@ -305,3 +306,17 @@ def read_x3p(fn):
                              dtype=dtype).reshape(nx, ny)
 
     return NumpySurface(data, size=(xinc*nx, yinc*ny))
+
+
+def read(fobj, format=None):
+    if format is None:
+        format = 'asc'
+        if not hasattr(fobj, 'read'):
+            format = os.path.splitext(fobj)[-1][1:]
+
+    readers = {'xyz': read_xyz,
+               'x3p': read_x3p}
+    if format not in readers:
+        return read_asc(fobj)
+    else:
+        return readers[format](fobj)
