@@ -140,7 +140,7 @@ class Logger(object):
         if logfile and self.logfile != logfile:
             print(s, file=logfile)
         if self.logfile:
-            print(s, file=logfile)
+            print(s, file=self.logfile)
         else:
             self.buffer += [ s ]
 
