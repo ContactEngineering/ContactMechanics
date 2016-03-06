@@ -171,12 +171,12 @@ class NetCDFContainer_frame(object):
 
 class NetCDFContainer(object):
     def __init__(self, fn, frame=0, double=False, store_force=False,
-                 mode='r'):
+                 mode='r', format='NETCDF4'):
         self._fn = fn
         self._data = None
         try:
             if __have_netcdf4__:
-                self._data = Dataset(fn, mode, format='NETCDF4')
+                self._data = Dataset(fn, mode, format=format)
             else:
                 if mode == 'ws':
                     mode = 'w'
