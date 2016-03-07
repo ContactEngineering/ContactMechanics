@@ -366,8 +366,11 @@ def read_opd(fobj):
             else:
                 raise IOError("Don't know how to handle element size {}."
                               .format(elsize))
-            data = np.fromfile(fobj, dtype=dtype,
-                               count=nx*ny).reshape(nx, ny)
+            rawdata = fobj.read(nx*ny*dtype.itemsize)
+            data = np.frombuffer(rawdata, count=nx*ny,
+                                 dtype=dtype).reshape(nx, ny)
+            #data = np.fromfile(fobj, dtype=dtype,
+            #                   count=nx*ny).reshape(nx, ny)
         elif n == 'Wavelength':
             wavelength, = unpack('<f', fobj.read(4))
         elif n == 'Mult':
@@ -393,8 +396,11 @@ def read(fobj, format=None):
         if not hasattr(fobj, 'read'):
             format = os.path.splitext(fobj)[-1][1:]
 
-    readers = {'xyz': read_xyz,
+    readers = {'opd': read_opd,
+               'xyz': read_xyz,
                'x3p': read_x3p}
+
+    format = format.lower()
     if format not in readers:
         return read_asc(fobj)
     else:
