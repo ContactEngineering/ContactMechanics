@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.
 import os
 import re
 import xml.etree.ElementTree as ElementTree
+from struct import unpack
 from zipfile import ZipFile
 
 import numpy as np
@@ -249,6 +250,7 @@ def read_xyz(fobj):
 def read_x3p(fobj):
     """
     Load x3p-file.
+    See: http://opengps.eu
 
     FIXME: Descriptive error messages. Probably needs to be made more robust.
 
@@ -306,6 +308,83 @@ def read_x3p(fobj):
                              dtype=dtype).reshape(nx, ny)
 
     return NumpySurface(data, size=(xinc*nx, yinc*ny))
+
+
+def read_opd(fobj):
+    """
+    Load Wyko Vision OPD file.
+
+    FIXME: Descriptive error messages. Probably needs to be made more robust.
+
+    Keyword Arguments:
+    fobj -- filename or file object
+    """
+
+    BLOCK_SIZE = 24
+    def read_block(fobj):
+        blkname = fobj.read(16).split(b'\0', 1)[0].decode('latin-1')
+        blktype, blklen, blkattr = unpack('<hlH', fobj.read(8))
+        return blkname, blktype, blklen, blkattr
+
+    if not hasattr(fobj, 'read'):
+        fobj = open(fobj, 'rb')
+
+    # Header
+    tmp = fobj.read(2)
+
+    # Read directory block
+    dirname, dirtype, dirlen, dirattr = read_block(fobj)
+    if dirname != 'Directory':
+        raise IOError("Error reading directory block. "
+                      "Header is '{}', expected 'Directory'".format(dirname))
+    num_blocks = dirlen//BLOCK_SIZE
+    assert num_blocks*BLOCK_SIZE == dirlen
+
+    blocks = []
+    for i in range(num_blocks-1):
+        blocks += [read_block(fobj)]
+
+    data = None
+    nx = None
+    ny = None
+    pixel_size = 1.0
+    aspect = 1.0
+    for n, t, l, a in blocks:
+        if l <= 0:
+            continue
+        if n == 'RAW DATA' or n == 'RAW_DATA' or n == 'OPD' or n == 'Raw':
+            if data is not None:
+                raise IOError('Multiple data blocks encountered.')
+
+            nx, ny, elsize = unpack('<HHH', fobj.read(6))
+            if elsize == 1:
+                dtype = np.dtype('c')
+            elif elsize == 2:
+                dtype = np.dtype('<i2')
+            elif elsize == 4:
+                dtype = np.dtype('f4')
+            else:
+                raise IOError("Don't know how to handle element size {}."
+                              .format(elsize))
+            data = np.fromfile(fobj, dtype=dtype,
+                               count=nx*ny).reshape(nx, ny)
+        elif n == 'Wavelength':
+            wavelength, = unpack('<f', fobj.read(4))
+        elif n == 'Mult':
+            mult, = unpack('<H', fobj.read(2))
+        elif n == 'Aspect':
+            aspect, = unpack('<f', fobj.read(4))
+        elif n == 'Pixel_size':
+            pixel_size, = unpack('<f', fobj.read(4))
+        else:
+            fobj.read(l)
+
+    fobj.close()
+
+    if data is None:
+        raise IOError('No data block encountered.')
+
+    return NumpySurface(data, size=(nx*pixel_size, ny*pixel_size*aspect))
 
 
 def read(fobj, format=None):
