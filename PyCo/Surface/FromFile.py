@@ -326,8 +326,10 @@ def read_opd(fobj):
         blktype, blklen, blkattr = unpack('<hlH', fobj.read(8))
         return blkname, blktype, blklen, blkattr
 
+    close_file = False
     if not hasattr(fobj, 'read'):
         fobj = open(fobj, 'rb')
+        close_file = True
 
     # Header
     tmp = fobj.read(2)
@@ -369,8 +371,6 @@ def read_opd(fobj):
             rawdata = fobj.read(nx*ny*dtype.itemsize)
             data = np.frombuffer(rawdata, count=nx*ny,
                                  dtype=dtype).reshape(nx, ny)
-            #data = np.fromfile(fobj, dtype=dtype,
-            #                   count=nx*ny).reshape(nx, ny)
         elif n == 'Wavelength':
             wavelength, = unpack('<f', fobj.read(4))
         elif n == 'Mult':
@@ -382,12 +382,109 @@ def read_opd(fobj):
         else:
             fobj.read(l)
 
-    fobj.close()
+    if close_file:
+        fobj.close()
 
     if data is None:
         raise IOError('No data block encountered.')
 
     return NumpySurface(data, size=(nx*pixel_size, ny*pixel_size*aspect))
+
+
+def read_di(fobj):
+    """
+    Load Digital Instrument's Nanoscope files.
+
+    FIXME: Descriptive error messages. Probably needs to be made more robust.
+
+    Keyword Arguments:
+    fobj -- filename or file object
+    """
+
+    close_file = False
+    if not hasattr(fobj, 'read'):
+        fobj = open(fobj, 'rb')
+        close_file = True
+
+    parameters = []
+    section_name = None
+    section_dict = {}
+
+    l = fobj.readline().decode('latin-1').strip()
+    while l and l != '\*File list end':
+        if l.startswith('\\*'):
+            if section_name is not None:
+                parameters += [(section_name, section_dict)]
+            section_name = l[2:]
+            section_dict = {}
+        elif l.startswith('\\'):
+            s = l[1:].split(': ', 1)
+            try:
+                key, value = s
+            except ValueError:
+                key, = s
+                value = ''
+            section_dict[key] = value.strip()
+        else:
+            raise IOError("Header line '{}' does not start with a slash."
+                          "".format(l))
+        l = fobj.readline().decode('latin-1').strip()
+    parameters += [(section_name, section_dict)]
+
+    surfaces = []
+    scanner = None
+    for n, p in parameters:
+        if n == 'Scanner list':
+            scanner = p
+        elif n == 'Ciao image list':
+            image_data_key = re.match('^S \[(.*?)\] ',
+                                      p['@2:Image Data']).group(1)
+            # Extract height data, ignore other entries
+            if image_data_key != 'Height':
+                continue
+
+            nx = int(p['Samps/line'])
+            ny = int(p['Number of lines'])
+            s = p['Scan Size'].split(' ', 2)
+            sx = float(s[0])
+            sy = float(s[1])
+            unit = s[2]
+            offset = int(p['Data offset'])
+            length = int(p['Data length'])
+            elsize = int(p['Bytes/pixel'])
+            if elsize == 2:
+                dtype = np.dtype('<u2')
+            else:
+                raise IOError("Don't know how to handle {} bytes per pixel "
+                              "data.".format(elsize))
+            assert nx*ny*elsize == length
+            fobj.seek(offset)
+            rawdata = fobj.read(nx*ny*dtype.itemsize)
+            unscaleddata = np.frombuffer(rawdata, count=nx*ny,
+                                         dtype=dtype).reshape(nx, ny)
+
+            scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) ',
+                                p['@2:Z scale'])
+            quantity = scale_re.group(1)
+            scale_factor = float(scale_re.group(2))
+            unit = scale_re.group(3)
+
+            unit_check, scale_factor2, unit2 = scanner['@'+quantity].split()
+            assert unit == unit_check
+            scale_factor2 = float(scale_factor2)
+
+            height_unit = unit2.split('/')[0]
+
+            data = unscaleddata * scale_factor * scale_factor2 / 65536
+            surfaces += [(NumpySurface(data, size=(sx, sy)), height_unit)]
+
+    if close_file:
+        fobj.close()
+
+    if len(surfaces) == 1:
+        return surfaces[0]
+    else:
+        return surfaces
 
 
 def read(fobj, format=None):

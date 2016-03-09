@@ -39,7 +39,7 @@ try:
     import os
 
     from PyCo.Surface import NumpyTxtSurface, NumpySurface, Sphere
-    from PyCo.Surface import NumpyAscSurface, read_asc, read_opd, read_x3p
+    from PyCo.Surface import NumpyAscSurface, read_asc, read_di, read_opd, read_x3p
     from PyCo.Tools import compute_rms_slope
 
 except ImportError as err:
@@ -136,3 +136,18 @@ class opdSurfaceTest(unittest.TestCase):
         sx, sy = surface.size
         self.assertAlmostEqual(sx, 0.125909140)
         self.assertAlmostEqual(sy, 0.094431855)
+
+class diSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_read(self):
+        surfaces = read_di('tests/file_format_examples/example.di')
+        self.assertEqual(len(surfaces), 2)
+        surface, unit = surfaces[0]
+        nx, ny = surface.shape
+        self.assertEqual(nx, 512)
+        self.assertEqual(ny, 512)
+        sx, sy = surface.size
+        self.assertAlmostEqual(sx, 500.0)
+        self.assertAlmostEqual(sy, 500.0)
+        self.assertEqual(unit, 'nm')
