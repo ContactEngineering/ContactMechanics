@@ -578,19 +578,28 @@ def detect_format(fobj):
                 if 'main.xml' in zipfile.namelist():
                     if close_file:
                         fobj.close()
+                    else:
+                        fobj.seek(file_pos)
                     return 'x3p'
         except:
             pass
 
-        from igor.binarywave import load
+        fobj.seek(file_pos)
+        import igor.binarywave as ibw
         try:
-            load(fobj)
+            ibw.load(fobj)
+            if close_file:
+                fobj.close()
+            else:
+                fobj.seek(file_pos)
             return 'ibw'
         except:
             pass
 
         if close_file:
             fobj.close()
+        else:
+            fobj.seek(file_pos)
         return None
 
 

@@ -39,8 +39,8 @@ try:
     import os
 
     from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpySurface,
-                              Sphere, read_asc, read_di, read_ibw, read_opd,
-                              read_x3p)
+                              Sphere, read, read_asc, read_di, read_ibw,
+                              read_opd, read_x3p)
     from PyCo.Surface.FromFile import detect_format
     from PyCo.Tools import compute_rms_slope
 
@@ -119,9 +119,10 @@ class detectFormatTest(unittest.TestCase):
     def setUp(self):
         pass
     def test_detection(self):
-        self.assertEqual(detect_format('tests/file_format_examples/example.x3p'), 'x3p')
-        self.assertEqual(detect_format('tests/file_format_examples/example.opd'), 'opd')
         self.assertEqual(detect_format('tests/file_format_examples/example.di'), 'di')
+        self.assertEqual(detect_format('tests/file_format_examples/example.ibw'), 'ibw')
+        self.assertEqual(detect_format('tests/file_format_examples/example.opd'), 'opd')
+        self.assertEqual(detect_format('tests/file_format_examples/example.x3p'), 'x3p')
 
 class x3pSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -174,3 +175,9 @@ class ibwSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(sx, 5.00978e-8)
         self.assertAlmostEqual(sy, 5.00978e-8)
         self.assertEqual(surface.unit, 'm')
+    def test_detect_format_then_read(self):
+        f = open('tests/file_format_examples/example.ibw', 'rb')
+        fmt = detect_format(f)
+        self.assertTrue(fmt, 'ibw')
+        surface = read(f, format=fmt)
+        f.close()
