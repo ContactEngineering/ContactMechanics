@@ -270,21 +270,30 @@ def read_x3p(fobj):
         record1 = xmlroot.find('Record1')
         record3 = xmlroot.find('Record3')
 
-        assert record1 is not None
-        assert record3 is not None
+        if record1 is None:
+            raise IOError("'Record1' not found in XML.")
+        if record3 is None:
+            raise IOError("'Record3' not found in XML.")
 
         # Parse record1
 
         feature_type = record1.find('FeatureType')
-        assert feature_type.text == 'SUR'
+        if feature_type.text != 'SUR':
+            raise ValueError("FeatureType must be 'SUR'.")
         axes = record1.find('Axes')
         cx = axes.find('CX')
         cy = axes.find('CY')
         cz = axes.find('CZ')
 
-        assert cx.find('AxisType').text == 'I'
-        assert cy.find('AxisType').text == 'I'
-        assert cz.find('AxisType').text == 'A'
+        if cx.find('AxisType').text != 'I':
+            raise ValueError("CX AxisType is not 'I'. Don't know how to handle "
+                             "this.")
+        if cy.find('AxisType').text != 'I':
+            raise ValueError("CY AxisType is not 'I'. Don't know how to handle "
+                             "this.")
+        if cz.find('AxisType').text != 'A':
+            raise ValueError("CZ AxisType is not 'A'. Don't know how to handle "
+                             "this.")
 
         xinc = float(cx.find('Increment').text)
         yinc = float(cy.find('Increment').text)
@@ -298,7 +307,9 @@ def read_x3p(fobj):
         ny = int(matrix_dimension.find('SizeY').text)
         nz = int(matrix_dimension.find('SizeZ').text)
 
-        assert nz == 1
+        if nz != 1:
+            raise ValueError('Z dimension has extend != 1. Volumetric data is '
+                             'not supported.')
 
         data_link = record3.find('DataLink')
         binfn = data_link.find('PointDataLink').text
@@ -340,7 +351,8 @@ def read_opd(fobj):
         raise IOError("Error reading directory block. "
                       "Header is '{}', expected 'Directory'".format(dirname))
     num_blocks = dirlen//BLOCK_SIZE
-    assert num_blocks*BLOCK_SIZE == dirlen
+    if num_blocks*BLOCK_SIZE != dirlen:
+        raise IOError('Directory length is not a multiple of the block size.')
 
     blocks = []
     for i in range(num_blocks-1):
@@ -457,7 +469,8 @@ def read_di(fobj):
             else:
                 raise IOError("Don't know how to handle {} bytes per pixel "
                               "data.".format(elsize))
-            assert nx*ny*elsize == length
+            if nx*ny*elsize != length:
+                raise IOError('Data block size differs from extend of surface.')
             fobj.seek(offset)
             rawdata = fobj.read(nx*ny*dtype.itemsize)
             unscaleddata = np.frombuffer(rawdata, count=nx*ny,
@@ -470,7 +483,9 @@ def read_di(fobj):
             unit = scale_re.group(3)
 
             unit_check, scale_factor2, unit2 = scanner['@'+quantity].split()
-            assert unit == unit_check
+            if unit != unit_check:
+                raise ValueError("Units for hard and soft scale differ. Don't "
+                                 "know how to handle this.")
             scale_factor2 = float(scale_factor2)
 
             height_unit = unit2.split('/')[0]
