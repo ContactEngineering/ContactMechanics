@@ -39,7 +39,8 @@ try:
     import os
 
     from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpySurface,
-                              Sphere, read_asc, read_di, read_opd, read_x3p)
+                              Sphere, read_asc, read_di, read_ibw, read_opd,
+                              read_x3p)
     from PyCo.Surface.FromFile import detect_format
     from PyCo.Tools import compute_rms_slope
 
@@ -160,3 +161,16 @@ class diSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(sx, 500.0)
         self.assertAlmostEqual(sy, 500.0)
         self.assertEqual(surface.unit, 'nm')
+
+class ibwSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_read(self):
+        surface = read_ibw('tests/file_format_examples/example.ibw')
+        nx, ny = surface.shape
+        self.assertEqual(nx, 512)
+        self.assertEqual(ny, 512)
+        sx, sy = surface.size
+        self.assertAlmostEqual(sx, 5.00978e-8)
+        self.assertAlmostEqual(sy, 5.00978e-8)
+        self.assertEqual(surface.unit, 'm')

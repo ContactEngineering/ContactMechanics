@@ -509,6 +509,41 @@ def read_di(fobj):
         return surfaces
 
 
+def read_ibw(fobj):
+    """
+    Read IGOR Binary Wave files.
+
+    Keyword Arguments:
+    fobj -- filename or file object
+    """
+    from igor.binarywave import load
+
+    close_file = False
+    if not hasattr(fobj, 'read'):
+        fobj = open(fobj, 'rb')
+        close_file = True
+
+    wave = load(fobj)['wave']
+
+    if close_file:
+        fobj.close()
+
+    channel = 0
+    data = wave['wData'][:,:,channel]
+    # This is just a wild guess...
+    z_unit = wave['wave_header']['dataUnits'][channel].decode('latin-1')
+    xy_unit = wave['wave_header']['dimUnits'][channel, channel].decode('latin-1')
+    assert z_unit == xy_unit
+
+    sfA = wave['wave_header']['sfA']
+    nx, ny = data.shape
+
+    surface = NumpySurface(data, size=(nx*sfA[0], ny*sfA[1]))
+    surface.unit = z_unit
+
+    return surface
+
+
 def detect_format(fobj):
     """
     Detect file format based on its content.
@@ -527,6 +562,7 @@ def detect_format(fobj):
     magic = fobj.read(magic_len)
     fobj.seek(file_pos)
 
+    # Check for magic string
     if magic.startswith(b'\*File list'):
         if close_file:
             fobj.close()
@@ -536,6 +572,7 @@ def detect_format(fobj):
             fobj.close()
         return 'opd'
     else:
+        # Try opening and see if it fails
         try:
             with ZipFile(fobj, 'r') as zipfile:
                 if 'main.xml' in zipfile.namelist():
@@ -543,9 +580,18 @@ def detect_format(fobj):
                         fobj.close()
                     return 'x3p'
         except:
-            if close_file:
-                fobj.close()
-            return None
+            pass
+
+        from igor.binarywave import load
+        try:
+            load(fobj)
+            return 'ibw'
+        except:
+            pass
+
+        if close_file:
+            fobj.close()
+        return None
 
 
 def read(fobj, format=None):
@@ -555,6 +601,7 @@ def read(fobj, format=None):
             format = os.path.splitext(fobj)[-1][1:]
 
     readers = {'di': read_di,
+               'ibw': read_ibw, 
                'opd': read_opd,
                'xyz': read_xyz,
                'x3p': read_x3p}
