@@ -363,6 +363,7 @@ def read_opd(fobj):
     ny = None
     pixel_size = 1.0
     aspect = 1.0
+    mult = 1.0
     for n, t, l, a in blocks:
         if l <= 0:
             continue
@@ -400,7 +401,11 @@ def read_opd(fobj):
     if data is None:
         raise IOError('No data block encountered.')
 
-    return NumpySurface(data, size=(nx*pixel_size, ny*pixel_size*aspect))
+    # Height are in nm, width in mm
+    surface = NumpySurface(data*wavelength/mult*1e-6,
+                           size=(nx*pixel_size, ny*pixel_size*aspect))
+    surface.unit = 'mm'
+    return surface
 
 
 def read_di(fobj):
