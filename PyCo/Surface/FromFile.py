@@ -476,7 +476,9 @@ def read_di(fobj):
             height_unit = unit2.split('/')[0]
 
             data = unscaleddata * scale_factor * scale_factor2 / 65536
-            surfaces += [(NumpySurface(data, size=(sx, sy)), height_unit)]
+            surface = NumpySurface(data, size=(sx, sy))
+            surface.unit = height_unit
+            surfaces += [surface]
 
     if close_file:
         fobj.close()

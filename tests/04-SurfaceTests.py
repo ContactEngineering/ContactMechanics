@@ -152,11 +152,11 @@ class diSurfaceTest(unittest.TestCase):
     def test_read(self):
         surfaces = read_di('tests/file_format_examples/example.di')
         self.assertEqual(len(surfaces), 2)
-        surface, unit = surfaces[0]
+        surface = surfaces[0]
         nx, ny = surface.shape
         self.assertEqual(nx, 512)
         self.assertEqual(ny, 512)
         sx, sy = surface.size
         self.assertAlmostEqual(sx, 500.0)
         self.assertAlmostEqual(sy, 500.0)
-        self.assertEqual(unit, 'nm')
+        self.assertEqual(surface.unit, 'nm')
