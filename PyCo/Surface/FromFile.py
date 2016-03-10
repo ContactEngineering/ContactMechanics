@@ -487,13 +487,53 @@ def read_di(fobj):
         return surfaces
 
 
+def detect_format(fobj):
+    """
+    Detect file format based on its content.
+
+    Keyword Arguments:
+    fobj -- filename or file object
+    """
+
+    close_file = False
+    if not hasattr(fobj, 'read'):
+        fobj = open(fobj, 'rb')
+        close_file = True
+
+    magic_len = 20
+    file_pos = fobj.tell()
+    magic = fobj.read(magic_len)
+    fobj.seek(file_pos)
+
+    if magic.startswith(b'\*File list'):
+        if close_file:
+            fobj.close()
+        return 'di'
+    elif magic.startswith(b'\001\000Directory'):
+        if close_file:
+            fobj.close()
+        return 'opd'
+    else:
+        try:
+            with ZipFile(fobj, 'r') as zipfile:
+                if 'main.xml' in zipfile.namelist():
+                    if close_file:
+                        fobj.close()
+                    return 'x3p'
+        except:
+            if close_file:
+                fobj.close()
+            return None
+
+
 def read(fobj, format=None):
     if format is None:
         format = 'asc'
         if not hasattr(fobj, 'read'):
             format = os.path.splitext(fobj)[-1][1:]
 
-    readers = {'opd': read_opd,
+    readers = {'di': read_di,
+               'opd': read_opd,
                'xyz': read_xyz,
                'x3p': read_x3p}
 

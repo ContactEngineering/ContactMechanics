@@ -38,8 +38,9 @@ try:
     from tempfile import TemporaryDirectory as tmp_dir
     import os
 
-    from PyCo.Surface import NumpyTxtSurface, NumpySurface, Sphere
-    from PyCo.Surface import NumpyAscSurface, read_asc, read_di, read_opd, read_x3p
+    from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpySurface,
+                              Sphere, read_asc, read_di, read_opd, read_x3p)
+    from PyCo.Surface.FromFile import detect_format
     from PyCo.Tools import compute_rms_slope
 
 except ImportError as err:
@@ -112,6 +113,14 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[1], 0.0002404103)
         self.assertAlmostEqual(surf.compute_rms_height(), 2.7722350402740072e-07)
         self.assertAlmostEqual(compute_rms_slope(surf), 0.35157901772258338)
+
+class detectFormatTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_detection(self):
+        self.assertEqual(detect_format('tests/file_format_examples/example.x3p'), 'x3p')
+        self.assertEqual(detect_format('tests/file_format_examples/example.opd'), 'opd')
+        self.assertEqual(detect_format('tests/file_format_examples/example.di'), 'di')
 
 class x3pSurfaceTest(unittest.TestCase):
     def setUp(self):
