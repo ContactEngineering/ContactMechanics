@@ -1,3 +1,5 @@
 igor
+numpy
 pylint
 pep8
+scipy
