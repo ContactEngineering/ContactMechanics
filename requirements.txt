@@ -1,4 +1,5 @@
 igor
+matplotlib
 numpy
 pylint
 pep8
