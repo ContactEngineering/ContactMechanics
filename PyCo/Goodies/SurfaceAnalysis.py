@@ -553,6 +553,22 @@ def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
                         nx//2), np.roll(C_raw.mean(axis=1), nx//2))
 
 
+def get_window_2D(window, nx, ny, size=None):
+    if size is None:
+        sx, sy = nx, ny
+    else:
+        sx, sy = size
+    if window == 'hann':
+        maxr = min(sx, sy)/2
+        r = np.sqrt((sx*(np.arange(nx).reshape(-1,1)-nx//2)/nx)**2 +
+                    (sy*(np.arange(ny).reshape(1,-1)-ny//2)/ny)**2)
+        win = 0.5+0.5*np.cos(pi*r/maxr)
+        win[r>maxr] = 0.0
+        return win
+    else:
+        raise ValueError("Unknown window type '{}'".format(window))
+
+
 def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
                       size=None, window=None, exponent=1/2):
     """
@@ -594,8 +610,7 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
 
     # Construct and apply window
     if window is not None:
-        win = np.outer(get_window(window, nx),
-                       get_window(window, ny))**exponent
+        win = get_window_2D(window, nx, ny, size)
         # Normalize window
         win /= win.mean()
         surface_xy = win*surface_xy[:, :]
