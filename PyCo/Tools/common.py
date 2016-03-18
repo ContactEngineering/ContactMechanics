@@ -474,6 +474,11 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
     return q_val, C_val
 
 
+def compute_rms_height(profile):
+    "computes the rms height fluctuation of the surface"
+    return np.sqrt(((profile[...]-profile[...].mean())**2).mean())
+
+
 def compute_rms_slope(profile, size=None, dim=None):
     "computes the rms height gradient fluctuation of the surface"
     diff = compute_slope(profile, size, dim)
