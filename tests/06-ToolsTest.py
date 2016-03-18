@@ -35,6 +35,7 @@ try:
     import warnings
 
     import PyCo.Tools as Tools
+    from PyCo.Surface import NumpySurface
 except ImportError as err:
     import sys
     print(err)
@@ -126,3 +127,15 @@ class ToolTest(unittest.TestCase):
         self.assertAlmostEqual(mean_slope[0], b)
         self.assertAlmostEqual(mean_slope[1], a)
         self.assertAlmostEqual(mean_slope[2], d)
+
+        mean_slope = Tools.compute_tilt_from_height(NumpySurface(arr))
+        self.assertAlmostEqual(mean_slope[0], b)
+        self.assertAlmostEqual(mean_slope[1], a)
+        self.assertAlmostEqual(mean_slope[2], d)
+
+        print(arr.shape)
+        mean_slope = Tools.compute_tilt_from_height(NumpySurface(arr))
+        self.assertAlmostEqual(mean_slope[0], b)
+        self.assertAlmostEqual(mean_slope[1], a)
+        self.assertAlmostEqual(mean_slope[2], d)
+
