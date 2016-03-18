@@ -39,10 +39,10 @@ try:
     import os
 
     from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpySurface,
-                              Sphere, read, read_asc, read_di, read_ibw,
-                              read_opd, read_x3p)
+                              TiltedSurface, Sphere, read, read_asc, read_di,
+                              read_ibw, read_opd, read_x3p)
     from PyCo.Surface.FromFile import detect_format
-    from PyCo.Tools import compute_rms_slope
+    from PyCo.Tools import compute_rms_slope, compute_slope
 
 except ImportError as err:
     import sys
@@ -114,6 +114,18 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[1], 0.0002404103)
         self.assertAlmostEqual(surf.compute_rms_height(), 2.7722350402740072e-07)
         self.assertAlmostEqual(compute_rms_slope(surf), 0.35157901772258338)
+
+class TiltedSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_untilt(self):
+        a = 1.2
+        b = 2.5
+        d = .2
+        arr = np.arange(5)*a+d
+        arr = arr + np.arange(6).reshape((-1, 1))*b
+        surf = TiltedSurface(NumpySurface(arr))
+        self.assertAlmostEqual(compute_rms_slope(surf), 0)
 
 class detectFormatTest(unittest.TestCase):
     def setUp(self):

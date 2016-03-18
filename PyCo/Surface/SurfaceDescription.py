@@ -33,8 +33,7 @@ import abc
 
 import numpy as np
 
-from ..Tools import compute_rms_slope
-
+from ..Tools import compute_rms_slope, compute_slope
 
 class Surface(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
@@ -263,6 +262,61 @@ class ScaledSurface(Surface):
         """ Computes the combined profile.
         """
         return self.coeff*self.surf.profile()
+
+
+class TiltedSurface(Surface):
+    """ used when surface needs to be tilted
+    """
+    name = 'tilted_surface'
+
+    def __init__(self, surf, slope=None):
+        """
+        Keyword Arguments:
+        surf -- Surface to scale
+        slope -- Tilt slope. Will be automatically computed if omitted.
+        """
+        super().__init__()
+        assert isinstance(surf, Surface)
+        self.surf = surf
+        if slope is None:
+            self.slope = [-s.mean() for s in compute_slope(self.surf)]
+        else:
+            self.slope = slope
+
+    @property
+    def dim(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.dim
+
+    @property
+    def resolution(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.resolution
+    shape = resolution
+
+    @property
+    def size(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.size
+
+    def _profile(self):
+        """ Computes the combined profile.
+        """
+        nx, ny = self.shape
+        try:
+            sx, sy = self.size
+        except:
+            sx, sy = nx, ny
+        x = (np.arange(nx)-nx//2).reshape(-1, 1)*sx/nx
+        y = (np.arange(ny)-ny//2).reshape(1, -1)*sy/ny
+        m, n = self.slope
+        return self.surf.profile() + m*x + n*y
 
 
 class TranslatedSurface(Surface):
