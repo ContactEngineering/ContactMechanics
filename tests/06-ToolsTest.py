@@ -121,3 +121,8 @@ class ToolTest(unittest.TestCase):
         mean_slope = [x.mean() for x in Tools.compute_slope(arr_out)]
         self.assertAlmostEqual(mean_slope[0], 0)
         self.assertAlmostEqual(mean_slope[1], 0)
+
+        mean_slope = Tools.compute_tilt_from_height(arr)
+        self.assertAlmostEqual(mean_slope[0], b)
+        self.assertAlmostEqual(mean_slope[1], a)
+        self.assertAlmostEqual(mean_slope[2], d)

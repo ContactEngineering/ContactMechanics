@@ -171,11 +171,10 @@ def compute_slope(profile, size=None, dim=None):
             for d in dims]
 
 
-def shift_and_tilt(arr, full_output=False):
+def compute_tilt_from_height(arr, size=None, full_output=False):
     """
     Data in arr is interpreted as height information of a tilted and shifted
-    surface. returns an array of same shape and size, but shifted and tilted so
-    that mean(arr) = 0 and mean(arr**2) is minimized
+    surface.
 
     idea as follows
 
@@ -187,6 +186,7 @@ def shift_and_tilt(arr, full_output=False):
 
     solution X_s = arg_min ((arr - ň.x + d)^2).sum()
     """
+    arr = arr[...]
     nb_dim = len(arr.shape)
     x_grids = (np.arange(arr.shape[i]) for i in range(nb_dim))
     if nb_dim > 1:
@@ -198,8 +198,21 @@ def shift_and_tilt(arr, full_output=False):
     location_matrix = np.matrix(np.hstack(columns))
     offsets = arr.reshape(-1)
     res = scipy.optimize.nnls(location_matrix, offsets)
-    coeffs = np.matrix(res[0]).T
-    offsets = np.matrix(offsets.reshape((-1, 1)))
+    coeffs = np.array(res[0])
+    if full_output:
+        return coeffs, location_matrix
+    else:
+        return coeffs
+
+
+def shift_and_tilt(arr, full_output=False):
+    """
+    returns an array of same shape and size as arr, but shifted and tilted so
+    that mean(arr) = 0 and mean(arr**2) is minimized
+    """   
+    coeffs, location_matrix = compute_tilt_from_height(arr, full_output=True)
+    coeffs = np.matrix(coeffs).T
+    offsets = np.matrix(arr[...].reshape((-1, 1)))
     if full_output:
         return ((offsets-location_matrix*coeffs).reshape(arr.shape),
                 coeffs, res[1])
