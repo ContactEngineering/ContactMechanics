@@ -33,7 +33,8 @@ import abc
 
 import numpy as np
 
-from ..Tools import compute_rms_slope, compute_slope
+from ..Tools import (compute_rms_height, compute_rms_slope, compute_slope,
+                     compute_tilt_from_height)
 
 class Surface(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
@@ -65,9 +66,7 @@ class Surface(object, metaclass=abc.ABCMeta):
 
     def compute_rms_height(self):
         "computes the rms height fluctuation of the surface"
-        delta = self.profile()
-        delta -= delta.mean()
-        return np.sqrt((delta**2).mean())
+        return compute_rms_height(self.profile())
 
     def compute_rms_height_q_space(self):
         """
@@ -269,17 +268,21 @@ class TiltedSurface(Surface):
     """
     name = 'tilted_surface'
 
-    def __init__(self, surf, slope=None):
+    def __init__(self, surf, slope='height'):
         """
         Keyword Arguments:
         surf -- Surface to scale
-        slope -- Tilt slope. Will be automatically computed if omitted.
+        slope -- Tilt slope. Keyword 'height' with adjust slope such that rms
+        height is minimized, 'slope' will minimize rms slope. A tuple specifies
+        the slope value.
         """
         super().__init__()
         assert isinstance(surf, Surface)
         self.surf = surf
-        if slope is None:
-            self.slope = [-s.mean() for s in compute_slope(self.surf)]
+        if slope == 'height':
+            self.slope = [-s for s in compute_tilt_from_height(surf)][:-1]
+        elif slope == 'slope':
+            self.slope = [-s.mean() for s in compute_slope(surf)]
         else:
             self.slope = slope
 
