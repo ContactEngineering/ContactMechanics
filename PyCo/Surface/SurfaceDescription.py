@@ -268,7 +268,7 @@ class TiltedSurface(Surface):
     """
     name = 'tilted_surface'
 
-    def __init__(self, surf, slope='height'):
+    def __init__(self, surf, slope='slope'):
         """
         Keyword Arguments:
         surf -- Surface to scale
