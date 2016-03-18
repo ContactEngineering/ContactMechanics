@@ -282,7 +282,14 @@ class TiltedSurface(Surface):
         if slope == 'height':
             self.slope = [-s for s in compute_tilt_from_height(surf)]
         elif slope == 'slope':
-            self.slope = [-s.mean() for s in compute_slope(surf)]+[0.]
+            try:
+                sx, sy = surf.size
+            except:
+                sx, sy = surf.shape
+            nx, ny = surf.shape
+            self.slope = [-s.mean() for s in compute_slope(surf)]
+            slx, sly = self.slope
+            self.slope += [-surf[...].mean()-slx*sx*(nx-1)/(2*nx)-sly*sy*(ny-1)/(2*ny)]
         elif slope == 'curvature':
             self.slope = [-s for s in compute_tilt_and_curvature(surf)]
         else:

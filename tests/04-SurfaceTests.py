@@ -127,6 +127,7 @@ class TiltedSurfaceTest(unittest.TestCase):
         arr = np.arange(5)*a+d
         arr = arr + np.arange(6).reshape((-1, 1))*b
         surf = TiltedSurface(NumpySurface(arr), slope='slope')
+        self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(compute_rms_slope(surf), 0)
         surf = TiltedSurface(NumpySurface(arr), slope='height')
         self.assertAlmostEqual(surf[...].mean(), 0)
