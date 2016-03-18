@@ -207,6 +207,10 @@ def compute_tilt_from_height(arr, size=None, full_output=False):
         return coeffs
 
 
+def compute_tilt_from_slope(arr, size=None):
+    return [x.mean() for x in compute_slope(arr, size)]
+
+
 def shift_and_tilt(arr, full_output=False):
     """
     returns an array of same shape and size as arr, but shifted and tilted so
@@ -255,18 +259,19 @@ def shift_and_tilt_approx(arr, full_output=False):
             return arr - corrective
 
 
-def shift_and_tilt_from_slope(arr):
+def shift_and_tilt_from_slope(arr, size=None):
     """
     Data in arr is interpreted as height information of a tilted and shifted
     surface. returns an array of same shape and size, but shifted and tilted so
     that mean(arr) = 0 and mean(arr') = 0
     """
     nx, ny = arr.shape
-    mean_slope = [x.mean() for x in compute_slope(arr)]
+    mean_slope = compute_tilt_from_slope(arr, size)
     tilt_correction = sum([x*y for x, y in
-                           zip(mean_slope[::-1],
-                               np.meshgrid(np.arange(ny)-ny//2,
-                                           np.arange(nx)-nx//2))])
+                           zip(mean_slope,
+                               np.meshgrid(np.arange(nx)-nx//2,
+                                           np.arange(ny)-ny//2,
+                                           indexing='ij'))])
     arr = arr - tilt_correction
     return arr - arr.mean()
 

@@ -34,7 +34,7 @@ from .common import (compare_containers, evaluate_gradient, mean_err,
                      shift_and_tilt_approx, shift_and_tilt_from_slope,
                      compute_rms_height, compute_slope, compute_rms_slope,
                      get_q_from_lambda, power_spectrum_1D, power_spectrum_2D,
-                     compute_tilt_from_height)
+                     compute_tilt_from_height, compute_tilt_from_slope)
 from .DistributedComputation import BaseResultManager, BaseWorker
 from .Logger import Logger
 from . import Optimisation
