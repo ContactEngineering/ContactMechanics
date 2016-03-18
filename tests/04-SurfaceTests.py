@@ -120,7 +120,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 class TiltedSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
-    def test_flat(self):
+    def test_smooth_flat(self):
         a = 1.2
         b = 2.5
         d = .2
@@ -129,13 +129,34 @@ class TiltedSurfaceTest(unittest.TestCase):
         surf = TiltedSurface(NumpySurface(arr), slope='slope')
         self.assertAlmostEqual(compute_rms_slope(surf), 0)
         surf = TiltedSurface(NumpySurface(arr), slope='height')
+        self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(compute_rms_slope(surf), 0)
         self.assertTrue(compute_rms_height(surf) < compute_rms_height(arr))
         surf2 = TiltedSurface(NumpySurface(arr, size=(1,1)), slope='height')
         self.assertAlmostEqual(compute_rms_slope(surf2), 0)
         self.assertTrue(compute_rms_height(surf2) < compute_rms_height(arr))
         self.assertAlmostEqual(compute_rms_height(surf), compute_rms_height(surf2))
-    def test_random(self):
+    def test_smooth_curved(self):
+        a = 1.2
+        b = 2.5
+        c = 0.1
+        d = 0.2
+        e = 0.3
+        f = 5.5
+        x = np.arange(5).reshape((1, -1))
+        y = np.arange(6).reshape((-1, 1))
+        arr = f+x*a+y*b+x*x*c+y*y*d+x*y*e
+        surf = TiltedSurface(NumpySurface(arr, size=(3., 2.5)), slope='curvature')
+        self.assertAlmostEqual(surf.slope[0], -2*b)
+        self.assertAlmostEqual(surf.slope[1], -2*a)
+        self.assertAlmostEqual(surf.slope[2], -4*d)
+        self.assertAlmostEqual(surf.slope[3], -4*c)
+        self.assertAlmostEqual(surf.slope[4], -4*e)
+        self.assertAlmostEqual(surf.slope[5], -f)
+        self.assertAlmostEqual(surf.compute_rms_height(), 0.0)
+        self.assertAlmostEqual(surf.compute_rms_slope(), 0.0)
+
+    def test_randomly_rough(self):
         surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
         cut = NumpySurface(surface[:64,:64], size=(64., 64.))
         untilt1 = TiltedSurface(cut, slope='height')

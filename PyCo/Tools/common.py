@@ -211,6 +211,51 @@ def compute_tilt_from_slope(arr, size=None):
     return [x.mean() for x in compute_slope(arr, size)]
 
 
+def compute_tilt_and_curvature(arr, size=None, full_output=False):
+    """
+    Data in arr is interpreted as height information of a tilted and shifted
+    surface.
+
+    idea as follows
+
+    1) arr = arr_out + (ň.x + d)/ň_z
+    2) arr_out.sum() = 0
+    3) |ň| = 1
+    => n_z = sqrt(1 - n_x^2 - n_y^2) (for 2D, but you get the idea)
+       dofs = n_x, n_y, d = X
+
+    solution X_s = arg_min ((arr - ň.x + d)^2).sum()
+    """
+    size = _get_size(arr, size)
+    arr = arr[...]
+    nb_dim = len(arr.shape)
+    assert nb_dim == 2
+    x_grids = (np.arange(arr.shape[i]) for i in range(nb_dim))
+    # Linear terms
+    x_grids = np.meshgrid(*x_grids, indexing='ij')
+    # Quadratic terms
+    x, y = x_grids
+    x_grids += [x*x, y*y, x*y]
+    columns = [x.reshape((-1, 1)) for x in x_grids]
+    columns.append(np.ones_like(columns[-1]))
+    # linear regression model
+    location_matrix = np.matrix(np.hstack(columns))
+    offsets = arr.reshape(-1)
+    #res = scipy.optimize.nnls(location_matrix, offsets)
+    res = np.linalg.lstsq(location_matrix, offsets)
+
+    nx, ny = arr.shape
+    sx, sy = size
+
+    x, y, xx, yy, xy, z = res[0]
+    coeffs = np.array([x*nx/sx, y*ny/sy, xx*(nx/sx)**2, yy*(ny/sy)**2,
+                       xy*nx/sx*ny/sy, z])
+    if full_output:
+        return coeffs, location_matrix
+    else:
+        return coeffs
+
+
 def shift_and_tilt(arr, full_output=False):
     """
     returns an array of same shape and size as arr, but shifted and tilted so

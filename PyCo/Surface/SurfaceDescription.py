@@ -34,7 +34,7 @@ import abc
 import numpy as np
 
 from ..Tools import (compute_rms_height, compute_rms_slope, compute_slope,
-                     compute_tilt_from_height)
+                     compute_tilt_from_height, compute_tilt_and_curvature)
 
 class Surface(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
@@ -280,9 +280,11 @@ class TiltedSurface(Surface):
         assert isinstance(surf, Surface)
         self.surf = surf
         if slope == 'height':
-            self.slope = [-s for s in compute_tilt_from_height(surf)][:-1]
+            self.slope = [-s for s in compute_tilt_from_height(surf)]
         elif slope == 'slope':
-            self.slope = [-s.mean() for s in compute_slope(surf)]
+            self.slope = [-s.mean() for s in compute_slope(surf)]+[0.]
+        elif slope == 'curvature':
+            self.slope = [-s for s in compute_tilt_and_curvature(surf)]
         else:
             self.slope = slope
 
@@ -316,10 +318,17 @@ class TiltedSurface(Surface):
             sx, sy = self.size
         except:
             sx, sy = nx, ny
-        x = (np.arange(nx)-nx//2).reshape(-1, 1)*sx/nx
-        y = (np.arange(ny)-ny//2).reshape(1, -1)*sy/ny
-        m, n = self.slope
-        return self.surf.profile() + m*x + n*y
+        x = np.arange(nx).reshape(-1, 1)*sx/nx
+        y = np.arange(ny).reshape(1, -1)*sy/ny
+        if len(self.slope) == 3:
+            m, n, h0 = self.slope
+            return self.surf.profile() + h0 + m*x + n*y
+        else:
+            m, n, mm, nn, mn, h0 = self.slope
+            xx = x*x
+            yy = y*y
+            xy = x*y
+            return self.surf.profile() + h0 + m*x + n*y + mm*xx + nn*yy + mn*xy
 
 
 class TranslatedSurface(Surface):
