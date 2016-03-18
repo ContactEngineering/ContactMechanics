@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.
 
 import numpy as np
 import scipy.optimize
-
+from scipy.signal import get_window
 
 def compare_containers(cont_a, cont_b):
     """
@@ -293,9 +293,9 @@ def radial_average(C_xy, rmax, nbins, size=None):
 
     if size is not None:
         sx, sy = size
-        x = 2*pi*x/sx
-        y = 2*pi*y/sy
-        rmin = min(2*pi/sx, 2*pi/sy)
+        x = 2*np.pi*x/sx
+        y = 2*np.pi*y/sy
+        rmin = min(2*np.pi/sx, 2*np.pi/sy)
     dr_xy = np.sqrt((x**2).reshape(-1, 1) + (y**2).reshape(1, -1))
 
     # Quadratic -> similar statistics for each data point
@@ -363,7 +363,7 @@ def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
 
     # Compute FFT and normalize
     surface_qy = len0*np.fft.fft(surface_xy[:, :], axis=0)
-    dq = 2*pi/sx
+    dq = 2*np.pi/sx
     q = dq*np.arange(nx//2)
 
     # This is the raw power spectral density
@@ -378,7 +378,7 @@ def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
 
         return q, C_all.mean(axis=1)
     else:
-        return (np.roll(np.append(np.append(q, [2*pi*(nx//2)/sx]), -q[:0:-1]),
+        return (np.roll(np.append(np.append(q, [2*np.pi*(nx//2)/sx]), -q[:0:-1]),
                         nx//2), np.roll(C_raw.mean(axis=1), nx//2))
 
 
@@ -396,7 +396,7 @@ def get_window_2D(window, nx, ny, size=None):
         maxr = min(sx, sy)/2
         r = np.sqrt((sx*(np.arange(nx).reshape(-1,1)-nx//2)/nx)**2 +
                     (sy*(np.arange(ny).reshape(1,-1)-ny//2)/ny)**2)
-        win = 0.5+0.5*np.cos(pi*r/maxr)
+        win = 0.5+0.5*np.cos(np.pi*r/maxr)
         win[r>maxr] = 0.0
         return win
     else:
@@ -453,7 +453,7 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
 
     # Radial average
     qedges, dummy_n, C_val = radial_average(  # pylint: disable=invalid-name
-        C_qk, 2*pi*nx/(2*sx), nbins, size=(sx, sy))
+        C_qk, 2*np.pi*nx/(2*sx), nbins, size=(sx, sy))
 
     q_val = (qedges[:-1] + qedges[1:])/2
     return q_val, C_val
