@@ -42,7 +42,7 @@ try:
                               TiltedSurface, Sphere, read, read_asc, read_di,
                               read_ibw, read_opd, read_x3p)
     from PyCo.Surface.FromFile import detect_format
-    from PyCo.Tools import compute_rms_slope, compute_slope
+    from PyCo.Tools import compute_rms_height, compute_rms_slope, compute_slope
     from PyCo.Goodies.SurfaceGeneration import RandomSurfaceGaussian
 
 except ImportError as err:
@@ -125,8 +125,15 @@ class TiltedSurfaceTest(unittest.TestCase):
         d = .2
         arr = np.arange(5)*a+d
         arr = arr + np.arange(6).reshape((-1, 1))*b
-        surf = TiltedSurface(NumpySurface(arr))
+        surf = TiltedSurface(NumpySurface(arr), slope='slope')
         self.assertAlmostEqual(compute_rms_slope(surf), 0)
+        surf = TiltedSurface(NumpySurface(arr), slope='height')
+        self.assertAlmostEqual(compute_rms_slope(surf), 0)
+        self.assertTrue(compute_rms_height(surf) < compute_rms_height(arr))
+        surf2 = TiltedSurface(NumpySurface(arr, size=(1,1)), slope='height')
+        self.assertAlmostEqual(compute_rms_slope(surf2), 0)
+        self.assertTrue(compute_rms_height(surf2) < compute_rms_height(arr))
+        self.assertAlmostEqual(compute_rms_height(surf), compute_rms_height(surf2))
 
 class detectFormatTest(unittest.TestCase):
     def setUp(self):
