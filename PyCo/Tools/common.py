@@ -137,11 +137,45 @@ def ifftn(arr, integral):
     return np.prod(arr.shape)/integral*np.fft.ifftn(arr)
 
 
+def _get_size(surface_xy, size=None):
+    """
+    Get the physical size of the topography map. Defaults to the shape of
+    the array if no other information is present.
+    """
+    if size is None:
+        if isinstance(surface_xy, np.ndarray):
+            size = surface_xy.shape
+        else:
+            try:
+                size = surface_xy.size
+            except:
+                pass
+    if size is None:
+        size = surface_xy.shape
+    return size
+
+
+def compute_slope(profile, size=None, dim=None):
+    """
+    Compute local slope
+    """
+    resolution = profile.shape
+    size = _get_size(profile, size)
+
+    grid_spacing = np.array(size)/np.array(resolution)
+    if dim is None:
+        dims = range(len(profile.shape))
+    else:
+        dims = range(dim)
+    return [np.diff(profile[...], n=1, axis=d)/grid_spacing[d]
+            for d in dims]
+
+
 def shift_and_tilt(arr, full_output=False):
     """
-    Data in arr is interpreted as heigth information of a tilted and shifted
+    Data in arr is interpreted as height information of a tilted and shifted
     surface. returns an array of same shape and size, but shifted and tilted so
-    that mean(arr) = 0
+    that mean(arr) = 0 and mean(arr**2) is minimized
 
     idea as follows
 
@@ -206,23 +240,228 @@ def shift_and_tilt_approx(arr, full_output=False):
             return arr - corrective
 
 
-def compute_rms_slope(profile, size=None, dim=None):
-    "computes the rms height gradient fluctuation of the surface"
-    resolution = profile.shape
+def shift_and_tilt_from_slope(arr):
+    """
+    Data in arr is interpreted as height information of a tilted and shifted
+    surface. returns an array of same shape and size, but shifted and tilted so
+    that mean(arr) = 0 and mean(arr') = 0
+    """
+    nx, ny = arr.shape
+    mean_slope = [x.mean() for x in compute_slope(arr)]
+    tilt_correction = sum([x*y for x, y in
+                           zip(mean_slope[::-1],
+                               np.meshgrid(np.arange(ny)-ny//2,
+                                           np.arange(nx)-nx//2))])
+    arr = arr - tilt_correction
+    return arr - arr.mean()
+
+
+def radial_average(C_xy, rmax, nbins, size=None):
+    """
+    Compute radial average of quantities reported on a 2D grid.
+
+    Parameters
+    ----------
+    C_xy : array_like
+        2D-array of values to be averaged.
+    rmax : float
+        Maximum radius.
+    nbins : int
+        Number of bins for averaging.
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+
+    Returns
+    -------
+    r : array
+        Array of radial grid points.
+    n : array
+        Number of data points per radial grid.
+    C_r : array
+        Averaged values.
+    """
+    # pylint: disable=invalid-name
+    nx, ny = C_xy.shape
+    sx = sy = 1.
+    x = np.arange(nx)
+    x = np.where(x > nx//2, nx-x, x)
+    y = np.arange(ny)
+    y = np.where(y > ny//2, ny-y, y)
+
+    rmin = 0.0
+
+    if size is not None:
+        sx, sy = size
+        x = 2*pi*x/sx
+        y = 2*pi*y/sy
+        rmin = min(2*pi/sx, 2*pi/sy)
+    dr_xy = np.sqrt((x**2).reshape(-1, 1) + (y**2).reshape(1, -1))
+
+    # Quadratic -> similar statistics for each data point
+    # dr_r        = np.sqrt( np.linspace(0, rmax**2, nbins) )
+
+    # Power law -> equally spaced on a log-log plot
+    dr_r = rmax**np.linspace(np.log(rmin)/np.log(rmax), 1.0, nbins)
+
+    dr_max = np.max(dr_xy)
+    # Keep dr_max sorted
+    if dr_max > dr_r[-1]:
+        dr_r = np.append(dr_r, [dr_max+0.1])
+    else:
+        dr_r = np.append(dr_r, [dr_r[-1]+0.1])
+
+    # Linear interpolation
+    dr_xy = np.ravel(dr_xy)
+    C_xy = np.ravel(C_xy)
+    i_xy = np.searchsorted(dr_r, dr_xy)
+
+    n_r = np.bincount(i_xy, minlength=len(dr_r))
+    C_r = np.bincount(i_xy, weights=C_xy, minlength=len(dr_r))
+
+    C_r /= np.where(n_r == 0, np.ones_like(n_r), n_r)
+
+    return np.append([0.0], dr_r), n_r, C_r
+
+
+def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
+                      size=None, window=None, fold=True):
+    """
+    Compute power spectrum from 1D FFT.
+
+    Parameters
+    ----------
+    surface_xy : array_like
+        2D-array of surface topography
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+    window : str, optional
+        Window for eliminating edge effect. See scipy.signal.get_window.
+        (Default: None)
+
+    Returns
+    -------
+    q : array_like
+        Reciprocal space vectors.
+    C_all : array_like
+        Power spectrum. (Units: length**3)
+    """
+    # pylint: disable=invalid-name
+    nx, dummy_ny = surface_xy.shape
+    sx, dummy_sy = _get_size(surface_xy, size)
+
+    # Construct and apply window
+    if window is not None:
+        win = get_window(window, nx)
+        # Normalize window
+        win /= win.mean()
+        surface_xy = win.reshape(-1, 1)*surface_xy[:, :]
+
+    # Pixel size
+    len0 = sx/nx
+
+    # Compute FFT and normalize
+    surface_qy = len0*np.fft.fft(surface_xy[:, :], axis=0)
+    dq = 2*pi/sx
+    q = dq*np.arange(nx//2)
+
+    # This is the raw power spectral density
+    C_raw = (abs(surface_qy)**2)/sx
+
+    # Fold +q and -q branches. Note: Entry q=0 appears just once, hence exclude
+    # from average!
+    if fold:
+        C_all = C_raw[:nx//2, :]
+        C_all[1:nx//2, :] += C_raw[nx-1:(nx+1)//2:-1, :]
+        C_all /= 2
+
+        return q, C_all.mean(axis=1)
+    else:
+        return (np.roll(np.append(np.append(q, [2*pi*(nx//2)/sx]), -q[:0:-1]),
+                        nx//2), np.roll(C_raw.mean(axis=1), nx//2))
+
+
+def get_window_2D(window, nx, ny, size=None):
+    if isinstance(window, np.ndarray):
+        if window.shape != (nx, ny):
+            raise TypeError('Window size (= {}x{}) must match ')
+        return window
 
     if size is None:
-        if isinstance(profile, np.ndarray):
-            size = profile.shape
-        else:
-            size = profile.size
-
-    grid_spacing = np.array(size)/np.array(resolution)
-    if dim is None:
-        dims = range(len(profile.shape))
+        sx, sy = nx, ny
     else:
-        dims = range(dim)
-    diff = [np.diff(profile[:, :], n=1, axis=d)/grid_spacing[d]
-            for d in dims]
+        sx, sy = size
+    if window == 'hann':
+        maxr = min(sx, sy)/2
+        r = np.sqrt((sx*(np.arange(nx).reshape(-1,1)-nx//2)/nx)**2 +
+                    (sy*(np.arange(ny).reshape(1,-1)-ny//2)/ny)**2)
+        win = 0.5+0.5*np.cos(pi*r/maxr)
+        win[r>maxr] = 0.0
+        return win
+    else:
+        raise ValueError("Unknown window type '{}'".format(window))
+
+
+def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
+                      size=None, window=None, normalize_window=True):
+    """
+    Compute power spectrum from 2D FFT and radial average.
+
+    Parameters
+    ----------
+    surface_xy : array_like
+        2D-array of surface topography
+    nbins : int
+        Number of bins for radial average.
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+    window : str, optional
+        Window for eliminating edge effect. See scipy.signal.get_window.
+        (Default: None)
+    normalize_window : bool, optional
+        Normalize window to unit mean. (Default: True)
+
+    Returns
+    -------
+    q : array_like
+        Reciprocal space vectors.
+    C_all : array_like
+        Power spectrum. (Units: length**4)
+    """
+    nx, ny = surface_xy.shape
+    sx, sy = _get_size(surface_xy, size)
+
+    # Construct and apply window
+    if window is not None:
+        win = get_window_2D(window, nx, ny, size)
+        # Normalize window
+        if normalize_window:
+            win /= win.mean()
+        surface_xy = win*surface_xy[:, :]
+
+    # Pixel size
+    area0 = (sx/nx)*(sy/ny)
+
+    # Compute FFT and normalize
+    surface_qk = area0*np.fft.fft2(surface_xy[:, :])
+    C_qk = abs(surface_qk)**2/(sx*sy)  # pylint: disable=invalid-name
+
+    if nbins is None:
+        return C_qk
+
+    # Radial average
+    qedges, dummy_n, C_val = radial_average(  # pylint: disable=invalid-name
+        C_qk, 2*pi*nx/(2*sx), nbins, size=(sx, sy))
+
+    q_val = (qedges[:-1] + qedges[1:])/2
+    return q_val, C_val
+
+
+def compute_rms_slope(profile, size=None, dim=None):
+    "computes the rms height gradient fluctuation of the surface"
+    diff = compute_slope(profile, size, dim)
     return np.sqrt((diff[0]**2).mean()+(diff[1]**2).mean())
 
 
