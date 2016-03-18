@@ -192,13 +192,13 @@ def compute_tilt_from_height(arr, size=None, full_output=False):
     x_grids = (np.arange(arr.shape[i]) for i in range(nb_dim))
     if nb_dim > 1:
         x_grids = np.meshgrid(*x_grids, indexing='ij')
-
     columns = [x.reshape((-1, 1)) for x in x_grids]
     columns.append(np.ones_like(columns[-1]))
     # linear regression model
     location_matrix = np.matrix(np.hstack(columns))
     offsets = arr.reshape(-1)
-    res = scipy.optimize.nnls(location_matrix, offsets)
+    #res = scipy.optimize.nnls(location_matrix, offsets)
+    res = np.linalg.lstsq(location_matrix, offsets)
     coeffs = np.array(res[0])*\
         np.array(list(arr.shape)+[1.])/np.array(list(size)+[1.])
     if full_output:

@@ -42,7 +42,8 @@ try:
                               TiltedSurface, Sphere, read, read_asc, read_di,
                               read_ibw, read_opd, read_x3p)
     from PyCo.Surface.FromFile import detect_format
-    from PyCo.Tools import compute_rms_height, compute_rms_slope, compute_slope
+    from PyCo.Tools import (compute_rms_height, compute_rms_slope, compute_slope,
+                            shift_and_tilt)
     from PyCo.Goodies.SurfaceGeneration import RandomSurfaceGaussian
 
 except ImportError as err:
@@ -119,7 +120,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 class TiltedSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
-    def test_untilt(self):
+    def test_flat(self):
         a = 1.2
         b = 2.5
         d = .2
@@ -134,6 +135,13 @@ class TiltedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(compute_rms_slope(surf2), 0)
         self.assertTrue(compute_rms_height(surf2) < compute_rms_height(arr))
         self.assertAlmostEqual(compute_rms_height(surf), compute_rms_height(surf2))
+    def test_random(self):
+        surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
+        cut = NumpySurface(surface[:64,:64], size=(64., 64.))
+        untilt1 = TiltedSurface(cut, slope='height')
+        untilt2 = TiltedSurface(cut, slope='slope')
+        self.assertTrue(untilt1.compute_rms_height() < untilt2.compute_rms_height())
+        self.assertTrue(untilt1.compute_rms_slope() > untilt2.compute_rms_slope())
 
 class detectFormatTest(unittest.TestCase):
     def setUp(self):
