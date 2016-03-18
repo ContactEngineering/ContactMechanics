@@ -115,3 +115,9 @@ class ToolTest(unittest.TestCase):
         error  =arr_approx.sum()
         self.assertTrue(error < tol, "error = {}, tol = {}, arr_out = {}".format(
             error, tol, arr_approx))
+
+        mean_slope = [x.mean() for x in Tools.compute_slope(arr)]
+        arr_out = Tools.shift_and_tilt_from_slope(arr)
+        mean_slope = [x.mean() for x in Tools.compute_slope(arr_out)]
+        self.assertAlmostEqual(mean_slope[0], 0)
+        self.assertAlmostEqual(mean_slope[1], 0)
