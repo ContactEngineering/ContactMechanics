@@ -133,9 +133,8 @@ class ToolTest(unittest.TestCase):
         self.assertAlmostEqual(mean_slope[1], a)
         self.assertAlmostEqual(mean_slope[2], d)
 
-        print(arr.shape)
-        mean_slope = Tools.compute_tilt_from_height(NumpySurface(arr))
-        self.assertAlmostEqual(mean_slope[0], b)
-        self.assertAlmostEqual(mean_slope[1], a)
+        mean_slope = Tools.compute_tilt_from_height(NumpySurface(arr, size=(3,2.5)))
+        self.assertAlmostEqual(mean_slope[0], 2*b)
+        self.assertAlmostEqual(mean_slope[1], 2*a)
         self.assertAlmostEqual(mean_slope[2], d)
 

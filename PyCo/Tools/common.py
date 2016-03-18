@@ -186,6 +186,7 @@ def compute_tilt_from_height(arr, size=None, full_output=False):
 
     solution X_s = arg_min ((arr - ň.x + d)^2).sum()
     """
+    size = _get_size(arr, size)
     arr = arr[...]
     nb_dim = len(arr.shape)
     x_grids = (np.arange(arr.shape[i]) for i in range(nb_dim))
@@ -198,7 +199,8 @@ def compute_tilt_from_height(arr, size=None, full_output=False):
     location_matrix = np.matrix(np.hstack(columns))
     offsets = arr.reshape(-1)
     res = scipy.optimize.nnls(location_matrix, offsets)
-    coeffs = np.array(res[0])
+    coeffs = np.array(res[0])*\
+        np.array(list(arr.shape)+[1.])/np.array(list(size)+[1.])
     if full_output:
         return coeffs, location_matrix
     else:
