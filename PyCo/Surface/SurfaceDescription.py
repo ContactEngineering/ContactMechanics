@@ -295,6 +295,21 @@ class TiltedSurface(Surface):
         else:
             self.slope = slope
 
+    def __getstate__(self):
+        """ is called and the returned object is pickled as the contents for
+            the instance
+        """
+        state = (super().__getstate__(), self.surf, self.slope)
+        return state
+
+    def __setstate__(self, state):
+        """ Upon unpickling, it is called with the unpickled state
+        Keyword Arguments:
+        state -- result of __getstate__
+        """
+        (superstate, self.surf, self.slope) = state
+        super().__setstate__(superstate)
+
     @property
     def dim(self,):
         """ needs to be testable to make sure that geometry and halfspace are
