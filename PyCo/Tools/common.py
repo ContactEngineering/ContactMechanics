@@ -339,8 +339,10 @@ def radial_average(C_xy, rmax, nbins, size=None):
 
     Returns
     -------
-    r : array
-        Array of radial grid points.
+    r_edges : array
+        Bin edges.
+    r_averages : array
+        Bin centers, obtained by averaging actual distance values.
     n : array
         Number of data points per radial grid.
     C_r : array
@@ -382,11 +384,14 @@ def radial_average(C_xy, rmax, nbins, size=None):
     i_xy = np.searchsorted(dr_r, dr_xy)
 
     n_r = np.bincount(i_xy, minlength=len(dr_r))
+    dravg_r = np.bincount(i_xy, weights=dr_xy, minlength=len(dr_r))
     C_r = np.bincount(i_xy, weights=C_xy, minlength=len(dr_r))
 
-    C_r /= np.where(n_r == 0, np.ones_like(n_r), n_r)
+    nreg_r = np.where(n_r == 0, np.ones_like(n_r), n_r)
+    dravg_r /= nreg_r
+    C_r /= nreg_r
 
-    return np.append([0.0], dr_r), n_r, C_r
+    return np.append([0.0], dr_r), n_r, dravg_r, C_r
 
 
 def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
@@ -420,7 +425,7 @@ def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
     if window is not None:
         win = get_window(window, nx)
         # Normalize window
-        win /= win.mean()
+        win *= np.sqrt(nx/(win**2).sum())
         surface_xy = win.reshape(-1, 1)*surface_xy[:, :]
 
     # Pixel size
@@ -478,7 +483,8 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
     surface_xy : array_like
         2D-array of surface topography
     nbins : int
-        Number of bins for radial average.
+        Number of bins for radial average. Note: Returned array can be smaller
+        than this because bins without data point are discarded.
     size : (float, float), optional
         Physical size of the 2D grid. (Default: Size is equal to number of grid
         points.)
@@ -503,7 +509,8 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
         win = get_window_2D(window, nx, ny, size)
         # Normalize window
         if normalize_window:
-            win /= win.mean()
+            win *= np.sqrt(nx*ny/(win**2).sum())
+            print((win**2).sum(), nx*ny)
         surface_xy = win*surface_xy[:, :]
 
     # Pixel size
@@ -517,11 +524,10 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
         return C_qk
 
     # Radial average
-    qedges, dummy_n, C_val = radial_average(  # pylint: disable=invalid-name
+    q_edges, n, q_val, C_val = radial_average(  # pylint: disable=invalid-name
         C_qk, 2*np.pi*nx/(2*sx), nbins, size=(sx, sy))
 
-    q_val = (qedges[:-1] + qedges[1:])/2
-    return q_val, C_val
+    return q_val[n>0], C_val[n>0]
 
 
 def compute_rms_height(profile):
