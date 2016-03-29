@@ -428,11 +428,11 @@ def read_di(fobj):
     section_dict = {}
 
     l = fobj.readline().decode('latin-1').strip()
-    while l and l != '\*File list end':
+    while l and l.lower() != '\*file list end':
         if l.startswith('\\*'):
             if section_name is not None:
                 parameters += [(section_name, section_dict)]
-            section_name = l[2:]
+            section_name = l[2:].lower()
             section_dict = {}
         elif l.startswith('\\'):
             s = l[1:].split(': ', 1)
@@ -441,7 +441,7 @@ def read_di(fobj):
             except ValueError:
                 key, = s
                 value = ''
-            section_dict[key] = value.strip()
+            section_dict[key.lower()] = value.strip()
         else:
             raise IOError("Header line '{}' does not start with a slash."
                           "".format(l))
@@ -451,24 +451,25 @@ def read_di(fobj):
     surfaces = []
     scanner = None
     for n, p in parameters:
-        if n == 'Scanner list':
+        if n == 'scanner list':
             scanner = p
-        elif n == 'Ciao image list':
+        elif n == 'ciao image list':
             image_data_key = re.match('^S \[(.*?)\] ',
-                                      p['@2:Image Data']).group(1)
+                                      p['@2:image data']).group(1)
             # Extract height data, ignore other entries
             if image_data_key != 'Height':
                 continue
 
-            nx = int(p['Samps/line'])
-            ny = int(p['Number of lines'])
-            s = p['Scan Size'].split(' ', 2)
+            nx = int(p['samps/line'])
+            ny = int(p['number of lines'])
+            print(p.keys())
+            s = p['scan size'].split(' ', 2)
             sx = float(s[0])
             sy = float(s[1])
             unit = s[2]
-            offset = int(p['Data offset'])
-            length = int(p['Data length'])
-            elsize = int(p['Bytes/pixel'])
+            offset = int(p['data offset'])
+            length = int(p['data length'])
+            elsize = int(p['bytes/pixel'])
             if elsize == 2:
                 dtype = np.dtype('<u2')
             else:
@@ -482,8 +483,8 @@ def read_di(fobj):
                                          dtype=dtype).reshape(nx, ny)
 
             scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) ',
-                                p['@2:Z scale'])
-            quantity = scale_re.group(1)
+                                p['@2:z scale'])
+            quantity = scale_re.group(1).lower()
             scale_factor = float(scale_re.group(2))
             unit = scale_re.group(3)
 

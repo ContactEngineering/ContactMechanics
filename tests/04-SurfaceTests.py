@@ -169,7 +169,8 @@ class detectFormatTest(unittest.TestCase):
     def setUp(self):
         pass
     def test_detection(self):
-        self.assertEqual(detect_format('tests/file_format_examples/example.di'), 'di')
+        self.assertEqual(detect_format('tests/file_format_examples/example1.di'), 'di')
+        self.assertEqual(detect_format('tests/file_format_examples/example2.di'), 'di')
         self.assertEqual(detect_format('tests/file_format_examples/example.ibw'), 'ibw')
         self.assertEqual(detect_format('tests/file_format_examples/example.opd'), 'opd')
         self.assertEqual(detect_format('tests/file_format_examples/example.x3p'), 'x3p')
@@ -202,16 +203,17 @@ class diSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
     def test_read(self):
-        surfaces = read_di('tests/file_format_examples/example.di')
-        self.assertEqual(len(surfaces), 2)
-        surface = surfaces[0]
-        nx, ny = surface.shape
-        self.assertEqual(nx, 512)
-        self.assertEqual(ny, 512)
-        sx, sy = surface.size
-        self.assertAlmostEqual(sx, 500.0)
-        self.assertAlmostEqual(sy, 500.0)
-        self.assertEqual(surface.unit, 'nm')
+        for (fn, s) in [('example1.di', 500.0), ('example2.di', 300.0)]:
+            surfaces = read_di('tests/file_format_examples/{}'.format(fn))
+            self.assertEqual(len(surfaces), 2)
+            surface = surfaces[0]
+            nx, ny = surface.shape
+            self.assertEqual(nx, 512)
+            self.assertEqual(ny, 512)
+            sx, sy = surface.size
+            self.assertAlmostEqual(sx, s)
+            self.assertAlmostEqual(sy, s)
+            self.assertEqual(surface.unit, 'nm')
 
 class ibwSurfaceTest(unittest.TestCase):
     def setUp(self):

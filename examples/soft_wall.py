@@ -57,9 +57,9 @@ def next_step(system, surface, history=None, r_min=0.0, logger=quiet):
     profile = surface.profile()
 
     # Find max, min and mean heights
-    top = np.max(profile)+r_min
-    middle = np.mean(profile)+r_min
-    bot = np.min(profile)+r_min
+    top = np.max(profile)
+    middle = np.mean(profile)
+    bot = np.min(profile)
 
     if history is None:
         step = 0
@@ -74,19 +74,19 @@ def next_step(system, surface, history=None, r_min=0.0, logger=quiet):
         area = []
         converged = np.array([], dtype=bool)
 
-        disp0 = -middle
+        disp0 = -middle+r_min
     elif step == 1:
-        disp0 = -top+0.01*(top-middle)
+        disp0 = -top+0.01*(top-middle)+r_min
     else:
         ref_area = np.log10(np.array(area+1/np.prod(surface.shape)))
         darea = np.append(ref_area[1:]-ref_area[:-1], -ref_area[-1])
         i = np.argmax(darea)
         if i == step-1:
-            disp0 = bot+2*(disp[-1]-bot)
+            disp0 = bot+r_min+2*(disp[-1]-bot-r_min)
         else:
             disp0 = (disp[i]+disp[i+1])/2
 
-    opt = system.minimize_proxy(disp0)
+    opt = system.minimize_proxy(disp0, method='CG', tol=1.0)
     u = opt.x
     f = opt.jac
     # minimize_proxy returns a raveled array
@@ -101,6 +101,8 @@ def next_step(system, surface, history=None, r_min=0.0, logger=quiet):
     converged = np.append(converged, np.array([opt.success], dtype=bool))
     logger.pr('disp = {}, area = {}, load = {}, converged = {}' \
         .format(disp0, current_area, current_load, opt.success))
+    if not opt.success:
+        logger.pr(opt.message)
 
     # Sort by area
     disp, gap, load, area, converged = np.transpose(sorted(zip(disp, gap, load,

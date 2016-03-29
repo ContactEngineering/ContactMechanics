@@ -455,7 +455,8 @@ def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
 def get_window_2D(window, nx, ny, size=None):
     if isinstance(window, np.ndarray):
         if window.shape != (nx, ny):
-            raise TypeError('Window size (= {}x{}) must match ')
+            raise TypeError('Window size (= {2}x{3}) must match signal size '
+                            '(={0}x{1})'.format(nx, ny, *window.shape))
         return window
 
     if size is None:
@@ -510,7 +511,6 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
         # Normalize window
         if normalize_window:
             win *= np.sqrt(nx*ny/(win**2).sum())
-            print((win**2).sum(), nx*ny)
         surface_xy = win*surface_xy[:, :]
 
     # Pixel size
