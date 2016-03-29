@@ -462,7 +462,6 @@ def read_di(fobj):
 
             nx = int(p['samps/line'])
             ny = int(p['number of lines'])
-            print(p.keys())
             s = p['scan size'].split(' ', 2)
             sx = float(s[0])
             sy = float(s[1])
@@ -485,18 +484,21 @@ def read_di(fobj):
             scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) ',
                                 p['@2:z scale'])
             quantity = scale_re.group(1).lower()
-            scale_factor = float(scale_re.group(2))
-            unit = scale_re.group(3)
+            hard_scale = float(scale_re.group(2))
+            hard_unit = scale_re.group(3)
 
-            unit_check, scale_factor2, unit2 = scanner['@'+quantity].split()
-            if unit != unit_check:
+            unit_check, soft_scale, soft_unit = scanner['@'+quantity].split()
+            if hard_unit != unit_check:
                 raise ValueError("Units for hard and soft scale differ. Don't "
                                  "know how to handle this.")
-            scale_factor2 = float(scale_factor2)
+            soft_scale = float(soft_scale)
 
-            height_unit = unit2.split('/')[0]
+            height_unit, unit_check = soft_unit.split('/')
+            if hard_unit != unit_check:
+                raise ValueError("Units for hard and soft scale differ. Don't "
+                                 "know how to handle this.")
 
-            data = unscaleddata * scale_factor * scale_factor2 / 65536
+            data = unscaleddata * hard_scale * soft_scale
             surface = NumpySurface(data, size=(sx, sy))
             surface.unit = height_unit
             surfaces += [surface]
