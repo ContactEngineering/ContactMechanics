@@ -499,7 +499,7 @@ def read_di(fobj):
                                  "know how to handle this.")
 
             data = unscaleddata * hard_scale * soft_scale
-            surface = NumpySurface(data, size=(sx, sy))
+            surface = NumpySurface(data.T, size=(sx, sy))
             surface.unit = height_unit
             surfaces += [surface]
 
