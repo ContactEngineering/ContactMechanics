@@ -316,7 +316,7 @@ def read_x3p(fobj):
 
         rawdata = x3p.open(binfn).read(nx*ny*dtype.itemsize)
         data = np.frombuffer(rawdata, count=nx*ny*nz,
-                             dtype=dtype).reshape(nx, ny)
+                             dtype=dtype).reshape(nx, ny).T
 
     return NumpySurface(data, size=(xinc*nx, yinc*ny))
 
