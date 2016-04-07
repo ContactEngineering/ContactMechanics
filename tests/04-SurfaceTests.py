@@ -102,20 +102,29 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
 class NumpyAscSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
-    def test_format1(self):
-        surf = NumpyAscSurface('tests/file_format_examples/format1.asc')
+    def test_example1(self):
+        surf = NumpyAscSurface('tests/file_format_examples/example1.txt')
         self.assertEqual(surf.shape, (1024, 1024))
-        self.assertAlmostEqual(surf.size[0], 2e-6)
-        self.assertAlmostEqual(surf.size[1], 2e-6)
-        self.assertAlmostEqual(surf.compute_rms_height(), 1.72295048557e-08)
+        self.assertAlmostEqual(surf.size[0], 2000)
+        self.assertAlmostEqual(surf.size[1], 2000)
+        self.assertAlmostEqual(surf.compute_rms_height(), 17.22950485567042)
         self.assertAlmostEqual(compute_rms_slope(surf), 0.45604053876290829)
-    def test_format2(self):
-        surf = read_asc('tests/file_format_examples/format2.txt')
+        self.assertEqual(surf.unit, 'nm')
+    def test_example2(self):
+        surf = read_asc('tests/file_format_examples/example2.txt')
         self.assertEqual(surf.shape, (650, 650))
         self.assertAlmostEqual(surf.size[0], 0.0002404103)
         self.assertAlmostEqual(surf.size[1], 0.0002404103)
         self.assertAlmostEqual(surf.compute_rms_height(), 2.7722350402740072e-07)
         self.assertAlmostEqual(compute_rms_slope(surf), 0.35157901772258338)
+    def test_example3(self):
+        surf = read_asc('tests/file_format_examples/example3.txt')
+        self.assertEqual(surf.shape, (256, 256))
+        self.assertAlmostEqual(surf.size[0], 10e-6)
+        self.assertAlmostEqual(surf.size[1], 10e-6)
+        self.assertAlmostEqual(surf.compute_rms_height(), 3.5222918750198742e-08)
+        self.assertAlmostEqual(compute_rms_slope(surf), 0.19231536279425226)       
+        self.assertEqual(surf.unit, 'm')
 
 class TiltedSurfaceTest(unittest.TestCase):
     def setUp(self):

@@ -63,7 +63,7 @@ def read_matrix(fobj, size=None, factor=1.):
 NumpyTxtSurface = read_matrix  # pylint: disable=invalid-name
 
 
-def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
+def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
     # pylint: disable=too-many-branches,too-many-statements,invalid-name
     """
     Reads a surface profile from an generic asc file and presents it in a
@@ -77,8 +77,8 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
     x_factor -- multiplication factor for size
     z_factor -- multiplication factor for height
     """
-    _units = {'m': 1.0, 'mm': 1e-3, 'μm': 1e-6, 'um': 1e-6, 'nm': 1e-9,
-              'A': 1e-10}
+    _units = {'m': 1.0, 'mm': 1e-3, 'μm': 1e-6, 'µm': 1e-6, 'um': 1e-6,
+              'nm': 1e-9, 'A': 1e-10}
 
     if not hasattr(fobj, 'read'):
         if not os.path.isfile(fobj):
@@ -88,7 +88,7 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
         fname = fobj
         fobj = open(fname)
 
-    _float_regex = r'[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
+    _float_regex = r'[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?'
 
     checks = list()
     # Resolution keywords
@@ -98,22 +98,22 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
                    "yres"))
 
     # Size keywords
-    checks.append((re.compile(r"\b(?:x-length)\b\s*=\s*("+_float_regex+")"),
+    checks.append((re.compile(r"\b(?:x-length|Width)\b\s*(?:=|\:)\s*("+_float_regex+")(.*)"),
                    float, "xsiz"))
-    checks.append((re.compile(r"\b(?:y-length)\b\s*=\s*("+_float_regex+")"),
+    checks.append((re.compile(r"\b(?:y-length|Height)\b\s*(?:=|\:)\s*("+_float_regex+")(.*)"),
                    float, "ysiz"))
 
     # Unit keywords
     checks.append((re.compile(r"\b(?:x-unit)\b\s*=\s*(\w+)"), str, "xunit"))
     checks.append((re.compile(r"\b(?:y-unit)\b\s*=\s*(\w+)"), str, "yunit"))
-    checks.append((re.compile(r"\b(?:z-unit)\b\s*=\s*(\w+)"), str, "zunit"))
+    checks.append((re.compile(r"\b(?:z-unit|Value units)\b\s*(?:=|\:)\s*(\w+)"), str, "zunit"))
 
     # Scale factor keywords
-    checks.append((re.compile(r"(?:pixel\s+size)\s*=\s*("+_float_regex+")"),
+    checks.append((re.compile(r"(?:pixel\s+size)\s*=\s*("+_float_regex+")(.*)"),
                    float, "xfac"))
     checks.append((re.compile(
         (r"(?:height\s+conversion\s+factor\s+\(->\s+m\))\s*=\s*(" +
-         _float_regex+")")),
+         _float_regex+")(.*)")),
                    float, "zfac"))
 
     xres = yres = xsiz = ysiz = xunit = yunit = zunit = xfac = yfac = None
@@ -125,7 +125,12 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
             "Check whether line fits a known comment syntax"
             match = reg.search(line)
             if match is not None:
-                return fun(match.group(1))
+                g = match.groups()
+                r = [fun(_g) if i == 0 else _g for i, _g in enumerate(g)]
+                if len(r) == 1:
+                    return r[0]
+                else:
+                    return r
             return None
         nonlocal xres, yres, xsiz, ysiz, xunit, yunit, zunit, data, xfac, yfac
         nonlocal zfac
@@ -136,9 +141,21 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
         if matches['yres'] is not None:
             yres = matches['yres']
         if matches['xsiz'] is not None:
-            xsiz = matches['xsiz']
+            try:
+                xsiz, xunit = matches['xsiz']
+                xunit = xunit.strip()
+                if xunit == '':
+                    xunit = None
+            except:
+                xsiz = matches['xsiz']
         if matches['ysiz'] is not None:
-            ysiz = matches['ysiz']
+            try:
+                ysiz, yunit = matches['ysiz']
+                yunit = yunit.strip()
+                if yunit == '':
+                    yunit = None
+            except:
+                ysiz = matches['ysiz']
         if matches['xunit'] is not None:
             xunit = matches['xunit']
         if matches['yunit'] is not None:
@@ -146,9 +163,21 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
         if matches['zunit'] is not None:
             zunit = matches['zunit']
         if matches['xfac'] is not None:
-            xfac = matches['xfac']
+            try:
+                xfac, xunit = matches['xfac']
+                xunit = xunit.strip()
+                if xunit == '':
+                    xunit = None
+            except:
+                xfac = matches['xfac']
         if matches['zfac'] is not None:
-            zfac = matches['zfac']
+            try:
+                zfac, zunit = matches['zfac']
+                zunit = zunit.strip()
+                if zunit == '':
+                    zunit = None
+            except:
+                zfac = matches['zfac']
 
     data = []
     with fobj as file_handle:
@@ -196,17 +225,25 @@ def read_asc(fobj, unit='m', x_factor=1.0, z_factor=1.0):
     if yunit is None and zunit is not None:
         yunit = zunit
 
-    if xunit is not None:
-        xsiz *= _units[xunit]/_units[unit]
-    if yunit is not None:
-        ysiz *= _units[yunit]/_units[unit]
-    if zunit is not None:
-        data *= _units[zunit]/_units[unit]
+    if unit is None:
+        unit = zunit
+    if unit is not None:
+        if xunit is not None:
+            xsiz *= _units[xunit]/_units[unit]
+        if yunit is not None:
+            ysiz *= _units[yunit]/_units[unit]
+        if zunit is not None:
+            data *= _units[zunit]/_units[unit]
 
     if xsiz is None or ysiz is None:
-        return NumpySurface(z_factor*data)
+        surface = NumpySurface(z_factor*data)
     else:
-        return NumpySurface(z_factor*data, size=(x_factor*xsiz, x_factor*ysiz))
+        surface = NumpySurface(z_factor*data, size=(x_factor*xsiz, x_factor*ysiz))
+
+    if unit is not None:
+        surface.unit = unit
+
+    return surface
 
 NumpyAscSurface = read_asc  # pylint: disable=invalid-name
 
