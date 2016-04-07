@@ -40,6 +40,13 @@ import numpy as np
 from .SurfaceDescription import NumpySurface
 
 
+unit_scales = {'m': 1.0, 'mm': 1e-3, 'µm': 1e-6, 'nm': 1e-9, 'A': 1e-10}
+def mangle_unit(unit):
+    if unit == 'μm' or unit == 'um' or unit == '~m':
+        return 'µm'
+    else:
+        return unit
+
 def read_matrix(fobj, size=None, factor=1.):
     """
     Reads a surface profile from a text file and presents in in a
@@ -77,13 +84,6 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
     x_factor -- multiplication factor for size
     z_factor -- multiplication factor for height
     """
-    _units = {'m': 1.0, 'mm': 1e-3, 'µm': 1e-6, 'nm': 1e-9, 'A': 1e-10}
-
-    def mangle_unit(unit):
-        if unit == 'μm' or unit == 'um':
-            return 'µm'
-        else:
-            return unit
 
     if not hasattr(fobj, 'read'):
         if not os.path.isfile(fobj):
@@ -234,11 +234,11 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         unit = zunit
     if unit is not None:
         if xunit is not None:
-            xsiz *= _units[xunit]/_units[unit]
+            xsiz *= unit_scales[xunit]/unit_scales[unit]
         if yunit is not None:
-            ysiz *= _units[yunit]/_units[unit]
+            ysiz *= unit_scales[yunit]/unit_scales[unit]
         if zunit is not None:
-            data *= _units[zunit]/_units[unit]
+            data *= unit_scales[zunit]/unit_scales[unit]
 
     if xsiz is None or ysiz is None:
         surface = NumpySurface(z_factor*data)
@@ -507,7 +507,7 @@ def read_di(fobj):
             s = p['scan size'].split(' ', 2)
             sx = float(s[0])
             sy = float(s[1])
-            unit = s[2]
+            xy_unit = mangle_unit(s[2])
             offset = int(p['data offset'])
             length = int(p['data length'])
             elsize = int(p['bytes/pixel'])
@@ -531,14 +531,22 @@ def read_di(fobj):
 
             unit_check, soft_scale, soft_unit = scanner['@'+quantity].split()
             if hard_unit != unit_check:
-                raise ValueError("Units for hard and soft scale differ. Don't "
-                                 "know how to handle this.")
+                raise ValueError("Units for hard (={}) and soft (={}) scale "
+                                 "differ. Don't know how to handle this."
+                                 .format(hard_unit, unit_check))
             soft_scale = float(soft_scale)
 
             height_unit, unit_check = soft_unit.split('/')
             if hard_unit != unit_check:
-                raise ValueError("Units for hard and soft scale differ. Don't "
-                                 "know how to handle this.")
+                raise ValueError("Units for hard (={}) and soft (={}) scale "
+                                 "differ. Don't know how to handle this."
+                                 .format(hard_unit, unit_check))
+
+            height_unit = mangle_unit(height_unit)
+            if xy_unit != height_unit:
+                sx *= unit_scales[xy_unit]/unit_scales[height_unit]
+                sy *= unit_scales[xy_unit]/unit_scales[height_unit]
+                xy_unit = height_unit
 
             data = unscaleddata * hard_scale * soft_scale
             surface = NumpySurface(data.T, size=(sx, sy))
