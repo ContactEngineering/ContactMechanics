@@ -64,9 +64,9 @@ class Surface(object, metaclass=abc.ABCMeta):
         """
         (self._resolution, self._dim, self._size, self.adjustment) = state
 
-    def compute_rms_height(self):
+    def compute_rms_height(self, kind='Sq'):
         "computes the rms height fluctuation of the surface"
-        return compute_rms_height(self.profile())
+        return compute_rms_height(self.profile(), kind=kind)
 
     def compute_rms_height_q_space(self):
         """

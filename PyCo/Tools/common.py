@@ -530,9 +530,14 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
     return q_val[n>0], C_val[n>0]
 
 
-def compute_rms_height(profile):
+def compute_rms_height(profile, kind='Sq'):
     "computes the rms height fluctuation of the surface"
-    return np.sqrt(((profile[...]-profile[...].mean())**2).mean())
+    if kind == 'Sq':
+        return np.sqrt(((profile[...]-profile[...].mean())**2).mean())
+    elif kind == 'Rq':
+        return np.sqrt(((profile[...]-profile[...].mean(axis=-1))**2).mean())
+    else:
+        raise RuntimeError("Unknown rms height kind '{}'.".format(kind))
 
 
 def compute_rms_slope(profile, size=None, dim=None):
