@@ -181,11 +181,18 @@ class x3pSurfaceTest(unittest.TestCase):
     def test_read(self):
         surface = read_x3p('tests/file_format_examples/example.x3p')
         nx, ny = surface.shape
-        self.assertEqual(nx, 1035)
-        self.assertEqual(ny, 777)
+        self.assertEqual(nx, 777)
+        self.assertEqual(ny, 1035)
         sx, sy = surface.size
         self.assertAlmostEqual(sx, 0.00068724)
         self.assertAlmostEqual(sy, 0.00051593)
+        surface = read_x3p('tests/file_format_examples/example2.x3p')
+        nx, ny = surface.shape
+        self.assertEqual(nx, 650)
+        self.assertEqual(ny, 650)
+        sx, sy = surface.size
+        self.assertAlmostEqual(sx, 8.29767313942749e-05)
+        self.assertAlmostEqual(sy, 0.0002044783737930349)
 
 class opdSurfaceTest(unittest.TestCase):
     def setUp(self):
