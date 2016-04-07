@@ -123,7 +123,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[0], 10e-6)
         self.assertAlmostEqual(surf.size[1], 10e-6)
         self.assertAlmostEqual(surf.compute_rms_height(), 3.5222918750198742e-08)
-        self.assertAlmostEqual(compute_rms_slope(surf), 0.19231536279425226)       
+        self.assertAlmostEqual(compute_rms_slope(surf), 0.19231536279425226)
         self.assertEqual(surf.unit, 'm')
 
 class TiltedSurfaceTest(unittest.TestCase):

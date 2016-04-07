@@ -77,8 +77,13 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
     x_factor -- multiplication factor for size
     z_factor -- multiplication factor for height
     """
-    _units = {'m': 1.0, 'mm': 1e-3, 'μm': 1e-6, 'µm': 1e-6, 'um': 1e-6,
-              'nm': 1e-9, 'A': 1e-10}
+    _units = {'m': 1.0, 'mm': 1e-3, 'µm': 1e-6, 'nm': 1e-9, 'A': 1e-10}
+
+    def mangle_unit(unit):
+        if unit == 'μm' or unit == 'um':
+            return 'µm'
+        else:
+            return unit
 
     if not hasattr(fobj, 'read'):
         if not os.path.isfile(fobj):
@@ -143,7 +148,7 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         if matches['xsiz'] is not None:
             try:
                 xsiz, xunit = matches['xsiz']
-                xunit = xunit.strip()
+                xunit = mangle_unit(xunit.strip())
                 if xunit == '':
                     xunit = None
             except:
@@ -151,21 +156,21 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         if matches['ysiz'] is not None:
             try:
                 ysiz, yunit = matches['ysiz']
-                yunit = yunit.strip()
+                yunit = mangle_unit(yunit.strip())
                 if yunit == '':
                     yunit = None
             except:
                 ysiz = matches['ysiz']
         if matches['xunit'] is not None:
-            xunit = matches['xunit']
+            xunit = mangle_unit(matches['xunit'])
         if matches['yunit'] is not None:
-            yunit = matches['yunit']
+            yunit = mangle_unit(matches['yunit'])
         if matches['zunit'] is not None:
-            zunit = matches['zunit']
+            zunit = mangle_unit(matches['zunit'])
         if matches['xfac'] is not None:
             try:
                 xfac, xunit = matches['xfac']
-                xunit = xunit.strip()
+                xunit = mangle_unit(xunit.strip())
                 if xunit == '':
                     xunit = None
             except:
@@ -173,7 +178,7 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         if matches['zfac'] is not None:
             try:
                 zfac, zunit = matches['zfac']
-                zunit = zunit.strip()
+                zunit = mangle_unit(zunit.strip())
                 if zunit == '':
                     zunit = None
             except:
