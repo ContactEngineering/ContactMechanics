@@ -239,7 +239,7 @@ class diSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(sx, 10000)
         self.assertAlmostEqual(sy, 10000)
         self.assertEqual(surface.unit, 'nm')
-
+        self.assertEqual(surface.compute_rms_height(), 264.006832385)
 
 class ibwSurfaceTest(unittest.TestCase):
     def setUp(self):

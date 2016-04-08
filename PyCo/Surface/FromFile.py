@@ -512,7 +512,7 @@ def read_di(fobj):
             length = int(p['data length'])
             elsize = int(p['bytes/pixel'])
             if elsize == 2:
-                dtype = np.dtype('<u2')
+                dtype = np.dtype('<i2')
             else:
                 raise IOError("Don't know how to handle {} bytes per pixel "
                               "data.".format(elsize))
