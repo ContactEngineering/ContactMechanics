@@ -195,7 +195,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      forces.shape, self.computational_resolution))  # nopep8
-        return self.weights * fftn(forces)/self.area_per_pt
+        return self.weights * fftn(-forces)/self.area_per_pt
 
     def evaluate_k_force(self, disp):
         """ Computes the K-space forces due to a given displacement array
@@ -207,7 +207,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      disp.shape, self.computational_resolution))  # nopep8
-        return self.iweights*fftn(disp)*self.area_per_pt
+        return -self.iweights*fftn(disp)*self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
         """
@@ -229,7 +229,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """
         # pylint: disable=no-self-use
         # using vdot instead of dot because of conjugate
-        return .5*np.vdot(kdisp, kforces).real/self.nb_pts
+        return .5*np.vdot(kdisp, -kforces).real/self.nb_pts
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces

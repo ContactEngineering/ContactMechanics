@@ -30,11 +30,11 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-from __future__ import division
-
 from math import isnan, pi, sqrt
 
 import numpy as np
+
+import scipy.optimize as optim
 
 ###
 
@@ -90,16 +90,26 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
                  substrate.dim))
     u_r[comp_slice] = np.where(u_r[comp_slice] < surface, surface, u_r[comp_slice])
 
+    result = optim.OptimizeResult()
+    result.nfev = 0
+    result.nit = 0
+    result.success = False
+    result.message = "Not Converged (yet)"
+
     # Compute forces
     #p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real
     p_r = substrate.evaluate_force(u_r)
+    result.nfev += 1
 
     # iteration
     delta = 0
     delta_str = 'reset'
     G_old = 1.0
     t_r = np.zeros_like(u_r)
+
+
     for it in range(1, maxiter+1):
+        result.nit = it
         # Reset contact area (area that feels compressive stress)
         c_r = p_r < 0.0
 
@@ -120,6 +130,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         #substrate (Nelastic manifold: r_r is negative of Polonsky, Kerr's r)
         #r_r = -np.fft.ifft2(gf_q*np.fft.fft2(t_r)).real
         r_r = substrate.evaluate_disp(t_r)
+        result.nfev += 1
         # Note: Sign reversed from Polonsky, Keer because this r_r is negative
         # of theirs.
         tau = 0.0
@@ -161,6 +172,8 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         # Compute new displacements from updated forces
         #u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
         u_r = substrate.evaluate_disp(p_r)
+        result.nfev += 1
+
 
         # Store G for next step
         G_old = G
@@ -172,6 +185,8 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         else:
             rms_pen = sqrt(G)
         max_pen = max(0.0, np.max(c_r[comp_slice]*(surface-u_r[comp_slice])))
+        result.maxcv = {"max_pen": max_pen,
+                        "max_pres": max_pres}
 
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)
@@ -182,7 +197,11 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
                            'max_pres'],
                           ['CONVERGED', it, A, tau, rms_pen, max_pen, max_pres],
                           force_print=True)
-            return u_r[comp_slice], p_r[comp_slice], True
+            result.x = u_r[comp_slice]
+            result.jac = -p_r[comp_slice]
+            result.success = True
+            result.message = "Polonsky converged"
+            return result
 
         if logger is not None:
             logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen',
@@ -192,4 +211,5 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
 
-    return u_r[comp_slice], p_r[comp_slice], False
+    result.message = "Reached maxiter = {}".format(maxiter)
+    return result

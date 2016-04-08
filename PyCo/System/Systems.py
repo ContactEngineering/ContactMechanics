@@ -119,15 +119,37 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         non-penetrating contact has gap >= 0
         """
         if self.dim == 1:
-            return (offset - disp[:self.resolution[0]] -
-                    self.surface.profile(*profile_args, **profile_kwargs))
-        return (offset - disp[:self.resolution[0], :self.resolution[1]] -
-                self.surface.profile(*profile_args, **profile_kwargs))
+            return (disp[:self.resolution[0]] -
+                    (self.surface.profile(*profile_args, **profile_kwargs) +
+                     offset))
+        return (disp[:self.resolution[0], :self.resolution[1]] -
+                (self.surface.profile(*profile_args, **profile_kwargs) +
+                 offset))
 
     @abc.abstractmethod
     def compute_normal_force(self):
         "evaluates and returns the normal force between substrate and surface"
         raise NotImplementedError()
+
+    def compute_contact_area(self):
+        "computes and returns the total contact area"
+        return self.compute_nb_contact_pts()*self.area_per_pt
+
+    @abc.abstractmethod
+    def compute_nb_contact_pts(self):
+        """
+        compute and return the number of contact points. Note that this is of
+        no physical interest, as it is a purely numerical artefact
+        """
+        raise NotImplementedError()
+
+    def compute_relative_contact_area(self):
+        """ compute and return the relative contact area:
+             A
+        Aᵣ = ──
+             A₀
+        """
+        return self.compute_contact_area()/np.prod(self.substrate.size)
 
     def shape_minimisation_input(self, in_array):
         """
@@ -302,10 +324,6 @@ class SmoothContactSystem(SystemBase):
         "computes and returns the sum of all forces"
         return self.interaction.force.sum()
 
-    def compute_contact_area(self):
-        "computes and returns the total contact area"
-        return self.compute_nb_contact_pts()*self.area_per_pt
-
     def compute_repulsive_contact_area(self):
         "computes and returns the area where contact pressure is repulsive"
         return self.compute_nb_repulsive_pts()*self.area_per_pt
@@ -363,19 +381,16 @@ class SmoothContactSystem(SystemBase):
                                  area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
 
-        # attention: the gradient of the interaction has the wrong sign,
-        # because the derivative of the gap with respect to displacement
-        # introduces a -1 factor. Hence the minus sign in the 'sum' of forces:
         self.energy = (self.interaction.energy +
                        self.substrate.energy
                        if pot else None)
         if forces:
             self.force = self.substrate.force.copy()
             if self.dim == 1:
-                self.force[:self.resolution[0]] -= \
+                self.force[:self.resolution[0]] += \
                   self.interaction.force  # nopep8
             else:
-                self.force[:self.resolution[0], :self.resolution[1]] -= \
+                self.force[:self.resolution[0], :self.resolution[1]] += \
                   self.interaction.force  # nopep8
         else:
             self.force = None
@@ -477,6 +492,7 @@ class NonSmoothContactSystem(SystemBase):
         self.dim = len(self.substrate.resolution)
         self.energy = None
         self.force = None
+        self.contact_zone = None
 
     @staticmethod
     def handles(substrate_type, interaction_type, surface_type):
@@ -515,18 +531,14 @@ class NonSmoothContactSystem(SystemBase):
         compute and return the number of contact points. Note that this is of
         no physical interest, as it is a purely numerical artefact
         """
-        return np.where(self.substrate.penetration != 0., 1., 0.).sum()
-
-    def compute_contact_area(self):
-        "computes and returns the total contact area"
-        return self.compute_nb_contact_pts()*self.area_per_pt
+        return self.contact_zone.sum()
 
     def compute_contact_coordinates(self):
         """
         returns an array of all coordinates, where contact pressure is
         repulsive. Useful for evaluating the number of contact islands etc.
         """
-        return np.argwhere(self.substrate.penetration != 0.)
+        return np.argwhere(self.contact_zone)
 
     def evaluate(self, disp, offset, pot=True, forces=False):
         """
@@ -609,7 +621,10 @@ class NonSmoothContactSystem(SystemBase):
                       PyCo.Tools.Logger
         """
         # pylint: disable=arguments-differ
-        self.disp, pressure, success = constrained_conjugate_gradients(
+        self.disp = None
+        self.force = None
+        self.contact_zone = None
+        result = constrained_conjugate_gradients(
             self.substrate,
             self.surface[:, :] + offset,
             disp0=disp0,
@@ -617,4 +632,8 @@ class NonSmoothContactSystem(SystemBase):
             prestol=prestol,
             maxiter=maxiter,
             logger=logger)
-        return self.disp, pressure, success
+        if result.success:
+            self.disp = result.x
+            self.force = self.substrate.force = result.jac
+            self.contact_zone = result.jac > 0
+        return result

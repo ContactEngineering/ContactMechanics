@@ -68,13 +68,14 @@ class LJTest(unittest.TestCase):
             self.eps, self.sig, self.rcut).evaluate(
                 self.r, pot=True, forces=True, curb=True)
         V_ref   = LJ_ref_V  (self.r, self.eps, self.sig, self.rcut)
-        dV_ref  = -LJ_ref_dV (self.r, self.eps, self.sig, self.rcut)
+        dV_ref  = LJ_ref_dV (self.r, self.eps, self.sig, self.rcut)
         ddV_ref = LJ_ref_ddV(self.r, self.eps, self.sig, self.rcut)
 
         err_V   = ((  V-  V_ref)**2).sum()
-        err_dV  = (( dV- dV_ref)**2).sum()
+        err_dV  = (( dV + dV_ref)**2).sum()
         err_ddV = ((ddV-ddV_ref)**2).sum()
         error   = err_V + err_dV + err_ddV
+
         self.assertTrue(error < self.tol)
 
     def test_LJsmoothReference(self):
@@ -149,9 +150,8 @@ class LJTest(unittest.TestCase):
     def test_LJ_gradient(self):
         pot = LJ93(self.eps, self.sig, self.rcut)
         x = np.random.random(3)-.5+self.sig
-        V, dV, ddV = pot.evaluate(x, forces=True)
-        f = V.sum()
-        g = -dV
+        V, f, ddV = pot.evaluate(x, forces=True)
+        g = -f
 
         delta = self.sig/1e5
         approx_g = Tools.evaluate_gradient(

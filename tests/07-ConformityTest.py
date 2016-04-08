@@ -66,7 +66,7 @@ class SystemTest(unittest.TestCase):
                              PyCo.Goodies.SurfaceAnalysis,
                              PyCo.Goodies.SurfaceGeneration])
 
-    def test_pylint_bitchiness(self):
+    def te_st_pylint_bitchiness(self):
         print()
         options = ' --rcfile=tests/pylint.rc --disable=locally-disabled'
         for module in self.modules:

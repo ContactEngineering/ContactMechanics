@@ -265,6 +265,58 @@ class ScaledSurface(Surface):
         return self.coeff*self.surf.profile()
 
 
+class TranslatedSurface(Surface):
+    """ used when geometries are translated
+    """
+    name = 'translated_surface'
+
+    def __init__(self, surf, offset=(0, 0)):
+        """
+        Keyword Arguments:
+        surf  -- Surface to translate
+        offset -- Translation offset in number of grid points
+        """
+        super().__init__()
+        assert isinstance(surf, Surface)
+        self.surf = surf
+        self.offset = offset
+
+    @property
+    def dim(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.dim
+
+    @property
+    def resolution(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.resolution
+    shape = resolution
+
+    @property
+    def size(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.size
+
+    def set_offset(self, offset, offsety=None):
+        if offsety is None:
+            self.offset = offset
+        else:
+            self.offset = (offset, offsety)
+
+    def _profile(self):
+        """ Computes the translated profile.
+        """
+        offsetx, offsety = self.offset
+        return np.roll(np.roll(self.surf.profile(), offsetx, axis=0),
+                       offsety, axis=1)
+
+
 class CompoundSurface(Surface):
     """ used when geometries are combined
     """
