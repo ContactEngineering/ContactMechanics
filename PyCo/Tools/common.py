@@ -83,12 +83,16 @@ def evaluate_gradient(fun, x, delta):
     return grad
 
 
-def mean_err(arr1, arr2):
+def mean_err(arr1, arr2, rfft=False):
     "computes the mean element-wise difference between two containers"
-    if arr1.shape != arr2.shape:
+    comp_sl = [slice(0, max(d_1, d_2)) for (d_1, d_2)
+               in zip(arr1.shape, arr2.shape)]
+    if rfft:
+        comp_sl[-1] = slice(0, comp_sl[-1].stop//2+1)
+    if arr1[comp_sl].shape != arr2[comp_sl].shape:
         raise Exception("The array shapes differ: a: {}, b:{}".format(
             arr1.shape, arr2.shape))
-    return abs(np.ravel(arr1-arr2)).mean()
+    return abs(np.ravel(arr1[comp_sl]-arr2[comp_sl])).mean()
 
 
 def compute_wavevectors(resolution, size, nb_dims):

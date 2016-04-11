@@ -98,8 +98,8 @@ class SystemTest(unittest.TestCase):
         pot, forces = S.evaluate(disp, offset, forces = True)
 
     def test_SystemGradient(self):
-        res = self.res##[0]
-        size = self.res##[0]
+        res = 16##self.res##[0]
+        size = [r*1.28 for r in self.res]##[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, size)
         sphere = Surface.Sphere(self.radius, res, size)
@@ -123,12 +123,13 @@ class SystemTest(unittest.TestCase):
         msg.append("f = {}".format(f))
         msg.append("g = {}".format(g))
         msg.append('approx = {}'.format(approx_g))
+        msg.append("g/approx = {}".format(g/approx_g))
         msg.append("error = {}".format(error))
         msg.append("tol = {}".format(tol))
         self.assertTrue(error < tol, ", ".join(msg))
-        interaction = dict({"e":f,
-                            "g":g,
-                            "a":approx_g})
+        interaction = dict({"e":f*S.area_per_pt,
+                            "g":g*S.area_per_pt,
+                            "a":approx_g*S.area_per_pt})
         ## check subgradient of substrate
         V, dV = S.substrate.evaluate(disp, pot=True, forces=True)
         f = V.sum()
@@ -178,8 +179,8 @@ class SystemTest(unittest.TestCase):
         error = Tools.mean_err(g_combo, g)
         self.assertTrue(
             error < tol,
-            "g_combo = {}, g = {}, error = {}, tol = {}".format(
-                g_combo, g, error, tol))
+            "g_combo = {}, g = {}, error = {}, tol = {}, g/g_combo = {}".format(
+                g_combo, g, error, tol, g/g_combo))
 
         approx_g_combo = i['a'] + s['a']
         error = Tools.mean_err(approx_g_combo, approx_g)

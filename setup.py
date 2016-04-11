@@ -30,13 +30,26 @@ Boston, MA 02111-1307, USA.
 """
 
 import versioneer
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
+from Cython.Build import cythonize
+
+fftext_path = "PyCo/Tools/"
+extensions = [
+    Extension(
+        name="PyCo.Tools.fftext",
+        sources=[fftext_path + src_name for src_name in ("fftext.pyx", "fftext_cc.cc")],
+        extra_compile_args=["-std=c++1y", "-fopenmp"],
+        extra_link_args=["-lfftw3_omp", "-lfftw3", "-lm"],
+        language="c++"),]
+
+
 
 setup(
     name = "PyCo",
     version = versioneer.get_version(),
     cmdclass = versioneer.get_cmdclass(),
     packages = find_packages(),
+    ext_modules=extensions,
     # metadata for upload to PyPI
     author = "Till Junge",
     author_email = "till.junge@kit.edu",

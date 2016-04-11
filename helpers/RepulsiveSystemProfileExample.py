@@ -40,7 +40,7 @@ from PyCo.System import SystemFactory
 #import matplotlib.pyplot as plt
 
 # geometry
-res = 512
+res = 1024
 size = 65e-6
 radius = 500e-6
 
