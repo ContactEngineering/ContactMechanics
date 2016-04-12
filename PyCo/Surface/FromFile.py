@@ -42,7 +42,10 @@ from .SurfaceDescription import NumpySurface
 
 unit_scales = {'m': 1.0, 'mm': 1e-3, 'µm': 1e-6, 'nm': 1e-9, 'A': 1e-10}
 def mangle_unit(unit):
-    if unit == 'μm' or unit == 'um' or unit == '~m':
+    unit = unit.strip()
+    if unit == '':
+        return None
+    elif unit == 'μm' or unit == 'um' or unit == '~m':
         return 'µm'
     else:
         return unit
@@ -103,86 +106,58 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
                    "yres"))
 
     # Size keywords
-    checks.append((re.compile(r"\b(?:x-length|Width)\b\s*(?:=|\:)\s*("+_float_regex+")(.*)"),
-                   float, "xsiz"))
-    checks.append((re.compile(r"\b(?:y-length|Height)\b\s*(?:=|\:)\s*("+_float_regex+")(.*)"),
-                   float, "ysiz"))
+    checks.append((re.compile(r"\b(?:x-length|Width)\b\s*(?:=|\:)\s*(?P<value>"+
+                   _float_regex+")(?P<unit>.*)"), float, "xsiz"))
+    checks.append((re.compile(r"\b(?:y-length|Height)\b\s*(?:=|\:)\s*(?P<value>"+
+                   _float_regex+")(?P<unit>.*)"), float, "ysiz"))
 
     # Unit keywords
-    checks.append((re.compile(r"\b(?:x-unit)\b\s*=\s*(\w+)"), str, "xunit"))
     checks.append((re.compile(r"\b(?:y-unit)\b\s*=\s*(\w+)"), str, "yunit"))
-    checks.append((re.compile(r"\b(?:z-unit|Value units)\b\s*(?:=|\:)\s*(\w+)"), str, "zunit"))
+    checks.append((re.compile(r"\b(?:x-unit)\b\s*=\s*(\w+)"), str, "xunit"))
+    checks.append((re.compile(r"\b(?:z-unit|Value units)\b\s*(?:=|\:)\s*(\w+)"),
+                   str, "zunit"))
 
     # Scale factor keywords
-    checks.append((re.compile(r"(?:pixel\s+size)\s*=\s*("+_float_regex+")(.*)"),
-                   float, "xfac"))
+    checks.append((re.compile(r"(?:pixel\s+size)\s*=\s*(?P<value>"+_float_regex+
+                   ")(?P<unit>.*)"), float, "xfac"))
     checks.append((re.compile(
-        (r"(?:height\s+conversion\s+factor\s+\(->\s+m\))\s*=\s*(" +
-         _float_regex+")(.*)")),
-                   float, "zfac"))
+        (r"(?:height\s+conversion\s+factor\s+\(->\s+(?P<unit>.*)\))\s*=\s*(?P<value>" +
+         _float_regex+")")),
+        float, "zfac"))
 
     xres = yres = xsiz = ysiz = xunit = yunit = zunit = xfac = yfac = None
     zfac = None
 
     def process_comment(line):
         "Find and interpret known comments in the header of the asc file"
-        def check(line, reg, fun):
-            "Check whether line fits a known comment syntax"
-            match = reg.search(line)
-            if match is not None:
-                g = match.groups()
-                r = [fun(_g) if i == 0 else _g for i, _g in enumerate(g)]
-                if len(r) == 1:
-                    return r[0]
-                else:
-                    return r
-            return None
         nonlocal xres, yres, xsiz, ysiz, xunit, yunit, zunit, data, xfac, yfac
         nonlocal zfac
-        matches = {key: check(line, reg, fun)
-                   for (reg, fun, key) in checks}
-        if matches['xres'] is not None:
-            xres = matches['xres']
-        if matches['yres'] is not None:
-            yres = matches['yres']
-        if matches['xsiz'] is not None:
-            try:
-                xsiz, xunit = matches['xsiz']
-                xunit = mangle_unit(xunit.strip())
-                if xunit == '':
-                    xunit = None
-            except:
-                xsiz = matches['xsiz']
-        if matches['ysiz'] is not None:
-            try:
-                ysiz, yunit = matches['ysiz']
-                yunit = mangle_unit(yunit.strip())
-                if yunit == '':
-                    yunit = None
-            except:
-                ysiz = matches['ysiz']
-        if matches['xunit'] is not None:
-            xunit = mangle_unit(matches['xunit'])
-        if matches['yunit'] is not None:
-            yunit = mangle_unit(matches['yunit'])
-        if matches['zunit'] is not None:
-            zunit = mangle_unit(matches['zunit'])
-        if matches['xfac'] is not None:
-            try:
-                xfac, xunit = matches['xfac']
-                xunit = mangle_unit(xunit.strip())
-                if xunit == '':
-                    xunit = None
-            except:
-                xfac = matches['xfac']
-        if matches['zfac'] is not None:
-            try:
-                zfac, zunit = matches['zfac']
-                zunit = mangle_unit(zunit.strip())
-                if zunit == '':
-                    zunit = None
-            except:
-                zfac = matches['zfac']
+        for reg, fun, key in checks:
+            match = reg.search(line)
+            if match is None:
+                continue
+            if key == 'xres':
+                xres = int(match.group(1))
+            elif key == 'yres':
+                yres = int(match.group(1))
+            elif key == 'xsiz':
+                xsiz = float(match.group('value'))
+                xunit = mangle_unit(match.group('unit'))
+            elif key == 'ysiz':
+                ysiz = float(match.group('value'))
+                yunit = mangle_unit(match.group('unit'))
+            elif key == 'xunit':
+                xunit = mangle_unit(match.group(1))
+            elif key == 'yunit':
+                yunit = mangle_unit(match.group(1))
+            elif key == 'zunit':
+                zunit = mangle_unit(match.group(1))
+            elif key == 'xfac':
+                xfac = float(match.group('value'))
+                xunit = mangle_unit(match.group('unit'))
+            elif key == 'zfac':
+                zfac = float(match.group('value'))
+                zunit = mangle_unit(match.group('unit'))
 
     data = []
     with fobj as file_handle:
