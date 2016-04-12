@@ -535,7 +535,7 @@ def compute_rms_height(profile, kind='Sq'):
     if kind == 'Sq':
         return np.sqrt(((profile[...]-profile[...].mean())**2).mean())
     elif kind == 'Rq':
-        return np.sqrt(((profile[...]-profile[...].mean(axis=-1))**2).mean())
+        return np.sqrt(((profile[...]-profile[...].mean(axis=0))**2).mean())
     else:
         raise RuntimeError("Unknown rms height kind '{}'.".format(kind))
 
