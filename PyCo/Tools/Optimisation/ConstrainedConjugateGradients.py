@@ -197,7 +197,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
                            'max_pres'],
                           ['CONVERGED', it, A, tau, rms_pen, max_pen, max_pres],
                           force_print=True)
-            result.x = u_r[comp_slice]
+            result.x = u_r#[comp_slice]
             result.jac = -p_r[comp_slice]
             result.success = True
             result.message = "Polonsky converged"
@@ -211,7 +211,7 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
 
-    result.x = u_r[comp_slice]
+    result.x = u_r#[comp_slice]
     result.jac = -p_r[comp_slice]
     result.message = "Reached maxiter = {}".format(maxiter)
     return result
