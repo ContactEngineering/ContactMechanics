@@ -132,6 +132,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[0], 0.00011280791)
         self.assertAlmostEqual(surf.size[1], 2.773965e-05)
         self.assertAlmostEqual(surf.compute_rms_height(), 1.1745891510991089e-07)
+        self.assertAlmostEqual(surf.compute_rms_height(kind='Rq'), 1.1745891510991089e-07)
         self.assertAlmostEqual(compute_rms_slope(surf), 0.067915823359553706)
         self.assertEqual(surf.unit, 'm')
 
