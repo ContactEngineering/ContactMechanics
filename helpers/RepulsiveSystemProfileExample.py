@@ -36,11 +36,13 @@ from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from PyCo.ContactMechanics import HardWall
 from PyCo.Surface import Sphere
 from PyCo.System import SystemFactory
+import sys
 
 #import matplotlib.pyplot as plt
 
 # geometry
-res = 1024
+res = int(sys.argv[1])
+print(res)
 size = 65e-6
 radius = 500e-6
 
@@ -59,6 +61,7 @@ system = SystemFactory(substrate, interaction, surface)
 offset_max = 1e-6
 disp = None
 for offset in np.linspace(0, offset_max, 10):
+    print("offset = {}".format(offset))
     result = system.minimize_proxy(offset, disp0=disp)
     disp = system.disp
 

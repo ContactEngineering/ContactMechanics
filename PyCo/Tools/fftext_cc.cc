@@ -127,7 +127,7 @@ cmplex * any_fft_2D_wrap (cmplex *arr, size_t n_row, size_t n_col) {
   fftw_execute(p);
   if (sign == FFTW_BACKWARD) {
 #pragma omp parallel for schedule(static)
-    for (std::remove_const_t<decltype(out_size)> i = 0; i < out_size; ++i) {
+    for (size_t i = 0; i < out_size; ++i) {
       reinterpret_cast<cmplex*>(out)[i] /= out_size;
     }
   }
