@@ -419,7 +419,7 @@ def read_opd(fobj):
         raise IOError('No data block encountered.')
 
     # Height are in nm, width in mm
-    surface = NumpySurface(data*wavelength/mult*1e-6,
+    surface = NumpySurface(data.astype(float)*wavelength/mult*1e-6,
                            size=(nx*pixel_size, ny*pixel_size*aspect))
     surface.unit = 'mm'
     return surface
