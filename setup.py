@@ -32,15 +32,21 @@ Boston, MA 02111-1307, USA.
 import versioneer
 from setuptools import setup, find_packages, Extension
 from Cython.Build import cythonize
+import os
 
-fftext_path = "PyCo/Tools/"
+tools_path = os.path.join(os.path.dirname(__file__), "PyCo/Tools/")
+fftext_path = tools_path
 extensions = [
     Extension(
         name="PyCo.Tools.fftext",
         sources=[fftext_path + src_name for src_name in ("fftext.pyx", "fftext_cc.cc")],
         extra_compile_args=["-std=c++1y", "-fopenmp"],
         extra_link_args=["-lfftw3_omp", "-lfftw3", "-lm"],
-        language="c++"),]
+        language="c++"),
+    Extension(
+        name="PyCo.Tools.Optimisation.ConstrainedConjugateGradients",
+        sources=[os.path.join(tools_path,"Optimisation/ConstrainedConjugateGradients.pyx")],
+        language="c++")]
 
 
 

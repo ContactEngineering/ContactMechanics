@@ -20,3 +20,6 @@ dist
 /PyCo/Tools/fftext.cpp
 /PyCo/Tools/fftext.cpython-35dm-x86_64-linux-gnu.so
 /PyCo/Tools/fftext.cpython-35m-x86_64-linux-gnu.so
+/PyCo/Tools/Optimisation/ConstrainedConjugateGradients.c
+/PyCo/Tools/Optimisation/ConstrainedConjugateGradients.cpp
+/PyCo/Tools/Optimisation/ConstrainedConjugateGradients.cpython*.so
