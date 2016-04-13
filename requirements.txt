@@ -4,3 +4,4 @@ numpy
 pylint
 pep8
 scipy
+cython

@@ -93,18 +93,34 @@ class HertzTest(unittest.TestCase):
         #import matplotlib.pyplot as plt
         #plt.subplot(1,3,1)
         #plt.pcolormesh(p_analytical-p_numerical)
-        #plt.colorbar()       
+        #plt.colorbar()
         #plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
         #plt.subplot(1,3,2)
         #plt.pcolormesh(p_analytical)
-        #plt.colorbar()       
+        #plt.colorbar()
         #plt.subplot(1,3,3)
         #plt.pcolormesh(p_numerical)
-        #plt.colorbar()       
+        #plt.colorbar()
         #plt.show()
+        msg = ""
+        msg +="\np_numerical_type:  {}".format(type(p_numerical))
+        msg +="\np_numerical_shape: {}".format(p_numerical.shape)
+        msg +="\np_numerical_mean:  {}".format(p_numerical.mean())
+        msg +="\np_numerical_dtype: {}".format(p_numerical.dtype)
+        msg +="\np_numerical_max:   {}".format(p_numerical.max())
+        msg +="\np_analytical_max:  {}".format(p_analytical.max())
+        msg +="\nslice_size:        {}".format((r<.99*a).sum())
+        msg +="\ncontact_radius a:  {}".format(a)
+        msg +="\nnormal_force:      {}".format(normal_force)
+        msg +="\n{}".format(result.jac.max()-result.jac.min())
 
-        self.assertTrue(abs(p_analytical[r<0.99*a]-
-                            p_numerical[r<0.99*a]).max()/self.E_s < 1e-3)
+        try:
+            self.assertTrue(abs(p_analytical[r<0.99*a]-
+                                p_numerical[r<0.99*a]).max()/self.E_s < 1e-3,
+                            msg)
+        except ValueError as err:
+            msg = str(err) + msg
+            raise ValueError(msg)
 
 
 if __name__ == '__main__':

@@ -39,3 +39,4 @@ from .common import (compare_containers, evaluate_gradient, mean_err,
 from .DistributedComputation import BaseResultManager, BaseWorker
 from .Logger import Logger
 from . import Optimisation
+from . import fftext

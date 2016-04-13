@@ -34,7 +34,7 @@ try:
     import numpy as np
     from numpy.linalg import norm
     from numpy.random import rand, random
-    from scipy.fftpack import fftn, ifftn
+    from numpy.fft import rfftn, irfftn
     import time
 
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
@@ -164,13 +164,13 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
 
             ## verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, l)
-            fforce = fftn(force)
+            fforce = rfftn(force)
             fdisp = hs.weights*fforce
             self.assertTrue(
-                Tools.mean_err(fforce, Fforce)<tol, "fforce = \n{},\nFforce = \n{}".format(
+                Tools.mean_err(fforce, Fforce, rfft=True)<tol, "fforce = \n{},\nFforce = \n{}".format(
                     fforce.real, Fforce))
             self.assertTrue(
-                Tools.mean_err(fdisp, Fdisp)<tol, "fdisp = \n{},\nFdisp = \n{}".format(
+                Tools.mean_err(fdisp, Fdisp, rfft=True)<tol, "fdisp = \n{},\nFdisp = \n{}".format(
                     fdisp.real, Fdisp))
 
             ##Fourier energy
@@ -309,10 +309,11 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
         kdisp = hs.evaluate_k_disp(force)
-        kforce = fftn(force)
+        kforce = rfftn(force)
         np_pts = np.prod(self.res)
         area_per_pt = np.prod(self.size)/np_pts
-        energy = .5*np.vdot(-kforce, kdisp)/np_pts
+        energy = .5*(np.vdot(-kforce, kdisp)+
+                     np.vdot(-kforce[..., :-1], kdisp[..., :-1]))/np_pts
         error = abs(energy.imag)
         tol = 1e-10
         self.assertTrue(error < tol,
@@ -345,13 +346,13 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
             ## verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, l)
-            fforce = fftn(force)
+            fforce = rfftn(force)
             fdisp = hs.weights*fforce
             self.assertTrue(
-                Tools.mean_err(fforce, Fforce)<tol, "fforce = \n{},\nFforce = \n{}".format(
+                Tools.mean_err(fforce, Fforce, rfft=True)<tol, "fforce = \n{},\nFforce = \n{}".format(
                     fforce.real, Fforce))
             self.assertTrue(
-                Tools.mean_err(fdisp, Fdisp)<tol, "fdisp = \n{},\nFdisp = \n{}".format(
+                Tools.mean_err(fdisp, Fdisp, rfft=True)<tol, "fdisp = \n{},\nFdisp = \n{}".format(
                     fdisp.real, Fdisp))
 
             ##Fourier energy
@@ -360,9 +361,9 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             disp = hs.evaluate_disp(force)
             e =  hs.evaluate_elastic_energy(force, disp)
             kdisp = hs.evaluate_k_disp(force)
-            self.assertTrue(abs(disp - ifftn(kdisp)).sum()<tol,
+            self.assertTrue(abs(disp - irfftn(kdisp)).sum()<tol,
                             ("disp   = {}\n"
-                             "ikdisp = {}").format(disp, ifftn(kdisp)))
+                             "ikdisp = {}").format(disp, irfftn(kdisp)))
             ee = hs.evaluate_elastic_energy_k_space(fforce, kdisp)
             self.assertTrue(
                 abs(e-ee) < tol,
