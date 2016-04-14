@@ -339,7 +339,8 @@ class CharacterisePeriodicSurface(object):
         return 2*np.pi/self.lambda_shannon
 
     def simple_spectrum_plot(self, title=None, q_minmax=(0, float('inf')),
-                             y_min=None, n_bins=100, ax=None, color='b'):
+                             y_min=None, n_bins=100, ax=None, color='b',
+                             errbar=True, x_max_at_shannon=False, fit_alpha=1.):
         " Convenience function to plot power spectra with informative labels"
         line_width = 3
         q_sh = self.q_shannon
@@ -368,18 +369,26 @@ class CharacterisePeriodicSurface(object):
             fig = None
         mean, err, q_g = self.grouped_stats(n_bins)
         fit_q = q_g[np.logical_and(q_g < q_minmax[1], q_g > q_minmax[0])]
-        ax.errorbar(q_g, mean, yerr=err, color=color)
-        ax.set_title(title)
+        if errbar:
+            ax.errorbar(q_g, mean, yerr=err, color=color)
+        else:
+            ax.plot(q_g, mean, color=color)
+        if title is not None:
+            ax.set_title(title)
         ax.loglog(fit_q, C0*fit_q**(-2-2*Hurst), color='r', lw=line_width,
                   label=(r"$H = {:.3f}$, $C_0 = {:.3e}$".format(Hurst, C0) +
-                         r""))
+                         r""),
+                  alpha=fit_alpha)
         ax.set_xlabel(r"$\left|q\right|$ in [rad/m]")
         ax.set_ylabel(r"$C(\left|q\right|)$ in [$\mathrm{m}^4$]")
         ax.set_yscale('log')
         ax.set_xscale('log')
-        ylims = ax.get_ylim()
-        ax.plot((q_sh, q_sh), ylims, color='k',
-                label=r'$\lambda_\mathrm{Shannon}$')
+        if not x_max_at_shannon:
+            ylims = ax.get_ylim()
+            ax.plot((q_sh, q_sh), ylims, color='k',
+                    label=r'$\lambda_\mathrm{Shannon}$')
+        else:
+            ax.set_xlim(right=q_sh)
         if y_min is not None:
             ax.set_ylim(bottom=y_min)
         if fig is not None:
