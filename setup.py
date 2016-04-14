@@ -29,6 +29,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
+import numpy as np
 import versioneer
 from setuptools import setup, find_packages, Extension
 from Cython.Build import cythonize
@@ -41,11 +42,13 @@ extensions = [
         name="PyCo.Tools.fftext",
         sources=[fftext_path + src_name for src_name in ("fftext.pyx", "fftext_cc.cc")],
         extra_compile_args=["-std=c++1y", "-fopenmp"],
-        extra_link_args=["-lfftw3_omp", "-lfftw3", "-lm"],
+        extra_link_args=["-lfftw3_omp", "-lfftw3", "-lm", "-fopenmp"],
+        include_dirs=[np.get_include()],
         language="c++"),
     Extension(
         name="PyCo.Tools.Optimisation.ConstrainedConjugateGradients",
         sources=[os.path.join(tools_path,"Optimisation/ConstrainedConjugateGradients.pyx")],
+        include_dirs=[np.get_include()],
         language="c++")]
 
 
