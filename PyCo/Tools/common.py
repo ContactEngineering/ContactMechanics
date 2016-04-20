@@ -171,7 +171,7 @@ def compute_derivative(profile, size=None, dim=None, n=1):
         dims = range(len(profile.shape))
     else:
         dims = range(dim)
-    return [np.diff(profile[...], n=n, axis=d)/grid_spacing[d]
+    return [np.diff(profile[...], n=n, axis=d)/grid_spacing[d]**n
             for d in dims]
 
 
