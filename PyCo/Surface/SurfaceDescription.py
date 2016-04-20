@@ -297,10 +297,10 @@ class TiltedSurface(Surface):
             except:
                 sx, sy = self.surf.shape
             nx, ny = self.surf.shape
-            self._coeffs = [-s.mean() for s in compute_coeffs(self.surf)]
+            self._coeffs = [-s.mean() for s in compute_slope(self.surf)]
             slx, sly = self._coeffs
             self._coeffs += [-self.surf[...].mean()-slx*sx*(nx-1)/(2*nx)
-                                                 -sly*sy*(ny-1)/(2*ny)]
+                                                   -sly*sy*(ny-1)/(2*ny)]
         elif self.detrend_mode == 'curvature':
             self._coeffs = [-s for s in compute_tilt_and_curvature(self.surf)]
         else:
