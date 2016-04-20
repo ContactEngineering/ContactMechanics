@@ -34,7 +34,8 @@ import abc
 import numpy as np
 
 from ..Tools import (compute_rms_height, compute_rms_slope, compute_slope,
-                     compute_tilt_from_height, compute_tilt_and_curvature)
+                     compute_rms_curvature, compute_tilt_from_height,
+                     compute_tilt_and_curvature)
 
 class Surface(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
@@ -84,6 +85,11 @@ class Surface(object, metaclass=abc.ABCMeta):
         "computes the rms height gradient fluctuation of the surface"
         return compute_rms_slope(self.profile(),
                                  size=self.size, dim=self.dim)
+
+    def compute_rms_curvature(self):
+        "computes the rms curvature fluctuation of the surface"
+        return compute_rms_curvature(self.profile(),
+                                     size=self.size, dim=self.dim)
 
     def compute_rms_slope_q_space(self):
         """
