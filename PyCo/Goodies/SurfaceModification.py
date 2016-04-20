@@ -60,7 +60,8 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
         self.coeffs = fftn(self.surface.profile(), area)
 
 
-def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None):
+def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None,
+                          return_bounds=False):
     surf = ModifyExistingPeriodicSurface(surface)
     cutoff1 = np.mean(surf.size)
     cutoff2 = np.mean([x/y for x, y in zip(surf.size, surf.resolution)])/2
@@ -73,21 +74,32 @@ def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None):
         slope1 = compute_rms_slope(surf.get_surface(lambda_min=cutoff1))
         slope2 = compute_rms_slope(surf.get_surface(lambda_min=cutoff2))
         if rms_slope < slope1 or rms_slope > slope2:
-            raise ValueError('Target slope value (={}) must lie between slopes '
-                             'for largest (={}) and smallest (={}) small '
-                             'wavelength cutoff.'.format(rms_slope, slope1,
-                                                         slope2))
+            if return_bounds:
+                if rms_slope < slope1:
+                    return cutoff1
+                else:
+                    return cutoff2
+            else:
+                raise ValueError('Target slope value (={}) must lie between '
+                                 'slopes for largest (={}) and smallest (={}) '
+                                 'small wavelength cutoff.' \
+                                 .format(rms_slope, slope1, slope2))
         cutoff = brentq(lambda cutoff: compute_rms_slope(
             surf.get_surface(lambda_min=cutoff))-rms_slope, cutoff1, cutoff2)
     elif rms_curvature is not None:
         curvature1 = compute_rms_curvature(surf.get_surface(lambda_min=cutoff1))
         curvature2 = compute_rms_curvature(surf.get_surface(lambda_min=cutoff2))
         if rms_curvature < curvature1 or rms_curvature > curvature2:
-            raise ValueError('Target curvature value (={}) must lie between '
-                             'curvatures for largest (={}) and smallest (={}) '
-                             'small wavelength cutoff.'.format(rms_curvature,
-                                                               curvature1,
-                                                               curvature2))
+            if return_bounds:
+                if rms_curvature < curvature1:
+                    return cutoff1
+                else:
+                    return cutoff2
+            else:
+                raise ValueError('Target curvature value (={}) must lie '
+                                 'between curvatures for largest (={}) and '
+                                 'smallest (={}) small wavelength cutoff.' \
+                                 .format(rms_curvature, curvature1, curvature2))
         cutoff = brentq(lambda cutoff: compute_rms_curvature(
             surf.get_surface(lambda_min=cutoff))-rms_curvature, cutoff1,
             cutoff2)
