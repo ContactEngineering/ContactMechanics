@@ -274,38 +274,45 @@ class TiltedSurface(Surface):
     """
     name = 'tilted_surface'
 
-    def __init__(self, surf, slope='slope'):
+    def __init__(self, surf, detrend_mode='slope'):
         """
         Keyword Arguments:
         surf -- Surface to scale
-        slope -- Tilt slope. Keyword 'height' with adjust slope such that rms
-        height is minimized, 'slope' will minimize rms slope. A tuple specifies
-        the slope value.
+        detrend_mode -- Tilt slope. Keyword 'height' with adjust slope such that
+        rms height is minimized, 'slope' will minimize rms slope. A tuple
+        specifies the slope value.
         """
         super().__init__()
         assert isinstance(surf, Surface)
         self.surf = surf
-        if slope == 'height':
-            self.slope = [-s for s in compute_tilt_from_height(surf)]
-        elif slope == 'slope':
+        self.detrend_mode = detrend_mode
+        self._detrend()
+
+    def _detrend(self):
+        if self.detrend_mode == 'height':
+            self._coeffs = [-s for s in compute_tilt_from_height(self.surf)]
+        elif self.detrend_mode == 'slope':
             try:
-                sx, sy = surf.size
+                sx, sy = self.surf.size
             except:
-                sx, sy = surf.shape
-            nx, ny = surf.shape
-            self.slope = [-s.mean() for s in compute_slope(surf)]
-            slx, sly = self.slope
-            self.slope += [-surf[...].mean()-slx*sx*(nx-1)/(2*nx)-sly*sy*(ny-1)/(2*ny)]
-        elif slope == 'curvature':
-            self.slope = [-s for s in compute_tilt_and_curvature(surf)]
+                sx, sy = self.surf.shape
+            nx, ny = self.surf.shape
+            self._coeffs = [-s.mean() for s in compute_coeffs(self.surf)]
+            slx, sly = self._coeffs
+            self._coeffs += [-self.surf[...].mean()-slx*sx*(nx-1)/(2*nx)
+                                                 -sly*sy*(ny-1)/(2*ny)]
+        elif self.detrend_mode == 'curvature':
+            self._coeffs = [-s for s in compute_tilt_and_curvature(self.surf)]
         else:
-            self.slope = slope
+            raise ValueError("Unknown detrend mode '{}'." \
+                .format(self.detrend_mode))
 
     def __getstate__(self):
         """ is called and the returned object is pickled as the contents for
             the instance
         """
-        state = (super().__getstate__(), self.surf, self.slope)
+        state = (super().__getstate__(), self.surf, self.detrend_mode,
+                 self._coeffs)
         return state
 
     def __setstate__(self, state):
@@ -313,7 +320,7 @@ class TiltedSurface(Surface):
         Keyword Arguments:
         state -- result of __getstate__
         """
-        (superstate, self.surf, self.slope) = state
+        (superstate, self.surf, self.detrend_mode, self._coeffs) = state
         super().__setstate__(superstate)
 
     @property
@@ -338,6 +345,16 @@ class TiltedSurface(Surface):
         """
         return self.surf.size
 
+    @size.setter
+    def size(self, size):
+        """ set the size of the surface """
+        self.surf.size = size
+        self._detrend()
+
+    @property
+    def coeffs(self,):
+        return self._coeffs
+
     def _profile(self):
         """ Computes the combined profile.
         """
@@ -348,11 +365,11 @@ class TiltedSurface(Surface):
             sx, sy = nx, ny
         x = np.arange(nx).reshape(-1, 1)*sx/nx
         y = np.arange(ny).reshape(1, -1)*sy/ny
-        if len(self.slope) == 3:
-            m, n, h0 = self.slope
+        if len(self._coeffs) == 3:
+            m, n, h0 = self._coeffs
             return self.surf.profile() + h0 + m*x + n*y
         else:
-            m, n, mm, nn, mn, h0 = self.slope
+            m, n, mm, nn, mn, h0 = self._coeffs
             xx = x*x
             yy = y*y
             xy = x*y
