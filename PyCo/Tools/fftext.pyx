@@ -83,7 +83,7 @@ cpdef rfftn(cnp.ndarray arr):
         return np.fft.rfftn(arr)
 
 cpdef irfft2(double complex[:, ::1] in_arr, s=None):
-    """ wrapped fftw3 r2c ONLY FOR EVEN SIZES"""
+    """ wrapped fftw3 r2c """
 
     cdef int n_row = in_arr.shape[0], n_col = 2*(in_arr.shape[1] - 1)
     if s is not None:
