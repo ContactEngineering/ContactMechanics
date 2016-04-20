@@ -32,11 +32,14 @@ Boston, MA 02111-1307, USA.
 from .common import (compare_containers, evaluate_gradient, mean_err,
                      compute_wavevectors, fftn, ifftn, shift_and_tilt,
                      shift_and_tilt_approx, shift_and_tilt_from_slope,
-                     compute_rms_height, compute_slope, compute_rms_slope,
-                     get_q_from_lambda, power_spectrum_1D, power_spectrum_2D,
+                     compute_rms_height, compute_derivative, compute_rms_slope,
+                     compute_rms_curvature, get_q_from_lambda,
+                     power_spectrum_1D, power_spectrum_2D,
                      compute_tilt_from_height, compute_tilt_from_slope,
                      compute_tilt_and_curvature)
 from .DistributedComputation import BaseResultManager, BaseWorker
 from .Logger import Logger
 from . import Optimisation
 from . import fftext
+
+compute_slope = compute_derivative

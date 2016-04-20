@@ -159,7 +159,7 @@ def _get_size(surface_xy, size=None):
     return size
 
 
-def compute_slope(profile, size=None, dim=None):
+def compute_derivative(profile, size=None, dim=None, n=1):
     """
     Compute local slope
     """
@@ -171,7 +171,7 @@ def compute_slope(profile, size=None, dim=None):
         dims = range(len(profile.shape))
     else:
         dims = range(dim)
-    return [np.diff(profile[...], n=1, axis=d)/grid_spacing[d]
+    return [np.diff(profile[...], n=n, axis=d)/grid_spacing[d]
             for d in dims]
 
 
@@ -212,7 +212,7 @@ def compute_tilt_from_height(arr, size=None, full_output=False):
 
 
 def compute_tilt_from_slope(arr, size=None):
-    return [x.mean() for x in compute_slope(arr, size)]
+    return [x.mean() for x in compute_derivative(arr, size)]
 
 
 def compute_tilt_and_curvature(arr, size=None, full_output=False):
@@ -546,8 +546,14 @@ def compute_rms_height(profile, kind='Sq'):
 
 def compute_rms_slope(profile, size=None, dim=None):
     "computes the rms height gradient fluctuation of the surface"
-    diff = compute_slope(profile, size, dim)
+    diff = compute_derivative(profile, size, dim)
     return np.sqrt((diff[0]**2).mean()+(diff[1]**2).mean())
+
+
+def compute_rms_curvature(profile, size=None, dim=None):
+    "computes the rms height gradient fluctuation of the surface"
+    curv = compute_derivative(profile, size, dim, n=2)
+    return np.sqrt(((curv[0][:, 1:-1]+curv[1][1:-1, :])**2).mean())
 
 
 def get_q_from_lambda(lambda_min, lambda_max):
