@@ -496,7 +496,7 @@ def read_di(fobj):
             fobj.seek(offset)
             rawdata = fobj.read(nx*ny*dtype.itemsize)
             unscaleddata = np.frombuffer(rawdata, count=nx*ny,
-                                         dtype=dtype).reshape(nx, ny)
+                                         dtype=dtype).reshape(nx, ny, order='F')
 
             scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) ',
                                 p['@2:z scale'])
@@ -557,7 +557,7 @@ def read_ibw(fobj):
         fobj.close()
 
     channel = 0
-    data = wave['wData'][:,:,channel]
+    data = wave['wData'][:,:,channel].copy()
     # This is just a wild guess...
     z_unit = wave['wave_header']['dataUnits'][channel].decode('latin-1')
     xy_unit = wave['wave_header']['dimUnits'][channel, channel].decode('latin-1')
