@@ -145,14 +145,14 @@ class TiltedSurfaceTest(unittest.TestCase):
         d = .2
         arr = np.arange(5)*a+d
         arr = arr + np.arange(6).reshape((-1, 1))*b
-        surf = TiltedSurface(NumpySurface(arr), slope='slope')
+        surf = TiltedSurface(NumpySurface(arr), detrend_mode='slope')
         self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(compute_rms_slope(surf), 0)
-        surf = TiltedSurface(NumpySurface(arr), slope='height')
+        surf = TiltedSurface(NumpySurface(arr), detrend_mode='height')
         self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(compute_rms_slope(surf), 0)
         self.assertTrue(compute_rms_height(surf) < compute_rms_height(arr))
-        surf2 = TiltedSurface(NumpySurface(arr, size=(1,1)), slope='height')
+        surf2 = TiltedSurface(NumpySurface(arr, size=(1,1)), detrend_mode='height')
         self.assertAlmostEqual(compute_rms_slope(surf2), 0)
         self.assertTrue(compute_rms_height(surf2) < compute_rms_height(arr))
         self.assertAlmostEqual(compute_rms_height(surf), compute_rms_height(surf2))
@@ -166,21 +166,21 @@ class TiltedSurfaceTest(unittest.TestCase):
         x = np.arange(5).reshape((1, -1))
         y = np.arange(6).reshape((-1, 1))
         arr = f+x*a+y*b+x*x*c+y*y*d+x*y*e
-        surf = TiltedSurface(NumpySurface(arr, size=(3., 2.5)), slope='curvature')
-        self.assertAlmostEqual(surf.slope[0], -2*b)
-        self.assertAlmostEqual(surf.slope[1], -2*a)
-        self.assertAlmostEqual(surf.slope[2], -4*d)
-        self.assertAlmostEqual(surf.slope[3], -4*c)
-        self.assertAlmostEqual(surf.slope[4], -4*e)
-        self.assertAlmostEqual(surf.slope[5], -f)
+        surf = TiltedSurface(NumpySurface(arr, size=(3., 2.5)), detrend_mode='curvature')
+        self.assertAlmostEqual(surf.coeffs[0], -2*b)
+        self.assertAlmostEqual(surf.coeffs[1], -2*a)
+        self.assertAlmostEqual(surf.coeffs[2], -4*d)
+        self.assertAlmostEqual(surf.coeffs[3], -4*c)
+        self.assertAlmostEqual(surf.coeffs[4], -4*e)
+        self.assertAlmostEqual(surf.coeffs[5], -f)
         self.assertAlmostEqual(surf.compute_rms_height(), 0.0)
         self.assertAlmostEqual(surf.compute_rms_slope(), 0.0)
 
     def test_randomly_rough(self):
         surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
         cut = NumpySurface(surface[:64,:64], size=(64., 64.))
-        untilt1 = TiltedSurface(cut, slope='height')
-        untilt2 = TiltedSurface(cut, slope='slope')
+        untilt1 = TiltedSurface(cut, detrend_mode='height')
+        untilt2 = TiltedSurface(cut, detrend_mode='slope')
         self.assertTrue(untilt1.compute_rms_height() < untilt2.compute_rms_height())
         self.assertTrue(untilt1.compute_rms_slope() > untilt2.compute_rms_slope())
 
