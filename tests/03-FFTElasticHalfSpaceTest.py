@@ -124,7 +124,8 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         ## since only the zero-frequency is rejected, any force/disp field with
         ## zero mean should be fully reversible
         tol = 1e-10
-        for res in ((self.res[0],), self.res):
+        for res in ((self.res[0],), self.res, (self.res[0]+1, self.res[1]),
+                    (self.res[0], self.res[1]+1)):
             hs = PeriodicFFTElasticHalfSpace(res, self.young, self.size)
             disp = random(res)
             disp -= disp.mean()

@@ -173,7 +173,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      forces.shape, self.computational_resolution))  # nopep8
-        return irfftn(self.weights * rfftn(-forces)).real/self.area_per_pt
+        return irfftn(self.weights * rfftn(-forces), s=self.computational_resolution).real/self.area_per_pt
 
     def evaluate_force(self, disp):
         """ Computes the force due to a given displacement array
@@ -185,7 +185,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      disp.shape, self.computational_resolution))  # nopep8
-        return -irfftn(self.iweights*rfftn(disp)).real*self.area_per_pt
+        return -irfftn(self.iweights*rfftn(disp), s=self.computational_resolution).real*self.area_per_pt
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array

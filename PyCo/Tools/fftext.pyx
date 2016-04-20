@@ -82,10 +82,12 @@ cpdef rfftn(cnp.ndarray arr):
     else:
         return np.fft.rfftn(arr)
 
-cpdef irfft2(double complex[:, ::1] in_arr):
+cpdef irfft2(double complex[:, ::1] in_arr, s=None):
     """ wrapped fftw3 r2c ONLY FOR EVEN SIZES"""
 
     cdef int n_row = in_arr.shape[0], n_col = 2*(in_arr.shape[1] - 1)
+    if s is not None:
+        n_row, n_col = s
 
     cdef double * out_arr = fft_c2r_2D_wrap(
         &in_arr[0, 0], n_row, n_col)
@@ -96,11 +98,11 @@ cpdef irfft2(double complex[:, ::1] in_arr):
     set_base(arr, out_arr)
     return arr
 
-cpdef irfftn(cnp.ndarray arr):
+cpdef irfftn(cnp.ndarray arr, s=None):
     if arr.ndim == 2:
-        return irfft2(arr)
+        return irfft2(arr, s=s)
     else:
-        return np.fft.irfftn(arr)
+        return np.fft.irfftn(arr, s=s)
 
 cpdef fft2(double complex[:, ::1] in_arr):
     """ wrapped fftw3 dft """
