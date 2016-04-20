@@ -346,6 +346,6 @@ cpdef constrained_conjugate_gradients(substrate, surface, disp0=None,
            "##### u_r.sum = {}\n"
            "###########################################"
            "\n").format(result.x.sum(), result.jac.sum(), u_r.sum()))
-    cresult.message = "Reached maxiter = {}".format(maxiter)
+    cresult.message = "Reached maxiter = {}".format(maxiter).encode('latin-1')
     updateOptimizeResult(result, cresult)
     return result
