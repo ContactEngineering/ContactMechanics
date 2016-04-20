@@ -31,4 +31,5 @@ Boston, MA 02111-1307, USA.
 
 from .SurfaceAnalysis import CharacterisePeriodicSurface, CharacteriseSurface
 from .SurfaceGeneration import RandomSurfaceExact, RandomSurfaceGaussian
-from .SurfaceGeneration import ModifyExistingPeriodicSurface
+from .SurfaceModification import (ModifyExistingPeriodicSurface,
+                                  estimate_short_cutoff)

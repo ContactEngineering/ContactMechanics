@@ -404,37 +404,3 @@ class CapillaryWavesExact(object):
         profile = ifftn(active_coeffs, area).real
         self.active_coeffs = active_coeffs
         return NumpySurface(profile, self.size)
-
-
-class ModifyExistingPeriodicSurface(RandomSurfaceExact):
-    """ Metasurface based on existing surface"""
-    def __init__(self, surface):
-        """
-        Generates a surface with an Gaussian amplitude distribution
-        Keyword Arguments:
-        resolution -- Tuple containing number of points in spatial directions.
-                      The length of the tuple determines the spatial dimension
-                      of the problem (for the time being, only 1D or square 2D)
-        size       -- domain size. For multidimensional problems,
-                      a tuple can be provided to specify the lenths per
-                      dimension. If the tuple has less entries than dimensions,
-                      the last value in repeated.
-        hurst      -- Hurst exponent
-        rms_height -- root mean square asperity height
-        seed       -- (default hash(None)) for repeatability, the random number
-                      generator is seeded previous to outputting the generated
-                      surface
-        """
-        self.surface = surface
-        surf_char = CharacterisePeriodicSurface(self.surface)
-        hurst = surf_char.estimate_hurst()
-        rms_height = self.surface.compute_rms_height()
-        super().__init__(surface.resolution, surface.size, hurst, rms_height,
-                         seed=None, lambda_max=None)
-
-    def generate_phases(self):
-        return 0
-
-    def generate_amplitudes(self):
-        area = np.prod(self.size)
-        self.coeffs = fftn(self.surface.profile(), area)
