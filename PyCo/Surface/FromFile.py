@@ -496,7 +496,7 @@ def read_di(fobj):
             fobj.seek(offset)
             rawdata = fobj.read(nx*ny*dtype.itemsize)
             unscaleddata = np.frombuffer(rawdata, count=nx*ny,
-                                         dtype=dtype).reshape(nx, ny, order='F')
+                                         dtype=dtype).reshape(nx, ny)
 
             scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) ',
                                 p['@2:z scale'])
@@ -524,7 +524,7 @@ def read_di(fobj):
                 xy_unit = height_unit
 
             data = unscaleddata * hard_scale * soft_scale
-            surface = NumpySurface(data.T, size=(sx, sy))
+            surface = NumpySurface(data.T.copy(), size=(sx, sy))
             surface.unit = height_unit
             surfaces += [surface]
 
