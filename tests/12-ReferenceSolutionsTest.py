@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   11-GoodiesTest.py
+@file   12-ReferenceSolutionsTest.py
 
 @author Lars Pastewka <lars.pastewka@kit.edu>
 
