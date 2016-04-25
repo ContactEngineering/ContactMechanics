@@ -111,11 +111,11 @@ def GreenwoodTripp(d, μ, rhomax=3, n=100, eps=1e-6):
           Radial coordinate in units of sqrt(2 B σ)
     """
     ρ = np.linspace(0, rhomax, n)
-    w = np.zeros_like(rho)
+    w = np.zeros_like(ρ)
     w0 = 0
     for i in range(10):
         p = μ*Fn(d+ρ**2+w-w0, 3/2)
-        pint = interp1d(rho, p)
+        pint = interp1d(ρ, p)
         #print('p =', p)
         w = np.zeros_like(ρ)
         for i, _ρ in enumerate(ρ):
