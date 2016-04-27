@@ -85,7 +85,8 @@ def ξ(s, s1=1e-5, s2=1e5):
     return r
 
 
-def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1):
+def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1,
+                   maxiter=1000):
     """
     Greenwood-Tripp solution for the contact of rough spheres.
     See: Greenwood, Tripp, J. Appl. Mech. 34, 153 (1967)
@@ -126,7 +127,11 @@ def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1):
     w0 = 0
     p = np.zeros_like(ρ)
     pold = p.copy()+1.0
+    it = 0
     while np.abs(p-pold).max() > tol:
+        if it > maxiter:
+            raise RuntimeError('Maximum number of iterations (={}) '
+                               'exceeded.'.format(maxiter))
         pold = p.copy()
         p = mix*μ*Fn(d+ρ**2+w-w0, 3/2) + (1-mix)*p
         pint = interp1d(ρ, p)
@@ -138,5 +143,6 @@ def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1):
             else:
                 ξ = np.linspace(0, (rhomax-eps)/_ρ, n)
                 w[i] = simps(_ρ*pint(_ρ*ξ), x=s(ξ))
+        it += 1
     p = μ*Fn(d+ρ**2+w-w0, 3/2)
     return w-w0, p, ρ
