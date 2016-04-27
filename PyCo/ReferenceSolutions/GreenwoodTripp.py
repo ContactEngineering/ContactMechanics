@@ -99,6 +99,13 @@ def GreenwoodTripp(d, μ, rhomax=3, n=100, eps=1e-6):
     μ : float
         Material parameter, μ=8/3 η σ sqrt(2 B β) where η is the density of
         asperities, B is the sphere radius and β the asperity radius.
+    rhomax : float
+        Radius cutoff (in units of σ). Pressure is assumed to be zero beyond
+        this radius.
+    n : int
+        Number of grid points.
+    eps : float
+        Small number for numerical regularization.
 
     Returns
     -------
