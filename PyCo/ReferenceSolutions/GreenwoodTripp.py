@@ -85,7 +85,7 @@ def ξ(s, s1=1e-5, s2=1e5):
     return r
 
 
-def GreenwoodTripp(d, μ, rhomax=3, n=100, eps=1e-6):
+def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1):
     """
     Greenwood-Tripp solution for the contact of rough spheres.
     See: Greenwood, Tripp, J. Appl. Mech. 34, 153 (1967)
@@ -106,6 +106,10 @@ def GreenwoodTripp(d, μ, rhomax=3, n=100, eps=1e-6):
         Number of grid points.
     eps : float
         Small number for numerical regularization.
+    tol : float
+        Max difference between displacements in consecutive solutions.
+    mix : float
+        Mixing of solution between consecutive steps.
 
     Returns
     -------
@@ -120,17 +124,19 @@ def GreenwoodTripp(d, μ, rhomax=3, n=100, eps=1e-6):
     ρ = np.linspace(0, rhomax, n)
     w = np.zeros_like(ρ)
     w0 = 0
-    for i in range(10):
-        p = μ*Fn(d+ρ**2+w-w0, 3/2)
+    p = np.zeros_like(ρ)
+    pold = p.copy()+1.0
+    while np.abs(p-pold).max() > tol:
+        pold = p.copy()
+        p = mix*μ*Fn(d+ρ**2+w-w0, 3/2) + (1-mix)*p
         pint = interp1d(ρ, p)
-        #print('p =', p)
+        w0 = simps(p, x=ρ)
         w = np.zeros_like(ρ)
         for i, _ρ in enumerate(ρ):
             if i == 0:
-                w[i] = simps(p, x=ρ)
+                w[0] = w0
             else:
                 ξ = np.linspace(0, (rhomax-eps)/_ρ, n)
-                #print((ξ*_rho).max())
                 w[i] = simps(_ρ*pint(_ρ*ξ), x=s(ξ))
     p = μ*Fn(d+ρ**2+w-w0, 3/2)
-    return w, p, ρ
+    return w-w0, p, ρ

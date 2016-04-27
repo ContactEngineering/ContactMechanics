@@ -51,6 +51,22 @@ class ReferenceSolutionsTest(PyCoTestCase):
     def test_s(self):
         L = lambda x: np.where(x<=1, 2/np.pi*x*ellipk(x**2), 2/np.pi*ellipk(1/x**2))
         snum = lambda ξ: np.array([quad(L, 0, _ξ)[0] for _ξ in ξ])
-
         x = np.linspace(0.01, 5, 101)
         self.assertArrayAlmostEqual(GT.s(x), snum(x))
+    def test_no_oscillating_solution(self):
+        μ = 24.0425586841
+        w1, p1, rho1 = GT.GreenwoodTripp(0.5, μ)
+        w2, p2, rho2 = GT.GreenwoodTripp(1.0, μ)
+
+        self.assertTrue(np.all(np.diff(p1)<0.0))
+        self.assertTrue(np.all(np.diff(p2)<0.0))
+
+        #import matplotlib.pyplot as plt
+        #plt.subplot(1,2,1)
+        #plt.plot(rho2, w2, 'k-')
+        #plt.plot(rho1, w1, 'r-')
+        #plt.subplot(1,2,2)
+        #plt.plot(rho2, p2, 'k-')
+        #plt.plot(rho1, p1, 'r-')
+        #plt.yscale('log')
+        #plt.show()
