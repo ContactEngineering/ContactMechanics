@@ -149,6 +149,10 @@ class Surface(object, metaclass=abc.ABCMeta):
         return self._dim
 
     @property
+    def pixel_size(self):
+        return np.asarray(self.size)/np.asarray(self.resolution)
+
+    @property
     def resolution(self,):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
