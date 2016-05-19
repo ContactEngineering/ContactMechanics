@@ -260,6 +260,13 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         self.assertTrue(error < tol,
                         "error = {} ≥ tol = {}".format(error, tol))
 
+    def test_uniform_displacement(self):
+        """ tests whether uniform displacement returns stiffness_q0"""
+        sq0 = 1.43
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+                                         stiffness_q0=sq0)
+        force = hs.evaluate_force(-np.ones(self.res))
+        self.assertAlmostEqual(force.sum()/np.prod(self.size), sq0)
 
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):

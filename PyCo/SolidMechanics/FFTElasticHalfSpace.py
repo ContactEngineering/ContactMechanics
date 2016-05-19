@@ -50,20 +50,24 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     name = "periodic_fft_elastic_halfspace"
     _periodic = True
 
-    def __init__(self, resolution, young, size=2*np.pi, superclass=True):
+    def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=0.0,
+                 superclass=True):
         """
         Keyword Arguments:
-        resolution -- Tuple containing number of points in spatial directions.
-                      The length of the tuple determines the spatial dimension
-                      of the problem.
-        young      -- Equiv. Young's modulus E'
-                      1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
-        size       -- (default 2π) domain size. For multidimensional problems,
-                      a tuple can be provided to specify the lenths per
-                      dimension. If the tuple has less entries than dimensions,
-                      the last value in repeated.
-        superclass -- (default True) client software never uses this. Only
-                      inheriting subclasses use this.
+        resolution   -- Tuple containing number of points in spatial directions.
+                        The length of the tuple determines the spatial dimension
+                        of the problem.
+        young        -- Equiv. Young's modulus E'
+                        1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
+        size         -- (default 2π) domain size. For multidimensional problems,
+                        a tuple can be provided to specify the lenths per
+                        dimension. If the tuple has less entries than dimensions,
+                        the last value in repeated.
+        stiffness_q0 -- Substrate stiffness at the Gamma-point (wavevector q=0).
+                        If None, this is taken equal to the lowest nonvanishing
+                        stiffness.
+        superclass   -- (default True) client software never uses this. Only
+                        inheriting subclasses use this.
         """
         super().__init__()
         if not hasattr(resolution, "__iter__"):
@@ -95,6 +99,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                  "Parameters: self.size = {}, self.resolution = {}"
                  "").format(err, self.size, self.resolution))
         self.young = young
+        self.stiffness_q0 = stiffness_q0
         if superclass:
             self._compute_fourier_coeffs()
             self._compute_i_fourier_coeffs()
@@ -152,7 +157,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                       facts[idx_m-1, -idx_n+1] = facts[idx_m-1, idx_n-1] = \
                       1./(self.young*np.pi*((idx_m/self.size[0])**2 +  # nopep8
                                             (idx_n/self.size[1])**2)**.5)
-            facts[0, 0] = 0
+            if self.stiffness_q0 is None:
+                facts[0, 0] = (facts[1, 0]/2 + facts[0, 1]/2 + facts[1, 1])/2
+            elif self.stiffness_q0 == 0.0:
+                facts[0, 0] = 0.0
+            else:
+                facts[0, 0] = 1.0/self.stiffness_q0
         # real to complex fft allows saving some time and memory
         nb_cols = facts.shape[-1]//2+1
         self.weights = facts[..., :nb_cols]
