@@ -158,7 +158,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                       1./(self.young*np.pi*((idx_m/self.size[0])**2 +  # nopep8
                                             (idx_n/self.size[1])**2)**.5)
             if self.stiffness_q0 is None:
-                facts[0, 0] = (facts[1, 0]/2 + facts[0, 1]/2 + facts[1, 1])/2
+                facts[0, 0] = (facts[1, 0] + facts[0, 1])/2
             elif self.stiffness_q0 == 0.0:
                 facts[0, 0] = 0.0
             else:
