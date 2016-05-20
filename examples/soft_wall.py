@@ -23,7 +23,7 @@ maxiter = 1000
 
 #gamma = 2e-5
 #rho = 2.071e-5
-gamma = 1.0
+gamma = 0.01
 rho = 1.0
 
 ###
@@ -56,6 +56,7 @@ container = NetCDFContainer('traj_s.nc', mode='w', double=True)
 container.set_shape(surface.shape)
 
 u = None
+tol = 1e-9
 for disp0 in np.linspace(-10, 10, 11):
     opt = system.minimize_proxy(disp0, u, lbounds=surface.profile()+disp0,
                                 method='L-BFGS-B', tol=0.0001)
@@ -66,11 +67,21 @@ for disp0 in np.linspace(-10, 10, 11):
     u.shape = surface.shape
     f.shape = surface.shape
 
-    mean_gap = np.mean(u)-np.mean(surface.profile())-disp0
+    gap = u-surface.profile()-disp0
+    mean_gap = np.mean(gap)
     load = f.sum()/np.prod(surface.size)
-    area = (f>0).sum()/np.prod(surface.shape)
+    #area = (f>0).sum()/np.prod(surface.shape)
+    area = (gap<tol).sum()/np.prod(surface.shape)
     if not opt.success:
         screen.pr('Minimization failed: {}'.format(opt.message))
+
+    frame = container.get_next_frame()
+    frame.displacements = u
+    frame.gap = gap
+    frame.forces = f
+    frame.displacement = disp0
+    frame.load = load
+    frame.area = area
 
     screen.st(['displacement', 'load', 'area','mean gap'],
               [disp0, load, area, mean_gap])
