@@ -186,7 +186,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         raise IncompatibleResolutionError()
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
-                       options=None, gradient=True, tol=None,
+                       options=None, gradient=True, lbounds = None, ubounds= None, tol=None,
                        callback=None, disp_scale=1.):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
@@ -205,6 +205,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         options    -- (default None) options to be passed to the minimizer
                       method
         gradient   -- (default True) whether to use the gradient or not
+        bounds     -- (default None) nodal ceiling/floor
         tol        -- (default None) tolerance for termination. For detailed
                       control, use solver-specific options.
         callback   -- (default None) callback function to be at each iteration
@@ -221,10 +222,31 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         disp0 = self.shape_minimisation_input(disp0)
         if callback is True:
             callback = self.callback(force=gradient)
-        result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
-                                         method=method,
-                                         jac=gradient, tol=tol,
-                                         callback=callback, options=options)
+
+        bnds = None
+        if lbounds is not None and ubounds is not None:
+            ubounds = disp_scale*self.shape_minimisation_input(ubounds)
+            lbounds = disp_scale*self.shape_minimisation_input(lbounds)
+            bnds = tuple(zip(lbounds.tolist(),ubounds.tolist()))
+        elif lbounds is not None:
+            lbounds = disp_scale*self.shape_minimisation_input(lbounds)
+            bnds = tuple(zip(lbounds.tolist(),[None for i in range(len(lbounds))]))
+        elif ubounds is not None:
+            ubounds = disp_scale*self.shape_minimisation_input(ubounds)
+            bnds = tuple(zip([None for i in range(len(ubounds))],ubounds.tolist()))
+        # Scipy minimizers that accept bounds
+        bounded_minimizers = {'L-BFGS-B','TNC','SLSQP'}
+
+        if method in bounded_minimizers:
+            result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
+                                             method=method,
+                                             jac=gradient, tol=tol, bounds=bnds,
+                                             callback=callback, options=options)
+        else:
+            result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
+                                             method=method,
+                                             jac=gradient, tol=tol,
+                                             callback=callback, options=options)
         self.disp = self.shape_minimisation_output(result.x*disp_scale)
         self.evaluate(self.disp, offset, forces=gradient)
         return result
@@ -380,7 +402,6 @@ class SmoothContactSystem(SystemBase):
         self.interaction.compute(self.gap, pot=pot, forces=forces, curb=False,
                                  area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
-
         self.energy = (self.interaction.energy +
                        self.substrate.energy
                        if pot else None)
