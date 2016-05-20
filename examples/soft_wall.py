@@ -62,14 +62,15 @@ for disp0 in np.linspace(-10, 10, 11):
                                 method='L-BFGS-B', tol=0.0001)
     #opt = system.minimize_proxy(disp0, x0, method='L-BFGS-B', tol=0.0001)
     u = opt.x
-    f = opt.jac
     # minimize_proxy returns a raveled array
     u.shape = surface.shape
-    f.shape = surface.shape
+    # We need to reevaluate the force. What the (bounded) optimizer returns as
+    # a jacobian is NOT the force.
+    f = substrate.evaluate_force(u)
 
     gap = u-surface.profile()-disp0
     mean_gap = np.mean(gap)
-    load = f.sum()/np.prod(surface.size)
+    load = -f.sum()/np.prod(surface.size)
     #area = (f>0).sum()/np.prod(surface.shape)
     area = (gap<tol).sum()/np.prod(surface.shape)
     if not opt.success:
