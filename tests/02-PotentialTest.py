@@ -43,6 +43,8 @@ try:
     from PyCo.ContactMechanics import VDW82smoothMin
     from PyCo.ContactMechanics import VDW82SimpleSmooth
 
+    from PyCo.ContactMechanics import ExpPotential
+
     import PyCo.Tools as Tools
 
     from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
@@ -52,7 +54,7 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
-class LJTest(unittest.TestCase):
+class PotentialTest(unittest.TestCase):
     tol = 1e-14
     def setUp(self):
         self.eps = 1+np.random.rand()
@@ -315,3 +317,15 @@ class LJTest(unittest.TestCase):
         #     plt.grid(True)
         #     plt.legend(loc='best')
         # plt.show()
+
+    def test_ExpPotential(self):
+        r = np.linspace(-10, 10, 1001)
+        pot = ExpPotential(1.0, 1.0)
+        V, dV, ddV = pot.naive_pot(r)
+        self.assertTrue((V<0.0).all())
+        self.assertTrue((dV<0.0).all())
+        self.assertTrue((ddV<0.0).all())
+        dV_num = np.diff(V)/np.diff(r)
+        ddV_num = np.diff(dV_num)/(r[1]-r[0])
+        self.assertLess(abs((dV[:-1]+dV[1:])/2+dV_num).max(), 1e-4)
+        self.assertLess(abs(ddV[1:-1]-ddV_num).max(), 1e-2)
