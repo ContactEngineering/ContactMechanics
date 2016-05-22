@@ -91,7 +91,8 @@ class ExpPotential(Potential):
 
         # Linear function for r < 0. This avoid numerical overflow at small r.
         m = np.logical_not(m)
-        V[m] = -self.gam*(1+g[m])
-        dV[m] = self.gam/self.rho
+        V[m] = -self.gam*(1+g[m]+0.5*g[m]**2)
+        dV[m] = -self.gam/self.rho*(1+g[m])
+        ddV[m] = -self.gam/self.rho**2
 
         return V, dV, ddV
