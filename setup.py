@@ -58,7 +58,7 @@ setup(
     version = versioneer.get_version(),
     cmdclass = versioneer.get_cmdclass(),
     packages = find_packages(),
-    ext_modules=extensions,
+    ext_modules = cythonize(extensions),
     # metadata for upload to PyPI
     author = "Till Junge",
     author_email = "till.junge@kit.edu",
