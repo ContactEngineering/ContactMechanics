@@ -29,12 +29,6 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import math
-
-import numpy as np
-
-###
-
 import numpy as np
 from math import pi
 from scipy.optimize import brentq
