@@ -31,6 +31,8 @@ Boston, MA 02111-1307, USA.
 from .Interactions import Interaction, HardWall, SoftWall
 from .Potentials import Potential, SmoothPotential, MinimisationPotential
 from .Potentials import SimpleSmoothPotential
+
+from .Adhesion import ExpPotential
+from .Harmonic import HarmonicPotential
 from .Lj93 import LJ93, LJ93smooth, LJ93smoothMin, LJ93SimpleSmooth
 from .VdW82 import VDW82, VDW82smooth, VDW82smoothMin, VDW82SimpleSmooth
-from .Adhesion import ExpPotential
