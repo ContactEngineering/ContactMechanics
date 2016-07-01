@@ -18,6 +18,8 @@ install:
 before_script:
   - source .travis.before_script.bash
 script:
+  - "pip list"
+  - "python -V"
   - "python setup.py test"
 notifications:
   email:
