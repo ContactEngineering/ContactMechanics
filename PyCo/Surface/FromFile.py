@@ -112,8 +112,8 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
                    _float_regex+")(?P<unit>.*)"), float, "ysiz"))
 
     # Unit keywords
-    checks.append((re.compile(r"\b(?:y-unit)\b\s*=\s*(\w+)"), str, "yunit"))
-    checks.append((re.compile(r"\b(?:x-unit)\b\s*=\s*(\w+)"), str, "xunit"))
+    checks.append((re.compile(r"\b(?:x-unit)\b\s*(?:=|\:)\s*(\w+)"), str, "xunit"))
+    checks.append((re.compile(r"\b(?:y-unit)\b\s*(?:=|\:)\s*(\w+)"), str, "yunit"))
     checks.append((re.compile(r"\b(?:z-unit|Value units)\b\s*(?:=|\:)\s*(\w+)"),
                    str, "zunit"))
 
@@ -142,10 +142,14 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
                 yres = int(match.group(1))
             elif key == 'xsiz':
                 xsiz = float(match.group('value'))
-                xunit = mangle_unit(match.group('unit'))
+                x = match.group('unit')
+                if x:
+                    xunit = mangle_unit(x)
             elif key == 'ysiz':
                 ysiz = float(match.group('value'))
-                yunit = mangle_unit(match.group('unit'))
+                y = match.group('unit')
+                if y:
+                    yunit = mangle_unit(y)
             elif key == 'xunit':
                 xunit = mangle_unit(match.group(1))
             elif key == 'yunit':
