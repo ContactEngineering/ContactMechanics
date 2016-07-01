@@ -55,7 +55,6 @@ def fA(m, A, lam):
     return (1./2)*lam*A*A*(mu+(m*m-2)*tanmu)+(4./3)*lam*lam*A*(mu*tanmu-m+1)-1
 
 def load_and_displacement(A, lam, return_m=False):
-    print fA(1.0, A, lam), fA(1e12, A, lam)
     m = afindroot(fA, 1.0, 1e12, A, lam)
     mu = np.sqrt(m*m-1)
     tanmu = np.arctan(mu)
