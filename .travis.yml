@@ -13,8 +13,6 @@ matrix:
       env: PYTHON=/usr/local/bin/python3 CC=/usr/local/bin/gcc-4.9 CXX=/usr/local/bin/g++-4.9
 before_install:
   - source .travis.before_install.bash
-install:
-  - "pip install -r requirements.txt"
 before_script:
   - source .travis.before_script.bash
 script:
