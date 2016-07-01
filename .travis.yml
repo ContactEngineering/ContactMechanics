@@ -39,6 +39,7 @@ script:
 notifications:
   email:
     - lars.pastewka@kit.edu
+    - till.junge@epfl.ch
 addons:
   apt:
     packages:
