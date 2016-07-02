@@ -32,3 +32,4 @@ addons:
     - python-scipy
     - python-matplotlib
     - cython
+    - libfftw3-dev
