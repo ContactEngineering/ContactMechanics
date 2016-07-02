@@ -1,7 +1,7 @@
 igor
-matplotlib
-numpy
-pylint
-pep8
-scipy
-cython
+matplotlib>=1.0
+numpy>=1.5
+pylint>0.25
+pep8>=0.6
+scipy>=0.9
+cython>=0.15
