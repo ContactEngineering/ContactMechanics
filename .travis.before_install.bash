@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-  echo "OK"
+  pip install -v -r requirements.txt
 elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
   brew install gcc
   brew install fftw
@@ -16,5 +16,5 @@ elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
   sudo pip install virtualenv
   virtualenv -p $PYTHON venv
   source venv/bin/activate
-  pip install -r requirements.txt
+  pip install -v -r requirements.txt
 fi

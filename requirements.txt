@@ -3,5 +3,5 @@ matplotlib>=1.0.0
 numpy>=1.5.0
 pylint>0.25
 pep8>=0.6
-scipy>=0.9.0
+scipy>=0.14.0
 cython>=0.15
