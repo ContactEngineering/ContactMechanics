@@ -219,7 +219,7 @@ class FastSystemTest(unittest.TestCase):
                              F_n, F_n2, type(S), type(babushka), error))
 
     def test_unit_neutrality(self):
-        tol = 1e-7
+        tol = 2e-7
         # runs the same problem in two unit sets and checks whether results are
         # changed
 
