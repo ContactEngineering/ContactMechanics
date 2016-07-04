@@ -35,7 +35,6 @@ from math import pi
 import numpy as np
 import scipy
 from scipy.signal import get_window
-import matplotlib.pyplot as plt
 
 from ..Tools.common import compute_wavevectors, fftn, get_q_from_lambda
 from ..Surface import NumpySurface
@@ -211,6 +210,8 @@ class CharacterisePeriodicSurface(object):
     def estimate_hurst_alt(self, H_bracket=(0., 2.),
                            lambda_min=0, lambda_max=float('inf'),
                            full_output=False, tol=1e-9):
+        import matplotlib.pyplot as plt
+
         """ When estimating Hurst for  more-than-one-dimensional surfs, we need
         to scale. E.g, 2d
         C(q) = C_0*q^(-2-2H)
@@ -342,6 +343,8 @@ class CharacterisePeriodicSurface(object):
                              y_min=None, n_bins=100, ax=None, color='b',
                              errbar=True, x_max_at_shannon=False, fit_alpha=1.):
         " Convenience function to plot power spectra with informative labels"
+        import matplotlib.pyplot as plt
+
         line_width = 3
         q_sh = self.q_shannon
 
