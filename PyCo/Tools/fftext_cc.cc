@@ -27,11 +27,13 @@ cmplex * fft_r2c_2D_wrap (double *arr, size_t n_row, size_t n_col) {
   decltype(arr) in = reinterpret_cast<double*>(out);
 
   auto const flags = FFTW_ESTIMATE;
+#ifdef _OPENMP
   auto err_code = fftw_init_threads();
   if (err_code == 0) {
     throw std::runtime_error("Couldn't init threads");
   }
   fftw_plan_with_nthreads(omp_get_max_threads());
+#endif
   auto p = fftw_plan_dft_r2c_2d(n_row, n_col,
                                 in,
                                 out,
@@ -67,11 +69,13 @@ double * fft_c2r_2D_wrap (cmplex *arr, size_t n_row, size_t n_col) {
   auto in = reinterpret_cast<fftw_complex*>(out);
 
   auto const flags = FFTW_ESTIMATE;
+#ifdef _OPENMP
   auto err_code = fftw_init_threads();
   if (err_code == 0) {
     throw std::runtime_error("Couldn't init threads");
   }
   fftw_plan_with_nthreads(omp_get_max_threads());
+#endif
   auto p = fftw_plan_dft_c2r_2d(n_row, n_col,
                                 in,
                                 out,
@@ -112,11 +116,13 @@ cmplex * any_fft_2D_wrap (cmplex *arr, size_t n_row, size_t n_col) {
   }
 
   auto const flags = FFTW_ESTIMATE;
+#ifdef _OPENMP
   auto err_code = fftw_init_threads();
   if (err_code == 0) {
     throw std::runtime_error("Couldn't init threads");
   }
   fftw_plan_with_nthreads(omp_get_max_threads());
+#endif
   auto p = fftw_plan_dft_2d(n_row, n_col,
                             reinterpret_cast<fftw_complex*>(arr),
                             out,
