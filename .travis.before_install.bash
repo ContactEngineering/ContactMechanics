@@ -4,6 +4,7 @@ if [ "$TRAVIS_OS_NAME" == "linux" ]; then
   echo "OK"
 elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
   brew install gcc
+  brew install netcdf
   brew install fftw
   brew link --overwrite gcc
   if [ "$PYTHON" == "/usr/local/bin/python3" ]; then
