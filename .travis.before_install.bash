@@ -18,4 +18,3 @@ elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
   source venv/bin/activate
   pip install -r requirements.txt
 fi
-pip list
