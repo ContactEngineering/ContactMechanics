@@ -30,10 +30,11 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
+from libcpp cimport bool
 from libc.math cimport sqrt
 
-cdef extern from "numpy/npy_math.h":
-    bint npy_isnan(double x)
+cdef extern from "cmath" namespace "std":
+    bool isnan(double x)
 
 import numpy as np
 cimport numpy as cnp
@@ -337,7 +338,7 @@ cpdef constrained_conjugate_gradients(substrate, surface, disp0=None,
                        'max_pres'],
                       [delta_str, it, A, tau, rms_pen, max_pen, max_pres])
 
-        if npy_isnan(G) or npy_isnan(rms_pen):
+        if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
 
     result.x = u_r.copy()#[comp_slice]
