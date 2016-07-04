@@ -29,6 +29,8 @@ addons:
     - gfortran
     - liblapack-dev
     - libfftw3-dev
+    - libnetcdf-dev
+    - libhdf5-dev
     - python-numpy
     - python-scipy
     - python-matplotlib
