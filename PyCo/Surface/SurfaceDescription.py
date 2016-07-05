@@ -578,7 +578,7 @@ class Sphere(NumpySurface):
         r2[outside] = radius2
         h = np.sqrt(radius2 - r2)-radius
         h[outside] -= standoff
-        super().__init__(h)
+        super().__init__(h.copy())
         self._size = size
         self._centre = centre
 
