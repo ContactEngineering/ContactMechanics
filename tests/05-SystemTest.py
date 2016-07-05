@@ -54,9 +54,6 @@ try:
     import PyCo.ContactMechanics as Contact
     import PyCo.Surface as Surface
     import PyCo.Tools as Tools
-
-
-    import matplotlib.pyplot as plt
 except ImportError as err:
     import sys
     print(err)
@@ -284,6 +281,7 @@ class SystemTest(unittest.TestCase):
         error = Tools.mean_err(rep_force, alt_rep_force)
 
 
+        ## import matplotlib.pyplot as plt
         ## fig = plt.figure()
         ## CS = plt.contourf(S.interaction.force)
         ## plt.colorbar(CS)
@@ -445,6 +443,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         # here the answers differ slightly, relaxing the tol for this one
         ftol = 1e-7
 
+        ## import matplotlib.pyplot as plt
         ## fig = plt.figure()
         ## CS = plt.contourf(ref_data.variables['f'][0])
         ## plt.colorbar(CS)
