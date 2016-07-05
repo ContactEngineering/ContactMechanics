@@ -3,12 +3,6 @@ language: generic
 sudo: required
 matrix:
   include:
-    - python: 3.4
-      language: python
-      python: "3.4"
-      os: linux
-      dist: trusty
-      env: PYTHON=/usr/bin/python3.4
     - python: 3
       os: osx
       env: PYTHON=/usr/local/bin/python3 CC=/usr/local/bin/gcc-4.9 CXX=/usr/local/bin/g++-4.9
