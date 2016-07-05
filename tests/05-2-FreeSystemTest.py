@@ -44,8 +44,6 @@ try:
     import PyCo.ContactMechanics as Contact
     import PyCo.Surface as Surface
     import PyCo.Tools as Tools
-
-    import matplotlib.pyplot as plt
 except ImportError as err:
     import sys
     print(err)
