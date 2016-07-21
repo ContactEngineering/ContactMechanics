@@ -82,17 +82,27 @@ class ExpPotential(Potential):
 
         # Use exponential only for r > 0
         m = g < 0.0
-        V = np.zeros_like(g)
-        dV = np.zeros_like(g)
-        ddV = np.zeros_like(g)
-        V[m] = -self.gam*np.exp(g[m])
-        dV[m] = V[m]/self.rho
-        ddV[m] = V[m]/self.rho**2
+        if np.isscalar(r):
+            if m:
+                V = -self.gam*np.exp(g)
+                dV = V/self.rho
+                ddV = V/self.rho**2
+            else:
+                V = -self.gam*(1+g+0.5*g**2)
+                dV = -self.gam/self.rho*(1+g)
+                ddV = -self.gam/self.rho**2
+        else:
+            V = np.zeros_like(g)
+            dV = np.zeros_like(g)
+            ddV = np.zeros_like(g)
+            V[m] = -self.gam*np.exp(g[m])
+            dV[m] = V[m]/self.rho
+            ddV[m] = V[m]/self.rho**2
 
-        # Linear function for r < 0. This avoid numerical overflow at small r.
-        m = np.logical_not(m)
-        V[m] = -self.gam*(1+g[m]+0.5*g[m]**2)
-        dV[m] = -self.gam/self.rho*(1+g[m])
-        ddV[m] = -self.gam/self.rho**2
+            # Quadratic function for r < 0. This avoids numerical overflow at small r.
+            m = np.logical_not(m)
+            V[m] = -self.gam*(1+g[m]+0.5*g[m]**2)
+            dV[m] = -self.gam/self.rho*(1+g[m])
+            ddV[m] = -self.gam/self.rho**2
 
         return V, dV, ddV
