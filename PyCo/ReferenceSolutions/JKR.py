@@ -53,6 +53,6 @@ def radius(N, R, Es, w):
         Work of adhesion.
     """
 
-    return ( 3.*R/(4.*Es)*(N + 6*w*math.pi*R + np.sqrt(12*w*math.pi*R*N + 
-                           (6*w*math.pi*R)**2)) )**(1./3)
+    return ( 3.*R/(4.*Es)*(N + 3*w*math.pi*R + np.sqrt(6*w*math.pi*R*N + 
+                           (3*w*math.pi*R)**2)) )**(1./3)
 
