@@ -186,7 +186,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return irfftn(self.weights * rfftn(-forces), s=self.computational_resolution).real/self.area_per_pt
 
     def evaluate_force(self, disp):
-        """ Computes the force due to a given displacement array
+        """ Computes the force (*not* pressures) due to a given displacement array
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
         """
@@ -210,7 +210,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return self.weights * rfftn(-forces)/self.area_per_pt
 
     def evaluate_k_force(self, disp):
-        """ Computes the K-space forces due to a given displacement array
+        """ Computes the K-space forces (*not* pressures) due to a given displacement array
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
         """
