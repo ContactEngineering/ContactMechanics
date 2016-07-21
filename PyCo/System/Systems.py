@@ -186,8 +186,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         raise IncompatibleResolutionError()
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
-                       options=None, gradient=True, lbounds = None, ubounds= None, tol=None,
-                       callback=None, disp_scale=1.):
+                       options=None, gradient=True, lbounds=None, ubounds=None,
+                       tol=None, callback=None, disp_scale=1.):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of scipy.minimize for common default
