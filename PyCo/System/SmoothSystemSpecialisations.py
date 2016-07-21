@@ -110,7 +110,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         displacement) may have a non-intuitive shape and size (The problem size
         may be decreased, as for free, non-periodic systems, or increased as
         with augmented-lagrangian-type issues). Use the output of this function
-        as argument x0 for scipy minimisation functions. Also, if you initial
+        as argument x0 for scipy minimisation functions. Also, if your initial
         guess has a shape that makes no sense, this will tell you before you
         get caught in debugging scipy-code
 
@@ -357,8 +357,9 @@ class FastSmoothContactSystem(SmoothContactSystem):
             return computational_resolution()
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
-                       options=None, gradient=True, tol=None,
-                       callback=None, disp_scale=1., deproxify_everytime=True):
+                       options=None, gradient=True, lbounds=None, ubounds=None,
+                       tol=None, callback=None, disp_scale=1.,
+                       deproxify_everytime=True):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of scipy.minimize for common default
@@ -416,12 +417,32 @@ class FastSmoothContactSystem(SmoothContactSystem):
             self.check_margins()
             return use_callback(disp_k)
 
+        bnds = None
+        if lbounds is not None and ubounds is not None:
+            ubounds = disp_scale*self.shape_minimisation_input(ubounds)
+            lbounds = disp_scale*self.shape_minimisation_input(lbounds)
+            bnds = tuple(zip(lbounds.tolist(),ubounds.tolist()))
+        elif lbounds is not None:
+            lbounds = disp_scale*self.shape_minimisation_input(lbounds)
+            bnds = tuple(zip(lbounds.tolist(),[None for i in range(len(lbounds))]))
+        elif ubounds is not None:
+            ubounds = disp_scale*self.shape_minimisation_input(ubounds)
+            bnds = tuple(zip([None for i in range(len(ubounds))],ubounds.tolist()))
+        # Scipy minimizers that accept bounds
+        bounded_minimizers = {'L-BFGS-B','TNC','SLSQP'}
+
         try:
-            result = scipy.optimize.minimize(
-                fun, x0=disp0, method=method, jac=gradient, tol=tol,
-                callback=compound_callback,
-                options=options)
-            # if deproxify_everytime:
+            if method in bounded_minimizers:
+                result = scipy.optimize.minimize(
+                    fun, x0=disp0, method=method, jac=gradient, tol=tol,
+                    bounds=bnds, callback=compound_callback,
+                    options=options)
+            else:
+                result = scipy.optimize.minimize(
+                    fun, x0=disp0, method=method, jac=gradient, tol=tol,
+                    callback=compound_callback,
+                    options=options)
+                # if deproxify_everytime:
             self.deproxified()
         except self.FreeBoundaryError as err:
             print("Caught FreeBoundaryError. Reevaluating margins")
