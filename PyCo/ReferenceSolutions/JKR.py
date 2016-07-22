@@ -52,7 +52,12 @@ def radius(N, R, Es, w):
     w : float
         Work of adhesion.
     """
+    A = N + 3*w*math.pi*R
+    B = np.sqrt(6*w*math.pi*R*N + (3*w*math.pi*R)**2)
 
-    return ( 3.*R/(4.*Es)*(N + 3*w*math.pi*R + np.sqrt(6*w*math.pi*R*N + 
-                           (3*w*math.pi*R)**2)) )**(1./3)
+    fac = 3.*R/(4.*Es)
+    A *= fac
+    B *= fac
+
+    return (A+B)**(1./3), (A-B)**(1./3)
 
