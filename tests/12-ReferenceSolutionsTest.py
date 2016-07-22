@@ -38,6 +38,7 @@ try:
 
     from .pycotest import PyCoTestCase
     import PyCo.ReferenceSolutions.GreenwoodTripp as GT
+    import PyCo.ReferenceSolutions.MaugisDugdale as MD
 except ImportError as err:
     import sys
     print(err)
@@ -70,3 +71,8 @@ class ReferenceSolutionsTest(PyCoTestCase):
         #plt.plot(rho1, p1, 'r-')
         #plt.yscale('log')
         #plt.show()
+    def test_md_dmt_limit(self):
+        A = np.linspace(0.001, 10, 11)
+        N, d = MD._load_and_displacement(A, 1e-12)
+        self.assertArrayAlmostEqual(N, A**3-2)
+        self.assertArrayAlmostEqual(d, A**2, tol=1e-5)
