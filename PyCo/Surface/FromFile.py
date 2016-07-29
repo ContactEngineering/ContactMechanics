@@ -37,7 +37,7 @@ from zipfile import ZipFile
 
 import numpy as np
 
-from .SurfaceDescription import NumpySurface
+from .SurfaceDescription import NumpySurface, ScaledSurface
 
 
 unit_scales = {'m': 1.0, 'mm': 1e-3, 'µm': 1e-6, 'nm': 1e-9, 'A': 1e-10}
@@ -200,8 +200,9 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
             ysiz = yfac*ny
         else:
             ysiz *= yfac
-    if zfac is not None:
-        data *= zfac
+    if zfac is None:
+        zfac = 1.0
+    zfac *= z_factor
 
     # Handle units -> convert to target unit
     if xunit is None and zunit is not None:
@@ -220,9 +221,10 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
             data *= unit_scales[zunit]/unit_scales[unit]
 
     if xsiz is None or ysiz is None:
-        surface = NumpySurface(z_factor*data)
+        surface = NumpySurface(data)
     else:
-        surface = NumpySurface(z_factor*data, size=(x_factor*xsiz, x_factor*ysiz))
+        surface = NumpySurface(data, size=(x_factor*xsiz, x_factor*ysiz))
+    surface = ScaledSurface(surface, zfac)
 
     if unit is not None:
         surface.unit = unit
@@ -423,8 +425,8 @@ def read_opd(fobj):
         raise IOError('No data block encountered.')
 
     # Height are in nm, width in mm
-    surface = NumpySurface(data.astype(float)*wavelength/mult*1e-6,
-                           size=(nx*pixel_size, ny*pixel_size*aspect))
+    surface = NumpySurface(data, size=(nx*pixel_size, ny*pixel_size*aspect))
+    surface = ScaledSurface(surface, wavelength/mult*1e-6)
     surface.unit = 'mm'
     return surface
 
@@ -527,8 +529,8 @@ def read_di(fobj):
                 sy *= unit_scales[xy_unit]/unit_scales[height_unit]
                 xy_unit = height_unit
 
-            data = unscaleddata * hard_scale * soft_scale
-            surface = NumpySurface(data.T.copy(), size=(sx, sy))
+            surface = NumpySurface(unscaleddata.T, size=(sx, sy))
+            surface = ScaledSurface(surface, hard_scale*soft_scale)
             surface.unit = height_unit
             surfaces += [surface]
 
