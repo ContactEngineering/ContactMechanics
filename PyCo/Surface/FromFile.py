@@ -221,14 +221,11 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
             data *= unit_scales[zunit]/unit_scales[unit]
 
     if xsiz is None or ysiz is None:
-        surface = NumpySurface(data)
+        surface = NumpySurface(data, unit=unit)
     else:
-        surface = NumpySurface(data, size=(x_factor*xsiz, x_factor*ysiz))
+        surface = NumpySurface(data, size=(x_factor*xsiz, x_factor*ysiz),
+                               unit=unit)
     surface = ScaledSurface(surface, zfac)
-
-    if unit is not None:
-        surface.unit = unit
-
     return surface
 
 NumpyAscSurface = read_asc  # pylint: disable=invalid-name
@@ -425,9 +422,9 @@ def read_opd(fobj):
         raise IOError('No data block encountered.')
 
     # Height are in nm, width in mm
-    surface = NumpySurface(data, size=(nx*pixel_size, ny*pixel_size*aspect))
+    surface = NumpySurface(data, size=(nx*pixel_size, ny*pixel_size*aspect),
+                           unit='mm')
     surface = ScaledSurface(surface, wavelength/mult*1e-6)
-    surface.unit = 'mm'
     return surface
 
 
@@ -529,9 +526,9 @@ def read_di(fobj):
                 sy *= unit_scales[xy_unit]/unit_scales[height_unit]
                 xy_unit = height_unit
 
-            surface = NumpySurface(unscaleddata.T, size=(sx, sy))
+            surface = NumpySurface(unscaleddata.T, size=(sx, sy),
+                                   unit=height_unit)
             surface = ScaledSurface(surface, hard_scale*soft_scale)
-            surface.unit = height_unit
             surfaces += [surface]
 
     if close_file:
@@ -572,8 +569,7 @@ def read_ibw(fobj):
     sfA = wave['wave_header']['sfA']
     nx, ny = data.shape
 
-    surface = NumpySurface(data, size=(nx*sfA[0], ny*sfA[1]))
-    surface.unit = z_unit
+    surface = NumpySurface(data, size=(nx*sfA[0], ny*sfA[1]), unit=z_unit)
 
     return surface
 
