@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   ConstrainedConjugateGradients.pyx
+@file   ConstrainedConjugateGradientsOpt.pyx
 
 @author Till Junge <till.junge@kit.edu>
 
 @date   08 Dec 2015
 
-@brief  Implements the constrained conjugate gradient algorithm as described in
+@brief  Optimized, parallel implementation of the constrained conjugate
+        gradient algorithm as described in
         I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)
 
 @section LICENCE

@@ -186,8 +186,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         raise IncompatibleResolutionError()
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
-                       options=None, gradient=True, lbounds=None, ubounds=None,
-                       tol=None, callback=None, disp_scale=1.):
+                       gradient=True, lbounds=None, ubounds=None, disp_scale=1.,
+                       **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of scipy.minimize for common default
@@ -239,14 +239,12 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
         if method in bounded_minimizers:
             result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
-                                             method=method,
-                                             jac=gradient, tol=tol, bounds=bnds,
-                                             callback=callback, options=options)
+                                             method=method, jac=gradient,
+                                             bounds=bnds, **kwargs)
         else:
             result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
-                                             method=method,
-                                             jac=gradient, tol=tol,
-                                             callback=callback, options=options)
+                                             method=method, jac=gradient,
+                                             **kwargs)
         self.disp = self.shape_minimisation_output(result.x*disp_scale)
         self.evaluate(self.disp, offset, forces=gradient)
         return result
@@ -622,8 +620,7 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
-    def minimize_proxy(self, offset, disp0=None, pentol=1e-6,
-                       prestol=1e-5, maxiter=100000, logger=None):
+    def minimize_proxy(self, offset, **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of constrained minimisation.
@@ -648,11 +645,7 @@ class NonSmoothContactSystem(SystemBase):
         result = constrained_conjugate_gradients(
             self.substrate,
             self.surface[:, :] + offset,
-            disp0=disp0,
-            pentol=pentol,
-            prestol=prestol,
-            maxiter=maxiter,
-            logger=logger)
+            **kwargs)
         if result.success:
             self.disp = result.x
             self.force = self.substrate.force = result.jac

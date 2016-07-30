@@ -46,8 +46,8 @@ extensions = [
         include_dirs=[np.get_include()],
         language="c++"),
     Extension(
-        name="PyCo.Tools.Optimisation.ConstrainedConjugateGradients",
-        sources=[os.path.join(tools_path,"Optimisation/ConstrainedConjugateGradients.pyx")],
+        name="PyCo.Tools.Optimisation.ConstrainedConjugateGradientsOpt",
+        sources=[os.path.join(tools_path,"Optimisation/ConstrainedConjugateGradientsOpt.pyx")],
         include_dirs=[np.get_include()],
         language="c++")]
 
