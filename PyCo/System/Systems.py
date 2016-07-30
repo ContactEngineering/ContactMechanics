@@ -186,7 +186,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         raise IncompatibleResolutionError()
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
-                       gradient=True, lbounds=None, ubounds=None, disp_scale=1.,
+                       gradient=True, lbounds=None, ubounds=None, callback=None,
+                       disp_scale=1.,
                        **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
@@ -240,11 +241,12 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         if method in bounded_minimizers:
             result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
                                              method=method, jac=gradient,
-                                             bounds=bnds, **kwargs)
+                                             bounds=bnds, callback=callback,
+                                             **kwargs)
         else:
             result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
                                              method=method, jac=gradient,
-                                             **kwargs)
+                                             callback=callback, **kwargs)
         self.disp = self.shape_minimisation_output(result.x*disp_scale)
         self.evaluate(self.disp, offset, forces=gradient)
         return result
