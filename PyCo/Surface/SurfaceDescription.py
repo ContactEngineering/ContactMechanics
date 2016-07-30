@@ -45,17 +45,20 @@ class Surface(object, metaclass=abc.ABCMeta):
         pass
     name = 'generic_geom'
 
-    def __init__(self, resolution=None, dim=None, size=None, adjustment=0.):
+    def __init__(self, resolution=None, dim=None, size=None, unit=None,
+                 adjustment=0.):
         self._resolution = resolution
         self._dim = dim
         self._size = size
+        self._unit = unit
         self.adjustment = adjustment
 
     def __getstate__(self):
         """ is called and the returned object is pickled as the contents for
             the instance
         """
-        state = (self._resolution, self._dim, self._size, self.adjustment)
+        state = (self._resolution, self._dim, self._size, self._unit,
+                 self.adjustment)
         return state
 
     def __setstate__(self, state):
@@ -63,7 +66,8 @@ class Surface(object, metaclass=abc.ABCMeta):
         Keyword Arguments:
         state -- result of __getstate__
         """
-        (self._resolution, self._dim, self._size, self.adjustment) = state
+        (self._resolution, self._dim, self._size, self._unit, 
+            self.adjustment) = state
 
     def compute_rms_height(self, kind='Sq'):
         "computes the rms height fluctuation of the surface"
@@ -188,6 +192,16 @@ class Surface(object, metaclass=abc.ABCMeta):
                      self.dim, len(size), size))
         self._size = size
 
+    @property
+    def unit(self,):
+        """ Return unit """
+        return self._unit
+
+    @unit.setter
+    def unit(self, unit):
+        """ Set unit """
+        self._unit = unit
+
     def save(self, fname, compress=True):
         """ saves the surface as a NumpyTxtSurface. Warning: This only saves
             the profile; the size is not contained in the file
@@ -282,6 +296,21 @@ class ScaledSurface(Surface):
         """
         return self.surf.size
 
+    @size.setter
+    def size(self, size):
+        """ set the size of the surface """
+        self.surf.size = size
+
+    @property
+    def unit(self,):
+        """ Return unit """
+        return self.surf.unit
+
+    @unit.setter
+    def unit(self, unit):
+        """ Set unit """
+        self.surf.unit = unit
+
     def _profile(self):
         """ Computes the combined profile.
         """
@@ -369,6 +398,16 @@ class TiltedSurface(Surface):
         """ set the size of the surface """
         self.surf.size = size
         self._detrend()
+
+    @property
+    def unit(self,):
+        """ Return unit """
+        return self.surf.unit
+
+    @unit.setter
+    def unit(self, unit):
+        """ Set unit """
+        self.surf.unit = unit
 
     @property
     def coeffs(self,):
@@ -500,14 +539,14 @@ class NumpySurface(Surface):
     """
     name = 'surface_from_np_array'
 
-    def __init__(self, profile, size=None):
+    def __init__(self, profile, size=None, unit=None):
         """
         Keyword Arguments:
         profile -- surface profile
         """
         self.__h = profile
         super().__init__(resolution=self.__h.shape, dim=len(self.__h.shape),
-                         size=size)
+                         size=size, unit=unit)
 
     def _profile(self):
         return self.__h
