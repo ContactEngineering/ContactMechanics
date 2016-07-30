@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   ConstrainedConjugateGradients.py
+@file   ConstrainedConjugateGradients.pyx
 
-@author Lars Pastewka <lars.pastewka@kit.edu>
+@author Till Junge <till.junge@kit.edu>
 
 @date   08 Dec 2015
 
