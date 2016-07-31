@@ -6,8 +6,8 @@ TODO
 Change log
 ==========
 
-v0.9.5
-------
+v0.10.0
+-------
 
 - Exponential adhesion potential from Martin's contact mechanics challenge, to
   be used in combination with hard-wall (bounded L-BFGS). Added tests for this
