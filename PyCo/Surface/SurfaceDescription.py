@@ -449,7 +449,6 @@ class TiltedSurface(Surface):
 
     def stringify_plane(self, fmt=lambda x: str(x)):
         str_coeffs = [fmt(x) for x in self._coeffs]
-        print(self._coeffs, str_coeffs)
         if len(self._coeffs) == 1:
             h0, = str_coeffs
             return h0
