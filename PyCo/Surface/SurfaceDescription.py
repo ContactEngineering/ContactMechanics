@@ -333,13 +333,15 @@ class TiltedSurface(Surface):
         super().__init__()
         assert isinstance(surf, Surface)
         self.surf = surf
-        self.detrend_mode = detrend_mode
+        self._detrend_mode = detrend_mode
         self._detrend()
 
     def _detrend(self):
-        if self.detrend_mode == 'height':
+        if self._detrend_mode is None or self._detrend_mode == 'center':
+            self._coeffs = [-self.surf.profile().mean()]
+        elif self._detrend_mode == 'height':
             self._coeffs = [-s for s in compute_tilt_from_height(self.surf)]
-        elif self.detrend_mode == 'slope':
+        elif self._detrend_mode == 'slope':
             try:
                 sx, sy = self.surf.size
             except:
@@ -349,17 +351,17 @@ class TiltedSurface(Surface):
             slx, sly = self._coeffs
             self._coeffs += [-self.surf[...].mean()-slx*sx*(nx-1)/(2*nx)
                                                    -sly*sy*(ny-1)/(2*ny)]
-        elif self.detrend_mode == 'curvature':
+        elif self._detrend_mode == 'curvature':
             self._coeffs = [-s for s in compute_tilt_and_curvature(self.surf)]
         else:
             raise ValueError("Unknown detrend mode '{}'." \
-                .format(self.detrend_mode))
+                .format(self._detrend_mode))
 
     def __getstate__(self):
         """ is called and the returned object is pickled as the contents for
             the instance
         """
-        state = (super().__getstate__(), self.surf, self.detrend_mode,
+        state = (super().__getstate__(), self.surf, self._detrend_mode,
                  self._coeffs)
         return state
 
@@ -368,7 +370,7 @@ class TiltedSurface(Surface):
         Keyword Arguments:
         state -- result of __getstate__
         """
-        (superstate, self.surf, self.detrend_mode, self._coeffs) = state
+        (superstate, self.surf, self._detrend_mode, self._coeffs) = state
         super().__setstate__(superstate)
 
     @property
@@ -413,6 +415,15 @@ class TiltedSurface(Surface):
     def coeffs(self,):
         return self._coeffs
 
+    @property
+    def detrend_mode(self,):
+        return self._detrend_mode
+
+    @detrend_mode.setter
+    def detrend_mode(self, detrend_mode):
+        self._detrend_mode = detrend_mode
+        self._detrend()
+
     def _profile(self):
         """ Computes the combined profile.
         """
@@ -423,7 +434,10 @@ class TiltedSurface(Surface):
             sx, sy = nx, ny
         x = np.arange(nx).reshape(-1, 1)*sx/nx
         y = np.arange(ny).reshape(1, -1)*sy/ny
-        if len(self._coeffs) == 3:
+        if len(self._coeffs) == 1:
+            h0, = self._coeffs
+            return self.surf.profile() + h0
+        elif len(self._coeffs) == 3:
             m, n, h0 = self._coeffs
             return self.surf.profile() + h0 + m*x + n*y
         else:
@@ -433,6 +447,17 @@ class TiltedSurface(Surface):
             xy = x*y
             return self.surf.profile() + h0 + m*x + n*y + mm*xx + nn*yy + mn*xy
 
+    def stringify_plane(self, fmt=lambda x: str(x)):
+        str_coeffs = [fmt(x) for x in self._coeffs]
+        print(self._coeffs, str_coeffs)
+        if len(self._coeffs) == 1:
+            h0, = str_coeffs
+            return h0
+        elif len(self._coeffs) == 3:
+            return '{2} + {0} x + {1} y'.format(*str_coeffs)
+        else:
+            return '{5} + {0} x + {1} y + {2} x^2 + {3} y^2 + {4} xy' \
+                .format(*str_coeffs)
 
 class TranslatedSurface(Surface):
     """ used when geometries are translated
