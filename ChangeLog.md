@@ -6,6 +6,14 @@ TODO
 Change log
 ==========
 
+v0.10.1
+-------
+
+- Added 'center' detrending mode which just subtracts the mean value.
+- Added getter and setter for detrend_mode.
+- Added function to return string representation of subtracted plane.
+- Added area_per_pt property to Surface object.
+
 v0.10.0
 -------
 
