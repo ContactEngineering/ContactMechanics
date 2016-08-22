@@ -14,4 +14,4 @@ echo "Python executable: $PYTHON"
 echo "Root directory:    $ROOT"
 echo "Platform:          $PLATFORM"
 
-export PYTHONPATH="$ROOT/build/lib:$ROOT/build/lib.$PLATFORM:$PYTHONPATH"
+export PYTHONPATH="$ROOT:$ROOT/build/lib.$PLATFORM:$PYTHONPATH"
