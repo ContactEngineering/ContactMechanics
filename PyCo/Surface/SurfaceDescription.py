@@ -202,6 +202,10 @@ class Surface(object, metaclass=abc.ABCMeta):
         """ Set unit """
         self._unit = unit
 
+    @property
+    def area_per_pt(self):
+        return np.prod([s/r for s, r in zip(self.size, self.resolution)])
+
     def save(self, fname, compress=True):
         """ saves the surface as a NumpyTxtSurface. Warning: This only saves
             the profile; the size is not contained in the file
