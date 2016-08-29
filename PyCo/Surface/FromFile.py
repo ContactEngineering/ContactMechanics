@@ -690,7 +690,8 @@ def read(fobj, format=None):
                'ibw': read_ibw, 
                'opd': read_opd,
                'xyz': read_xyz,
-               'x3p': read_x3p}
+               'x3p': read_x3p,
+               'mat': read_mat}
 
     format = format.lower()
     if format not in readers:
