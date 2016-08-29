@@ -193,6 +193,7 @@ class detectFormatTest(unittest.TestCase):
         self.assertEqual(detect_format('tests/file_format_examples/example.ibw'), 'ibw')
         self.assertEqual(detect_format('tests/file_format_examples/example.opd'), 'opd')
         self.assertEqual(detect_format('tests/file_format_examples/example.x3p'), 'x3p')
+        self.assertEqual(detect_format('tests/file_format_examples/example1.mat'), 'mat')
 
 class matSurfaceTest(unittest.TestCase):
     def setUp(self):

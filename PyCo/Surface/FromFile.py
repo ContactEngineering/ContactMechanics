@@ -638,7 +638,18 @@ def detect_format(fobj):
             fobj.close()
         return 'opd'
     else:
-        # Try opening and see if it fails
+        # Try opening at matlab and see if it fails
+        try:
+            loadmat(fobj)
+            if close_file:
+                fobj.close()
+            else:
+                fobj.seek(file_pos)
+            return 'mat'
+        except:
+            pass
+
+        # Try opening zip and see if it fails
         try:
             with ZipFile(fobj, 'r') as zipfile:
                 if 'main.xml' in zipfile.namelist():
