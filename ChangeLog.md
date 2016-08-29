@@ -6,6 +6,11 @@ TODO
 Change log
 ==========
 
+v0.10.2
+-------
+
+- Added reader for matlab files.
+
 v0.10.1
 -------
 
