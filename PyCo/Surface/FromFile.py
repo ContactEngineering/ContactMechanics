@@ -36,6 +36,7 @@ from struct import unpack
 from zipfile import ZipFile
 
 import numpy as np
+from scipy.io import loadmat
 
 from .SurfaceDescription import NumpySurface, ScaledSurface
 
@@ -50,7 +51,7 @@ def mangle_unit(unit):
     else:
         return unit
 
-def read_matrix(fobj, size=None, factor=1.):
+def read_matrix(fobj, size=None, factor=None):
     """
     Reads a surface profile from a text file and presents in in a
     Surface-conformant manner. No additional parsing of meta-information is
@@ -68,7 +69,10 @@ def read_matrix(fobj, size=None, factor=1.):
                 raise FileNotFoundError(
                     "No such file or directory: '{}(.gz)'".format(
                         fobj))
-    return NumpySurface(factor*np.loadtxt(fobj), size=size)
+    surface = NumpySurface(np.loadtxt(fobj), size=size)
+    if factor is not None:
+        surface = ScaledSurface(surface, factor)
+    return surface
 
 NumpyTxtSurface = read_matrix  # pylint: disable=invalid-name
 
@@ -340,6 +344,38 @@ def read_x3p(fobj):
 
     return NumpySurface(data, size=(xinc*nx, yinc*ny))
 
+
+def read_mat(fobj, size=None, factor=None, unit=None):
+    """
+    Reads a surface profile from a matlab file and presents in in a
+    Surface-conformant manner.
+
+    All two-dimensional arrays present in the matlab data file are returned.
+
+    Keyword Arguments:
+    fobj -- filename or file object
+    size -- size of the surface
+    factor -- scaling factor for height
+    unit -- size and height unit
+    """
+    data = loadmat(fobj)
+    surfaces = []
+    for key, value in data.items():
+        is_2darray = False
+        try:
+            nx, ny = value.shape
+            is_2darray = True
+        except (AttributeError, ValueError):
+            pass
+        if is_2darray:
+            surface = NumpySurface(value, size=size, unit=unit)
+            if factor is not None:
+                surface = ScaledSurface(surface, factor)
+            surfaces += [surface]
+    if len(surfaces) == 1:
+        return surfaces[0]
+    else:
+        return surfaces
 
 def read_opd(fobj):
     """

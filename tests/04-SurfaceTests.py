@@ -40,7 +40,7 @@ try:
 
     from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpySurface,
                               TiltedSurface, Sphere, read, read_asc, read_di,
-                              read_ibw, read_opd, read_x3p)
+                              read_ibw, read_mat, read_opd, read_x3p)
     from PyCo.Surface.FromFile import detect_format
     from PyCo.Tools import (compute_rms_height, compute_rms_slope, compute_slope,
                             shift_and_tilt)
@@ -193,6 +193,16 @@ class detectFormatTest(unittest.TestCase):
         self.assertEqual(detect_format('tests/file_format_examples/example.ibw'), 'ibw')
         self.assertEqual(detect_format('tests/file_format_examples/example.opd'), 'opd')
         self.assertEqual(detect_format('tests/file_format_examples/example.x3p'), 'x3p')
+
+class matSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_read(self):
+        surface = read_mat('tests/file_format_examples/example1.mat')
+        nx, ny = surface.shape
+        self.assertEqual(nx, 2048)
+        self.assertEqual(ny, 2048)
+        self.assertAlmostEqual(surface.compute_rms_height(), 1.234061e-07)
 
 class x3pSurfaceTest(unittest.TestCase):
     def setUp(self):
