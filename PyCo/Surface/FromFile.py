@@ -610,6 +610,37 @@ def read_ibw(fobj):
     return surface
 
 
+def read_hgt(fobj):
+    """
+    Read Shuttle Radar Topography Mission (SRTM) topography data
+    (.hgt extension).
+
+    Keyword Arguments:
+    fobj -- filename or file object
+    """
+    close_file = False
+    if not hasattr(fobj, 'read'):
+        fobj = open(fobj, 'rb')
+        close_file = True
+
+    fobj.seek(0, 2)
+    fsize = fobj.tell()
+    fobj.seek(0)
+
+    dim = int(np.sqrt(fsize/2))
+    if dim*dim*2 != fsize:
+        raise RuntimeError('File size of {0} bytes does not match file size '
+                           'for a map of dimension {1}x{1}.'.format(fsize,
+                                                                    dim))
+    data = np.fromfile(fobj, dtype=np.dtype('>i2'),
+                       count=dim*dim).reshape((dim, dim))
+
+    if close_file:
+        fobj.close()
+
+    return NumpySurface(data)
+
+
 def detect_format(fobj):
     """
     Detect file format based on its content.
