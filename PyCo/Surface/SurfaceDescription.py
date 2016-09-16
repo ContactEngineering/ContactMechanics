@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.
 """
 
 import abc
+import warnings
 
 import numpy as np
 
@@ -167,9 +168,9 @@ class Surface(object, metaclass=abc.ABCMeta):
     def set_size(self, size, s_y=None):
         """ Deprecated, do not use.
         set the size of the surface """
-        if s_y is not None:
-            size = (size, s_y)
-        self._size = size
+        warnings.warn('.set_size(x) is deprecated; please use .size = x',
+                      DeprecationWarning)
+        self.size = size
 
     @property
     def size(self,):
