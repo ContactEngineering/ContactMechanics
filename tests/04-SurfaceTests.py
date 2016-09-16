@@ -40,7 +40,7 @@ try:
 
     from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpySurface,
                               TiltedSurface, Sphere, read, read_asc, read_di,
-                              read_ibw, read_mat, read_opd, read_x3p)
+                              read_hgt, read_ibw, read_mat, read_opd, read_x3p)
     from PyCo.Surface.FromFile import detect_format
     from PyCo.Tools import (compute_rms_height, compute_rms_slope, compute_slope,
                             shift_and_tilt)
@@ -280,3 +280,12 @@ class ibwSurfaceTest(unittest.TestCase):
         self.assertTrue(fmt, 'ibw')
         surface = read(f, format=fmt)
         f.close()
+
+class hgtSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_read(self):
+        surface = read_hgt('tests/file_format_examples/N46E013.hgt')
+        nx, ny = surface.shape
+        self.assertEqual(nx, 3601)
+        self.assertEqual(ny, 3601)
