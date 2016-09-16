@@ -117,7 +117,7 @@ surface = read_asc('surface1.out')
 # Set the *physical* size of the surface. We here set it to equal the shape,
 # i.e. the resolution of the surface just read. Size is returned by surface.size
 # and can be unknown, i.e. *None*.
-surface.set_size(surface.shape)
+surface.size = surface.shape
 
 # Initialize elastic half-space. This one is periodic with contact modulus
 # E*=1.0 and physical size equal to the surface.
