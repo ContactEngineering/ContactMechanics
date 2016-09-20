@@ -41,8 +41,8 @@ extensions = [
     Extension(
         name="PyCo.Tools.fftext",
         sources=[fftext_path + src_name for src_name in ("fftext.pyx", "fftext_cc.cc")],
-        extra_compile_args=["-std=c++11"],
-        extra_link_args=["-lfftw3", "-lm"],
+        extra_compile_args=["-std=c++11", "-fopenmp"],
+        extra_link_args=["-lfftw3_omp", "-lfftw3", "-lm", "-fopenmp"],
         include_dirs=[np.get_include()],
         language="c++"),
     Extension(
