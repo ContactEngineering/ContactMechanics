@@ -479,7 +479,8 @@ def get_window_2D(window, nx, ny, size=None):
 
 
 def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
-                      size=None, window=None, normalize_window=True):
+                      size=None, window=None, normalize_window=True,
+                      return_map=False):
     """
     Compute power spectrum from 2D FFT and radial average.
 
@@ -498,6 +499,8 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
         (Default: None)
     normalize_window : bool, optional
         Normalize window to unit mean. (Default: True)
+    return_map : bool, optional
+        Return full 2D power spectrum map. (Default: False)
 
     Returns
     -------
@@ -531,7 +534,10 @@ def power_spectrum_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
     q_edges, n, q_val, C_val = radial_average(  # pylint: disable=invalid-name
         C_qk, 2*np.pi*nx/(2*sx), nbins, size=(sx, sy))
 
-    return q_val[n>0], C_val[n>0]
+    if return_map:
+        return q_val[n>0], C_val[n>0], C_qk
+    else:
+        return q_val[n>0], C_val[n>0]
 
 
 def compute_rms_height(profile, kind='Sq'):
