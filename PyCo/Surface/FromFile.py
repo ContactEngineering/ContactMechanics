@@ -222,7 +222,7 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         if yunit is not None:
             ysiz *= unit_scales[yunit]/unit_scales[unit]
         if zunit is not None:
-            data *= unit_scales[zunit]/unit_scales[unit]
+            zfac *= unit_scales[zunit]/unit_scales[unit]
 
     if xsiz is None or ysiz is None:
         surface = NumpySurface(data, unit=unit)
