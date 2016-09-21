@@ -6,11 +6,16 @@ TODO
 Change log
 ==========
 
+v0.11.0
+-------
+
+- Renamed TiltedSurface to DetrendedSurface.
+
 v0.10.3
 -------
 
-- Added reader for HGT files (NASA Shuttle Radar Topography Mission)
-- Bug fix in deprecated 'set_size' that broke hard wall example
+- Added reader for HGT files (NASA Shuttle Radar Topography Mission).
+- Bug fix in deprecated 'set_size' that broke hard wall example.
 
 v0.10.2
 -------
