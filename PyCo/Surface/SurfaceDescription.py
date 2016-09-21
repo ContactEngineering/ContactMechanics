@@ -322,18 +322,21 @@ class ScaledSurface(Surface):
         return self.coeff*self.surf.profile()
 
 
-class TiltedSurface(Surface):
+class DetrendedSurface(Surface):
     """ used when surface needs to be tilted
     """
-    name = 'tilted_surface'
+    name = 'detrended_surface'
 
     def __init__(self, surf, detrend_mode='slope'):
         """
         Keyword Arguments:
         surf -- Surface to scale
-        detrend_mode -- Tilt slope. Keyword 'height' with adjust slope such that
-        rms height is minimized, 'slope' will minimize rms slope. A tuple
-        specifies the slope value.
+        detrend_mode -- Possible keywords:
+            'center': center the surface, no trent correction.
+            'height': adjust slope such that rms height is minimized.
+            'slope': adjust slope such that rms slope is minimized.
+            'curvature': adjust slope and curvature such that rms height is
+            minimized.
         """
         super().__init__()
         assert isinstance(surf, Surface)

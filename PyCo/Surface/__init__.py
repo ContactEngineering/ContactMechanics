@@ -29,7 +29,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-from .SurfaceDescription import (Surface, ScaledSurface, TiltedSurface,
+from .SurfaceDescription import (Surface, ScaledSurface, DetrendedSurface,
                                  TranslatedSurface, CompoundSurface)
 from .SurfaceDescription import NumpySurface
 from .SurfaceDescription import Sphere
