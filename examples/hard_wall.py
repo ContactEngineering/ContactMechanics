@@ -149,6 +149,15 @@ parser.add_argument('-P', '--pressure-fn', dest='pressure_fn', type=str,
 parser.add_argument('-G', '--gap-fn', dest='gap_fn', type=str,
                     help='filename for gap map GAPFN',
                     metavar='GAPFN')
+parser.add_argument('-L', '--log-fn', dest='log_fn', type=str,
+                    default='hard_wall.out',
+                    help='filename for log file LOGFN that contains final '
+                         'area and load',
+                    metavar='LOGFN')
+parser.add_argument('-N', '--netcdf-fn', dest='netcdf_fn', type=str,
+                    default='hard_wall.nc',
+                    help='filename for NetCDF file NETCDFFN',
+                    metavar='NETCDFFN')
 arguments = parser.parse_args()
 logger.pr('filename = {}'.format(arguments.filename))
 logger.pr('modulus = {}'.format(arguments.modulus))
@@ -205,11 +214,11 @@ if arguments.pressure is not None:
                    header=versionstr)
 else:
     # Create a NetCDF container to dump displacements and forces to.
-    container = NetCDFContainer('traj.nc', mode='w', double=True)
+    container = NetCDFContainer(arguments.netcdf_fn, mode='w', double=True)
     container.set_shape(surface.shape)
 
     # Additional log file for load and area
-    txt = Logger('hard_wall.out')
+    txt = Logger(arguments.log_fn)
 
     history = None
     for i in range(nsteps):
@@ -221,9 +230,6 @@ else:
         frame.displacement = disp0
         frame.load = load
         frame.area = area
-
-        if i == 2:
-            np.savetxt('pressure_ref.out', forces/surface.area_per_pt)
 
         txt.st(['gap', 'load', 'area'],
                [np.mean(displacements)-disp0, load, area])
