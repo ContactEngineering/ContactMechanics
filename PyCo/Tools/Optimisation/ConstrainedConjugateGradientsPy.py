@@ -139,7 +139,7 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         # Compute G = sum(g*g) (over contact area only)
         g_r = u_r[comp_slice]-surface
         if external_force is not None and A > 0:
-            offset = np.mean(g_r[c_r])
+            offset = np.mean(g_r[c_r[comp_slice]])
             g_r -= offset
         G = np.sum(c_r[comp_slice]*g_r*g_r)
 
@@ -194,7 +194,7 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
 
         converged = True
         if external_force is not None:
-            psum = -np.sum(p_r)
+            psum = -np.sum(p_r[comp_slice])
             converged = abs(psum-external_force) < prestol
             if psum != 0:
                 p_r *= external_force/psum
