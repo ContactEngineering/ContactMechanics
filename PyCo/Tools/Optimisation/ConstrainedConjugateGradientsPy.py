@@ -37,10 +37,13 @@ import numpy as np
 
 import scipy.optimize as optim
 
+from PyCo.Tools import compute_rms_height
+
 ###
 
-def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
-                                    prestol=1e-5, maxiter=100000, logger=None):
+def constrained_conjugate_gradients(substrate, surface, external_force=None,
+                                    disp0=None, pentol=None, prestol=1e-5,
+                                    maxiter=100000, logger=None):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium
     configuration deflection of an elastic manifold. The conjugate gradient
@@ -54,6 +57,11 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         Elastic manifold.
     surface : array_like
         Height profile of the rigid counterbody.
+    external_force : float
+        External force. Don't optimize force if None.
+    disp0 : array_like
+        Displacement field for initializing the solver. Guess an initial
+        value if set to None.
     u_r : array
         Array used for initial displacements. A new array is created if omitted.
     pentol : float
@@ -72,6 +80,12 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
     """
 
     # Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays
+
+    if pentol is None:
+        # Heuristics for the possible tolerance on penetration.
+        # This is necessary because numbers can vary greatly
+        # depending on the system of units.
+        pentol = compute_rms_height(surface)/(10*np.mean(surface.shape))
 
     if logger is not None:
         logger.pr('maxiter = {0}'.format(maxiter))
@@ -99,8 +113,11 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
 
     # Compute forces
     #p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real
-    p_r = substrate.evaluate_force(u_r)
-    result.nfev += 1
+    if external_force is None:
+        p_r = substrate.evaluate_force(u_r)
+        result.nfev += 1
+    else:
+        p_r = -external_force/np.prod(surface.shape)*np.ones_like(u_r)
 
     # iteration
     delta = 0
@@ -108,6 +125,8 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
     G_old = 1.0
     t_r = np.zeros_like(u_r)
 
+    # Displacement of rigid surface, only need when pressure is equilibrated
+    offset = None
 
     for it in range(1, maxiter+1):
         result.nit = it
@@ -119,6 +138,9 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
 
         # Compute G = sum(g*g) (over contact area only)
         g_r = u_r[comp_slice]-surface
+        if external_force is not None and A > 0:
+            offset = np.mean(g_r[c_r])
+            g_r -= offset
         G = np.sum(c_r[comp_slice]*g_r*g_r)
 
         # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
@@ -170,11 +192,19 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
             delta = 1
             delta_str = 'cg'
 
+        converged = True
+        if external_force is not None:
+            psum = -np.sum(p_r)
+            converged = abs(psum-external_force) < prestol
+            if psum != 0:
+                p_r *= external_force/psum
+            else:
+                p_r = external_force/np.prod(surface.shape)*np.ones_like(p_r)
+
         # Compute new displacements from updated forces
         #u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
         u_r = substrate.evaluate_disp(p_r)
         result.nfev += 1
-
 
         # Store G for next step
         G_old = G
@@ -192,7 +222,9 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)
 
-        if rms_pen < pentol and max_pen < pentol and max_pres < prestol:
+        converged = converged and rms_pen < pentol and max_pen < pentol and max_pres < prestol
+
+        if converged:
             if logger is not None:
                 logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen',
                            'max_pres'],
@@ -200,6 +232,8 @@ def constrained_conjugate_gradients(substrate, surface, disp0=None, pentol=1e-6,
                           force_print=True)
             result.x = u_r#[comp_slice]
             result.jac = -p_r[comp_slice]
+            if offset is not None:
+                result.offset = offset
             result.success = True
             result.message = "Polonsky converged"
             return result
