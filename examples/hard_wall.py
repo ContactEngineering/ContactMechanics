@@ -26,7 +26,8 @@ maxiter = 1000
 
 # Text output
 logger = screen
-logger.pr('# PyCo version: {}'.format(PyCo.__version__))
+versionstr = 'PyCo version: {}'.format(PyCo.__version__)
+logger.pr(versionstr)
 
 ###
 
@@ -197,9 +198,11 @@ if arguments.pressure is not None:
     logger.pr('fractional contact area = {}' \
         .format((f>0).sum()/np.prod(surface.shape)))
     if arguments.pressure_fn is not None:
-        np.savetxt(arguments.pressure_fn, f/surface.area_per_pt)
+        np.savetxt(arguments.pressure_fn, f/surface.area_per_pt,
+                   header=versionstr)
     if arguments.gap_fn is not None:
-        np.savetxt(arguments.gap_fn, u-surface[...]-opt.offset)
+        np.savetxt(arguments.gap_fn, u-surface[...]-opt.offset,
+                   header=versionstr)
 else:
     # Create a NetCDF container to dump displacements and forces to.
     container = NetCDFContainer('traj.nc', mode='w', double=True)
