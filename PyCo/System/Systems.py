@@ -185,7 +185,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             return in_array.reshape(self.substrate.computational_resolution)
         raise IncompatibleResolutionError()
 
-    def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
+    def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
                        gradient=True, lbounds=None, ubounds=None, callback=None,
                        disp_scale=1.,
                        **kwargs):
@@ -622,7 +622,7 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
-    def minimize_proxy(self, offset, **kwargs):
+    def minimize_proxy(self, offset=0, **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of constrained minimisation.
