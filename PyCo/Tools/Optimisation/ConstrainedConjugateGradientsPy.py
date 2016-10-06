@@ -42,8 +42,8 @@ from PyCo.Tools import compute_rms_height
 ###
 
 def constrained_conjugate_gradients(substrate, surface, external_force=None,
-                                    disp0=None, pentol=None, prestol=1e-5,
-                                    maxiter=100000, logger=None):
+                                    offset=0, disp0=None, pentol=None,
+                                    prestol=1e-5, maxiter=100000, logger=None):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium
     configuration deflection of an elastic manifold. The conjugate gradient
@@ -59,6 +59,8 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         Height profile of the rigid counterbody.
     external_force : float
         External force. Don't optimize force if None.
+    offset : float
+        Offset of rigid surface. Ignore if external_force is specified.
     disp0 : array_like
         Displacement field for initializing the solver. Guess an initial
         value if set to None.
@@ -124,9 +126,6 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
     delta_str = 'reset'
     G_old = 1.0
     t_r = np.zeros_like(u_r)
-
-    # Displacement of rigid surface, only need when pressure is equilibrated
-    offset = None
 
     for it in range(1, maxiter+1):
         result.nit = it
@@ -215,7 +214,8 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
             rms_pen = sqrt(G/A)
         else:
             rms_pen = sqrt(G)
-        max_pen = max(0.0, np.max(c_r[comp_slice]*(surface-u_r[comp_slice])))
+        max_pen = max(0.0, np.max(c_r[comp_slice]*(surface+offset-
+                                                   u_r[comp_slice])))
         result.maxcv = {"max_pen": max_pen,
                         "max_pres": max_pres}
 
@@ -232,8 +232,7 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
                           force_print=True)
             result.x = u_r#[comp_slice]
             result.jac = -p_r[comp_slice]
-            if offset is not None:
-                result.offset = offset
+            result.offset = offset
             result.success = True
             result.message = "Polonsky converged"
             return result
