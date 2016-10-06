@@ -131,6 +131,10 @@ parser = ArgumentParser(description='Run a contact mechanics calculation with'
                                     'Keers constrained conjugate gradient '
                                     'solver.')
 parser.add_argument('filename', metavar='FILENAME', help='name of topography file')
+parser.add_argument('-d', '--detrend', dest='detrend', type=str,
+                    help='detrend surface before contact calculation, DETREND '
+                         'can be one of "height", "slope" or "curvature"',
+                    metavar='DETREND')
 parser.add_argument('-E', '--modulus', dest='modulus', type=float, default=1.0,
                     help='use contact modulus MODULUS',
                     metavar='MODULUS')
@@ -160,10 +164,15 @@ parser.add_argument('-N', '--netcdf-fn', dest='netcdf_fn', type=str,
                     metavar='NETCDFFN')
 arguments = parser.parse_args()
 logger.pr('filename = {}'.format(arguments.filename))
+logger.pr('detrend = {}'.format(arguments.detrend))
 logger.pr('modulus = {}'.format(arguments.modulus))
 logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('size = {}'.format(arguments.size))
 logger.pr('pentol = {}'.format(arguments.pentol))
+logger.pr('pressure-fn = {}'.format(arguments.pressure_fn))
+logger.pr('gap-fn = {}'.format(arguments.gap_fn))
+logger.pr('log-fn = {}'.format(arguments.log_fn))
+logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 
 ###
 
@@ -183,6 +192,11 @@ logger.pr('Surface has dimension of {} and size of {} {}.'.format(surface.shape,
                                                                   surface.unit))
 logger.pr('RMS height = {}, RMS slope = {}'.format(surface.compute_rms_height(),
                                                    surface.compute_rms_slope()))
+if arguments.detrend is not None:
+    surface = DetrendedSurface(surface, detrend_mode=arguments.detrend)
+    logger.pr('After detrending: RMS height = {}, RMS slope = {}' \
+        .format(surface.compute_rms_height(), surface.compute_rms_slope()))
+
 
 # Initialize elastic half-space.
 substrate = PeriodicFFTElasticHalfSpace(surface.shape, arguments.modulus,
