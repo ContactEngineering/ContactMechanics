@@ -1,8 +1,31 @@
 #! /usr/bin/env python3
-
 """
-Automatically compute contact area, load and displacement for a rough surface.
-Tries to guess displacements such that areas are equally spaced on a log scale.
+@file   hard_wall.py
+
+@author Lars Pastewka <lars.pastewka@kit.edu>
+
+@date   06 Oct 2016
+
+@brief  Command line front-end for hard wall calculations
+
+@section LICENCE
+
+ Copyright (C) 2015 Till Junge
+
+PyCo is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3, or (at
+your option) any later version.
+
+PyCo is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Emacs; see the file COPYING. If not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 """
 
 from argparse import ArgumentParser, ArgumentTypeError
@@ -43,7 +66,7 @@ def next_step(system, surface, history=None, logger=quiet):
     surface : PyCo.Surface.Surface object
         The rigid rough surface.
     history : tuple
-        History returned by past calls to next_step 
+        History returned by past calls to next_step
 
     Returns
     -------
@@ -117,6 +140,24 @@ def next_step(system, surface, history=None, logger=quiet):
     return u, f, disp0, current_load, current_area, \
         (disp, gap, load, area, converged)
 
+def dump(txt, surface, u, f, offset=0):
+    mean_elastic = np.mean(u)
+    mean_rigid = np.mean(surface[...])+offset
+    load = f.sum()
+    mean_pressure = load/np.prod(surface.size)
+    area = (f>0).sum()
+    fractional_area = area/np.prod(surface.shape)
+    area *= surface.area_per_pt
+    txt.st(['mean elastic ({})'.format(surface.unit),
+            'mean rigid ({})'.format(surface.unit),
+            'mean gap ({})'.format(surface.unit),
+            'load (E* {}^2)'.format(surface.unit),
+            'mean pressure (E*)',
+            'area ({}^2)'.format(surface.unit),
+            'fractional area'],
+           [mean_elastic, mean_rigid, mean_elastic-mean_rigid, load,
+            mean_pressure, area, fractional_area])
+
 ### Parse command line arguments
 
 def tuple2(s):
@@ -138,8 +179,10 @@ parser.add_argument('-d', '--detrend', dest='detrend', type=str,
 parser.add_argument('-E', '--modulus', dest='modulus', type=float, default=1.0,
                     help='use contact modulus MODULUS',
                     metavar='MODULUS')
-parser.add_argument('-p', '--pressure', dest='pressure', type=float,
-                    help='compute contact area at external pressure PRESSURE',
+parser.add_argument('-p', '--pressure', dest='pressure', type=str,
+                    help='compute contact area at external pressure PRESSURE; '
+                         'specify pressure range by using a 3-tuple '
+                         'PRESSURE=min,max,steps',
                     metavar='PRESSURE')
 parser.add_argument('-s', '--size', dest='size', type=tuple2,
                     help='compute contact area at external pressure PRESSURE',
@@ -159,7 +202,7 @@ parser.add_argument('-L', '--log-fn', dest='log_fn', type=str,
                          'area and load',
                     metavar='LOGFN')
 parser.add_argument('-N', '--netcdf-fn', dest='netcdf_fn', type=str,
-                    default='hard_wall.nc',
+                    default=None,
                     help='filename for NetCDF file NETCDFFN',
                     metavar='NETCDFFN')
 arguments = parser.parse_args()
@@ -211,41 +254,80 @@ system = SystemFactory(substrate, interaction, surface)
 ###
 
 if arguments.pressure is not None:
-    opt = system.minimize_proxy(
-        external_force=arguments.pressure*np.prod(surface.size),
-        pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref')
-    u = opt.x
-    f = opt.jac
-    logger.pr('displacement = {}'.format(opt.offset))
-    logger.pr('pressure = {}'.format(f.sum()/np.prod(surface.size)))
-    logger.pr('fractional contact area = {}' \
-        .format((f>0).sum()/np.prod(surface.shape)))
-    if arguments.pressure_fn is not None:
-        np.savetxt(arguments.pressure_fn, f/surface.area_per_pt,
-                   header=versionstr)
-    if arguments.gap_fn is not None:
-        np.savetxt(arguments.gap_fn, u-surface[...]-opt.offset,
-                   header=versionstr)
+    # Run computation for a linear range of pressures
+
+    pressure = arguments.pressure.split(',')
+    if len(pressure) == 1:
+        pressure = [float(pressure[0])]
+    elif len(pressure) == 3:
+        pressure = np.linspace(*[float(x) for x in pressure])
+    else:
+        print('Please specify either single pressure value or 3-tuple for '
+              'pressure range.')
+        sys.exit(999)
+
+    # Additional log file for load and area
+    txt = Logger(arguments.log_fn)
+
+    for i, _pressure in enumerate(pressure):
+        suffix = '.{}'.format(i)
+        if len(pressure) == 1:
+            suffix = ''
+        opt = system.minimize_proxy(
+            external_force=_pressure*np.prod(surface.size),
+            pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref')
+        u = opt.x
+        f = opt.jac
+        logger.pr('displacement = {}'.format(opt.offset))
+        logger.pr('pressure = {}'.format(f.sum()/np.prod(surface.size)))
+        logger.pr('fractional contact area = {}' \
+            .format((f>0).sum()/np.prod(surface.shape)))
+
+        if arguments.pressure_fn is not None:
+            np.savetxt(arguments.pressure_fn+suffix,
+                       f/surface.area_per_pt, header=versionstr)
+        if arguments.gap_fn is not None:
+            np.savetxt(arguments.gap_fn+suffix,
+                       u-surface[...]-opt.offset, header=versionstr)
+
+        dump(txt, surface, u, f, opt.offset)
 else:
+    # Run computation automatically such that area is equally spaced on
+    # a log scale
+
     # Create a NetCDF container to dump displacements and forces to.
-    container = NetCDFContainer(arguments.netcdf_fn, mode='w', double=True)
-    container.set_shape(surface.shape)
+    container = None
+    if arguments.netcdf_fn is not None:
+        container = NetCDFContainer(arguments.netcdf_fn, mode='w', double=True)
+        container.set_shape(surface.shape)
 
     # Additional log file for load and area
     txt = Logger(arguments.log_fn)
 
     history = None
     for i in range(nsteps):
-        displacements, forces, disp0, load, area, history = \
+        suffix = '.{}'.format(i)
+        if nsteps == 1:
+            suffix = ''
+
+        u, f, disp0, load, area, history = \
             next_step(system, surface, history, logger=logger)
-        frame = container.get_next_frame()
-        frame.displacements = displacements
-        frame.forces = forces
-        frame.displacement = disp0
-        frame.load = load
-        frame.area = area
+        if container is not None:
+            frame = container.get_next_frame()
+            frame.displacements = u
+            frame.forces = f
+            frame.displacement = disp0
+            frame.load = load
+            frame.area = area
 
-        txt.st(['gap', 'load', 'area'],
-               [np.mean(displacements)-disp0, load, area])
+        if arguments.pressure_fn is not None:
+            np.savetxt(arguments.pressure_fn+suffix,
+                       f/surface.area_per_pt, header=versionstr)
+        if arguments.gap_fn is not None:
+            np.savetxt(arguments.gap_fn+suffix,
+                       u-surface[...]-disp0, header=versionstr)
 
-    container.close()
+        dump(txt, surface, u, f, disp0)
+
+    if container is not None:
+        container.close()
