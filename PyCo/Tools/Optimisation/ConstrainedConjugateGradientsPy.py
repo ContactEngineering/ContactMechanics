@@ -238,9 +238,10 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
             return result
 
         if logger is not None:
-            logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen',
+            logger.st(['status', 'it', 'A', 'A/A0', 'tau', 'rms_pen', 'max_pen',
                        'max_pres'],
-                      [delta_str, it, A, tau, rms_pen, max_pen, max_pres])
+                      [delta_str, it, A, A/np.prod(c_r.shape), tau, rms_pen,
+                       max_pen, max_pres])
 
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
