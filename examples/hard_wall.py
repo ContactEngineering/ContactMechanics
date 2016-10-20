@@ -165,7 +165,7 @@ def save_pressure(fn, surface, substrate, pressure):
     if substrate.young == 1:
         unitstr = 'Pressure values are reported in units of E*.'
     else:
-        unitstr = 'This calculation was run with a contact modulus '
+        unitstr = 'This calculation was run with a contact modulus ' \
                   'E*={}.'.format(substrate.young)
     np.savetxt(fn, pressure, header=versionstr+'\n'+unitstr)
 
