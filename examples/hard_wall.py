@@ -34,7 +34,7 @@ import numpy as np
 import PyCo
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Surface import read, DetrendedSurface
+from PyCo.Surface import read, DetrendedSurface, ScaledSurface
 from PyCo.System import SystemFactory
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -51,6 +51,9 @@ maxiter = 1000
 logger = screen
 versionstr = 'PyCo version: {}'.format(PyCo.__version__)
 logger.pr(versionstr)
+
+unit_to_meters = {'A': 1e-10, 'nm': 1e-9, 'µm': 1e-6, 'mm': 1e-3, 'm': 1.0,
+                  'unknown': 1.0}
 
 ###
 
@@ -158,11 +161,26 @@ def dump(txt, surface, u, f, offset=0):
            [mean_elastic, mean_rigid, mean_elastic-mean_rigid, load,
             mean_pressure, area, fractional_area])
 
+def save_pressure(fn, surface, substrate, pressure):
+    if substrate.young == 1:
+        unitstr = 'Pressure values are reported in units of E*.'
+    else:
+        unitstr = 'This calculation was run with a contact modulus '
+                  'E*={}.'.format(substrate.young)
+    np.savetxt(fn, pressure, header=versionstr+'\n'+unitstr)
+
+def save_gap(fn, surface, gap):
+    if surface.unit is None:
+        unitstr = 'No unit information available.'
+    else:
+        unitstr = 'Gap values are repoted in units of {}.'.format(surface.unit)
+    np.savetxt(fn, gap, header=versionstr+'\n'+unitstr)
+
 ### Parse command line arguments
 
 def tuple2(s):
     try:
-        x, y = map(int, s.split(','))
+        x, y = (float(x) for x in s.split(','))
         return x, y
     except:
         raise ArgumentTypeError('Size must be sx,sy')
@@ -185,8 +203,14 @@ parser.add_argument('-p', '--pressure', dest='pressure', type=str,
                          'PRESSURE=min,max,steps',
                     metavar='PRESSURE')
 parser.add_argument('-s', '--size', dest='size', type=tuple2,
-                    help='compute contact area at external pressure PRESSURE',
+                    help='size of surface is SIZE',
                     metavar='SIZE')
+parser.add_argument('-u', '--size-unit', dest='size_unit', type=str,
+                    help='size unit UNIT',
+                    metavar='UNIT')
+parser.add_argument('-v', '--height-unit', dest='height_unit', type=str,
+                    help='height unit UNIT',
+                    metavar='UNIT')
 parser.add_argument('-t', '--pentol', dest='pentol', type=float,
                     help='tolerance for penetration of surface PENTOL',
                     metavar='PENTOL')
@@ -211,6 +235,8 @@ logger.pr('detrend = {}'.format(arguments.detrend))
 logger.pr('modulus = {}'.format(arguments.modulus))
 logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('size = {}'.format(arguments.size))
+logger.pr('size_unit = {}'.format(arguments.size_unit))
+logger.pr('height_unit = {}'.format(arguments.height_unit))
 logger.pr('pentol = {}'.format(arguments.pentol))
 logger.pr('pressure-fn = {}'.format(arguments.pressure_fn))
 logger.pr('gap-fn = {}'.format(arguments.gap_fn))
@@ -229,6 +255,10 @@ if arguments.size is not None:
     surface.size = arguments.size
 if surface.size is None:
     surface.size = surface.shape
+if arguments.size_unit is not None:
+    surface.unit = arguments.size_unit
+if arguments.height_unit is not None:
+    surface = ScaledSurface(surface, unit_to_meters[arguments.height_unit]/unit_to_meters[surface.unit])
 
 logger.pr('Surface has dimension of {} and size of {} {}.'.format(surface.shape,
                                                                   surface.size,
@@ -284,11 +314,11 @@ if arguments.pressure is not None:
             .format((f>0).sum()/np.prod(surface.shape)))
 
         if arguments.pressure_fn is not None:
-            np.savetxt(arguments.pressure_fn+suffix,
-                       f/surface.area_per_pt, header=versionstr)
+            save_pressure(arguments.pressure_fn+suffix, surface, substrate,
+                          f/surface.area_per_pt)
         if arguments.gap_fn is not None:
-            np.savetxt(arguments.gap_fn+suffix,
-                       u-surface[...]-opt.offset, header=versionstr)
+            save_gap(arguments.gap_fn+suffix, surface,
+                     u-surface[...]-opt.offset)
 
         dump(txt, surface, u, f, opt.offset)
 else:
@@ -321,11 +351,10 @@ else:
             frame.area = area
 
         if arguments.pressure_fn is not None:
-            np.savetxt(arguments.pressure_fn+suffix,
-                       f/surface.area_per_pt, header=versionstr)
+            save_pressure(arguments.pressure_fn+suffix, surface, substrate,
+                          f/surface.area_per_pt)
         if arguments.gap_fn is not None:
-            np.savetxt(arguments.gap_fn+suffix,
-                       u-surface[...]-disp0, header=versionstr)
+            save_gap(arguments.gap_fn+suffix, surface,  u-surface[...]-disp0)
 
         dump(txt, surface, u, f, disp0)
 
