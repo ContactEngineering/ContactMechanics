@@ -10,7 +10,7 @@
 
 @section LICENCE
 
- Copyright (C) 2015 Till Junge
+ Copyright (C) 2016 Lars Pastewka
 
 PyCo is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -28,6 +28,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
+import sys
 from argparse import ArgumentParser, ArgumentTypeError
 
 import numpy as np
@@ -51,13 +52,14 @@ maxiter = 1000
 logger = screen
 versionstr = 'PyCo version: {}'.format(PyCo.__version__)
 logger.pr(versionstr)
+commandline = ' '.join(sys.argv[:])
 
 unit_to_meters = {'A': 1e-10, 'nm': 1e-9, 'µm': 1e-6, 'mm': 1e-3, 'm': 1.0,
                   'unknown': 1.0}
 
 ###
 
-def next_step(system, surface, history=None, logger=quiet):
+def next_step(system, surface, history=None, pentol=None, logger=quiet):
     """
     Run a full contact calculation. Try to guess displacement such that areas
     are equally spaced on a log scale.
@@ -120,7 +122,7 @@ def next_step(system, surface, history=None, logger=quiet):
         else:
             disp0 = (disp[i]+disp[i+1])/2
 
-    opt = system.minimize_proxy(disp0, pentol=1e-3, maxiter=maxiter,
+    opt = system.minimize_proxy(disp0, pentol=pentol, maxiter=maxiter,
                                 logger=logger)
     u = opt.x
     f = opt.jac
@@ -151,30 +153,41 @@ def dump(txt, surface, u, f, offset=0):
     area = (f>0).sum()
     fractional_area = area/np.prod(surface.shape)
     area *= surface.area_per_pt
-    txt.st(['mean elastic ({})'.format(surface.unit),
-            'mean rigid ({})'.format(surface.unit),
-            'mean gap ({})'.format(surface.unit),
-            'load (E* {}^2)'.format(surface.unit),
-            'mean pressure (E*)',
-            'area ({}^2)'.format(surface.unit),
-            'fractional area'],
-           [mean_elastic, mean_rigid, mean_elastic-mean_rigid, load,
-            mean_pressure, area, fractional_area])
+    header = ['mean elastic ({})'.format(surface.unit),
+              'mean rigid ({})'.format(surface.unit),
+              'mean gap ({})'.format(surface.unit),
+              'load (E* {}^2)'.format(surface.unit),
+              'mean pressure (E*)',
+              'area ({}^2)'.format(surface.unit),
+              'fractional area']
+    data = [mean_elastic, mean_rigid, mean_elastic-mean_rigid, load,
+            mean_pressure, area, fractional_area]
+    txt.st(header, data)
+    return zip(header, data)
 
-def save_pressure(fn, surface, substrate, pressure):
+def save_pressure(fn, surface, substrate, pressure, macro=None):
     if substrate.young == 1:
-        unitstr = 'Pressure values are reported in units of E*.'
+        unitstr = 'Pressure values follow, they are reported in units of E*.'
     else:
         unitstr = 'This calculation was run with a contact modulus ' \
                   'E*={}.'.format(substrate.young)
-    np.savetxt(fn, pressure, header=versionstr+'\n'+unitstr)
+    macrostr = ''
+    if macro is not None:
+        macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
+    np.savetxt(fn, pressure, header=versionstr+'\n'+commandline+'\n'+macrostr+
+               unitstr)
 
-def save_gap(fn, surface, gap):
+def save_gap(fn, surface, gap, macro=None):
     if surface.unit is None:
         unitstr = 'No unit information available.'
     else:
-        unitstr = 'Gap values are repoted in units of {}.'.format(surface.unit)
-    np.savetxt(fn, gap, header=versionstr+'\n'+unitstr)
+        unitstr = 'Gap values follow, they are repoted in units of ' \
+                  '{}.'.format(surface.unit)
+    macrostr = ''
+    if macro is not None:
+        macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
+    np.savetxt(fn, gap, header=versionstr+'\n'+commandline+'\n'+macrostr+
+                               unitstr)
 
 ### Parse command line arguments
 
@@ -313,14 +326,15 @@ if arguments.pressure is not None:
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))
 
+        macro = dump(txt, surface, u, f, opt.offset)
+
         if arguments.pressure_fn is not None:
             save_pressure(arguments.pressure_fn+suffix, surface, substrate,
-                          f/surface.area_per_pt)
+                          f/surface.area_per_pt, macro=macro)
         if arguments.gap_fn is not None:
             save_gap(arguments.gap_fn+suffix, surface,
-                     u-surface[...]-opt.offset)
+                     u-surface[...]-opt.offset, macro=macro)
 
-        dump(txt, surface, u, f, opt.offset)
 else:
     # Run computation automatically such that area is equally spaced on
     # a log scale
@@ -341,7 +355,8 @@ else:
             suffix = ''
 
         u, f, disp0, load, area, history = \
-            next_step(system, surface, history, logger=logger)
+            next_step(system, surface, history, pentol=arguments.pentol,
+                      logger=logger)
         if container is not None:
             frame = container.get_next_frame()
             frame.displacements = u
@@ -350,13 +365,14 @@ else:
             frame.load = load
             frame.area = area
 
+        macro = dump(txt, surface, u, f, disp0)
+
         if arguments.pressure_fn is not None:
             save_pressure(arguments.pressure_fn+suffix, surface, substrate,
-                          f/surface.area_per_pt)
+                          f/surface.area_per_pt, macro=macro)
         if arguments.gap_fn is not None:
-            save_gap(arguments.gap_fn+suffix, surface,  u-surface[...]-disp0)
-
-        dump(txt, surface, u, f, disp0)
+            save_gap(arguments.gap_fn+suffix, surface,  u-surface[...]-disp0,
+                     macro=macro)
 
     if container is not None:
         container.close()
