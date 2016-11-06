@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.
 
 from argparse import ArgumentParser, ArgumentTypeError
 
+import numpy as np
 import matplotlib.pyplot as plt
 
 from PyCo.Surface import read
@@ -51,10 +52,13 @@ try:
     sx, sy = surface.size
 except TypeError:
     sx, sy = surface.shape
+nx, ny = surface.shape
 
 fig = plt.figure()
 ax = fig.add_subplot(111, aspect=sx/sy)
-mesh = ax.pcolormesh(surface[...])
+Y, X = np.meshgrid((np.arange(ny)+0.5)*sy/ny,
+                   (np.arange(nx)+0.5)*sx/nx)
+mesh = ax.pcolormesh(X, Y, surface[...])
 plt.colorbar(mesh, ax=ax)
 ax.set_xlim(0, sx)
 ax.set_ylim(0, sy)
