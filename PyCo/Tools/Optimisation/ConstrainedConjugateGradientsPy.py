@@ -98,7 +98,6 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
     else:
         u_r = disp0.copy()
 
-
     comp_slice = [slice(0, substrate.resolution[i]) for i in range(substrate.dim)]
     if substrate.dim not in (1, 2):
         raise Exception(
@@ -230,7 +229,7 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
                            'max_pres'],
                           ['CONVERGED', it, A, tau, rms_pen, max_pen, max_pres],
                           force_print=True)
-            result.x = u_r#[comp_slice]
+            result.x = u_r[comp_slice]
             result.jac = -p_r[comp_slice]
             result.offset = offset
             result.success = True
@@ -246,7 +245,7 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
 
-    result.x = u_r#[comp_slice]
+    result.x = u_r[comp_slice]
     result.jac = -p_r[comp_slice]
     result.message = "Reached maxiter = {}".format(maxiter)
     return result
