@@ -412,6 +412,27 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         self.weights = rfftn(facts)
         return self.weights, facts
 
+    def evaluate_disp(self, forces):
+        """ Computes the displacement due to a given force array
+        Keyword Arguments:
+        forces   -- a numpy array containing point forces (*not* pressures)
+        """
+        if forces.shape != self.computational_resolution:
+            # Automatically pad forces if force array is half of computational
+            # resolution
+            if np.any(np.array(forces.shape) !=
+                      np.array(self.computational_resolution)/2):
+                raise self.Error("force array has a different shape ({0}) "
+                                 "than this halfspace's resolution ({1}) or "
+                                 "half of it".format(forces.shape,
+                                                     self.computational_resolution))
+            padded_forces = np.zeros(self.computational_resolution)
+            s = [slice(0, forces.shape[i])
+                 for i in range(len(forces.shape))]
+            padded_forces[s] = forces
+            return super().evaluate_disp(padded_forces)[s]
+        else:
+            return super().evaluate_disp(forces)
 
 # convenient container for storing correspondences betwees small and large
 # system
