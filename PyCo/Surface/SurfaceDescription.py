@@ -67,7 +67,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         Keyword Arguments:
         state -- result of __getstate__
         """
-        (self._resolution, self._dim, self._size, self._unit, 
+        (self._resolution, self._dim, self._size, self._unit,
             self.adjustment) = state
 
     def compute_rms_height(self, kind='Sq'):
@@ -576,6 +576,11 @@ class NumpySurface(Surface):
         Keyword Arguments:
         profile -- surface profile
         """
+
+        # Automatically turn this into a masked array if there is data missing
+        if np.sum(np.isfinite(profile)) < np.prod(profile.shape):
+            profile = np.ma.masked_where(np.logical_not(np.isfinite(profile)),
+                                         profile)
         self.__h = profile
         super().__init__(resolution=self.__h.shape, dim=len(self.__h.shape),
                          size=size, unit=unit)
