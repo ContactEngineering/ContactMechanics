@@ -95,8 +95,7 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
     if not hasattr(fobj, 'read'):
         if not os.path.isfile(fobj):
             raise FileNotFoundError(
-                "No such file or directory: '{}(.gz)'".format(
-                    fobj))
+                "No such file or directory: '{}(.gz)'".format(fobj))
         fname = fobj
         fobj = open(fname)
 
@@ -718,7 +717,7 @@ def read(fobj, format=None):
             format = os.path.splitext(fobj)[-1][1:]
 
     readers = {'di': read_di,
-               'ibw': read_ibw, 
+               'ibw': read_ibw,
                'opd': read_opd,
                'xyz': read_xyz,
                'x3p': read_x3p,
