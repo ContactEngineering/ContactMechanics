@@ -116,10 +116,11 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=arguments-differ
-        r = np.array(r)
+        if np.isscalar(r):
+            r = np.asarray(r)
         if r.shape == ():
             r.shape = (1, )
-        inside_slice = r < self.r_c
+        inside_slice = np.ma.filled(r < self.r_c, fill_value=False)
         V = np.zeros_like(r) if pot else self.SliceableNone()
         dV = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
@@ -251,7 +252,8 @@ class SmoothPotential(Potential):
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
-        r = np.array(r)
+        if np.isscalar(r):
+            r = np.asarray(r)
         nb_dim = len(r.shape)
         if nb_dim == 0:
             r.shape = (1,)
@@ -259,7 +261,7 @@ class SmoothPotential(Potential):
         dV = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
 
-        sl_inner = r < self.r_t
+        sl_inner = np.ma.filled(r < self.r_t, fill_value=False)
         sl_rest = np.logical_not(sl_inner)
         # little hack to work around numpy bug
         if np.array_equal(sl_inner, np.array([True])):
@@ -271,7 +273,8 @@ class SmoothPotential(Potential):
                 r[sl_inner], pot, forces, curb)
         V[sl_inner] -= self.offset
 
-        sl_outer = np.logical_and(r < self.r_c, sl_rest)
+        sl_outer = np.logical_and(np.ma.filled(r < self.r_c, fill_value=False),
+                                  sl_rest)
         # little hack to work around numpy bug
         if np.array_equal(sl_outer, np.array([True])):
             V, dV, ddV = self.spline_pot(r, pot, forces, curb)
@@ -680,7 +683,8 @@ class MinimisationPotential(SmoothPotential):
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
-        r = np.array(r)
+        if np.isscalar(r):
+            r = np.asarray(r)
         nb_dim = len(r.shape)
         if nb_dim == 0:
             r.shape = (1,)
@@ -688,7 +692,7 @@ class MinimisationPotential(SmoothPotential):
         dV = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
 
-        sl_core = r < self.r_ti
+        sl_core = np.ma.filled(r < self.r_ti, fill_value=False)
         sl_rest = np.logical_not(sl_core)
         # little hack to work around numpy bug
         if np.array_equal(sl_core, np.array([True])):
@@ -697,7 +701,8 @@ class MinimisationPotential(SmoothPotential):
             V[sl_core], dV[sl_core], ddV[sl_core] = self.lin_pot(
                 r[sl_core], pot, forces, curb)
 
-        sl_inner = np.logical_and(r < self.r_t, sl_rest)
+        sl_inner = np.logical_and(np.ma.filled(r < self.r_t, fill_value=False),
+                                  sl_rest)
         sl_rest *= np.logical_not(sl_inner)
         # little hack to work around numpy bug
         if np.array_equal(sl_inner, np.array([True])):
@@ -710,7 +715,8 @@ class MinimisationPotential(SmoothPotential):
         if pot:
             V[sl_inner] -= self.offset
 
-        sl_outer = np.logical_and(r < self.r_c, sl_rest)
+        sl_outer = np.logical_and(np.ma.filled(r < self.r_c, fill_value=False),
+                                  sl_rest)
         # little hack to work around numpy bug
         if np.array_equal(sl_outer, np.array([True])):
             V, dV, ddV = self.spline_pot(r, pot, forces, curb)
@@ -824,7 +830,8 @@ class SimpleSmoothPotential(Potential):
                       supposed to be expressed per unit area, so systems need
                       to be able to scale their response for their resolution))
         """
-        r = np.array(r)
+        if np.isscalar(r):
+            r = np.asarray(r)
         nb_dim = len(r.shape)
         if nb_dim == 0:
             r.shape = (1,)
@@ -832,7 +839,7 @@ class SimpleSmoothPotential(Potential):
         dV = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
 
-        sl_in_range = r < self.r_c
+        sl_in_range = np.ma.filled(r < self.r_c, fill_value=False)
 
         def adjust_pot(r):
             " shifts potentials, if an offset has been set"
