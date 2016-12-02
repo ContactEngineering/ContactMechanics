@@ -196,11 +196,15 @@ def compute_tilt_from_height(arr, size=None, full_output=False):
     x_grids = (np.arange(arr.shape[i]) for i in range(nb_dim))
     if nb_dim > 1:
         x_grids = np.meshgrid(*x_grids, indexing='ij')
-    columns = [x.reshape((-1, 1)) for x in x_grids]
+    if np.ma.getmask(arr) is np.ma.nomask:
+        columns = [x.reshape((-1, 1)) for x in x_grids]
+    else:
+        columns = [x[np.logical_not(arr.mask)].reshape((-1, 1))
+                   for x in x_grids]
     columns.append(np.ones_like(columns[-1]))
     # linear regression model
     location_matrix = np.matrix(np.hstack(columns))
-    offsets = arr.reshape(-1)
+    offsets = np.ma.compressed(arr)
     #res = scipy.optimize.nnls(location_matrix, offsets)
     res = np.linalg.lstsq(location_matrix, offsets)
     coeffs = np.array(res[0])*\
@@ -240,11 +244,15 @@ def compute_tilt_and_curvature(arr, size=None, full_output=False):
     # Quadratic terms
     x, y = x_grids
     x_grids += [x*x, y*y, x*y]
-    columns = [x.reshape((-1, 1)) for x in x_grids]
+    if np.ma.getmask(arr) is np.ma.nomask:
+        columns = [x.reshape((-1, 1)) for x in x_grids]
+    else:
+        columns = [x[np.logical_not(arr.mask)].reshape((-1, 1))
+                   for x in x_grids]
     columns.append(np.ones_like(columns[-1]))
     # linear regression model
     location_matrix = np.matrix(np.hstack(columns))
-    offsets = arr.reshape(-1)
+    offsets = np.ma.compressed(arr)
     #res = scipy.optimize.nnls(location_matrix, offsets)
     res = np.linalg.lstsq(location_matrix, offsets)
 
@@ -264,7 +272,7 @@ def shift_and_tilt(arr, full_output=False):
     """
     returns an array of same shape and size as arr, but shifted and tilted so
     that mean(arr) = 0 and mean(arr**2) is minimized
-    """   
+    """
     coeffs, location_matrix = compute_tilt_from_height(arr, full_output=True)
     coeffs = np.matrix(coeffs).T
     offsets = np.matrix(arr[...].reshape((-1, 1)))
