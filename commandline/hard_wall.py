@@ -34,7 +34,8 @@ from argparse import ArgumentParser, ArgumentTypeError
 import numpy as np
 import PyCo
 from PyCo.ContactMechanics import HardWall
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
+                                 PeriodicFFTElasticHalfSpace)
 from PyCo.Surface import read, DetrendedSurface, ScaledSurface
 from PyCo.System import SystemFactory
 from PyCo.Tools.Logger import Logger, quiet, screen
@@ -123,7 +124,7 @@ def next_step(system, surface, history=None, pentol=None, logger=quiet):
             disp0 = (disp[i]+disp[i+1])/2
 
     opt = system.minimize_proxy(disp0, pentol=pentol, maxiter=maxiter,
-                                logger=logger)
+                                logger=logger, kind='ref')
     u = opt.x
     f = opt.jac
     disp = np.append(disp, [disp0])
@@ -203,49 +204,61 @@ parser = ArgumentParser(description='Run a contact mechanics calculation with'
                                     'Keers constrained conjugate gradient '
                                     'solver.')
 parser.add_argument('filename', metavar='FILENAME', help='name of topography file')
-parser.add_argument('-d', '--detrend', dest='detrend', type=str,
+parser.add_argument('--detrend', dest='detrend', type=str,
                     help='detrend surface before contact calculation, DETREND '
                          'can be one of "height", "slope" or "curvature"',
                     metavar='DETREND')
-parser.add_argument('-E', '--modulus', dest='modulus', type=float, default=1.0,
+parser.add_argument('--boundary', dest='boundary', type=str,
+                    default='periodic',
+                    help='specify boundary conditions; '
+                         'BOUNDARY=periodic|nonperiodic',
+                    metavar='BOUNDARY')
+parser.add_argument('--modulus', dest='modulus', type=float, default=1.0,
                     help='use contact modulus MODULUS',
                     metavar='MODULUS')
-parser.add_argument('-p', '--pressure', dest='pressure', type=str,
+parser.add_argument('--displacement', dest='displacement', type=str,
+                    help='compute contact area at displacement DISPLACEMENT; '
+                         'specify displacement range by using a 3-tuple '
+                         'DISPLACEMENT=min,max,steps',
+                    metavar='DISPLACEMENT')
+parser.add_argument('--pressure', dest='pressure', type=str,
                     help='compute contact area at external pressure PRESSURE; '
                          'specify pressure range by using a 3-tuple '
                          'PRESSURE=min,max,steps',
                     metavar='PRESSURE')
-parser.add_argument('-s', '--size', dest='size', type=tuple2,
+parser.add_argument('--size', dest='size', type=tuple2,
                     help='size of surface is SIZE',
                     metavar='SIZE')
-parser.add_argument('-u', '--size-unit', dest='size_unit', type=str,
+parser.add_argument('--size-unit', dest='size_unit', type=str,
                     help='size unit UNIT',
                     metavar='UNIT')
-parser.add_argument('-v', '--height-unit', dest='height_unit', type=str,
+parser.add_argument('--height-unit', dest='height_unit', type=str,
                     help='height unit UNIT',
                     metavar='UNIT')
-parser.add_argument('-t', '--pentol', dest='pentol', type=float,
+parser.add_argument('--pentol', dest='pentol', type=float,
                     help='tolerance for penetration of surface PENTOL',
                     metavar='PENTOL')
-parser.add_argument('-P', '--pressure-fn', dest='pressure_fn', type=str,
+parser.add_argument('--pressure-fn', dest='pressure_fn', type=str,
                     help='filename for pressure map PRESSUREFN',
                     metavar='PRESSUREFN')
-parser.add_argument('-G', '--gap-fn', dest='gap_fn', type=str,
+parser.add_argument('--gap-fn', dest='gap_fn', type=str,
                     help='filename for gap map GAPFN',
                     metavar='GAPFN')
-parser.add_argument('-L', '--log-fn', dest='log_fn', type=str,
+parser.add_argument('--log-fn', dest='log_fn', type=str,
                     default='hard_wall.out',
                     help='filename for log file LOGFN that contains final '
                          'area and load',
                     metavar='LOGFN')
-parser.add_argument('-N', '--netcdf-fn', dest='netcdf_fn', type=str,
+parser.add_argument('--netcdf-fn', dest='netcdf_fn', type=str,
                     default=None,
                     help='filename for NetCDF file NETCDFFN',
                     metavar='NETCDFFN')
 arguments = parser.parse_args()
 logger.pr('filename = {}'.format(arguments.filename))
 logger.pr('detrend = {}'.format(arguments.detrend))
+logger.pr('boundary = {}'.format(arguments.boundary))
 logger.pr('modulus = {}'.format(arguments.modulus))
+logger.pr('displacement = {}'.format(arguments.displacement))
 logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('size = {}'.format(arguments.size))
 logger.pr('size_unit = {}'.format(arguments.size_unit))
@@ -285,8 +298,16 @@ if arguments.detrend is not None:
 
 
 # Initialize elastic half-space.
-substrate = PeriodicFFTElasticHalfSpace(surface.shape, arguments.modulus,
+if arguments.boundary == 'periodic':
+    substrate = PeriodicFFTElasticHalfSpace(surface.shape, arguments.modulus,
+                                            surface.size)
+elif arguments.boundary == 'nonperiodic':
+    substrate = FreeFFTElasticHalfSpace(surface.shape, arguments.modulus,
                                         surface.size)
+else:
+    raise ValueError('Unknown boundary conditions: '
+                     '{}'.format(arguments.boundary))
+
 # Hard-wall interaction. This is a dummy object.
 interaction = HardWall()
 # Piece the full system together. In particular the PyCo.System.SystemBase
@@ -297,8 +318,11 @@ system = SystemFactory(substrate, interaction, surface)
 ###
 
 if arguments.pressure is not None:
-    # Run computation for a linear range of pressures
+    if arguments.displacement is not None:
+        raise ValueError('Please specify either displacement or pressure '
+                         'range, not both.')
 
+    # Run computation for a linear range of pressures
     pressure = arguments.pressure.split(',')
     if len(pressure) == 1:
         pressure = [float(pressure[0])]
@@ -322,6 +346,46 @@ if arguments.pressure is not None:
         u = opt.x
         f = opt.jac
         logger.pr('displacement = {}'.format(opt.offset))
+        logger.pr('pressure = {} ({})'.format(f.sum()/np.prod(surface.size),
+                                              _pressure))
+        logger.pr('fractional contact area = {}' \
+            .format((f>0).sum()/np.prod(surface.shape)))
+
+        macro = dump(txt, surface, u, f, opt.offset)
+
+        if arguments.pressure_fn is not None:
+            save_pressure(arguments.pressure_fn+suffix, surface, substrate,
+                          f/surface.area_per_pt, macro=macro)
+        if arguments.gap_fn is not None:
+            save_gap(arguments.gap_fn+suffix, surface,
+                     u-surface[...]-opt.offset, macro=macro)
+
+elif arguments.displacement is not None:
+    # Run computation for a linear range of displacements
+
+    displacement = arguments.displacement.split(',')
+    if len(displacement) == 1:
+        displacement = [float(displacement[0])]
+    elif len(displacement) == 3:
+        displacement = np.linspace(*[float(x) for x in displacement])
+    else:
+        print('Please specify either single displacement value or 3-tuple for '
+              'displacement range.')
+        sys.exit(999)
+
+    # Additional log file for load and area
+    txt = Logger(arguments.log_fn)
+
+    for i, _displacement in enumerate(displacement):
+        suffix = '.{}'.format(i)
+        if len(displacement) == 1:
+            suffix = ''
+        opt = system.minimize_proxy(
+            offset=_displacement, pentol=arguments.pentol, maxiter=maxiter,
+            logger=logger, kind='ref')
+        u = opt.x
+        f = opt.jac
+        logger.pr('displacement = {} ({})'.format(opt.offset, _displacement))
         logger.pr('pressure = {}'.format(f.sum()/np.prod(surface.size)))
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))
