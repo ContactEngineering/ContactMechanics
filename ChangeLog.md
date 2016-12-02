@@ -6,6 +6,19 @@ TODO
 Change log
 ==========
 
+v0.12.0
+-------
+
+- Support for masked_arrays in NumpySurface. This allows to have undefined
+  (missing) data points in surfaces.
+- Polonsky & Keer can now optimize at constant pressure (in addition to
+  constant displacement)
+- Updated hard wall script to accept command line arguments.
+- Moved scripts to new 'commandline' folder.
+- Added plotmap.py, tool for plotting surfaces from the command line.
+- Added plotpsd.py, tool for plotting the PSD of a surface from the command
+  line.
+
 v0.11.0
 -------
 
