@@ -207,6 +207,13 @@ class Surface(object, metaclass=abc.ABCMeta):
     def area_per_pt(self):
         return np.prod([s/r for s, r in zip(self.size, self.resolution)])
 
+    @property
+    def has_undefined_data(self):
+        try:
+            return self.surf.has_undefined_data
+        except:
+            return False
+
     def save(self, fname, compress=True):
         """ saves the surface as a NumpyTxtSurface. Warning: This only saves
             the profile; the size is not contained in the file
@@ -602,6 +609,10 @@ class NumpySurface(Surface):
         """
         super().__setstate__(state[0])
         self.__h = state[1]
+
+    @property
+    def has_undefined_data(self):
+        return np.ma.getmask(self.__h) is not np.ma.nomask
 
 
 class Sphere(NumpySurface):
