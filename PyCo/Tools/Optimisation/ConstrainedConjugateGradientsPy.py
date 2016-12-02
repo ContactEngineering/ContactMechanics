@@ -88,6 +88,14 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
         pentol = compute_rms_height(surface)/(10*np.mean(surface.shape))
+        # If pentol is zero, then this is a flat surface. This only makes
+        # sense for nonperiodic calculations, i.e. it is a punch. Then
+        # use the offset to determine the tolerance
+        if pentol == 0:
+            pentol = (offset+np.mean(surface[...]))/1000
+        # If we are still zero use an arbitrary value
+        if pentol == 0:
+            pentol = 1e-3
 
     if logger is not None:
         logger.pr('maxiter = {0}'.format(maxiter))
@@ -98,13 +106,28 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
     else:
         u_r = disp0.copy()
 
-    comp_slice = [slice(0, substrate.resolution[i]) for i in range(substrate.dim)]
+    comp_slice = [slice(0, substrate.resolution[i])
+                  for i in range(substrate.dim)]
     if substrate.dim not in (1, 2):
         raise Exception(
             ("Constrained conjugate gradient currently only implemented for 1 "
              "or 2 dimensions (Your substrate has {}.).").format(
                  substrate.dim))
-    u_r[comp_slice] = np.where(u_r[comp_slice] < surface, surface, u_r[comp_slice])
+
+    comp_mask = np.zeros(substrate.computational_resolution, dtype=bool)
+    comp_mask[comp_slice] = True
+
+    surf_mask = np.ma.getmask(surface)
+    if surf_mask is np.ma.nomask:
+        surf_mask = np.ones(substrate.resolution, dtype=bool)
+    else:
+        comp_mask[comp_slice][surf_mask] = False
+        surf_mask = np.logical_not(surf_mask)
+    pad_mask = np.logical_not(comp_mask)
+    N_pad = pad_mask.sum()
+    u_r[comp_mask] = np.where(u_r[comp_mask] < surface[surf_mask]+offset,
+                              surface[surf_mask]+offset,
+                              u_r[comp_mask])
 
     result = optim.OptimizeResult()
     result.nfev = 0
@@ -119,6 +142,8 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         result.nfev += 1
     else:
         p_r = -external_force/np.prod(surface.shape)*np.ones_like(u_r)
+    # Pressure outside the computational region must be zero
+    p_r[pad_mask] = 0.0
 
     # iteration
     delta = 0
@@ -135,17 +160,19 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         A = np.sum(c_r)
 
         # Compute G = sum(g*g) (over contact area only)
-        g_r = u_r[comp_slice]-surface
-        if external_force is not None and A > 0:
-            offset = np.mean(g_r[c_r[comp_slice]])
-            g_r -= offset
-        G = np.sum(c_r[comp_slice]*g_r*g_r)
+        g_r = u_r[comp_mask]-surface[surf_mask]
+        if external_force is not None:
+            offset = 0
+            if A > 0:
+                offset = np.mean(g_r[c_r[comp_mask]])
+        g_r -= offset
+        G = np.sum(c_r[comp_mask]*g_r*g_r)
 
         # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
         if delta > 0 and G_old > 0:
-            t_r[comp_slice] = c_r[comp_slice]*(g_r + delta*(G/G_old)*t_r[comp_slice])
+            t_r[comp_mask] = c_r[comp_mask]*(g_r + delta*(G/G_old)*t_r[comp_mask])
         else:
-            t_r[comp_slice] = c_r[comp_slice]*g_r
+            t_r[comp_mask] = c_r[comp_mask]*g_r
 
         # Compute elastic displacement that belong to t_r
         #substrate (Nelastic manifold: r_r is negative of Polonsky, Kerr's r)
@@ -159,7 +186,7 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
             # tau = -sum(g*t)/sum(r*t) where sum is only over contact region
             x = -np.sum(c_r*r_r*t_r)
             if x > 0.0:
-                tau = np.sum(c_r[comp_slice]*g_r*t_r[comp_slice])/x
+                tau = np.sum(c_r[comp_mask]*g_r*t_r[comp_mask])/x
             else:
                 G = 0.0
 
@@ -167,12 +194,15 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
 
         # Find area with tensile stress and negative gap
         # (i.e. penetration of the two surfaces)
-        nc_r = np.logical_and(p_r[comp_slice] >= 0.0, g_r < 0.0)
+        mask = p_r >= 0.0
+        nc_r = np.logical_and(mask[comp_mask], g_r < 0.0)
 
         # Find maximum pressure outside contacting region. This should go to
         # zero.
+        pad_pres = 0
+        if N_pad > 0:
+            pad_pres = abs(p_r[pad_mask]).max()
         max_pres = 0
-        mask = p_r>0
         if mask.sum() > 0:
             max_pres = p_r[mask].max()
 
@@ -182,7 +212,7 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         if np.sum(nc_r) > 0:
             # nc_r contains area that just jumped into contact. Update their
             # forces.
-            p_r[comp_slice] += tau*nc_r*g_r
+            p_r[comp_mask] += tau*nc_r*g_r
 
             delta = 0
             delta_str = 'sd'
@@ -191,8 +221,8 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
             delta_str = 'cg'
 
         converged = True
+        psum = -np.sum(p_r[comp_mask])
         if external_force is not None:
-            psum = -np.sum(p_r[comp_slice])
             converged = abs(psum-external_force) < prestol
             if psum != 0:
                 p_r *= external_force/psum
@@ -213,23 +243,28 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
             rms_pen = sqrt(G/A)
         else:
             rms_pen = sqrt(G)
-        max_pen = max(0.0, np.max(c_r[comp_slice]*(surface+offset-
-                                                   u_r[comp_slice])))
+        max_pen = max(0.0, np.max(c_r[comp_mask]*(surface[surf_mask]+offset-
+                                                  u_r[comp_mask])))
         result.maxcv = {"max_pen": max_pen,
                         "max_pres": max_pres}
 
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)
 
-        converged = converged and rms_pen < pentol and max_pen < pentol and max_pres < prestol
+        converged = converged and rms_pen < pentol and max_pen < pentol and max_pres < prestol and pad_pres < prestol
 
         if converged:
             if logger is not None:
-                logger.st(['status', 'it', 'A', 'tau', 'rms_pen', 'max_pen',
-                           'max_pres'],
-                          ['CONVERGED', it, A, tau, rms_pen, max_pen, max_pres],
+                logger.st(['status', 'it', 'A', 'A/A0', 'tau', 'rms_pen',
+                           'max_pen', 'sum_pres', 'pad_pres', 'max_pres'],
+                          ['CONVERGED', it, A, A/surf_mask.sum(), tau,
+                           rms_pen, max_pen, psum, pad_pres, max_pres],
                           force_print=True)
-            result.x = u_r[comp_slice]
+            # Return full u_r because this is required to reproduce pressure
+            # from evalualte_force
+            result.x = u_r#[comp_mask]
+            # Return partial p_r because pressure outside computational region
+            # is zero anyway
             result.jac = -p_r[comp_slice]
             result.offset = offset
             result.success = True
@@ -238,14 +273,18 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
 
         if logger is not None:
             logger.st(['status', 'it', 'A', 'A/A0', 'tau', 'rms_pen', 'max_pen',
-                       'max_pres'],
-                      [delta_str, it, A, A/np.prod(c_r.shape), tau, rms_pen,
-                       max_pen, max_pres])
+                       'sum_pres', 'pad_pres', 'max_pres'],
+                      [delta_str, it, A, A/surf_mask.sum(), tau, rms_pen,
+                       max_pen, psum, pad_pres, max_pres])
 
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
 
-    result.x = u_r[comp_slice]
+    # Return full u_r because this is required to reproduce pressure
+    # from evalualte_force
+    result.x = u_r#[comp_mask]
+    # Return partial p_r because pressure outside computational region
+    # is zero anyway
     result.jac = -p_r[comp_slice]
     result.message = "Reached maxiter = {}".format(maxiter)
     return result
