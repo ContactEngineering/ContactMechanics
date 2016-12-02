@@ -578,7 +578,7 @@ class NumpySurface(Surface):
         """
 
         # Automatically turn this into a masked array if there is data missing
-        if np.sum(np.isfinite(profile)) < np.prod(profile.shape):
+        if np.sum(np.logical_not(np.isfinite(profile))) > 0:
             profile = np.ma.masked_where(np.logical_not(np.isfinite(profile)),
                                          profile)
         self.__h = profile
