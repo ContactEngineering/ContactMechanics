@@ -166,6 +166,15 @@ def dump(txt, surface, u, f, offset=0):
     txt.st(header, data)
     return zip(header, data)
 
+def dump_nc(container):
+    if container is not None:
+        frame = container.get_next_frame()
+        frame.displacements = u
+        frame.forces = f
+        frame.displacement = disp0
+        frame.load = load
+        frame.area = area
+
 def save_pressure(fn, surface, substrate, pressure, macro=None):
     if substrate.young == 1:
         unitstr = 'Pressure values follow, they are reported in units of E*.'
@@ -317,6 +326,12 @@ system = SystemFactory(substrate, interaction, surface)
 
 ###
 
+# Create a NetCDF container to dump displacements and forces to.
+container = None
+if arguments.netcdf_fn is not None:
+    container = NetCDFContainer(arguments.netcdf_fn, mode='w', double=True)
+    container.set_shape(surface.shape)
+
 if arguments.pressure is not None:
     if arguments.displacement is not None:
         raise ValueError('Please specify either displacement or pressure '
@@ -351,6 +366,7 @@ if arguments.pressure is not None:
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))
 
+        dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
 
         if arguments.pressure_fn is not None:
@@ -390,6 +406,7 @@ elif arguments.displacement is not None:
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))
 
+        dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
 
         if arguments.pressure_fn is not None:
@@ -401,13 +418,8 @@ elif arguments.displacement is not None:
 
 else:
     # Run computation automatically such that area is equally spaced on
-    # a log scale
-
-    # Create a NetCDF container to dump displacements and forces to.
-    container = None
-    if arguments.netcdf_fn is not None:
-        container = NetCDFContainer(arguments.netcdf_fn, mode='w', double=True)
-        container.set_shape(surface.shape)
+    # a log scale. This is the default when no other command line options are
+    # given.
 
     # Additional log file for load and area
     txt = Logger(arguments.log_fn)
@@ -421,14 +433,8 @@ else:
         u, f, disp0, load, area, history = \
             next_step(system, surface, history, pentol=arguments.pentol,
                       logger=logger)
-        if container is not None:
-            frame = container.get_next_frame()
-            frame.displacements = u
-            frame.forces = f
-            frame.displacement = disp0
-            frame.load = load
-            frame.area = area
 
+        dump_nc(container)
         macro = dump(txt, surface, u, f, disp0)
 
         if arguments.pressure_fn is not None:
@@ -438,5 +444,5 @@ else:
             save_gap(arguments.gap_fn+suffix, surface,  u-surface[...]-disp0,
                      macro=macro)
 
-    if container is not None:
-        container.close()
+if container is not None:
+    container.close()
