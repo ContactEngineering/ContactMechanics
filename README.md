@@ -6,16 +6,16 @@ Contact mechanics with Python. This code implements computation of contact geome
 The methods that are implemented in this code are described in various papers:
 
 - Fast-Fourier transform (FFT) for the computation of elastic deformation of periodic substrates.
-    - Stanley, Kato, J. Tribol. 119, 481 (1997)
-    - Campana, Müser, Phys. Rev. B 74, 075420 (2006)
-    - Pastewka, Sharp, Robbins, Phys. Rev. B 86, 075459 (2012)
+    - [Stanley, Kato, J. Tribol. 119, 481 (1997)](http://dx.doi.org/10.1115/1.2833523)
+    - [Campana, Müser, Phys. Rev. B 74, 075420 (2006)](http://dx.doi.org/10.1103/PhysRevB.74.075420)
+    - [Pastewka, Sharp, Robbins, Phys. Rev. B 86, 075459 (2012)](http://dx.doi.org/10.1103/PhysRevB.86.075459)
 - Decoupling of images for non-periodic calculation with the FFT.
     - Hockney, Methods Comput. Phys. 9, 135 (1970)
-    - Pastewka, Robbins, Appl. Phys. Lett. 108, 221601 (2016)
+    - [Pastewka, Robbins, Appl. Phys. Lett. 108, 221601 (2016)](http://dx.doi.org/10.1063/1.4950802)
 - Fast solution of nonadhesive, hard-wall interactions.
-    - Polonsky, Keer, Wear 231, 206 (1999)
+    - [Polonsky, Keer, Wear 231, 206 (1999)](http://dx.doi.org/10.1016/S0043-1648(99)00113-1)
 - Adhesive interactions.
-    - Pastewka, Robbins, PNAS 111, 3298 (2014)
+    - [Pastewka, Robbins, PNAS 111, 3298 (2014)](http://dx.doi.org/10.1073/pnas.1320846111)
 
 Build status
 ------------
@@ -27,7 +27,7 @@ The following badge should say _build passing_. This means that all automated te
 Installation
 ------------
 
-You need Python 3 to run PyCo. All dependencies can be installed automatically by invoking
+You need Python 3 and [FFTW3](http://www.fftw.org/) to run PyCo. All Python dependencies can be installed automatically by invoking
 
 ```pip3 install [--user] -r requirements.txt```
 
