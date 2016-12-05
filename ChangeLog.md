@@ -9,8 +9,9 @@ Change log
 v0.12.0
 -------
 
-- Support for masked_arrays in NumpySurface. This allows to have undefined
-  (missing) data points in surfaces.
+- Main enhancement: Support for masked_arrays in NumpySurface. This allows to
+  have undefined (missing) data points in surfaces. Polonsky & Keer can handle
+  this now.
 - Polonsky & Keer can now optimize at constant pressure (in addition to
   constant displacement)
 - Updated hard wall script to accept command line arguments.
