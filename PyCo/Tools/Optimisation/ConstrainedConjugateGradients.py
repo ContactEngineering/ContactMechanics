@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.
 from .ConstrainedConjugateGradientsPy import constrained_conjugate_gradients as ref
 from .ConstrainedConjugateGradientsOpt import constrained_conjugate_gradients as opt
 
-def constrained_conjugate_gradients(substrate, surface, kind='opt', **kwargs):
+def constrained_conjugate_gradients(substrate, surface, kind='ref', **kwargs):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium
     configuration deflection of an elastic manifold. The conjugate gradient
