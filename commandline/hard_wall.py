@@ -123,7 +123,7 @@ def next_step(system, surface, history=None, pentol=None, logger=quiet):
         else:
             disp0 = (disp[i]+disp[i+1])/2
 
-    opt = system.minimize_proxy(disp0, pentol=pentol, maxiter=maxiter,
+    opt = system.minimize_proxy(offset=disp0, pentol=pentol, maxiter=maxiter,
                                 logger=logger, kind='ref')
     u = opt.x
     f = opt.jac
