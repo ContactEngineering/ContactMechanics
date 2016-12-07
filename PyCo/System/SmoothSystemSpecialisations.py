@@ -56,7 +56,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
     compute displacements everywhere the large system exists. Therefore, for
     full-domain output, an extra evaluation step must be taken. But since using
     the small system significantly increases optimisation speed, this tradeoff
-    seems to be wyell worth the trouble.
+    seems to be well worth the trouble.
     """
     # declare that this class is only a proxy
     _proxyclass = True
