@@ -7,7 +7,9 @@
 
 @date   29 June 2016
 
-@brief  Helper tools for PyCo
+@brief  Maugis-Dugdale cohesive zone model for a sphere contacting an elastic
+        flat.
+        See: D. Maugis, J. Colloid Interf. Sci. 150, 243 (1992)
 
 @section LICENCE
 
@@ -54,7 +56,7 @@ def maugis_parameter(radius, elastic_modulus, work_of_adhesion,
     K = 4*elastic_modulus/3
     return 2*cohesive_stress/(np.pi*work_of_adhesion*K**2/radius)**(1./3)
 
-def fA(m, A, lam):
+def fm(m, A, lam):
     mu = np.sqrt(m*m-1)
     tanmu = np.arctan(mu)
     # This is Eq. (6.17) from Maugis' paper
@@ -79,7 +81,7 @@ def _load_and_displacement(A, lam, return_m=False):
     d : array
         Non-dimensional displacement
     """
-    m = afindroot(fA, 1.0, 1e12, A, lam)
+    m = afindroot(fm, 1.0, 1e12, A, lam)
     mu = np.sqrt(m*m-1)
     tanmu = np.arctan(mu)
     N = A*A*A-lam*A*A*(mu+m*m*tanmu)
