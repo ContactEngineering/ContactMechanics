@@ -52,6 +52,25 @@ def fm(m, a, lam):
     # This is Eq. (23) from Baney and Hui's paper
     return lam*a*a/2*(m*mu-np.log(m+mu))+lam*lam*a/2*(mu*np.log(m+mu)-m*np.log(m))-1
 
+def _cohesive_zone(a, lam):
+    """
+    Returns the width of the cohesive zone m=b/a, where b is the cohesive zone
+    edge and a is the contact radius.
+
+    Parameters
+    ----------
+    a : array_like
+        Dimensionless contact radius
+    lam : float
+        Maugis parameter
+
+    Returns
+    -------
+    P : array
+        Cohesive zone width
+    """
+    return afindroot(fm, 1.0, 1e12, a, lam)
+
 def _load(a, lam, return_m=False):
     """
     Compute load for the Maugis-Dugdale model given the dimensionless contact
@@ -69,13 +88,30 @@ def _load(a, lam, return_m=False):
     P : array
         Non-dimensional load
     """
-    m = afindroot(fm, 1.0, 1e12, a, lam)
+    m = _cohesive_zone(a, lam)
     mu = np.sqrt(m*m-1)
     P = a*a-lam*a*mu
     if return_m:
         return P, m
     else:
         return P
+
+def _contact_radius(P, lam, return_cohesive_zone=False):
+    a = afindroot(lambda a, P, lam: _load(a, lam)-P, 1e-6, 1e12, P, lam)
+    if return_cohesive_zone:
+        return a, _cohesive_zone(a, lam)
+    else:
+        return a
+
+def _pressure(x, a, lam):
+    m = _cohesive_zone(a, lam)
+    p = np.zeros_like(x)
+    p[:] = np.nan
+    mask = abs(x)<1
+    p[mask] = a*np.sqrt(1-x[mask]*x[mask])-lam/2*np.arctan(np.sqrt((m*m-1)/(1-x[mask]*x[mask])))
+    mask = np.logical_and(abs(x)>=1, abs(x)<=m)
+    p[mask] = -np.pi*lam/4
+    return p
 
 ### Dimensional quantities
 
