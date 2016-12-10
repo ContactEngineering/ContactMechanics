@@ -33,7 +33,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 
 import matplotlib.pyplot as plt
 
-from PyCo.Surface import read
+from PyCo.Surface import read, DetrendedSurface
 from PyCo.Tools import power_spectrum_2D
 
 ###
@@ -44,11 +44,21 @@ parser.add_argument('filename', metavar='FILENAME', help='name of map file')
 parser.add_argument('--nbins', dest='nbins', type=int, default=None,
                     help='use NBINS bins for radial average',
                     metavar='NBINS')
+parser.add_argument('--window', dest='window', type=str, default=None,
+                    help='apply windowing function WINDOW before computing the '
+                         'PSD',
+                    metavar='WINDOW')
+parser.add_argument('--detrend_mode', dest='detrend_mode', type=str,
+                    default='center',
+                    help='detrend surface; posibilities are '
+                    'DETREND=center|height|slope|curvature',
+                    metavar='DETREND')
 arguments = parser.parse_args()
 
 ###
 
-surface = read(arguments.filename)
+surface = DetrendedSurface(read(arguments.filename),
+                           detrend_mode=arguments.detrend_mode)
 unit = surface.unit
 nx, ny = surface.shape
 nbins = arguments.nbins
@@ -57,7 +67,7 @@ if nbins is None:
 
 ###
 
-q, C = power_spectrum_2D(surface, nbins=nbins)
+q, C = power_spectrum_2D(surface, nbins=nbins, window=arguments.window)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
