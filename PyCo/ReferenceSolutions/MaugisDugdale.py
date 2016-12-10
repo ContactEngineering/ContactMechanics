@@ -56,20 +56,46 @@ def maugis_parameter(radius, elastic_modulus, work_of_adhesion,
     K = 4*elastic_modulus/3
     return 2*cohesive_stress/(np.pi*work_of_adhesion*K**2/radius)**(1./3)
 
-def fm(m, A, lam):
+def fm(m, a, lam):
     mu = np.sqrt(m*m-1)
     tanmu = np.arctan(mu)
     # This is Eq. (6.17) from Maugis' paper
-    return (1./2)*lam*A*A*(mu+(m*m-2)*tanmu)+(4./3)*lam*lam*A*(mu*tanmu-m+1)-1
+    return (1./2)*lam*a*a*(mu+(m*m-2)*tanmu)+(4./3)*lam*lam*a*(mu*tanmu-m+1)-1
 
-def _load_and_displacement(A, lam, return_m=False):
+def _load(a, lam, return_m=False):
+    """
+    Compute load for the Maugis-Dugdale model given the area and Maugis
+    parameter.
+
+    Parameters
+    ----------
+    a : array_like
+        Non-dimensional contact radius
+    lam : float
+        Maugis parameter
+
+    Returns
+    -------
+    P : array
+        Non-dimensional load
+    """
+    m = afindroot(fm, 1.0, 1e12, a, lam)
+    mu = np.sqrt(m*m-1)
+    tanmu = np.arctan(mu)
+    P = a*a*a-lam*a*a*(mu+m*m*tanmu)
+    if return_m:
+        return P, m
+    else:
+        return P
+
+def _load_and_displacement(a, lam, return_m=False):
     """
     Compute load and displacement for the Maugis-Dugdale model given the area
     and Maugis parameter.
 
     Parameters
     ----------
-    A : array_like
+    a : array_like
         Non-dimensional contact radius
     lam : float
         Maugis parameter
@@ -81,15 +107,13 @@ def _load_and_displacement(A, lam, return_m=False):
     d : array
         Non-dimensional displacement
     """
-    m = afindroot(fm, 1.0, 1e12, A, lam)
+    P, m = _load(a, lam, return_m=True)
     mu = np.sqrt(m*m-1)
-    tanmu = np.arctan(mu)
-    N = A*A*A-lam*A*A*(mu+m*m*tanmu)
-    d = A*A-(4./3)*A*lam*mu
+    d = a*a-(4./3)*a*lam*mu
     if return_m:
-        return N, d, m
+        return P, d, m
     else:
-        return N, d
+        return P, d
 
 def load_and_displacement(contact_radius, radius, elastic_modulus,
                           work_of_adhesion, cohesive_stress):
