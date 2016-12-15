@@ -43,7 +43,8 @@ from PyCo.Tools import compute_rms_height
 
 def constrained_conjugate_gradients(substrate, surface, external_force=None,
                                     offset=0, disp0=None, pentol=None,
-                                    prestol=1e-5, maxiter=100000, logger=None):
+                                    prestol=1e-5, maxiter=100000, logger=None,
+                                    callback=None):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium
     configuration deflection of an elastic manifold. The conjugate gradient
@@ -276,6 +277,8 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
                        'sum_pres', 'pad_pres', 'max_pres'],
                       [delta_str, it, A, A/surf_mask.sum(), tau, rms_pen,
                        max_pen, psum, pad_pres, max_pres])
+        if callback is not None:
+            callback(it, p_r)
 
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
