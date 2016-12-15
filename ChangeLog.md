@@ -6,6 +6,13 @@ TODO
 Change log
 ==========
 
+v0.13.0
+-------
+
+- More adhesive reference models (Maugis-Dugdale type models for cylinder and
+  wedge)
+- Added callback option for Polonsky & Keer optimizer.
+
 v0.12.0
 -------
 
