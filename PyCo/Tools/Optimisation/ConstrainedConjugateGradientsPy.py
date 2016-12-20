@@ -278,7 +278,15 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
                       [delta_str, it, A, A/surf_mask.sum(), tau, rms_pen,
                        max_pen, psum, pad_pres, max_pres])
         if callback is not None:
-            callback(it, p_r)
+            d = dict(area=np.asscalar(A),
+                     fractional_area=np.asscalar(A/surf_mask.sum()),
+                     rms_penetration=np.asscalar(rms_pen),
+                     max_penetration=np.asscalar(max_pen),
+                     max_pressure=np.asscalar(max_pres),
+                     pad_pressure=np.asscalar(pad_pres),
+                     penetration_tol=np.asscalar(pentol),
+                     pressure_tol=np.asscalar(prestol))
+            callback(it, p_r, d)
 
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
