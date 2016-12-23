@@ -1,10 +1,5 @@
-TODO
-====
-
-- Test and optimize OpenMP parallelization.
-
-Change log
-==========
+Change log for PyCo
+===================
 
 v0.13.0
 -------
