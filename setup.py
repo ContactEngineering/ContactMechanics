@@ -62,6 +62,8 @@ setup(
     version = versioneer.get_version(),
     cmdclass = versioneer.get_cmdclass(),
     packages = find_packages(),
+    package_data = {'': ['ChangeLog.md']},
+    include_package_data = True,
     ext_modules = cythonize(extensions),
     # metadata for upload to PyPI
     author = "Till Junge",
