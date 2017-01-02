@@ -300,5 +300,6 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
     # Return partial p_r because pressure outside computational region
     # is zero anyway
     result.jac = -p_r[comp_slice]
+    result.offset = offset
     result.message = "Reached maxiter = {}".format(maxiter)
     return result
