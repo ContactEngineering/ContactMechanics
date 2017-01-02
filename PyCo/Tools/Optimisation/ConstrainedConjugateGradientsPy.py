@@ -42,7 +42,7 @@ from PyCo.Tools import compute_rms_height
 ###
 
 def constrained_conjugate_gradients(substrate, surface, external_force=None,
-                                    offset=0, disp0=None, pentol=None,
+                                    offset=None, disp0=None, pentol=None,
                                     prestol=1e-5, maxiter=100000, logger=None,
                                     callback=None):
     """
@@ -101,6 +101,9 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
     if logger is not None:
         logger.pr('maxiter = {0}'.format(maxiter))
         logger.pr('pentol = {0}'.format(pentol))
+
+    if offset is None:
+        offset = 0
 
     if disp0 is None:
         u_r = np.zeros(substrate.computational_resolution)
