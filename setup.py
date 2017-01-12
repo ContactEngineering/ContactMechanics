@@ -34,6 +34,19 @@ import versioneer
 from setuptools import setup, find_packages, Extension
 from Cython.Build import cythonize
 import os
+import sys
+
+
+# Hack for a --openmp option that compiles with parallel FFTW3
+if '--openmp' in sys.argv:
+    index = sys.argv.index('--openmp')
+    sys.argv.pop(index)  # Removes the '--openmp'
+    extra_compile_args = ["-std=c++11", "-fopenmp"]
+    extra_link_args = ["-lfftw3_omp", "-lfftw3", "-lm", "-fopenmp"]
+else:
+    extra_compile_args = ["-std=c++11"]
+    extra_link_args = ["-lfftw3", "-lm"]
+
 
 tools_path = os.path.join(os.path.dirname(__file__), "PyCo/Tools/")
 fftext_path = tools_path
@@ -41,12 +54,8 @@ extensions = [
     Extension(
         name="PyCo.Tools.fftext",
         sources=[fftext_path + src_name for src_name in ("fftext.pyx", "fftext_cc.cc")],
-        extra_compile_args=["-std=c++11"],
-        extra_link_args=["-lfftw3", "-lm"],
-        # Uncomment the following lines (and comment the above) to get OpenMP
-        # support.
-        #extra_compile_args=["-std=c++11", "-fopenmp"],
-        #extra_link_args=["-lfftw3_omp", "-lfftw3", "-lm", "-fopenmp"],
+        extra_compile_args=extra_compile_args,
+        extra_link_args=extra_link_args,
         include_dirs=[np.get_include()],
         language="c++"),
     Extension(

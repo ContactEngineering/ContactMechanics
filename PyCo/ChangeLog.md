@@ -2,7 +2,7 @@ Change log for PyCo
 ===================
 
 v0.13.0 (12Jan17)
---------------------------
+-----------------
 
 - Added further adhesive reference models (Maugis-Dugdale type models for
   cylinder and wedge).
@@ -70,5 +70,13 @@ v0.9.4 (27Apr16)
 v0.9.3 (20Mar16)
 ----------------
 
-- Readers for native AFMs, interferometers (Wyko OPD, DI Nanoscope, X3P)
-- Detrending (TiltedSurface)
+- Wyko OPD reader (.opd)
+- Digital Instruments Nanoscope reader (.di)
+- Igor Binary Wave reader (.ibw)
+- Detrending
+
+v0.9.2 (06Mar16)
+----------------
+
+- X3P reader (.x3p)
+- Automatic file format detection
