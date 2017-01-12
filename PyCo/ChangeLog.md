@@ -1,12 +1,14 @@
 Change log for PyCo
 ===================
 
-v0.13.0 (not yet released)
+v0.13.0 (12Jan17)
 --------------------------
 
-- More adhesive reference models (Maugis-Dugdale type models for cylinder and
-  wedge)
+- Added further adhesive reference models (Maugis-Dugdale type models for
+  cylinder and wedge).
 - Added callback option for Polonsky & Keer optimizer.
+- setup.py now has '--openmp' option that triggers compilation of shared-memory
+  (OpenMP) parallel code.
 
 v0.12.0 (05Dec16)
 -----------------
