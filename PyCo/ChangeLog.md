@@ -1,7 +1,7 @@
 Change log for PyCo
 ===================
 
-v0.13.0 (12Jan17)
+v0.13.0 (13Jan17)
 -----------------
 
 - Added further adhesive reference models (Maugis-Dugdale type models for
