@@ -41,8 +41,9 @@ from PyCo.Tools import compute_rms_height
 
 ###
 
-def constrained_conjugate_gradients(substrate, surface, external_force=None,
-                                    offset=None, disp0=None, pentol=None,
+def constrained_conjugate_gradients(substrate, surface, hardness=None,
+                                    external_force=None, offset=None,
+                                    disp0=None, pentol=None,
                                     prestol=1e-5, maxiter=100000, logger=None,
                                     callback=None):
     """
@@ -58,6 +59,9 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         Elastic manifold.
     surface : array_like
         Height profile of the rigid counterbody.
+    hardness : array_like
+        Hardness of the substrate. Pressure cannot exceed this value. Can be
+        scalar or array (i.e. per pixel) value.
     external_force : float
         External force. Don't optimize force if None.
     offset : float
@@ -159,6 +163,11 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
         result.nit = it
         # Reset contact area (area that feels compressive stress)
         c_r = p_r < 0.0
+        # If a hardness is specified, exclude values that exceed the hardness
+        # from the "contact area". Note: "contact area" here is the region that
+        # is optimized by the CG iteration.
+        if hardness is not None:
+            c_r = np.logical_and(c_r, p_r > -hardness)
 
         # Compute total contact area (area with compressive pressure)
         A = np.sum(c_r)
@@ -198,20 +207,36 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
 
         # Find area with tensile stress and negative gap
         # (i.e. penetration of the two surfaces)
-        mask = p_r >= 0.0
+        mask_tensile = p_r >= 0.0
+        # If hardness is specified, include regions where pressure exceeds
+        # hardness
+        if hardness is not None:
+            mask_flowing = p_r <= -hardness
+            mask = np.logical_or(mask_tensile, mask_flowing)
+        else:
+            mask = mask_tensile
         nc_r = np.logical_and(mask[comp_mask], g_r < 0.0)
 
-        # Find maximum pressure outside contacting region. This should go to
-        # zero.
+        # For nonperiodic calculations: Find maximum pressure in pad region.
+        # This must be zero.
         pad_pres = 0
         if N_pad > 0:
             pad_pres = abs(p_r[pad_mask]).max()
+
+        # Find maximum pressure outside contacting region and the deviation
+        # from hardness inside the flowing regions. This should go to zero.
         max_pres = 0
-        if mask.sum() > 0:
-            max_pres = p_r[mask].max()
+        if mask_tensile.sum() > 0:
+            max_pres = p_r[mask_tensile].max()
+        if hardness and mask_flowing.sum() > 0:
+            max_pres = max(max_pres, -(p_r[mask_flowing]+hardness).min())
 
         # Set all compressive stresses to zero
-        p_r *= p_r < 0.0
+        p_r[mask_tensile] = 0.0
+        # If hardness is specified, set all stress larger than hardness to the
+        # hardness value
+        if hardness is not None:
+            p_r[mask_flowing] = hardness
 
         if np.sum(nc_r) > 0:
             # nc_r contains area that just jumped into contact. Update their
