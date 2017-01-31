@@ -123,8 +123,10 @@ def next_step(system, surface, history=None, pentol=None, logger=quiet):
         else:
             disp0 = (disp[i]+disp[i+1])/2
 
-    opt = system.minimize_proxy(offset=disp0, pentol=pentol, maxiter=maxiter,
-                                logger=logger, kind='ref')
+    opt = system.minimize_proxy(
+        hardness=arguments.hardness,
+        offset=disp0, pentol=pentol, maxiter=maxiter,
+        logger=logger, kind='ref')
     u = opt.x
     f = opt.jac
     disp = np.append(disp, [disp0])
@@ -225,6 +227,9 @@ parser.add_argument('--boundary', dest='boundary', type=str,
 parser.add_argument('--modulus', dest='modulus', type=float, default=1.0,
                     help='use contact modulus MODULUS',
                     metavar='MODULUS')
+parser.add_argument('--hardness', dest='hardness', type=float,
+                    help='use penetration hardness HARDNESS',
+                    metavar='HARDNESS')
 parser.add_argument('--displacement', dest='displacement', type=str,
                     help='compute contact area at displacement DISPLACEMENT; '
                          'specify displacement range by using a 3-tuple '
@@ -267,6 +272,7 @@ logger.pr('filename = {}'.format(arguments.filename))
 logger.pr('detrend = {}'.format(arguments.detrend))
 logger.pr('boundary = {}'.format(arguments.boundary))
 logger.pr('modulus = {}'.format(arguments.modulus))
+logger.pr('hardness = {}'.format(arguments.hardness))
 logger.pr('displacement = {}'.format(arguments.displacement))
 logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('size = {}'.format(arguments.size))
@@ -356,6 +362,7 @@ if arguments.pressure is not None:
         if len(pressure) == 1:
             suffix = ''
         opt = system.minimize_proxy(
+            hardness=arguments.hardness,
             external_force=_pressure*np.prod(surface.size),
             pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref')
         u = opt.x
@@ -397,6 +404,7 @@ elif arguments.displacement is not None:
         if len(displacement) == 1:
             suffix = ''
         opt = system.minimize_proxy(
+            hardness=arguments.hardness,
             offset=_displacement, pentol=arguments.pentol, maxiter=maxiter,
             logger=logger, kind='ref')
         u = opt.x
