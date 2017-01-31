@@ -124,9 +124,10 @@ def next_step(system, surface, history=None, pentol=None, logger=quiet):
             disp0 = (disp[i]+disp[i+1])/2
 
     opt = system.minimize_proxy(
-        hardness=arguments.hardness,
+        hardness=hardness,
         offset=disp0, pentol=pentol, maxiter=maxiter,
-        logger=logger, kind='ref')
+        logger=logger, kind='ref',
+        verbose=arguments.verbose)
     u = opt.x
     f = opt.jac
     disp = np.append(disp, [disp0])
@@ -267,6 +268,9 @@ parser.add_argument('--netcdf-fn', dest='netcdf_fn', type=str,
                     default=None,
                     help='filename for NetCDF file NETCDFFN',
                     metavar='NETCDFFN')
+parser.add_argument('--verbose', dest='verbose', action='store_true',
+                    default=False,
+                    help='enable verbose output')
 arguments = parser.parse_args()
 logger.pr('filename = {}'.format(arguments.filename))
 logger.pr('detrend = {}'.format(arguments.detrend))
@@ -311,6 +315,10 @@ if arguments.detrend is not None:
     logger.pr('After detrending: RMS height = {}, RMS slope = {}' \
         .format(surface.compute_rms_height(), surface.compute_rms_slope()))
 
+if arguments.hardness is not None:
+    hardness = arguments.hardness*surface.area_per_pt
+else:
+    hardness = None
 
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':
@@ -362,9 +370,10 @@ if arguments.pressure is not None:
         if len(pressure) == 1:
             suffix = ''
         opt = system.minimize_proxy(
-            hardness=arguments.hardness,
+            hardness=hardness,
             external_force=_pressure*np.prod(surface.size),
-            pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref')
+            pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref',
+            verbose=arguments.verbose)
         u = opt.x
         f = opt.jac
         logger.pr('displacement = {}'.format(opt.offset))
@@ -404,9 +413,10 @@ elif arguments.displacement is not None:
         if len(displacement) == 1:
             suffix = ''
         opt = system.minimize_proxy(
-            hardness=arguments.hardness,
+            hardness=hardness,
             offset=_displacement, pentol=arguments.pentol, maxiter=maxiter,
-            logger=logger, kind='ref')
+            logger=logger, kind='ref',
+            verbose=arguments.verbose)
         u = opt.x
         f = opt.jac
         logger.pr('displacement = {} ({})'.format(opt.offset, _displacement))
