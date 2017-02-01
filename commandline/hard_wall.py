@@ -379,6 +379,7 @@ if arguments.pressure is not None:
         logger.pr('displacement = {}'.format(opt.offset))
         logger.pr('pressure = {} ({})'.format(f.sum()/np.prod(surface.size),
                                               _pressure))
+        logger.pr('energy = {}'.format(opt.fun))
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))
 
@@ -421,6 +422,7 @@ elif arguments.displacement is not None:
         f = opt.jac
         logger.pr('displacement = {} ({})'.format(opt.offset, _displacement))
         logger.pr('pressure = {}'.format(f.sum()/np.prod(surface.size)))
+        logger.pr('energy = {}'.format(opt.fun))
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))
 
