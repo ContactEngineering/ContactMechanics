@@ -688,3 +688,47 @@ class Sphere(NumpySurface):
     def centre(self):
         "returns the coordinates of the sphere's (or cylinder)'s centre"
         return self._centre
+
+
+def PlasticNumpySurface(NumpySurface):
+    """ Surface with an additional plastic deformation field.
+    """
+    name = 'surface_with_plasticity'
+
+    def __init__(self, profile, hardness, plastic_displ=None, size=None, unit=None):
+        """
+        Keyword Arguments:
+        profile -- surface profile
+        """
+
+        self.hardness = hardness
+        if plastic_displ is None:
+            plastic_displ = np.zeros_like(profile)
+        self.plastic_displ = plastic_displ
+        super().__init__(profile, size=size, unit=unit)
+
+    @property
+    def hardness(self):
+        return self._hardness
+
+    @hardness.setter
+    def hardness(self, hardness):
+        if hardness <= 0:
+            raise ValueError('Hardness must be positive.')
+        self._hardness = hardness
+
+    @property
+    def plastic_displ(self):
+        return self.__h_pl
+
+    @plastic_displ.setter
+    def plastic_displ(self, plastic_displ):
+        if plastic_displ.shape != self._profile().shape:
+            raise ValueError('Shape of profile and plastic displacement must '
+                             'match.')
+        self.__h_pl = plastic_displ
+
+    def profile(self):
+        """ returns an array of possibly adjusted heights
+        """
+        return self._profile()+self._plastic_displ()-self.adjustment
