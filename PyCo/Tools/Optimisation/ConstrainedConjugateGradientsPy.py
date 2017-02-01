@@ -270,6 +270,8 @@ def constrained_conjugate_gradients(substrate, surface, external_force=None,
             # Return partial p_r because pressure outside computational region
             # is zero anyway
             result.jac = -p_r[comp_slice]
+            # Compute elastic energy
+            result.fun = -(p_r[comp_slice]*u_r[comp_slice]).sum()/2
             result.offset = offset
             result.success = True
             result.message = "Polonsky converged"
