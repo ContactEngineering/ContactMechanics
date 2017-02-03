@@ -43,8 +43,11 @@ from PyCo.Tools import compute_rms_height
 
 def constrained_conjugate_gradients(substrate, surface, hardness=None,
                                     external_force=None, offset=None,
-                                    disp0=None, pentol=None,
-                                    prestol=1e-5, maxiter=100000, logger=None,
+                                    disp0=None,
+                                    pentol=None, prestol=1e-5,
+                                    mixfac=0.5,
+                                    maxiter=100000,
+                                    logger=None,
                                     callback=None, verbose=False):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium
@@ -164,24 +167,26 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Compute total contact area (area with compressive pressure)
         A_contact = np.sum(c_r)
 
+        # Compute gap
+        g_r = u_r[comp_mask] - surface[surf_mask]
+        if external_force is not None:
+            offset = 0
+            if A_contact > 0:
+                offset = np.mean(g_r[c_r[comp_mask]])
+        g_r -= offset
+
         # If a hardness is specified, exclude values that exceed the hardness
         # from the "contact area". Note: "contact area" here is the region that
         # is optimized by the CG iteration.
         if hardness is not None:
             c_r = np.logical_and(c_r, p_r > -hardness)
 
+        # Compute G = sum(g*g) (over contact area only)
+        G = np.sum(c_r[comp_mask]*g_r*g_r)
+
         # Compute total are treated by the CG optimizer (which exclude flowing)
         # portions.
-        A = np.sum(c_r)
-
-        # Compute G = sum(g*g) (over contact area only)
-        g_r = u_r[comp_mask] - surface[surf_mask]
-        if external_force is not None:
-            offset = 0
-            if A > 0:
-                offset = np.mean(g_r[c_r[comp_mask]])
-        g_r -= offset
-        G = np.sum(c_r[comp_mask]*g_r*g_r)
+        A_cg = np.sum(c_r)
 
         # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
         if delta > 0 and G_old > 0:
@@ -197,7 +202,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Note: Sign reversed from Polonsky, Keer because this r_r is negative
         # of theirs.
         tau = 0.0
-        if A > 0:
+        if A_cg > 0:
             # tau = -sum(g*t)/sum(r*t) where sum is only over contact region
             x = -np.sum(c_r*r_r*t_r)
             if x > 0.0:
@@ -215,9 +220,8 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # but gap is positive
         if hardness is not None:
             mask_flowing = p_r <= -hardness
-            nc_r = np.logical_or(nc_r,
-                                 np.logical_and(mask_flowing[comp_mask],
-                                                g_r > 0.0))
+            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing[comp_mask],
+                                                      g_r > 0.0))
 
         # For nonperiodic calculations: Find maximum pressure in pad region.
         # This must be zero.
@@ -252,6 +256,49 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             delta = 1
             delta_str = 'cg'
 
+        # The CG area can vanish if this is a plastic calculation. In that case
+        # we need to use the gap to decide which regions contact. All contact
+        # area should then be the hardness value. We use simple relaxation
+        # algorithm to converge the contact area in that case.
+        if hardness is not None and A_cg == 0:
+            delta_str = 'mix'
+            maxdu = pentol+1
+            mixit = 0
+            while maxdu > pentol and mixit < 100:
+                # Update pressure
+                p_r[comp_mask] = (1-mixfac)*p_r[comp_mask] + \
+                                 mixfac*np.where(g_r < 0.0,
+                                                 -hardness*np.ones_like(g_r),
+                                                 np.zeros_like(g_r))
+                psum = -np.sum(p_r[comp_mask])
+                if external_force is not None:
+                    converged = abs(psum-external_force) < prestol
+                    if psum != 0:
+                        p_r *= external_force/psum
+                    else:
+                        p_r = -external_force/np.prod(surface.shape)*np.ones_like(p_r)
+
+                # Compute new displacements from updated forces
+                new_u_r = substrate.evaluate_disp(p_r)
+                maxdu = abs(new_u_r - u_r).max()
+                u_r = new_u_r
+
+                # Compute gap
+                g_r = u_r[comp_mask] - surface[surf_mask]
+                if external_force is not None:
+                    offset = 0
+                    if A_contact > 0:
+                        offset = np.mean(g_r[c_r[comp_mask]])
+                g_r -= offset
+
+                mixit += 1
+
+            p_r[comp_mask] = (1-mixfac)*p_r[comp_mask] + \
+                             mixfac*np.where(g_r < 0.0,
+                                             -hardness*np.ones_like(g_r),
+                                             np.zeros_like(g_r))
+
+        # Adjust pressure for external load
         converged = True
         psum = -np.sum(p_r[comp_mask])
         if external_force is not None:
@@ -263,7 +310,9 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
         # Compute new displacements from updated forces
         #u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
-        u_r = substrate.evaluate_disp(p_r)
+        new_u_r = substrate.evaluate_disp(p_r)
+        maxdu = abs(new_u_r - u_r).max()
+        u_r = new_u_r
         result.nfev += 1
 
         # Store G for next step
@@ -271,8 +320,8 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
         # Compute root-mean square penetration, max penetration and max force
         # difference between the steps
-        if A > 0:
-            rms_pen = sqrt(G/A)
+        if A_cg > 0:
+            rms_pen = sqrt(G/A_cg)
         else:
             rms_pen = sqrt(G)
         max_pen = max(0.0, np.max(c_r[comp_mask]*(surface[surf_mask]+offset-
@@ -283,7 +332,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)
 
-        converged = converged and rms_pen < pentol and max_pen < pentol and max_pres < prestol and pad_pres < prestol
+        converged = converged and rms_pen < pentol and max_pen < pentol and maxdu < pentol and max_pres < prestol and pad_pres < prestol# and sum(nc_r) == 0
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
                        'offset']
@@ -292,9 +341,10 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
         if verbose:
             log_headers += ['rms pen.', 'max. pen.', 'max. force',
-                            'max. pad force', 'CG area', 'frac. CG area']
-            log_values += [rms_pen, max_pen, max_pres, pad_pres, A,
-                           A/surf_mask.sum()]
+                            'max. pad force', 'max. du', 'CG area',
+                            'frac. CG area', 'tau', 'sum(nc_r)']
+            log_values += [rms_pen, max_pen, max_pres, pad_pres, maxdu, A_cg,
+                           A_cg/surf_mask.sum(), tau, sum(nc_r)]
 
         if converged:
             if logger is not None:
