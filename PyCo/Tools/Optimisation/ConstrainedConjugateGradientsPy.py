@@ -145,11 +145,8 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
     # Compute forces
     #p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real
-    if external_force is None:
-        p_r = substrate.evaluate_force(u_r)
-        result.nfev += 1
-    else:
-        p_r = -external_force/np.prod(surface.shape)*np.ones_like(u_r)
+    p_r = substrate.evaluate_force(u_r)
+    result.nfev += 1
     # Pressure outside the computational region must be zero
     p_r[pad_mask] = 0.0
 
@@ -171,7 +168,6 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # from the "contact area". Note: "contact area" here is the region that
         # is optimized by the CG iteration.
         if hardness is not None:
-            print(p_r.min(), p_r.max(), hardness)
             c_r = np.logical_and(c_r, p_r > -hardness)
 
         # Compute total are treated by the CG optimizer (which exclude flowing)
@@ -263,7 +259,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             if psum != 0:
                 p_r *= external_force/psum
             else:
-                p_r = external_force/np.prod(surface.shape)*np.ones_like(p_r)
+                p_r = -external_force/np.prod(surface.shape)*np.ones_like(p_r)
 
         # Compute new displacements from updated forces
         #u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
