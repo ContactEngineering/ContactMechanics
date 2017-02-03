@@ -783,12 +783,12 @@ class PlasticSurface(Surface):
                              'must match.')
         self.__h_pl = plastic_displ
 
-    def _profile(self):
-        """ Computes the combined profile.
-        """
-        return self.surf.profile()+self.plastic_displ
-
     def undeformed_profile(self):
         """ Returns the undeformed profile of the surface.
         """
         return self.surf.profile()
+
+    def _profile(self):
+        """ Computes the combined profile.
+        """
+        return self.undeformed_profile()+self.plastic_displ
