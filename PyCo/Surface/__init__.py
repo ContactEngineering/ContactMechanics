@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.
 """
 
 from .SurfaceDescription import (CompoundSurface, DetrendedSurface,
-                                 NumpySurface, PlasticNumpySurface,
+                                 NumpySurface, PlasticSurface,
                                  ScaledSurface, Sphere, Surface,
                                  TranslatedSurface)
 from .FromFile import (NumpyTxtSurface, NumpyAscSurface, read, read_asc,

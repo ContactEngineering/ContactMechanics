@@ -36,7 +36,7 @@ import PyCo
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                  PeriodicFFTElasticHalfSpace)
-from PyCo.Surface import read, DetrendedSurface, ScaledSurface
+from PyCo.Surface import read, DetrendedSurface, PlasticSurface, ScaledSurface
 from PyCo.System import SystemFactory
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -124,7 +124,6 @@ def next_step(system, surface, history=None, pentol=None, logger=quiet):
             disp0 = (disp[i]+disp[i+1])/2
 
     opt = system.minimize_proxy(
-        hardness=hardness,
         offset=disp0, pentol=pentol, maxiter=maxiter,
         logger=logger, kind='ref',
         verbose=arguments.verbose)
@@ -316,9 +315,7 @@ if arguments.detrend is not None:
         .format(surface.compute_rms_height(), surface.compute_rms_slope()))
 
 if arguments.hardness is not None:
-    hardness = arguments.hardness*surface.area_per_pt
-else:
-    hardness = None
+    surface = PlasticSurface(surface, arguments.hardness*surface.area_per_pt)
 
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':
@@ -370,7 +367,6 @@ if arguments.pressure is not None:
         if len(pressure) == 1:
             suffix = ''
         opt = system.minimize_proxy(
-            hardness=hardness,
             external_force=_pressure*np.prod(surface.size),
             pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref',
             verbose=arguments.verbose)
@@ -414,7 +410,6 @@ elif arguments.displacement is not None:
         if len(displacement) == 1:
             suffix = ''
         opt = system.minimize_proxy(
-            hardness=hardness,
             offset=_displacement, pentol=arguments.pentol, maxiter=maxiter,
             logger=logger, kind='ref',
             verbose=arguments.verbose)

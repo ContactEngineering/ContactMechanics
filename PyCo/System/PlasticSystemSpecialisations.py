@@ -29,10 +29,12 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
+import numpy as np
+
 from .. import ContactMechanics, SolidMechanics, Surface
 from .Systems import NonSmoothContactSystem
 
-class HardnessNonSmoothContactSystem(NonSmoothContactSystem):
+class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
     """
     This system implements a simple penetration hardness model.
     """
@@ -57,14 +59,16 @@ class HardnessNonSmoothContactSystem(NonSmoothContactSystem):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.PlasticNumpySurface)
+                            Surface.PlasticSurface)
         return is_ok
 
-    def minimize_proxy(self, hardness, **kwargs):
+    def minimize_proxy(self, pltol=1e-5, logger=None, **kwargs):
         """
         """
-        for i in range(10):
-            result = super().minimize_proxy(**kwargs)
+        u_r = None
+        maxdpl = pltol+1.0
+        while maxdpl > pltol:
+            result = super().minimize_proxy(disp0=u_r, logger=logger, **kwargs)
             p_r = result.jac
             mask = p_r > self.surface.hardness
 
@@ -77,5 +81,15 @@ class HardnessNonSmoothContactSystem(NonSmoothContactSystem):
             h_r = self.surface._profile()
             mask = np.logical_and(mask, h_r > u_r)
 
-            # Set plastic displacement
-            self.surface.plastic_displ[mask] = self.surface._profile()[mask] - u_r
+            # Compute new plastic displacement
+            plastic_displ = self.surface.undeformed_profile()[mask] - u_r[mask]
+            maxdpl = abs(plastic_displ - self.surface.plastic_displ[mask]).max()
+            if logger is not None:
+                logger.pr('Max. difference in plastic displacement = {}'.format(maxdpl))
+
+            # Set offset (for calculation at external pressure) and plastic
+            # displacement
+            kwargs['offset'] = result.offset
+            self.surface.plastic_displ[mask] = plastic_displ
+
+        return result
