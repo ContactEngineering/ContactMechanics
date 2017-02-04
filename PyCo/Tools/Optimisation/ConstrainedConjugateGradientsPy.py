@@ -280,6 +280,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
                 p_r *= external_force/psum
             else:
                 p_r = -external_force/np.prod(surface.shape)*np.ones_like(p_r)
+                p_r[pad_mask] = 0.0
 
         # Compute new displacements from updated forces
         #u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
