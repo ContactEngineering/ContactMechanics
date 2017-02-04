@@ -33,4 +33,5 @@ from .Systems import IncompatibleFormulationError
 from .Systems import IncompatibleResolutionError
 from .Systems import SmoothContactSystem
 from .SmoothSystemSpecialisations import FastSmoothContactSystem
+from .PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
 from .Factory import SystemFactory

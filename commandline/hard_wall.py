@@ -36,7 +36,7 @@ import PyCo
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                  PeriodicFFTElasticHalfSpace)
-from PyCo.Surface import read, DetrendedSurface, ScaledSurface
+from PyCo.Surface import read, DetrendedSurface, PlasticSurface, ScaledSurface
 from PyCo.System import SystemFactory
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -123,8 +123,10 @@ def next_step(system, surface, history=None, pentol=None, logger=quiet):
         else:
             disp0 = (disp[i]+disp[i+1])/2
 
-    opt = system.minimize_proxy(offset=disp0, pentol=pentol, maxiter=maxiter,
-                                logger=logger, kind='ref')
+    opt = system.minimize_proxy(
+        offset=disp0, pentol=pentol, maxiter=maxiter,
+        logger=logger, kind='ref',
+        verbose=arguments.verbose)
     u = opt.x
     f = opt.jac
     disp = np.append(disp, [disp0])
@@ -225,6 +227,9 @@ parser.add_argument('--boundary', dest='boundary', type=str,
 parser.add_argument('--modulus', dest='modulus', type=float, default=1.0,
                     help='use contact modulus MODULUS',
                     metavar='MODULUS')
+parser.add_argument('--hardness', dest='hardness', type=float,
+                    help='use penetration hardness HARDNESS',
+                    metavar='HARDNESS')
 parser.add_argument('--displacement', dest='displacement', type=str,
                     help='compute contact area at displacement DISPLACEMENT; '
                          'specify displacement range by using a 3-tuple '
@@ -250,6 +255,9 @@ parser.add_argument('--pentol', dest='pentol', type=float,
 parser.add_argument('--pressure-fn', dest='pressure_fn', type=str,
                     help='filename for pressure map PRESSUREFN',
                     metavar='PRESSUREFN')
+parser.add_argument('--displ-fn', dest='displ_fn', type=str,
+                    help='filename for displacement map DISPLFN',
+                    metavar='DISPLFN')
 parser.add_argument('--gap-fn', dest='gap_fn', type=str,
                     help='filename for gap map GAPFN',
                     metavar='GAPFN')
@@ -262,11 +270,15 @@ parser.add_argument('--netcdf-fn', dest='netcdf_fn', type=str,
                     default=None,
                     help='filename for NetCDF file NETCDFFN',
                     metavar='NETCDFFN')
+parser.add_argument('--verbose', dest='verbose', action='store_true',
+                    default=False,
+                    help='enable verbose output')
 arguments = parser.parse_args()
 logger.pr('filename = {}'.format(arguments.filename))
 logger.pr('detrend = {}'.format(arguments.detrend))
 logger.pr('boundary = {}'.format(arguments.boundary))
 logger.pr('modulus = {}'.format(arguments.modulus))
+logger.pr('hardness = {}'.format(arguments.hardness))
 logger.pr('displacement = {}'.format(arguments.displacement))
 logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('size = {}'.format(arguments.size))
@@ -274,6 +286,7 @@ logger.pr('size_unit = {}'.format(arguments.size_unit))
 logger.pr('height_unit = {}'.format(arguments.height_unit))
 logger.pr('pentol = {}'.format(arguments.pentol))
 logger.pr('pressure-fn = {}'.format(arguments.pressure_fn))
+logger.pr('displ-fn = {}'.format(arguments.displ_fn))
 logger.pr('gap-fn = {}'.format(arguments.gap_fn))
 logger.pr('log-fn = {}'.format(arguments.log_fn))
 logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
@@ -305,6 +318,8 @@ if arguments.detrend is not None:
     logger.pr('After detrending: RMS height = {}, RMS slope = {}' \
         .format(surface.compute_rms_height(), surface.compute_rms_slope()))
 
+if arguments.hardness is not None:
+    surface = PlasticSurface(surface, arguments.hardness*surface.area_per_pt)
 
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':
@@ -357,12 +372,14 @@ if arguments.pressure is not None:
             suffix = ''
         opt = system.minimize_proxy(
             external_force=_pressure*np.prod(surface.size),
-            pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref')
+            pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref',
+            verbose=arguments.verbose)
         u = opt.x
         f = opt.jac
         logger.pr('displacement = {}'.format(opt.offset))
         logger.pr('pressure = {} ({})'.format(f.sum()/np.prod(surface.size),
                                               _pressure))
+        logger.pr('energy = {}'.format(opt.fun))
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))
 
@@ -372,6 +389,8 @@ if arguments.pressure is not None:
         if arguments.pressure_fn is not None:
             save_pressure(arguments.pressure_fn+suffix, surface, substrate,
                           f/surface.area_per_pt, macro=macro)
+        if arguments.displ_fn is not None:
+            save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
             save_gap(arguments.gap_fn+suffix, surface,
                      u-surface[...]-opt.offset, macro=macro)
@@ -398,11 +417,13 @@ elif arguments.displacement is not None:
             suffix = ''
         opt = system.minimize_proxy(
             offset=_displacement, pentol=arguments.pentol, maxiter=maxiter,
-            logger=logger, kind='ref')
+            logger=logger, kind='ref',
+            verbose=arguments.verbose)
         u = opt.x
         f = opt.jac
         logger.pr('displacement = {} ({})'.format(opt.offset, _displacement))
         logger.pr('pressure = {}'.format(f.sum()/np.prod(surface.size)))
+        logger.pr('energy = {}'.format(opt.fun))
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))
 
@@ -412,6 +433,8 @@ elif arguments.displacement is not None:
         if arguments.pressure_fn is not None:
             save_pressure(arguments.pressure_fn+suffix, surface, substrate,
                           f/surface.area_per_pt, macro=macro)
+        if arguments.displ_fn is not None:
+            save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
             save_gap(arguments.gap_fn+suffix, surface,
                      u-surface[...]-opt.offset, macro=macro)
@@ -440,6 +463,8 @@ else:
         if arguments.pressure_fn is not None:
             save_pressure(arguments.pressure_fn+suffix, surface, substrate,
                           f/surface.area_per_pt, macro=macro)
+        if arguments.displ_fn is not None:
+            save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
             save_gap(arguments.gap_fn+suffix, surface,  u-surface[...]-disp0,
                      macro=macro)

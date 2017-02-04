@@ -29,10 +29,10 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-from .SurfaceDescription import (Surface, ScaledSurface, DetrendedSurface,
-                                 TranslatedSurface, CompoundSurface)
-from .SurfaceDescription import NumpySurface
-from .SurfaceDescription import Sphere
+from .SurfaceDescription import (CompoundSurface, DetrendedSurface,
+                                 NumpySurface, PlasticSurface,
+                                 ScaledSurface, Sphere, Surface,
+                                 TranslatedSurface)
 from .FromFile import (NumpyTxtSurface, NumpyAscSurface, read, read_asc,
                        read_di, read_hgt, read_ibw, read_mat, read_matrix,
                        read_opd, read_x3p, read_xyz)

@@ -688,3 +688,107 @@ class Sphere(NumpySurface):
     def centre(self):
         "returns the coordinates of the sphere's (or cylinder)'s centre"
         return self._centre
+
+
+class PlasticSurface(Surface):
+    """ Surface with an additional plastic deformation field.
+    """
+    name = 'surface_with_plasticity'
+
+    def __init__(self, surface, hardness, plastic_displ=None):
+        """
+        Keyword Arguments:
+        surface -- surface profile
+        hardness -- penetration hardness
+        plastic_displ -- initial plastic displacements
+        """
+        self.surf = surface
+        self.hardness = hardness
+        self.adjustment = 0.0
+        if plastic_displ is None:
+            plastic_displ = np.zeros(self.shape)
+        self.plastic_displ = plastic_displ
+
+    def __getstate__(self):
+        """ is called and the returned object is pickled as the contents for
+            the instance
+        """
+        state = (super().__getstate__(), self.surf, self.hardness,
+                 self.plastic_displ)
+        return state
+
+    def __setstate__(self, state):
+        """ Upon unpickling, it is called with the unpickled state
+        Keyword Arguments:
+        state -- result of __getstate__
+        """
+        superstate, self.surf, self.hardness, self.plastic_displ = state
+        super().__setstate__(superstate)
+
+    @property
+    def dim(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.dim
+
+    @property
+    def resolution(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.resolution
+    shape = resolution
+
+    @property
+    def size(self,):
+        """ needs to be testable to make sure that geometry and halfspace are
+            compatible
+        """
+        return self.surf.size
+
+    @size.setter
+    def size(self, size):
+        """ set the size of the surface """
+        self.surf.size = size
+
+    @property
+    def unit(self,):
+        """ Return unit """
+        return self.surf.unit
+
+    @unit.setter
+    def unit(self, unit):
+        """ Set unit """
+        self.surf.unit = unit
+
+    @property
+    def hardness(self):
+        return self._hardness
+
+    @hardness.setter
+    def hardness(self, hardness):
+        if hardness <= 0:
+            raise ValueError('Hardness must be positive.')
+        self._hardness = hardness
+
+    @property
+    def plastic_displ(self):
+        return self.__h_pl
+
+    @plastic_displ.setter
+    def plastic_displ(self, plastic_displ):
+        if plastic_displ.shape != self.shape:
+            raise ValueError('Resolution of profile and plastic displacement '
+                             'must match.')
+        self.__h_pl = plastic_displ
+
+    def undeformed_profile(self):
+        """ Returns the undeformed profile of the surface.
+        """
+        return self.surf.profile()
+
+    def _profile(self):
+        """ Computes the combined profile.
+        """
+        return self.undeformed_profile()+self.plastic_displ
