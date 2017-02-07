@@ -45,7 +45,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
                                     external_force=None, offset=None,
                                     disp0=None,
                                     pentol=None, prestol=1e-5,
-                                    mixfac=0.5,
+                                    mixfac=0.1,
                                     maxiter=100000,
                                     logger=None,
                                     callback=None, verbose=False):
@@ -159,37 +159,48 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     G_old = 1.0
     t_r = np.zeros_like(u_r)
 
+    tau = 0.0
     for it in range(1, maxiter+1):
         result.nit = it
 
-        if delta_str != 'mix':
-            # Reset contact area (area that feels compressive stress)
-            c_r = p_r < 0.0
+        # Reset contact area (area that feels compressive stress)
+        c_r = p_r < 0.0
 
-            # Compute total contact area (area with compressive pressure)
-            A_contact = np.sum(c_r)
+        # Compute total contact area (area with compressive pressure)
+        A_contact = np.sum(c_r)
 
-            # Compute gap
-            g_r = u_r[comp_mask] - surface[surf_mask]
-            if external_force is not None:
-                offset = 0
-                if A_contact > 0:
-                    offset = np.mean(g_r[c_r[comp_mask]])
-            g_r -= offset
+        # Compute gap
+        g_r = u_r[comp_mask] - surface[surf_mask]
+        if external_force is not None:
+            offset = 0
+            if A_contact > 0:
+                offset = np.mean(g_r[c_r[comp_mask]])
+        g_r -= offset
 
-            # If a hardness is specified, exclude values that exceed the hardness
-            # from the "contact area". Note: "contact area" here is the region that
-            # is optimized by the CG iteration.
-            if hardness is not None:
-                c_r = np.logical_and(c_r, p_r > -hardness)
+        #import matplotlib.pyplot as plt
+        #plt.figure()
+        #plt.subplot(121)
+        #plt.pcolormesh(c_r.astype(int) + np.logical_and(c_r, p_r > -hardness).astype(int))
+        #plt.colorbar()
+        #plt.subplot(122)
+        #plt.pcolormesh(g_r.reshape(c_r.shape))
+        #plt.colorbar()
+        #plt.show()
 
-            # Compute G = sum(g*g) (over contact area only)
-            G = np.sum(c_r[comp_mask]*g_r*g_r)
+        # If a hardness is specified, exclude values that exceed the hardness
+        # from the "contact area". Note: "contact area" here is the region that
+        # is optimized by the CG iteration.
+        if hardness is not None:
+            c_r = np.logical_and(c_r, p_r > -hardness)
 
-            # Compute total are treated by the CG optimizer (which exclude flowing)
-            # portions.
-            A_cg = np.sum(c_r)
+        # Compute G = sum(g*g) (over contact area only)
+        G = np.sum(c_r[comp_mask]*g_r*g_r)
 
+        # Compute total are treated by the CG optimizer (which exclude flowing)
+        # portions.
+        A_cg = np.sum(c_r)
+
+        if delta_str != 'mix' and not (hardness is not None and A_cg == 0):
             # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
             if delta > 0 and G_old > 0:
                 t_r[comp_mask] = c_r[comp_mask]*(g_r + delta*(G/G_old)*t_r[comp_mask])
@@ -213,63 +224,67 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
                     G = 0.0
 
             p_r += tau*c_r*t_r
+        else:
+            # The CG area can vanish if this is a plastic calculation. In that case
+            # we need to use the gap to decide which regions contact. All contact
+            # area should then be the hardness value. We use simple relaxation
+            # algorithm to converge the contact area in that case.
 
-            # Find area with tensile stress and negative gap
-            # (i.e. penetration of the two surfaces)
-            mask_tensile = p_r >= 0.0
-            nc_r = np.logical_and(mask_tensile[comp_mask], g_r < 0.0)
-            # If hardness is specified, find area where pressure exceeds hardness
-            # but gap is positive
-            if hardness is not None:
-                mask_flowing = p_r <= -hardness
-                nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing[comp_mask],
+            delta_str = 'mix'
+
+            # Mix pressure
+            #p_r[comp_mask] = (1-mixfac)*p_r[comp_mask] + \
+            #                 mixfac*np.where(g_r < 0.0,
+            #                                 -hardness*np.ones_like(g_r),
+            #                                 np.zeros_like(g_r))
+            # Evolve pressure in direction of energy gradient
+            p_r[comp_mask] += mixfac*(u_r[comp_mask] + g_r)
+            mixfac *= 0.5
+
+
+        # Find area with tensile stress and negative gap
+        # (i.e. penetration of the two surfaces)
+        mask_tensile = p_r >= 0.0
+        nc_r = np.logical_and(mask_tensile[comp_mask], g_r < 0.0)
+        # If hardness is specified, find area where pressure exceeds hardness
+        # but gap is positive
+        if hardness is not None:
+            mask_flowing = p_r <= -hardness
+            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing[comp_mask],
                                                           g_r > 0.0))
 
-            # For nonperiodic calculations: Find maximum pressure in pad region.
-            # This must be zero.
-            pad_pres = 0
-            if N_pad > 0:
-                pad_pres = abs(p_r[pad_mask]).max()
+        # For nonperiodic calculations: Find maximum pressure in pad region.
+        # This must be zero.
+        pad_pres = 0
+        if N_pad > 0:
+            pad_pres = abs(p_r[pad_mask]).max()
 
-            # Find maximum pressure outside contacting region and the deviation
-            # from hardness inside the flowing regions. This should go to zero.
-            max_pres = 0
-            if mask_tensile.sum() > 0:
-                max_pres = p_r[mask_tensile].max()
-            if hardness and mask_flowing.sum() > 0:
-                max_pres = max(max_pres, -(p_r[mask_flowing]+hardness).min())
+        # Find maximum pressure outside contacting region and the deviation
+        # from hardness inside the flowing regions. This should go to zero.
+        max_pres = 0
+        if mask_tensile.sum() > 0:
+            max_pres = p_r[mask_tensile].max()
+        if hardness and mask_flowing.sum() > 0:
+            max_pres = max(max_pres, -(p_r[mask_flowing]+hardness).min())
 
-            # Set all compressive stresses to zero
-            p_r[mask_tensile] = 0.0
-            # If hardness is specified, set all stress larger than hardness to the
-            # hardness value
-            if hardness is not None:
-                p_r[mask_flowing] = -hardness
+        # Set all compressive stresses to zero
+        p_r[mask_tensile] = 0.0
+        # If hardness is specified, set all stress larger than hardness to the
+        # hardness value
+        if hardness is not None:
+            p_r[mask_flowing] = -hardness
 
+        if delta_str != 'mix':
             if np.sum(nc_r) > 0:
                 # nc_r contains area that penetrate but have zero (or tensile)
                 # pressure. They violate the contact constraint.
                 # Update their forces.
                 p_r[comp_mask] += tau*nc_r*g_r
-
                 delta = 0
                 delta_str = 'sd'
             else:
                 delta = 1
                 delta_str = 'cg'
-
-        # The CG area can vanish if this is a plastic calculation. In that case
-        # we need to use the gap to decide which regions contact. All contact
-        # area should then be the hardness value. We use simple relaxation
-        # algorithm to converge the contact area in that case.
-        if delta_str == 'mix' or (hardness is not None and A_cg == 0):
-            delta_str = 'mix'
-            max_pres = 0.0
-            # Mix pressure
-            p_r[comp_mask] = (1-mixfac)*p_r[comp_mask] + \
-                             mixfac*np.where(g_r < 0.0,
-                                             -hardness*np.ones_like(g_r),
-                                             np.zeros_like(g_r))
 
         # Adjust pressure for external load
         converged = True
@@ -306,10 +321,11 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Elastic energy would be
         # e_el = -0.5*np.sum(p_r*u_r)
 
-        converged = converged and rms_pen < pentol and max_pen < pentol and maxdu < pentol and max_pres < prestol and pad_pres < prestol
-        if converged and delta_str == 'mix':
-            converged = False
-            delta_str = 'MIXCONV'
+        if delta_str == 'mix':
+            converged = converged and maxdu < pentol and max_pres < prestol and pad_pres < prestol
+        else:
+            converged = converged and rms_pen < pentol and max_pen < pentol and maxdu < pentol and max_pres < prestol and pad_pres < prestol
+        #print(converged, rms_pen < pentol, max_pen < pentol, maxdu < pentol, max_pres < prestol, pad_pres < prestol)
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
                        'offset']
@@ -319,11 +335,19 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         if verbose:
             log_headers += ['rms pen.', 'max. pen.', 'max. force',
                             'max. pad force', 'max. du', 'CG area',
-                            'frac. CG area', 'tau', 'sum(nc_r)']
+                            'frac. CG area', 'sum(nc_r)']
             log_values += [rms_pen, max_pen, max_pres, pad_pres, maxdu, A_cg,
-                           A_cg/surf_mask.sum(), tau, sum(nc_r)]
+                           A_cg/surf_mask.sum(), sum(nc_r)]
+            if delta_str == 'mix':
+                log_headers += ['mixfac']
+                log_values += [mixfac]
+            else:
+                log_headers += ['tau']
+                log_values += [tau]
 
-        if converged:
+        if converged and delta_str == 'mix':
+            delta_str = 'mixconv'
+        elif converged:
             if logger is not None:
                 log_values[0] = 'CONVERGED'
                 logger.st(log_headers, log_values, force_print=True)
