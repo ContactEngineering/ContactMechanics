@@ -169,14 +169,6 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Compute total contact area (area with compressive pressure)
         A_contact = np.sum(c_r)
 
-        # Compute gap
-        g_r = u_r[comp_mask] - surface[surf_mask]
-        if external_force is not None:
-            offset = 0
-            if A_contact > 0:
-                offset = np.mean(g_r[c_r[comp_mask]])
-        g_r -= offset
-
         #import matplotlib.pyplot as plt
         #plt.figure()
         #plt.subplot(121)
@@ -193,12 +185,20 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         if hardness is not None:
             c_r = np.logical_and(c_r, p_r > -hardness)
 
-        # Compute G = sum(g*g) (over contact area only)
-        G = np.sum(c_r[comp_mask]*g_r*g_r)
-
         # Compute total are treated by the CG optimizer (which exclude flowing)
         # portions.
         A_cg = np.sum(c_r)
+
+        # Compute gap
+        g_r = u_r[comp_mask] - surface[surf_mask]
+        if external_force is not None:
+            offset = 0
+            if A_contact > 0:
+                offset = np.mean(g_r[c_r[comp_mask]])
+        g_r -= offset
+
+        # Compute G = sum(g*g) (over contact area only)
+        G = np.sum(c_r[comp_mask]*g_r*g_r)
 
         if delta_str != 'mix' and not (hardness is not None and A_cg == 0):
             # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
@@ -269,8 +269,18 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
         # Set all compressive stresses to zero
         p_r[mask_tensile] = 0.0
+
+        # Adjust pressure
+        if external_force is not None:
+            psum = -np.sum(p_r[comp_mask])
+            if psum != 0:
+                p_r *= external_force/psum
+            else:
+                p_r = -external_force/np.prod(surface.shape)*np.ones_like(p_r)
+                p_r[pad_mask] = 0.0
+
         # If hardness is specified, set all stress larger than hardness to the
-        # hardness value
+        # hardness value (i.e. truncate pressure)
         if hardness is not None:
             p_r[mask_flowing] = -hardness
 
@@ -286,16 +296,11 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
                 delta = 1
                 delta_str = 'cg'
 
-        # Adjust pressure for external load
+        # Check convergence respective pressure
         converged = True
         psum = -np.sum(p_r[comp_mask])
         if external_force is not None:
             converged = abs(psum-external_force) < prestol
-            if psum != 0:
-                p_r *= external_force/psum
-            else:
-                p_r = -external_force/np.prod(surface.shape)*np.ones_like(p_r)
-                p_r[pad_mask] = 0.0
 
         # Compute new displacements from updated forces
         #u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
