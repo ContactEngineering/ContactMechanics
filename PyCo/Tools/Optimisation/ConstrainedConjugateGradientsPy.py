@@ -169,16 +169,6 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Compute total contact area (area with compressive pressure)
         A_contact = np.sum(c_r)
 
-        #import matplotlib.pyplot as plt
-        #plt.figure()
-        #plt.subplot(121)
-        #plt.pcolormesh(c_r.astype(int) + np.logical_and(c_r, p_r > -hardness).astype(int))
-        #plt.colorbar()
-        #plt.subplot(122)
-        #plt.pcolormesh(g_r.reshape(c_r.shape))
-        #plt.colorbar()
-        #plt.show()
-
         # If a hardness is specified, exclude values that exceed the hardness
         # from the "contact area". Note: "contact area" here is the region that
         # is optimized by the CG iteration.
@@ -230,7 +220,8 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             # area should then be the hardness value. We use simple relaxation
             # algorithm to converge the contact area in that case.
 
-            delta_str = 'mix'
+            if delta_str != 'mixconv':
+                delta_str = 'mix'
 
             # Mix pressure
             #p_r[comp_mask] = (1-mixfac)*p_r[comp_mask] + \
@@ -238,8 +229,10 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             #                                 -hardness*np.ones_like(g_r),
             #                                 np.zeros_like(g_r))
             # Evolve pressure in direction of energy gradient
-            p_r[comp_mask] += mixfac*(u_r[comp_mask] + g_r)
+            #p_r[comp_mask] += mixfac*(u_r[comp_mask] + g_r)
+            p_r[comp_mask] = (1-mixfac)*p_r[comp_mask]-mixfac*hardness*(g_r<0.0)
             mixfac *= 0.5
+            #p_r[comp_mask] = -hardness*(g_r < 0.0)
 
 
         # Find area with tensile stress and negative gap
@@ -330,7 +323,6 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             converged = converged and maxdu < pentol and max_pres < prestol and pad_pres < prestol
         else:
             converged = converged and rms_pen < pentol and max_pen < pentol and maxdu < pentol and max_pres < prestol and pad_pres < prestol
-        #print(converged, rms_pen < pentol, max_pen < pentol, maxdu < pentol, max_pres < prestol, pad_pres < prestol)
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
                        'offset']
@@ -352,6 +344,8 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
         if converged and delta_str == 'mix':
             delta_str = 'mixconv'
+            log_values[0] = delta_str
+            mixfac = 0.5
         elif converged:
             if logger is not None:
                 log_values[0] = 'CONVERGED'
