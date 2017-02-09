@@ -183,7 +183,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         g_r = u_r[comp_mask] - surface[surf_mask]
         if external_force is not None:
             offset = 0
-            if A_contact > 0:
+            if A_cg > 0:
                 offset = np.mean(g_r[c_r[comp_mask]])
         g_r -= offset
 
@@ -366,8 +366,8 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         if logger is not None:
             logger.st(log_headers, log_values)
         if callback is not None:
-            d = dict(area=np.asscalar(np.int64(A)),
-                     fractional_area=np.asscalar(np.float64(A/surf_mask.sum())),
+            d = dict(area=np.asscalar(np.int64(A_contact)),
+                     fractional_area=np.asscalar(np.float64(A_contact/surf_mask.sum())),
                      rms_penetration=np.asscalar(np.float64(rms_pen)),
                      max_penetration=np.asscalar(np.float64(max_pen)),
                      max_pressure=np.asscalar(np.float64(max_pres)),
