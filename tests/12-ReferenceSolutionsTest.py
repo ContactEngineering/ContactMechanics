@@ -36,7 +36,7 @@ try:
     from scipy.integrate import quad
     from scipy.special import ellipk, erf
 
-    from .pycotest import PyCoTestCase
+    from .PyCoTest import PyCoTestCase
     import PyCo.ReferenceSolutions.GreenwoodTripp as GT
     import PyCo.ReferenceSolutions.MaugisDugdale as MD
 except ImportError as err:
