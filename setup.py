@@ -62,6 +62,11 @@ extensions = [
         name="PyCo.Tools.Optimisation.ConstrainedConjugateGradientsOpt",
         sources=[os.path.join(tools_path,"Optimisation/ConstrainedConjugateGradientsOpt.pyx")],
         include_dirs=[np.get_include()],
+        language="c++"),
+    Extension(
+        name="PyCo.Goodies.ScanningProbe",
+        sources=["PyCo/Goodies/ScanningProbe.pyx"],
+        include_dirs=[np.get_include()],
         language="c++")]
 
 
