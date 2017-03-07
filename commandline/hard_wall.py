@@ -384,7 +384,7 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
             maxiter=maxiter, logger=logger,
             verbose=arguments.verbose)
         f = opt.jac
-        u = opt.x
+        u = opt.x[:f.shape[0], :f.shape[1]]
         logger.pr('displacement = {}'.format(opt.offset))
         logger.pr('pressure = {} ({})'.format(f.sum()/np.prod(surface.size),
                                               _pressure))
