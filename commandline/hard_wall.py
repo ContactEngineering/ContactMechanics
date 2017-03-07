@@ -240,6 +240,10 @@ parser.add_argument('--pressure', dest='pressure', type=str,
                          'specify pressure range by using a 3-tuple '
                          'PRESSURE=min,max,steps',
                     metavar='PRESSURE')
+parser.add_argument('--pressure-from-file', dest='pressure_from_fn', type=str,
+                    help='compute contact area at external pressures given in '
+                         'the file PRESSUREFN',
+                    metavar='PRESSUREFN')
 parser.add_argument('--size', dest='size', type=tuple2,
                     help='size of surface is SIZE',
                     metavar='SIZE')
@@ -281,6 +285,7 @@ logger.pr('modulus = {}'.format(arguments.modulus))
 logger.pr('hardness = {}'.format(arguments.hardness))
 logger.pr('displacement = {}'.format(arguments.displacement))
 logger.pr('pressure = {}'.format(arguments.pressure))
+logger.pr('pressure-from-file = {}'.format(arguments.pressure_from_fn))
 logger.pr('size = {}'.format(arguments.size))
 logger.pr('size_unit = {}'.format(arguments.size_unit))
 logger.pr('height_unit = {}'.format(arguments.height_unit))
@@ -347,21 +352,24 @@ if arguments.netcdf_fn is not None:
     container = NetCDFContainer(arguments.netcdf_fn, mode='w', double=True)
     container.set_shape(surface.shape)
 
-if arguments.pressure is not None:
+if arguments.pressure is not None or arguments.pressure_from_fn is not None:
     if arguments.displacement is not None:
         raise ValueError('Please specify either displacement or pressure '
                          'range, not both.')
 
     # Run computation for a linear range of pressures
-    pressure = arguments.pressure.split(',')
-    if len(pressure) == 1:
-        pressure = [float(pressure[0])]
-    elif len(pressure) == 3:
-        pressure = np.linspace(*[float(x) for x in pressure])
-    else:
-        print('Please specify either single pressure value or 3-tuple for '
-              'pressure range.')
-        sys.exit(999)
+    if arguments.pressure is not None:
+        pressure = arguments.pressure.split(',')
+        if len(pressure) == 1:
+            pressure = [float(pressure[0])]
+        elif len(pressure) == 3:
+            pressure = np.linspace(*[float(x) for x in pressure])
+        else:
+            print('Please specify either single pressure value or 3-tuple for '
+                  'pressure range.')
+            sys.exit(999)
+    elif arguments.pressure_from_fn is not None:
+        pressure = np.ravel(np.loadtxt(arguments.pressure_from_fn))
 
     # Additional log file for load and area
     txt = Logger(arguments.log_fn)
@@ -372,10 +380,11 @@ if arguments.pressure is not None:
             suffix = ''
         opt = system.minimize_proxy(
             external_force=_pressure*np.prod(surface.size),
-            pentol=arguments.pentol, maxiter=maxiter, logger=logger, kind='ref',
+            pentol=arguments.pentol,
+            maxiter=maxiter, logger=logger,
             verbose=arguments.verbose)
-        u = opt.x
         f = opt.jac
+        u = opt.x
         logger.pr('displacement = {}'.format(opt.offset))
         logger.pr('pressure = {} ({})'.format(f.sum()/np.prod(surface.size),
                                               _pressure))
