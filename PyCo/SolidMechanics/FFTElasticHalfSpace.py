@@ -144,28 +144,35 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             <http://dx.doi.org/10.1016/0020-7403(85)90029-3> [Accessed 18 March
             2015]
         """
-        facts = np.zeros(self.resolution)
         if self.dim == 1:
+            facts = np.zeros(self.resolution)
             for index in range(2, self.resolution[0]//2+2):
                 facts[-index+1] = facts[index - 1] = \
                     self.size[0]/(self.young*index*np.pi)
+            # real to complex fft allows saving some time and memory
+            nb_cols = facts.shape[-1]//2+1
+            self.weights = facts[..., :nb_cols]
 
-        if self.dim == 2:
-            for idx_m in range(1, self.resolution[0]//2+2):
-                for idx_n in range(1, self.resolution[1]//2+2):
-                    facts[-idx_m+1, -idx_n+1] = facts[-idx_m+1, idx_n-1] = \
-                      facts[idx_m-1, -idx_n+1] = facts[idx_m-1, idx_n-1] = \
-                      1./(self.young*np.pi*((idx_m/self.size[0])**2 +  # nopep8
-                                            (idx_n/self.size[1])**2)**.5)
+        elif self.dim == 2:
+            nx, ny = self.resolution
+            sx, sy = self.size
+            qx = np.arange(nx, dtype=np.float64)
+            qx = np.where(qx <= nx//2, qx/sx, (nx-qx)/sx)
+            qy = np.arange(ny, dtype=np.float64)
+            qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
+            facts = np.pi*self.young*np.sqrt((qx*qx).reshape(-1, 1) +
+                                             (qy*qy).reshape(1, -1))
             if self.stiffness_q0 is None:
-                facts[0, 0] = (facts[1, 0] + facts[0, 1])/2
+                facts[0, 0] = (facts[1, 0].real + facts[0, 1].real)/2
             elif self.stiffness_q0 == 0.0:
-                facts[0, 0] = 0.0
+                facts[0, 0] = 1.0
             else:
-                facts[0, 0] = 1.0/self.stiffness_q0
-        # real to complex fft allows saving some time and memory
-        nb_cols = facts.shape[-1]//2+1
-        self.weights = facts[..., :nb_cols]
+                facts[0, 0] = self.stiffness_q0
+            # real to complex fft allows saving some time and memory
+            nb_cols = facts.shape[-1]//2+1
+            self.weights = 1/facts[..., :nb_cols]
+            if self.stiffness_q0 == 0.0:
+                self.weights[0, 0] = 0.0
 
     def _compute_i_fourier_coeffs(self):
         """Invert the weights w relating fft(displacement) to fft(pressure):
