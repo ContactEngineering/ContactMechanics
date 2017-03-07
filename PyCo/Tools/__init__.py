@@ -36,7 +36,7 @@ from .common import (compare_containers, evaluate_gradient, mean_err,
                      compute_rms_curvature, get_q_from_lambda,
                      power_spectrum_1D, power_spectrum_2D,
                      compute_tilt_from_height, compute_tilt_from_slope,
-                     compute_tilt_and_curvature)
+                     compute_tilt_and_curvature, _get_size)
 from .DistributedComputation import BaseResultManager, BaseWorker
 from .Logger import Logger
 from . import Optimisation

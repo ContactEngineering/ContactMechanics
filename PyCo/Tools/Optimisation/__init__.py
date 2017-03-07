@@ -45,4 +45,4 @@ from .AugmentedLagrangian import augmented_lagrangian
 from .ConstrainedConjugateGradients import constrained_conjugate_gradients
 from .NewtonLineSearch import newton_linesearch
 from .NewtonConfidenceRegion import newton_confidence_region
-
+from .SimpleRelaxation import simple_relaxation

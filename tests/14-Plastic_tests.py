@@ -45,7 +45,8 @@ except ImportError as err:
 # -----------------------------------------------------------------------------
 class PlasticTest(unittest.TestCase):
     def test_hard_wall_LBFGS(self):
-        # Test that at very low hardness we converge to the bearing area geometry
+        # Test that at very low hardness we converge to (almost) the bearing
+        # area geometry
         surface = read('examples/surface1.out')
         system = SystemFactory(PeriodicFFTElasticHalfSpace(surface.shape, 1.0),
                                HardWall(), PlasticSurface(surface, 0.000000001))
@@ -57,7 +58,7 @@ class PlasticTest(unittest.TestCase):
         bearing_area = bisect(lambda x: (surface.profile()>x).sum()-ncontact, -0.03, 0.03)
         cba = surface.profile()>bearing_area
 
-        self.assertTrue(np.logical_not(c == cba).sum() < 11)
+        self.assertTrue(np.logical_not(c == cba).sum() < 25)
 
 if __name__ == '__main__':
     unittest.main()

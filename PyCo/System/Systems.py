@@ -36,7 +36,7 @@ import scipy
 
 from .. import ContactMechanics, SolidMechanics, Surface
 from ..Tools import compare_containers
-from ..Tools.Optimisation import constrained_conjugate_gradients
+from ..Tools.Optimisation import constrained_conjugate_gradients, simple_relaxation
 
 
 class IncompatibleFormulationError(Exception):
@@ -622,7 +622,7 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
-    def minimize_proxy(self, **kwargs):
+    def minimize_proxy(self, solver=constrained_conjugate_gradients, **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of constrained minimisation.
@@ -644,7 +644,7 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        result = constrained_conjugate_gradients(
+        result = solver(
             self.substrate,
             self.surface[:, :],
             **kwargs)
