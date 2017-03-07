@@ -1,6 +1,11 @@
 Change log for PyCo
 ===================
 
+v0.13.1 (07Mar17)
+-----------------
+
+- Bug fix: Periodic Green's function offset by one lattice constant.
+
 v0.13.0 (13Jan17)
 -----------------
 
