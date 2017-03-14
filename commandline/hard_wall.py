@@ -431,8 +431,8 @@ elif arguments.displacement is not None:
             maxiter=arguments.maxiter,
             logger=logger, kind='ref',
             verbose=arguments.verbose)
-        u = opt.x
         f = opt.jac
+        u = opt.x[:f.shape[0], :f.shape[1]]
         logger.pr('displacement = {} ({})'.format(opt.offset, _displacement))
         logger.pr('pressure = {}'.format(f.sum()/np.prod(surface.size)))
         logger.pr('energy = {}'.format(opt.fun))
