@@ -1,6 +1,11 @@
 Change log for PyCo
 ===================
 
+v0.14.0 (14MAr17)
+-----------------
+
+- Added penetration hardness model for simple plastic calculations.
+
 v0.13.1 (07Mar17)
 -----------------
 
