@@ -46,9 +46,6 @@ from PyCo.Tools.NetCDF import NetCDFContainer
 # Total number of area/load/displacements to use
 nsteps = 20
 
-# Maximum number of iterations per data point
-maxiter = 1000
-
 # Text output
 logger = screen
 versionstr = 'PyCo version: {}'.format(PyCo.__version__)
@@ -60,7 +57,8 @@ unit_to_meters = {'A': 1e-10, 'nm': 1e-9, 'µm': 1e-6, 'mm': 1e-3, 'm': 1.0,
 
 ###
 
-def next_step(system, surface, history=None, pentol=None, logger=quiet):
+def next_step(system, surface, history=None, pentol=None, maxiter=None,
+              logger=quiet):
     """
     Run a full contact calculation. Try to guess displacement such that areas
     are equally spaced on a log scale.
@@ -230,6 +228,9 @@ parser.add_argument('--modulus', dest='modulus', type=float, default=1.0,
 parser.add_argument('--hardness', dest='hardness', type=float,
                     help='use penetration hardness HARDNESS',
                     metavar='HARDNESS')
+parser.add_argument('--maxiter', dest='maxiter', type=int, default=1000,
+                    help='stop convergence after MAXITER iterations',
+                    metavar='MAXITER')
 parser.add_argument('--displacement', dest='displacement', type=str,
                     help='compute contact area at displacement DISPLACEMENT; '
                          'specify displacement range by using a 3-tuple '
@@ -283,6 +284,7 @@ logger.pr('detrend = {}'.format(arguments.detrend))
 logger.pr('boundary = {}'.format(arguments.boundary))
 logger.pr('modulus = {}'.format(arguments.modulus))
 logger.pr('hardness = {}'.format(arguments.hardness))
+logger.pr('maxiter = {}'.format(arguments.maxiter))
 logger.pr('displacement = {}'.format(arguments.displacement))
 logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('pressure-from-file = {}'.format(arguments.pressure_from_fn))
@@ -381,7 +383,7 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         opt = system.minimize_proxy(
             external_force=_pressure*np.prod(surface.size),
             pentol=arguments.pentol,
-            maxiter=maxiter, logger=logger,
+            maxiter=arguments.maxiter, logger=logger,
             verbose=arguments.verbose)
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]
@@ -425,7 +427,8 @@ elif arguments.displacement is not None:
         if len(displacement) == 1:
             suffix = ''
         opt = system.minimize_proxy(
-            offset=_displacement, pentol=arguments.pentol, maxiter=maxiter,
+            offset=_displacement, pentol=arguments.pentol,
+            maxiter=arguments.maxiter,
             logger=logger, kind='ref',
             verbose=arguments.verbose)
         u = opt.x
@@ -464,7 +467,7 @@ else:
 
         u, f, disp0, load, area, history = \
             next_step(system, surface, history, pentol=arguments.pentol,
-                      logger=logger)
+                      maxiter=arguments.maxiter, logger=logger)
 
         dump_nc(container)
         macro = dump(txt, surface, u, f, disp0)
