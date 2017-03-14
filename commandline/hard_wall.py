@@ -125,8 +125,8 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
         offset=disp0, pentol=pentol, maxiter=maxiter,
         logger=logger, kind='ref',
         verbose=arguments.verbose)
-    u = opt.x
     f = opt.jac
+    u = opt.x[:f.shape[0], :f.shape[1]]
     disp = np.append(disp, [disp0])
     gap = np.append(gap, [np.mean(u)-middle-disp0])
     current_load = f.sum()/np.prod(surface.size)
