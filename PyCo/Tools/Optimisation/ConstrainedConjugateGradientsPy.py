@@ -363,7 +363,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             result.message = "Polonsky converged"
             return result
 
-        if logger is not None:
+        if logger is not None and it < maxiter:
             logger.st(log_headers, log_values)
         if callback is not None:
             d = dict(area=np.asscalar(np.int64(A_contact)),
@@ -378,6 +378,10 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')
+
+    if logger is not None:
+        log_values[0] = 'NOT CONVERGED'
+        logger.st(log_headers, log_values, force_print=True)
 
     # Return full u_r because this is required to reproduce pressure
     # from evalualte_force
