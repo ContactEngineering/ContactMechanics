@@ -48,19 +48,17 @@ else:
     extra_link_args = ["-lfftw3", "-lm"]
 
 
-tools_path = os.path.join(os.path.dirname(__file__), "PyCo/Tools/")
-fftext_path = tools_path
 extensions = [
     Extension(
         name="PyCo.Tools.fftext",
-        sources=[fftext_path + src_name for src_name in ("fftext.pyx", "fftext_cc.cc")],
+        sources=["PyCo/Tools/fftext.pyx", "PyCo/Tools/fftext_cc.cc"],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
         include_dirs=[np.get_include()],
         language="c++"),
     Extension(
         name="PyCo.Tools.Optimisation.ConstrainedConjugateGradientsOpt",
-        sources=[os.path.join(tools_path,"Optimisation/ConstrainedConjugateGradientsOpt.pyx")],
+        sources=["PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.pyx"],
         include_dirs=[np.get_include()],
         language="c++"),
     Extension(
