@@ -251,6 +251,9 @@ parser.add_argument('--size', dest='size', type=tuple2,
 parser.add_argument('--size-unit', dest='size_unit', type=str,
                     help='size unit UNIT',
                     metavar='UNIT')
+parser.add_argument('--height-fac', dest='height_fac', type=float,
+                    help='scale all height by factor FAC',
+                    metavar='FAC')
 parser.add_argument('--height-unit', dest='height_unit', type=str,
                     help='height unit UNIT',
                     metavar='UNIT')
@@ -290,6 +293,7 @@ logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('pressure-from-file = {}'.format(arguments.pressure_from_fn))
 logger.pr('size = {}'.format(arguments.size))
 logger.pr('size_unit = {}'.format(arguments.size_unit))
+logger.pr('height_fac = {}'.format(arguments.height_fac))
 logger.pr('height_unit = {}'.format(arguments.height_unit))
 logger.pr('pentol = {}'.format(arguments.pentol))
 logger.pr('pressure-fn = {}'.format(arguments.pressure_fn))
@@ -312,8 +316,14 @@ if surface.size is None:
     surface.size = surface.shape
 if arguments.size_unit is not None:
     surface.unit = arguments.size_unit
-if arguments.height_unit is not None:
-    surface = ScaledSurface(surface, unit_to_meters[arguments.height_unit]/unit_to_meters[surface.unit])
+if arguments.height_fac is not None or arguments.height_unit is not None:
+    fac = 1.0
+    if arguments.height_fac is not None:
+        fac *= arguments.height_fac
+    if arguments.height_unit is not None:
+        fac *= unit_to_meters[arguments.height_unit]/unit_to_meters[surface.unit]
+    logger.pr('Rescaling surface heights by {}.'.format(fac))
+    surface = ScaledSurface(surface, fac)
 
 logger.pr('Surface has dimension of {} and size of {} {}.'.format(surface.shape,
                                                                   surface.size,
