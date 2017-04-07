@@ -6,3 +6,4 @@ pep8>=0.6
 scipy>=0.14.0
 cython>=0.15
 netCDF4>=1.0.0
+h5py

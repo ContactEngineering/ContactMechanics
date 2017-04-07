@@ -36,7 +36,6 @@ from struct import unpack
 from zipfile import ZipFile
 
 import numpy as np
-from scipy.io import loadmat
 
 from .SurfaceDescription import NumpySurface, ScaledSurface
 
@@ -357,6 +356,7 @@ def read_mat(fobj, size=None, factor=None, unit=None):
     factor -- scaling factor for height
     unit -- size and height unit
     """
+    from scipy.io import loadmat
     data = loadmat(fobj)
     surfaces = []
     for key, value in data.items():
@@ -640,6 +640,12 @@ def read_hgt(fobj):
     return NumpySurface(data)
 
 
+def read_h5(fobj):
+    import h5py
+    h5 = h5py.File(fobj)
+    return NumpySurface(h5['surface'][...])
+
+
 def detect_format(fobj):
     """
     Detect file format based on its content.
@@ -650,6 +656,13 @@ def detect_format(fobj):
 
     close_file = False
     if not hasattr(fobj, 'read'):
+        try:
+            import h5py
+            h5 = h5py.File(fobj, 'r')
+            return 'h5'
+        except:
+            pass
+
         fobj = open(fobj, 'rb')
         close_file = True
 
@@ -670,6 +683,7 @@ def detect_format(fobj):
     else:
         # Try opening at matlab and see if it fails
         try:
+            from scipy.io import loadmat
             loadmat(fobj)
             if close_file:
                 fobj.close()
@@ -717,11 +731,12 @@ def read(fobj, format=None):
             format = os.path.splitext(fobj)[-1][1:]
 
     readers = {'di': read_di,
+               'h5': read_h5,
                'ibw': read_ibw,
+               'mat': read_mat,
                'opd': read_opd,
-               'xyz': read_xyz,
                'x3p': read_x3p,
-               'mat': read_mat}
+               'xyz': read_xyz}
 
     format = format.lower()
     if format not in readers:

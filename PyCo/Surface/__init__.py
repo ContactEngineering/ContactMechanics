@@ -34,5 +34,5 @@ from .SurfaceDescription import (CompoundSurface, DetrendedSurface,
                                  ScaledSurface, Sphere, Surface,
                                  TranslatedSurface)
 from .FromFile import (NumpyTxtSurface, NumpyAscSurface, read, read_asc,
-                       read_di, read_hgt, read_ibw, read_mat, read_matrix,
-                       read_opd, read_x3p, read_xyz)
+                       read_di, read_h5, read_hgt, read_ibw, read_mat,
+                       read_matrix, read_opd, read_x3p, read_xyz)
