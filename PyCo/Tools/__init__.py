@@ -37,6 +37,9 @@ from .common import (compare_containers, evaluate_gradient, mean_err,
                      power_spectrum_1D, power_spectrum_2D,
                      compute_tilt_from_height, compute_tilt_from_slope,
                      compute_tilt_and_curvature, _get_size)
+from .ContactAreaAnalysis import (assign_patch_numbers, assign_segment_numbers,
+                                  distance_map, inner_perimeter,
+                                  outer_perimeter, patch_areas)
 from .DistributedComputation import BaseResultManager, BaseWorker
 from .Logger import Logger
 from . import Optimisation

@@ -50,6 +50,11 @@ else:
 
 extensions = [
     Extension(
+        name='_PyCo',
+        sources=['c/patchfinder.cpp'],
+        include_dirs=[np.get_include()]
+        ),
+    Extension(
         name="PyCo.Tools.fftext",
         sources=["PyCo/Tools/fftext.pyx", "PyCo/Tools/fftext_cc.cc"],
         extra_compile_args=extra_compile_args,
