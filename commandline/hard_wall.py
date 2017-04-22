@@ -191,7 +191,7 @@ def save_gap(fn, surface, gap, macro=None):
     if surface.unit is None:
         unitstr = 'No unit information available.'
     else:
-        unitstr = 'Gap values follow, they are repoted in units of ' \
+        unitstr = 'Gap values follow, they are reported in units of ' \
                   '{}.'.format(surface.unit)
     macrostr = ''
     if macro is not None:
