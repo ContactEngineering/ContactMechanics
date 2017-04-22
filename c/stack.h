@@ -1,9 +1,9 @@
 #ifndef __STACK_H
 #define __STACK_H
 
-#include <string.h>
 #include <stdint.h>
-#include <malloc.h>
+#include <stdlib.h>
+#include <string.h>
 
 class Stack {
  public:

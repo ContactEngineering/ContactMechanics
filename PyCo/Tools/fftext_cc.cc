@@ -1,11 +1,10 @@
 #include <fftw3.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include <iostream>
 #include <cassert>
 #include <algorithm>
-
-#include <type_traits>
-
 
 #include <stdexcept>
 #include "fftext_cc.hh"

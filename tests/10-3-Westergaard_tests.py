@@ -86,7 +86,7 @@ class WestergaardTest(PyCoTestCase):
                     #plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
                     #plt.plot(x, pth, 'r-')
                     #plt.show()
-                    self.assertArrayAlmostEqual(forces[:nx//2, 0]/substrate.area_per_pt, pth[:nx//2], tol=4e-3)
+                    self.assertArrayAlmostEqual(forces[:nx//2, 0]/substrate.area_per_pt, pth[:nx//2], tol=5e-3)
 
 if __name__ == '__main__':
     unittest.main()
