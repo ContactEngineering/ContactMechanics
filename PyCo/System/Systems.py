@@ -249,6 +249,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                                              callback=callback, **kwargs)
         self.disp = self.shape_minimisation_output(result.x*disp_scale)
         self.evaluate(self.disp, offset, forces=gradient)
+        result.x = self.shape_minimisation_output(result.x)
+        result.jac = self.shape_minimisation_output(result.jac)
         return result
 
     @abc.abstractmethod
