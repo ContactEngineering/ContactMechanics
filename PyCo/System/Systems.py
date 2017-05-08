@@ -424,7 +424,7 @@ class SmoothContactSystem(SystemBase):
         if logger is not None:
             logger.st(['energy', 'mean gap', 'rel. area', 'load'],
                       [self.energy, np.mean(self.gap), np.mean(self.gap<1e-9),
-                       -np.sum(self.force)])
+                       -np.sum(self.substrate.force)])
 
         return (self.energy, self.force)
 
