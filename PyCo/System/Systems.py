@@ -187,8 +187,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
     def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
                        gradient=True, lbounds=None, ubounds=None, callback=None,
-                       disp_scale=1.,
-                       **kwargs):
+                       disp_scale=1., logger=None, **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of scipy.minimize for common default
@@ -216,8 +215,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                       function is called.
         disp_scale -- (default 1.) allows to specify a scaling of the
                       dislacement before evaluation.
+        logger     -- (default None) log information at every iteration.
         """
-        fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale)
+        fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
+                             logger=logger)
         if disp0 is None:
             disp0 = np.zeros(self.substrate.computational_resolution)
         disp0 = self.shape_minimisation_input(disp0)
@@ -254,7 +255,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         return result
 
     @abc.abstractmethod
-    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.):
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
+                  logger=None):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -269,6 +271,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                       used
         disp_scale -- (default 1.) allows to specify a scaling of the
                       dislacement before evaluation.
+        logger     -- (default None) log information at every iteration.
         """
         raise NotImplementedError()
 
@@ -393,7 +396,7 @@ class SmoothContactSystem(SystemBase):
         """
         return np.argwhere(self.interaction.force < 0.)
 
-    def evaluate(self, disp, offset, pot=True, forces=False):
+    def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement
         field
@@ -418,9 +421,15 @@ class SmoothContactSystem(SystemBase):
         else:
             self.force = None
 
+        if logger is not None:
+            logger.st(['energy', 'mean gap', 'rel. area', 'load'],
+                      [self.energy, np.mean(self.gap), np.mean(self.gap<1e-9),
+                       -np.sum(self.force)])
+
         return (self.energy, self.force)
 
-    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.):
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
+                  logger=None):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -435,6 +444,7 @@ class SmoothContactSystem(SystemBase):
                       used
         disp_scale -- (default 1.) allows to specify a scaling of the
                       dislacement before evaluation.
+        logger     -- (default None) log information at every iteration.
         """
         dummy = disp0
         res = self.substrate.computational_resolution
@@ -443,7 +453,8 @@ class SmoothContactSystem(SystemBase):
                 # pylint: disable=missing-docstring
                 try:
                     self.evaluate(
-                        disp_scale * disp.reshape(res), offset, forces=True)
+                        disp_scale * disp.reshape(res), offset, forces=True,
+                        logger=logger)
                 except ValueError as err:
                     raise ValueError(
                         "{}: disp.shape: {}, res: {}".format(
@@ -453,7 +464,8 @@ class SmoothContactSystem(SystemBase):
             def fun(disp):
                 # pylint: disable=missing-docstring
                 return self.evaluate(
-                    disp_scale * disp.reshape(res), offset, forces=False)[0]
+                    disp_scale * disp.reshape(res), offset, forces=False,
+                    logger=logger)[0]
 
         return fun
 
