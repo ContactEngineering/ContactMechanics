@@ -199,8 +199,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """
         if disp.shape != self.computational_resolution:
             raise self.Error(
-                ("force array has a different shape ({0}) than this halfspace'"
-                 "s resolution ({1})").format(
+                ("displacements array has a different shape ({0}) than this "
+                 "halfspace's resolution ({1})").format(
                      disp.shape, self.computational_resolution))  # nopep8
         return -irfftn(self.iweights*rfftn(disp), s=self.computational_resolution).real*self.area_per_pt
 
@@ -223,8 +223,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """
         if disp.shape != self.computational_resolution:
             raise self.Error(
-                ("force array has a different shape ({0}) than this halfspace'"
-                 "s resolution ({1})").format(
+                ("displacements array has a different shape ({0}) than this "
+                 "halfspace's resolution ({1})").format(
                      disp.shape, self.computational_resolution))  # nopep8
         return -self.iweights*rfftn(disp)*self.area_per_pt
 
