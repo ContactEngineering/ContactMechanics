@@ -154,13 +154,22 @@ def dump(txt, surface, u, f, offset=0):
     area = (f>0).sum()
     fractional_area = area/np.prod(surface.shape)
     area *= surface.area_per_pt
-    header = ['mean elastic ({})'.format(surface.unit),
-              'mean rigid ({})'.format(surface.unit),
-              'mean gap ({})'.format(surface.unit),
-              'load (E* {}^2)'.format(surface.unit),
-              'mean pressure (E*)',
-              'area ({}^2)'.format(surface.unit),
-              'fractional area']
+    if substrate.young == 1:
+        header = ['mean elastic ({})'.format(surface.unit),
+                  'mean rigid ({})'.format(surface.unit),
+                  'mean gap ({})'.format(surface.unit),
+                  'load (E* {}^2)'.format(surface.unit),
+                  'mean pressure (E*)',
+                  'area ({}^2)'.format(surface.unit),
+                  'fractional area']
+    else:
+        header = ['mean elastic ({})'.format(surface.unit),
+                  'mean rigid ({})'.format(surface.unit),
+                  'mean gap ({})'.format(surface.unit),
+                  'load ([Units of E*] {}^2)'.format(surface.unit),
+                  'mean pressure ([Units of E*])',
+                  'area ({}^2)'.format(surface.unit),
+                  'fractional area']
     data = [mean_elastic, mean_rigid, mean_elastic-mean_rigid, load,
             mean_pressure, area, fractional_area]
     txt.st(header, data)
