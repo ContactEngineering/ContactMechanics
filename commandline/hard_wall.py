@@ -336,7 +336,7 @@ if arguments.detrend is not None:
         .format(surface.compute_rms_height(), surface.compute_rms_slope()))
 
 if arguments.hardness is not None:
-    surface = PlasticSurface(surface, arguments.hardness*surface.area_per_pt)
+    surface = PlasticSurface(surface, arguments.hardness)
 
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':
