@@ -117,11 +117,6 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     else:
         u_r = disp0.copy()
 
-    if hardness is not None:
-        # All pressure value (p_r) below are forces. Need to convert hardness
-        # into equivalent force.
-        hardness *= surface.area_per_pt
-
     comp_slice = [slice(0, substrate.resolution[i])
                   for i in range(substrate.dim)]
     if substrate.dim not in (1, 2):

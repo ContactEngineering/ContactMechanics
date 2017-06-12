@@ -67,4 +67,9 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
     def minimize_proxy(self, **kwargs):
         """
         """
-        return super().minimize_proxy(hardness=self.surface.hardness, **kwargs)
+        # Need to convert hardness into force units because the solvers operate
+        # internally with forces, not pressures.
+        return super().minimize_proxy(
+            hardness=self.surface.hardness*self.surface.area_per_pt,
+            **kwargs
+            )
