@@ -232,8 +232,15 @@ parser.add_argument('--boundary', dest='boundary', type=str,
                          'BOUNDARY=periodic|nonperiodic',
                     metavar='BOUNDARY')
 parser.add_argument('--modulus', dest='modulus', type=float, default=1.0,
-                    help='use contact modulus MODULUS',
+                    help="use contact/Young's modulus MODULUS",
                     metavar='MODULUS')
+parser.add_argument('--poisson', dest='poisson', type=float, default=0.0,
+                    help='use Poisson number POISSON',
+                    metavar='POISSON')
+parser.add_argument('--thickness', dest='thickness', type=float, default=None,
+                    help='model a substrate of thickness THICKNESS on a rigid'
+                         'substrate',
+                    metavar='THICKNESS')
 parser.add_argument('--hardness', dest='hardness', type=float,
                     help='use penetration hardness HARDNESS',
                     metavar='HARDNESS')
@@ -295,7 +302,9 @@ logger.pr('filename = {}'.format(arguments.filename))
 logger.pr('detrend = {}'.format(arguments.detrend))
 logger.pr('boundary = {}'.format(arguments.boundary))
 logger.pr('modulus = {}'.format(arguments.modulus))
+logger.pr('poisson = {}'.format(arguments.poisson))
 logger.pr('hardness = {}'.format(arguments.hardness))
+logger.pr('thickness = {}'.format(arguments.thickness))
 logger.pr('maxiter = {}'.format(arguments.maxiter))
 logger.pr('displacement = {}'.format(arguments.displacement))
 logger.pr('pressure = {}'.format(arguments.pressure))
@@ -350,10 +359,18 @@ if arguments.hardness is not None:
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':
     substrate = PeriodicFFTElasticHalfSpace(surface.shape, arguments.modulus,
-                                            surface.size)
+                                            surface.size,
+                                            poisson=arguments.poisson,
+                                            thickness=arguments.thickness)
 elif arguments.boundary == 'nonperiodic':
-    substrate = FreeFFTElasticHalfSpace(surface.shape, arguments.modulus,
-                                        surface.size)
+    if arguments.thickness is not None:
+        raise ValueError('"thickness" arguments cannot be used with '
+                         'nonperiodic boundaries.')
+    substrate = FreeFFTElasticHalfSpace(
+        surface.shape,
+        arguments.modulus/(1-arguments.poisson**2),
+        surface.size
+        )
 else:
     raise ValueError('Unknown boundary conditions: '
                      '{}'.format(arguments.boundary))
