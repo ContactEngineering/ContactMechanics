@@ -205,6 +205,8 @@ class Surface(object, metaclass=abc.ABCMeta):
 
     @property
     def area_per_pt(self):
+        if self.size is None:
+            return 1
         return np.prod([s/r for s, r in zip(self.size, self.resolution)])
 
     @property
