@@ -40,12 +40,13 @@ try:
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
     import PyCo.Tools as Tools
+    from .PyCoTest import PyCoTestCase
 except ImportError as err:
     import sys
     print(err)
     sys.exit(-1)
 
-class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
+class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
     def setUp(self):
         self.size = (7.5+5*rand(), 7.5+5*rand())
         base_res = 16
@@ -277,6 +278,14 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         force = hs.evaluate_force(-np.ones(self.res))
         M = (1-self.poisson)/((1-2*self.poisson)*(1+self.poisson))*self.young
         self.assertAlmostEqual(force.sum()/np.prod(self.size), M/h0)
+
+    def test_limit_of_large_thickness(self):
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+                                         poisson=self.poisson)
+        hsf = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+                                          poisson=self.poisson, thickness=20)
+        diff = hs.weights-hsf.weights
+        self.assertArrayAlmostEqual(hs.weights.ravel()[1:], hsf.weights.ravel()[1:])
 
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
