@@ -285,7 +285,14 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         hsf = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
                                           poisson=self.poisson, thickness=20)
         diff = hs.weights-hsf.weights
-        self.assertArrayAlmostEqual(hs.weights.ravel()[1:], hsf.weights.ravel()[1:])
+        self.assertArrayAlmostEqual(hs.weights.ravel()[1:],
+                                    hsf.weights.ravel()[1:], tol=1e-6)
+
+    def test_no_nans(self):
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+                                         poisson=self.poisson, thickness=100)
+        self.assertTrue(np.count_nonzero(np.isnan(hs.weights)) == 0)
+
 
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
