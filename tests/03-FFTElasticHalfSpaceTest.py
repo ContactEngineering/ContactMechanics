@@ -51,6 +51,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
+        self.poisson = 0.23
 
     def test_consistency(self):
         pressure = list()
@@ -267,6 +268,15 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
                                          stiffness_q0=sq0)
         force = hs.evaluate_force(-np.ones(self.res))
         self.assertAlmostEqual(force.sum()/np.prod(self.size), sq0)
+
+    def test_uniform_displacement_finite_height(self):
+        """ tests whether uniform displacement returns stiffness_q0"""
+        h0 = 3.45
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+                                         poisson=self.poisson, thickness=h0)
+        force = hs.evaluate_force(-np.ones(self.res))
+        M = (1-self.poisson)/((1-2*self.poisson)*(1+self.poisson))*self.young
+        self.assertAlmostEqual(force.sum()/np.prod(self.size), M/h0)
 
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):

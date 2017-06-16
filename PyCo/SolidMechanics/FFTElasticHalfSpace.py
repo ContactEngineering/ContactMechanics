@@ -108,6 +108,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                  "Parameters: self.size = {}, self.resolution = {}"
                  "").format(err, self.size, self.resolution))
         self.young = young
+        self.poisson = poisson
         self.contact_modulus = young/(1-poisson**2)
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
@@ -167,6 +168,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         elif self.dim == 2:
             nx, ny = self.resolution
             sx, sy = self.size
+            # Note: q-values from 0 to 1, not from 0 to 2*pi
             qx = np.arange(nx, dtype=np.float64)
             qx = np.where(qx <= nx//2, qx/sx, (nx-qx)/sx)
             qy = np.arange(ny, dtype=np.float64)
@@ -175,11 +177,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             facts = np.pi*self.contact_modulus*q
             if self.thickness is not None:
                 # Compute correction for finite thickness
-                q *= self.thickness
+                q *= 2*np.pi*self.thickness
                 fac = 3 - 4*self.poisson
-                off = 4*self.poisson*(2*poisson - 3) + 5
-                facts *= (fac*cosh(2*q) + 2*q**2 + off)/(fac*np.sinh(2*q) - 2*q)
-                facts[0, 0] = 2*np.pi*self.young/self.thickness * \
+                off = 4*self.poisson*(2*self.poisson - 3) + 5
+                facts *= (fac*np.cosh(2*q) + 2*q**2 + off)/ \
+                    (fac*np.sinh(2*q) - 2*q)
+                facts[0, 0] = self.young/self.thickness * \
                     (1 - self.poisson)/((1 - 2*self.poisson)*(1 + self.poisson))
             else:
                 if self.stiffness_q0 is None:
