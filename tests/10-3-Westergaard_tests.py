@@ -67,7 +67,8 @@ class WestergaardTest(PyCoTestCase):
 
                     result = system.minimize_proxy(offset=disp0,
                                                    external_force=normal_force,
-                                                   kind=kind)
+                                                   kind=kind,
+                                                   pentol=1e-9)
                     offset = result.offset
                     forces = result.jac
                     displ = result.x[:forces.shape[0], :forces.shape[1]]
@@ -86,7 +87,7 @@ class WestergaardTest(PyCoTestCase):
                     #plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
                     #plt.plot(x, pth, 'r-')
                     #plt.show()
-                    self.assertArrayAlmostEqual(forces[:nx//2, 0]/substrate.area_per_pt, pth[:nx//2], tol=5e-3)
+                    self.assertArrayAlmostEqual(forces[:nx//2, 0]/substrate.area_per_pt, pth[:nx//2], tol=1e-2)
 
 if __name__ == '__main__':
     unittest.main()
