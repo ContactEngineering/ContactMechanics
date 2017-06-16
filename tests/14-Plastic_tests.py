@@ -49,7 +49,7 @@ class PlasticTest(unittest.TestCase):
         # area geometry
         surface = read('examples/surface1.out')
         system = SystemFactory(PeriodicFFTElasticHalfSpace(surface.shape, 1.0),
-                               HardWall(), PlasticSurface(surface, 0.000000001))
+                               HardWall(), PlasticSurface(surface, 0.0000000001))
         offset = -0.002
         result = system.minimize_proxy(offset=offset)
         c = result.jac > 0.0
