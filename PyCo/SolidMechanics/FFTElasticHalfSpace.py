@@ -50,22 +50,28 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     name = "periodic_fft_elastic_halfspace"
     _periodic = True
 
-    def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=0.0,
-                 superclass=True):
+    def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=None,
+                 thickness=None, poisson=0.0, superclass=True):
         """
         Keyword Arguments:
         resolution   -- Tuple containing number of points in spatial directions.
                         The length of the tuple determines the spatial dimension
                         of the problem.
-        young        -- Equiv. Young's modulus E'
-                        1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
+        young        -- Young's modulus
         size         -- (default 2π) domain size. For multidimensional problems,
                         a tuple can be provided to specify the lenths per
                         dimension. If the tuple has less entries than dimensions,
                         the last value in repeated.
         stiffness_q0 -- Substrate stiffness at the Gamma-point (wavevector q=0).
                         If None, this is taken equal to the lowest nonvanishing
-                        stiffness.
+                        stiffness. Cannot be used in combination with height.
+        thickness    -- Thickness of the elastic half-space. If None, this
+                        models an infinitely deep half-space. Cannot be used in
+                        combination with stiffness_q0.
+        poisson      -- Poisson number. Need only be specified for substrates
+                        of finite thickness. If left unspecified for substrates
+                        of infinite thickness, then young is the contact
+                        modulus.
         superclass   -- (default True) client software never uses this. Only
                         inheriting subclasses use this.
         """
@@ -79,6 +85,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             raise self.Error(
                 ("Dimension of this problem is {}. Only 1 and 2-dimensional "
                  "problems are supported").format(self.dim))
+        if stiffness_q0 is not None and thickness is not None:
+            raise self.Error("Please specify either stiffness_q0 or thickness "
+                             "or neither.")
         self.resolution = resolution
         tmpsize = list()
         for i in range(self.dim):
@@ -99,7 +108,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                  "Parameters: self.size = {}, self.resolution = {}"
                  "").format(err, self.size, self.resolution))
         self.young = young
+        self.contact_modulus = young/(1-poisson**2)
         self.stiffness_q0 = stiffness_q0
+        self.thickness = thickness
         if superclass:
             self._compute_fourier_coeffs()
             self._compute_i_fourier_coeffs()
@@ -148,7 +159,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             facts = np.zeros(self.resolution)
             for index in range(2, self.resolution[0]//2+2):
                 facts[-index+1] = facts[index - 1] = \
-                    self.size[0]/(self.young*index*np.pi)
+                    self.size[0]/(self.contact_modulus*index*np.pi)
             # real to complex fft allows saving some time and memory
             nb_cols = facts.shape[-1]//2+1
             self.weights = facts[..., :nb_cols]
@@ -160,14 +171,23 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             qx = np.where(qx <= nx//2, qx/sx, (nx-qx)/sx)
             qy = np.arange(ny, dtype=np.float64)
             qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
-            facts = np.pi*self.young*np.sqrt((qx*qx).reshape(-1, 1) +
-                                             (qy*qy).reshape(1, -1))
-            if self.stiffness_q0 is None:
-                facts[0, 0] = (facts[1, 0].real + facts[0, 1].real)/2
-            elif self.stiffness_q0 == 0.0:
-                facts[0, 0] = 1.0
+            q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
+            facts = np.pi*self.contact_modulus*q
+            if self.thickness is not None:
+                # Compute correction for finite thickness
+                q *= self.thickness
+                fac = 3 - 4*self.poisson
+                off = 4*self.poisson*(2*poisson - 3) + 5
+                facts *= (fac*cosh(2*q) + 2*q**2 + off)/(fac*np.sinh(2*q) - 2*q)
+                facts[0, 0] = 2*np.pi*self.young/self.thickness * \
+                    (1 - self.poisson)/((1 - 2*self.poisson)*(1 + self.poisson))
             else:
-                facts[0, 0] = self.stiffness_q0
+                if self.stiffness_q0 is None:
+                    facts[0, 0] = (facts[1, 0].real + facts[0, 1].real)/2
+                elif self.stiffness_q0 == 0.0:
+                    facts[0, 0] = 1.0
+                else:
+                    facts[0, 0] = self.stiffness_q0
             # real to complex fft allows saving some time and memory
             nb_cols = facts.shape[-1]//2+1
             self.weights = 1/facts[..., :nb_cols]
