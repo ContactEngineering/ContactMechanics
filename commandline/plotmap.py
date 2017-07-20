@@ -33,7 +33,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 import numpy as np
 import matplotlib.pyplot as plt
 
-from PyCo.Surface import read
+from PyCo.Surface.FromFile import read, detect_format
 
 ###
 
@@ -44,7 +44,7 @@ arguments = parser.parse_args()
 
 ###
 
-surface = read(arguments.filename)
+surface = read(arguments.filename, format=detect_format(arguments.filename))
 
 ###
 
