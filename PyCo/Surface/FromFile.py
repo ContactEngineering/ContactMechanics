@@ -512,7 +512,7 @@ def read_di(fobj):
             image_data_key = re.match('^S \[(.*?)\] ',
                                       p['@2:image data']).group(1)
             # Extract height data, ignore other entries
-            if image_data_key != 'Height':
+            if image_data_key != 'Height' and image_data_key != 'ZSensor':
                 continue
 
             nx = int(p['samps/line'])
@@ -539,6 +539,9 @@ def read_di(fobj):
             scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) ',
                                 p['@2:z scale'])
             quantity = scale_re.group(1).lower()
+            # Name mangling
+            if quantity == 'sens. zsenssens':
+                quantity = 'sens. zsens'
             hard_scale = float(scale_re.group(2))
             hard_unit = scale_re.group(3)
 
