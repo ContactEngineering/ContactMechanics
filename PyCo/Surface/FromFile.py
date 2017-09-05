@@ -39,9 +39,33 @@ import numpy as np
 
 from .SurfaceDescription import NumpySurface, ScaledSurface
 
+###
 
-unit_scales = {'m': 1.0, 'mm': 1e-3, 'µm': 1e-6, 'nm': 1e-9, 'A': 1e-10}
-def mangle_unit(unit):
+height_units = {'m': 1.0, 'mm': 1e-3, 'µm': 1e-6, 'nm': 1e-9, 'A': 1e-10}
+voltage_units = {'kV': 1000.0, 'V': 1.0, 'mV': 1e-3, 'µV': 1e-6, 'nV': 1e-9}
+
+units = dict(height=height_units, voltage=voltage_units)
+
+def get_unit_conversion_factor(unit1_str, unit2_str):
+    """
+    Compute factor for conversion from unit1 to unit2. Return None if units are
+    incompatible.
+    """
+    unit1_kind = None
+    unit2_kind = None
+    unit_scales = None
+    for key, values in units.items():
+        if unit1_str in values:
+            unit1_kind = key
+            unit_scales = values
+        if unit2_str in values:
+            unit2_kind = key
+            unit_scales = values
+    if unit1_kind is None or unit2_kind is None or unit1_kind != unit2_kind:
+        return None
+    return unit_scales[unit1_str]/unit_scales[unit2_str]
+
+def mangle_height_unit(unit):
     unit = unit.strip()
     if unit == '':
         return None
@@ -146,24 +170,24 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
                 xsiz = float(match.group('value'))
                 x = match.group('unit')
                 if x:
-                    xunit = mangle_unit(x)
+                    xunit = mangle_height_unit(x)
             elif key == 'ysiz':
                 ysiz = float(match.group('value'))
                 y = match.group('unit')
                 if y:
-                    yunit = mangle_unit(y)
+                    yunit = mangle_height_unit(y)
             elif key == 'xunit':
-                xunit = mangle_unit(match.group(1))
+                xunit = mangle_height_unit(match.group(1))
             elif key == 'yunit':
-                yunit = mangle_unit(match.group(1))
+                yunit = mangle_height_unit(match.group(1))
             elif key == 'zunit':
-                zunit = mangle_unit(match.group(1))
+                zunit = mangle_height_unit(match.group(1))
             elif key == 'xfac':
                 xfac = float(match.group('value'))
-                xunit = mangle_unit(match.group('unit'))
+                xunit = mangle_height_unit(match.group('unit'))
             elif key == 'zfac':
                 zfac = float(match.group('value'))
-                zunit = mangle_unit(match.group('unit'))
+                zunit = mangle_height_unit(match.group('unit'))
 
     data = []
     with fobj as file_handle:
@@ -216,11 +240,11 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         unit = zunit
     if unit is not None:
         if xunit is not None:
-            xsiz *= unit_scales[xunit]/unit_scales[unit]
+            xsiz *= height_units[xunit]/height_units[unit]
         if yunit is not None:
-            ysiz *= unit_scales[yunit]/unit_scales[unit]
+            ysiz *= height_units[yunit]/height_units[unit]
         if zunit is not None:
-            zfac *= unit_scales[zunit]/unit_scales[unit]
+            zfac *= height_units[zunit]/height_units[unit]
 
     if xsiz is None or ysiz is None:
         surface = NumpySurface(data, unit=unit)
@@ -517,7 +541,7 @@ def read_di(fobj):
             s = p['scan size'].split(' ', 2)
             sx = float(s[0])
             sy = float(s[1])
-            xy_unit = mangle_unit(s[2])
+            xy_unit = mangle_height_unit(s[2])
             offset = int(p['data offset'])
             length = int(p['data length'])
             elsize = int(p['bytes/pixel'])
@@ -544,24 +568,33 @@ def read_di(fobj):
                 raise ValueError('Malformed Nanoscope DI file.')
             soft_scale = float(s[1])
 
+            height_unit = None
+            hard_to_soft = 1.0
             if len(s) > 2:
                 # Check units
-                height_unit, unit_check = s[2].split('/')
-                if hard_unit != unit_check:
-                    raise ValueError("Units for hard (={}) and soft (={}) scale "
-                                    "differ. Don't know how to handle this."
-                                    .format(hard_unit, unit_check))
+                height_unit, soft_unit = s[2].split('/')
+                hard_to_soft = get_unit_conversion_factor(hard_unit, soft_unit)
+                if hard_to_soft is None:
+                    raise ValueError("Units for hard (={}) and soft (={}) "
+                                     "scale differ for '{}'. Don't know how "
+                                     "to handle this.".format(hard_unit,
+                                                              soft_unit,
+                                                              image_data_key))
 
-            height_unit = mangle_unit(height_unit)
-            if xy_unit != height_unit:
-                sx *= unit_scales[xy_unit]/unit_scales[height_unit]
-                sy *= unit_scales[xy_unit]/unit_scales[height_unit]
-                xy_unit = height_unit
+            if height_unit in height_units:
+                height_unit = mangle_height_unit(height_unit)
+                if xy_unit != height_unit:
+                    fac = get_unit_conversion_factor(xy_unit, height_unit)
+                    sx *= fac
+                    sy *= fac
+                    xy_unit = height_unit
+                unit = height_unit
+            else:
+                unit = (xy_unit, height_unit)
 
-            surface = NumpySurface(unscaleddata.T, size=(sx, sy),
-                                   unit=height_unit)
+            surface = NumpySurface(unscaleddata.T, size=(sx, sy), unit=unit)
             surface.info.update(dict(data_source=image_data_key))
-            surface = ScaledSurface(surface, hard_scale*soft_scale)
+            surface = ScaledSurface(surface, hard_scale*hard_to_soft*soft_scale)
             surfaces += [surface]
 
     if close_file:
