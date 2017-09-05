@@ -549,8 +549,6 @@ def read_di(fobj):
                                  .format(hard_unit, unit_check))
             soft_scale = float(soft_scale)
 
-            print(image_data_key, soft_scale)
-
             height_unit, unit_check = soft_unit.split('/')
             if hard_unit != unit_check:
                 raise ValueError("Units for hard (={}) and soft (={}) scale "
