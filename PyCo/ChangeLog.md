@@ -1,12 +1,19 @@
 Change log for PyCo
 ===================
 
+master
+------
+
+- Implemented substrates of finite thickness.
+- Support for additional DI file formats.
+- More clever unit conversion in DI files.
+
 v0.14.1 (16Jun17)
 -----------------
 
-- macOS compatibility fixes
+- macOS compatibility fixes.
 - Automatic conversion from hardness value (given in units of pressure)
-  into internal units in constrained CG solver
+  into internal units in constrained CG solver.
 
 v0.14.0 (14MAr17)
 -----------------
