@@ -511,9 +511,6 @@ def read_di(fobj):
         elif n == 'ciao image list':
             image_data_key = re.match('^S \[(.*?)\] ',
                                       p['@2:image data']).group(1)
-            # Extract height data, ignore other entries
-            if image_data_key != 'Height' and image_data_key != 'ZSensor':
-                continue
 
             nx = int(p['samps/line'])
             ny = int(p['number of lines'])
@@ -542,18 +539,18 @@ def read_di(fobj):
             hard_scale = float(scale_re.group(4))/65536
             hard_unit = scale_re.group(5)
 
-            unit_check, soft_scale, soft_unit = scanner['@'+quantity].split()
-            if hard_unit != unit_check:
-                raise ValueError("Units for hard (={}) and soft (={}) scale "
-                                 "differ. Don't know how to handle this."
-                                 .format(hard_unit, unit_check))
-            soft_scale = float(soft_scale)
+            s = scanner['@'+quantity].split()
+            if s[0] != 'V' or len(s) < 2:
+                raise ValueError('Malformed Nanoscope DI file.')
+            soft_scale = float(s[1])
 
-            height_unit, unit_check = soft_unit.split('/')
-            if hard_unit != unit_check:
-                raise ValueError("Units for hard (={}) and soft (={}) scale "
-                                 "differ. Don't know how to handle this."
-                                 .format(hard_unit, unit_check))
+            if len(s) > 2:
+                # Check units
+                height_unit, unit_check = s[2].split('/')
+                if hard_unit != unit_check:
+                    raise ValueError("Units for hard (={}) and soft (={}) scale "
+                                    "differ. Don't know how to handle this."
+                                    .format(hard_unit, unit_check))
 
             height_unit = mangle_unit(height_unit)
             if xy_unit != height_unit:
