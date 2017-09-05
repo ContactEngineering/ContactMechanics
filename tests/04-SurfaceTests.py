@@ -42,9 +42,9 @@ try:
                               DetrendedSurface, Sphere, read, read_asc, read_di,
                               read_h5, read_hgt, read_ibw, read_mat, read_opd,
                               read_x3p)
-    from PyCo.Surface.FromFile import detect_format
-    from PyCo.Tools import (compute_rms_height, compute_rms_slope, compute_slope,
-                            shift_and_tilt)
+    from PyCo.Surface.FromFile import detect_format, get_unit_conversion_factor
+    from PyCo.Tools import (compute_rms_height, compute_rms_slope,
+                            compute_slope, shift_and_tilt)
     from PyCo.Goodies.SurfaceGeneration import RandomSurfaceGaussian
 
 except ImportError as err:
@@ -241,13 +241,22 @@ class diSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
     def test_read(self):
+        # All units are nm
         for (fn, n, s, rmslist) in [
-            ('example1.di', 512, 500.0, [9.9459868005603909,
-                                         114.01328027385664]),
-            ('example2.di', 512, 300.0, [24.721922008645919]),
-            ('example3.di', 256, 10000.0, [226.42539668457405,
-                                           264.00285276203158]),
-            ('example4.di', 512, 10000.0, [81.622909804184744])
+            ('example1.di', 512, 500.0, [9.9459868005603909, # Height
+                                         114.01328027385664, # Height
+                                         None, # Phase
+                                         None]), # AmplitudeError
+            ('example2.di', 512, 300.0, [24.721922008645919, # Height
+                                         24.807150576054838, # Height
+                                         0.13002312109876774]), # Deflection
+            ('example3.di', 256, 10000.0, [226.42539668457405, # ZSensor
+                                           None, # AmplitudeError
+                                           None, # Phase
+                                           264.00285276203158]), # Height
+            ('example4.di', 512, 10000.0, [81.622909804184744, # ZSensor
+                                           0.83011806260022758, # AmplitudeError
+                                           None]) # Phase
             ]:
             surfaces = read_di('tests/file_format_examples/{}'.format(fn))
             if type(surfaces) is not list:
@@ -257,10 +266,15 @@ class diSurfaceTest(unittest.TestCase):
                 self.assertEqual(nx, n)
                 self.assertEqual(ny, n)
                 sx, sy = surface.size
-                self.assertAlmostEqual(sx, s)
-                self.assertAlmostEqual(sy, s)
-                self.assertEqual(surface.unit, 'nm')
-                self.assertAlmostEqual(surface.compute_rms_height(), rms)
+                if type(surface.unit) is tuple:
+                    unit, dummy = surface.unit
+                else:
+                    unit = surface.unit
+                self.assertAlmostEqual(sx*get_unit_conversion_factor(unit, 'nm'), s)
+                self.assertAlmostEqual(sy*get_unit_conversion_factor(unit, 'nm'), s)
+                if rms is not None:
+                    self.assertAlmostEqual(surface.compute_rms_height(), rms)
+                    self.assertEqual(unit, 'nm')
 
 class ibwSurfaceTest(unittest.TestCase):
     def setUp(self):
