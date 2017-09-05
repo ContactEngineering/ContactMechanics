@@ -52,6 +52,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         self._dim = dim
         self._size = size
         self._unit = unit
+        self._info = {}
         self.adjustment = adjustment
 
     def __getstate__(self):
@@ -204,6 +205,16 @@ class Surface(object, metaclass=abc.ABCMeta):
         self._unit = unit
 
     @property
+    def info(self,):
+        """ Return info dictionary """
+        return self._info
+
+    @info.setter
+    def info(self, info):
+        """ Set info dictionary """
+        self._info = info
+
+    @property
     def area_per_pt(self):
         if self.size is None:
             return 1
@@ -325,6 +336,16 @@ class ScaledSurface(Surface):
         """ Set unit """
         self.surf.unit = unit
 
+    @property
+    def info(self,):
+        """ Return info dictionary """
+        return self.surf.info
+
+    @info.setter
+    def info(self, info):
+        """ Set info dictionary """
+        self.surf.info = info
+
     def _profile(self):
         """ Computes the combined profile.
         """
@@ -427,6 +448,16 @@ class DetrendedSurface(Surface):
     def unit(self, unit):
         """ Set unit """
         self.surf.unit = unit
+
+    @property
+    def info(self,):
+        """ Return info dictionary """
+        return self.surf.info
+
+    @info.setter
+    def info(self, info):
+        """ Set info dictionary """
+        self.surf.info = info
 
     @property
     def coeffs(self,):
@@ -763,6 +794,16 @@ class PlasticSurface(Surface):
     def unit(self, unit):
         """ Set unit """
         self.surf.unit = unit
+
+    @property
+    def info(self,):
+        """ Return info dictionary """
+        return self.surf.info
+
+    @info.setter
+    def info(self, info):
+        """ Set info dictionary """
+        self.surf.info = info
 
     @property
     def hardness(self):
