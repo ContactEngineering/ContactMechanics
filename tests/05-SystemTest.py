@@ -292,14 +292,14 @@ class SystemTest(unittest.TestCase):
         ## plt.title("substrate")
         ## plt.show()
 
-        self.assertTrue(error < 1e-6, "error = {}".format(error))
+        self.assertTrue(error < 1e-5, "error = {}".format(error))
 
         error = rep_force.sum() - S.compute_repulsive_force()
-        self.assertTrue(error < 1e-6, "error = {}".format(error))
+        self.assertTrue(error < 1e-5, "error = {}".format(error))
 
         error = (rep_force.sum() + S.compute_attractive_force() -
                  S.compute_normal_force())
-        self.assertTrue(error < 1e-6, "error = {}".format(error))
+        self.assertTrue(error < 1e-5, "error = {}".format(error))
 
 
 class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
