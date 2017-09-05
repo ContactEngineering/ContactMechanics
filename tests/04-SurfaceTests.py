@@ -241,27 +241,26 @@ class diSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
     def test_read(self):
-        for (fn, s) in [('example1.di', 500.0), ('example2.di', 300.0)]:
+        for (fn, n, s, rmslist) in [
+            ('example1.di', 512, 500.0, [9.9459868005603909,
+                                         114.01328027385664]),
+            ('example2.di', 512, 300.0, [24.721922008645919]),
+            ('example3.di', 256, 10000.0, [226.42539668457405,
+                                           264.00285276203158]),
+            ('example4.di', 512, 10000.0, [81.622909804184744])
+            ]:
             surfaces = read_di('tests/file_format_examples/{}'.format(fn))
-            self.assertEqual(len(surfaces), 2)
-            surface = surfaces[0]
-            nx, ny = surface.shape
-            self.assertEqual(nx, 512)
-            self.assertEqual(ny, 512)
-            sx, sy = surface.size
-            self.assertAlmostEqual(sx, s)
-            self.assertAlmostEqual(sy, s)
-            self.assertEqual(surface.unit, 'nm')
-    def test_example3(self):
-        surface = read_di('tests/file_format_examples/example3.di')
-        nx, ny = surface.shape
-        self.assertEqual(nx, 256)
-        self.assertEqual(ny, 256)
-        sx, sy = surface.size
-        self.assertAlmostEqual(sx, 10000)
-        self.assertAlmostEqual(sy, 10000)
-        self.assertEqual(surface.unit, 'nm')
-        self.assertAlmostEqual(surface.compute_rms_height(), 264.006832385)
+            if type(surfaces) is not list:
+                surfaces = [surfaces]
+            for surface, rms in zip(surfaces, rmslist):
+                nx, ny = surface.shape
+                self.assertEqual(nx, n)
+                self.assertEqual(ny, n)
+                sx, sy = surface.size
+                self.assertAlmostEqual(sx, s)
+                self.assertAlmostEqual(sy, s)
+                self.assertEqual(surface.unit, 'nm')
+                self.assertAlmostEqual(surface.compute_rms_height(), rms)
 
 class ibwSurfaceTest(unittest.TestCase):
     def setUp(self):
