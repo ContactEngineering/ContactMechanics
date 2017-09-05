@@ -504,10 +504,10 @@ def read_di(fobj):
     parameters += [(section_name, section_dict)]
 
     surfaces = []
-    scanner = None
+    scanner = {}
     for n, p in parameters:
-        if n == 'scanner list':
-            scanner = p
+        if n == 'scanner list' or n == 'ciao scan list':
+            scanner.update(p)
         elif n == 'ciao image list':
             image_data_key = re.match('^S \[(.*?)\] ',
                                       p['@2:image data']).group(1)
@@ -536,14 +536,11 @@ def read_di(fobj):
             unscaleddata = np.frombuffer(rawdata, count=nx*ny,
                                          dtype=dtype).reshape(nx, ny)
 
-            scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) ',
-                                p['@2:z scale'])
+            scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) (.*) '
+                                '(.*)', p['@2:z scale'])
             quantity = scale_re.group(1).lower()
-            # Name mangling
-            if quantity == 'sens. zsenssens':
-                quantity = 'sens. zsens'
-            hard_scale = float(scale_re.group(2))
-            hard_unit = scale_re.group(3)
+            hard_scale = float(scale_re.group(4))/65536
+            hard_unit = scale_re.group(5)
 
             unit_check, soft_scale, soft_unit = scanner['@'+quantity].split()
             if hard_unit != unit_check:
@@ -551,6 +548,8 @@ def read_di(fobj):
                                  "differ. Don't know how to handle this."
                                  .format(hard_unit, unit_check))
             soft_scale = float(soft_scale)
+
+            print(image_data_key, soft_scale)
 
             height_unit, unit_check = soft_unit.split('/')
             if hard_unit != unit_check:
@@ -566,6 +565,7 @@ def read_di(fobj):
 
             surface = NumpySurface(unscaleddata.T, size=(sx, sy),
                                    unit=height_unit)
+            surface.info.update(dict(data_source=image_data_key))
             surface = ScaledSurface(surface, hard_scale*soft_scale)
             surfaces += [surface]
 
