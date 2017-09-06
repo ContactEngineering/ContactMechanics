@@ -1,8 +1,8 @@
 Change log for PyCo
 ===================
 
-master
-------
+v0.15.0 (06Sep17)
+-----------------
 
 - Implemented substrates of finite thickness.
 - Support for additional DI file formats.
