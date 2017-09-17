@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.
 from argparse import ArgumentParser, ArgumentTypeError
 
 import numpy as np
+import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 
 from PyCo.Surface.FromFile import read, detect_format
@@ -40,6 +41,10 @@ from PyCo.Surface.FromFile import read, detect_format
 parser = ArgumentParser(description='Plot a 2D surface map (pressure, gap, '
                                     'etc.).')
 parser.add_argument('filename', metavar='FILENAME', help='name of map file')
+parser.add_argument('--logscale', help='log scaling', action='store_true',
+                    default=False)
+parser.add_argument('--fftshift', help='fft shift', action='store_true',
+                    default=False)
 arguments = parser.parse_args()
 
 ###
@@ -58,7 +63,14 @@ fig = plt.figure()
 ax = fig.add_subplot(111, aspect=sx/sy)
 Y, X = np.meshgrid((np.arange(ny)+0.5)*sy/ny,
                    (np.arange(nx)+0.5)*sx/nx)
-mesh = ax.pcolormesh(X, Y, surface[...])
+Z = surface[...]
+if arguments.fftshift:
+    Z = np.fft.fftshift(Z)
+if arguments.logscale:
+    mesh = ax.pcolormesh(X, Y, Z,
+                         norm=colors.LogNorm(vmin=Z.min(), vmax=Z.max()),)
+else:
+    mesh = ax.pcolormesh(X, Y, Z)
 plt.colorbar(mesh, ax=ax)
 ax.set_xlim(0, sx)
 ax.set_ylim(0, sy)
