@@ -1,6 +1,11 @@
 Change log for PyCo
 ===================
 
+v0.16.0 (23Oct17)
+-----------------
+
+- PyCo now licensed under MIT license
+
 v0.15.0 (06Sep17)
 -----------------
 
