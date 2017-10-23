@@ -86,9 +86,9 @@ setup(
     include_package_data = True,
     ext_modules = cythonize(extensions),
     # metadata for upload to PyPI
-    author = "Till Junge",
-    author_email = "till.junge@kit.edu",
-    description = "Simple contact mechanics code",
-    license = "GPLv3",
+    author = "Lars Pastewka",
+    author_email = "lars.pastewka@imtek.uni-freiburg.de",
+    description = "Efficient contact mechanics with Python",
+    license = "MIT",
     test_suite = 'tests'
 )
