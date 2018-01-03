@@ -71,7 +71,7 @@ if arguments.fftshift:
     Z = np.fft.fftshift(Z)
 if arguments.logscale:
     mesh = ax.pcolormesh(X, Y, Z,
-                         norm=colors.LogNorm(vmin=Z.min(), vmax=Z.max()),)
+                         norm=colors.LogNorm(vmin=Z.min(), vmax=Z.max()),rasterized=True)
 else:
     mesh = ax.pcolormesh(X, Y, Z)
 plt.colorbar(mesh, ax=ax)
@@ -83,4 +83,5 @@ else:
     unit = 'a.u.'
 ax.set_xlabel('Position $x$ ({})'.format(unit))
 ax.set_ylabel('Position $y$ ({})'.format(unit))
+plt.savefig('{}.png'.format(arguments.filename))
 plt.show()
