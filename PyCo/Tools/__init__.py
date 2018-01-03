@@ -32,8 +32,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .common import (compare_containers, evaluate_gradient, mean_err,
-                     compute_wavevectors, fftn, ifftn, shift_and_tilt,
+from .common import (autocorrelation_2D, compare_containers, evaluate_gradient,
+					 mean_err, compute_wavevectors, fftn, ifftn, shift_and_tilt,
                      shift_and_tilt_approx, shift_and_tilt_from_slope,
                      compute_rms_height, compute_derivative, compute_rms_slope,
                      compute_rms_curvature, get_q_from_lambda,
