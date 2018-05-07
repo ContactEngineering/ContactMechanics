@@ -22,9 +22,6 @@ import matplotlib.pyplot as plt
 
 ###
 
-# This is the relative displacement of the two surfaces.
-zshift = -0.012
-
 # This is the elastic contact modulus, E*.
 E_s = 2
 
@@ -79,10 +76,17 @@ for i, c in zip(range(0, step_size*nd, step_size), ['r', 'g', 'b', 'y']):
     # with respect to the untranslated surface.
     translated_surface1.set_offset(xshift, 0)
 
-    # Solve the contact problem.
-    opt = system.minimize_proxy(offset=zshift, disp0=disp)
+    # Solve the contact problem for a constant relative displacement (offset).
+    opt = system.minimize_proxy(offset=-0.012, disp0=disp)
+    # Alternative: Solve it with external force as boundary conditions
+    #opt = system.minimize_proxy(external_force=0.01, disp0=disp)
     disp = opt.x # This is the displacement field
     forces = opt.jac # These are the forces/pressures
+    offset = opt.offset # The relative displacement of the two surfaces
+
+    # Note: Either force or offset printed in screen should correspond to what
+    # you have specified above.
+    print('Total force: {}, Offset: {}'.format(forces.sum(), offset))
 
     # Dump the information to the NetCDF file.
     frame = container.get_next_frame()
@@ -93,7 +97,7 @@ for i, c in zip(range(0, step_size*nd, step_size), ['r', 'g', 'b', 'y']):
     # Reconstruct the deformed surfaces for plotting. Note that here we assume
     # that the two moduli are the same and half of the displacement is
     # carried by the top and the other half by the bottom surface.
-    top_surface = -translated_surface1[:,:]+disp/2-zshift
+    top_surface = -translated_surface1[:,:]+disp/2-offset
     bottom_surface = surface2[:,:]-disp/2
 
     plt.plot(np.arange(nx), top_surface[:,150], c+'-')
