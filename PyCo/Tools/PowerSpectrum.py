@@ -53,6 +53,8 @@ def power_spectrum_1D(surface_xy,  # pylint: disable=invalid-name
     window : str, optional
         Window for eliminating edge effect. See scipy.signal.get_window.
         (Default: None)
+    fold : bool, optional
+        Fold +q and -q branches. (Default: True)
 
     Returns
     -------
