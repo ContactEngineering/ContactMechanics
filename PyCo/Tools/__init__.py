@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .Autocorrelation import autocorrelation_2D
+from .Autocorrelation import autocorrelation_1D, autocorrelation_2D
 from .common import (compare_containers, evaluate_gradient,
 					 mean_err, compute_wavevectors, fftn, ifftn, shift_and_tilt,
                      shift_and_tilt_approx, shift_and_tilt_from_slope,

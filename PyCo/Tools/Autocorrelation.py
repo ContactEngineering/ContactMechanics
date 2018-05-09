@@ -37,6 +37,64 @@ import numpy as np
 from .common import _get_size, radial_average
 
 
+def autocorrelation_1D(surface_xy,  # pylint: disable=invalid-name
+                       size=None, periodic=False):
+    """
+    Compute height-difference autocorrelation function and radial average.
+
+    Parameters
+    ----------
+    surface_xy : array_like
+        2D-array of surface topography
+    size : (float, float), optional
+        Physical size of the 2D grid. (Default: Size is equal to number of grid
+        points.)
+    periodic : bool, optional
+        Surface is periodic topography map. (Default: False)
+
+    Returns
+    -------
+    r : array
+        Distances. (Units: length)
+    A : array
+        Autocorrelation function. (Units: length**2)
+    """
+    nx, dummy_ny = surface_xy.shape
+    sx, dummy_sy = _get_size(surface_xy, size)
+
+    # Compute FFT and normalize
+    if periodic:
+        surface_qy = np.fft.fft(surface_xy[:, :], axis=0)
+        C_qy = abs(surface_qy)**2  # pylint: disable=invalid-name
+        A_xy = np.fft.ifft(C_qy, axis=0).real/nx
+
+        # Convert height-height autocorrelation to height-difference
+        # autocorrelation
+        A_xy = A_xy[0, :]-A_xy
+
+        A = A_xy[:nx//2, :]
+        A[1:nx//2, :] += A_xy[nx-1:(nx+1)//2:-1, :]
+        A /= 2
+
+        r = sx*np.arange(nx//2)/nx
+    else:
+        surface_qy = np.fft.fft(surface_xy[:, :], n=2*nx-1, axis=0)
+        C_qy = abs(surface_qy)**2  # pylint: disable=invalid-name
+        normx = (np.abs(np.arange(2*nx-1) - (nx-1))+1).reshape(-1, 1)
+        A_xy = np.fft.ifft(C_qy, axis=0).real/normx
+
+        # Convert height-height autocorrelation to height-difference
+        # autocorrelation
+        A_xy = A_xy[0, :]-A_xy
+
+        A = A_xy[:nx, :]
+        A[1:nx, :] += A_xy[2*nx-1:nx-1:-1, :]
+        A /= 2
+
+        r = sx*np.arange(nx)/nx
+
+    return r, A.mean(axis=1)
+
 def autocorrelation_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
                        size=None, periodic=False, return_map=False):
     """
@@ -92,8 +150,8 @@ def autocorrelation_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
     else:
         surface_qk = np.fft.fft2(surface_xy[:, :], s=(2*nx-1, 2*ny-1))
         C_qk = abs(surface_qk)**2  # pylint: disable=invalid-name
-        normx = np.abs(np.arange(2*nx-1) - nx).reshape(-1, 1)
-        normy = np.abs(np.arange(2*ny-1) - ny).reshape(1, -1)
+        normx = (np.abs(np.arange(2*nx-1) - (nx-1))+1).reshape(-1, 1)
+        normy = (np.abs(np.arange(2*ny-1) - (ny-1))+1).reshape(1, -1)
         A_xy = np.fft.ifft2(C_qk).real/(normx*normy)
 
         # Convert height-height autocorrelation to height-difference
