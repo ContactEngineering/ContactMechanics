@@ -384,7 +384,7 @@ def radial_average(C_xy, rmax, nbins, size=None):
     # dr_r        = np.sqrt( np.linspace(0, rmax**2, nbins) )
 
     # Power law -> equally spaced on a log-log plot
-    dr_r = rmax**np.linspace(np.log(rmin)/np.log(rmax), 1.0, nbins)
+    dr_r = np.exp(np.linspace(np.log(rmin), np.log(rmax), nbins))
 
     dr_max = np.max(dr_xy)
     # Keep dr_max sorted
