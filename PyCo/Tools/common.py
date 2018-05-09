@@ -33,7 +33,7 @@ SOFTWARE.
 """
 
 import numpy as np
-#import scipy.optimize
+import scipy
 
 
 def compare_containers(cont_a, cont_b):
