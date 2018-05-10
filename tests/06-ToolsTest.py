@@ -39,6 +39,7 @@ try:
 
     import PyCo.Tools as Tools
     from PyCo.Surface import NumpySurface
+    from PyCo.Goodies import RandomSurfaceGaussian
 except ImportError as err:
     import sys
     print(err)
@@ -141,3 +142,16 @@ class ToolTest(unittest.TestCase):
         self.assertAlmostEqual(mean_slope[1], 2*a)
         self.assertAlmostEqual(mean_slope[2], d)
 
+
+    def test_impulse_autocorrelation(self):
+        nx = 16
+        for x, w, h, p in [(nx//2, 3, 1, True), (nx//3, 2, 2, True),
+                           (nx//2, 5, 1, False), (nx//3, 6, 2.5, False)]:
+            y = np.zeros([nx, 1])
+            y[x-w//2:x+(w+1)//2] = h
+            r, A = Tools.autocorrelation_1D(y, periodic=True)
+
+            A_ana = np.zeros_like(A)
+            A_ana[:w] = h**2*np.linspace(w/nx, 1/nx, w)
+            A_ana = A_ana[0] - A_ana
+            self.assertTrue(np.allclose(A, A_ana))
