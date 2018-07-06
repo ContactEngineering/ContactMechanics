@@ -50,6 +50,11 @@ else:
     extra_compile_args = ["-std=c++11"]
     extra_link_args = ["-lfftw3", "-lm"]
 
+scripts =  ['commandline/hard_wall.py',
+            'commandline/soft_wall.py',
+            'commandline/plotacf.py',
+            'commandline/plotpsd.py',
+            'commandline/plotmap.py']
 
 extensions = [
     Extension(
@@ -81,6 +86,7 @@ setup(
     name = "PyCo",
     version = versioneer.get_version(),
     cmdclass = versioneer.get_cmdclass(),
+    scripts = scripts,
     packages = find_packages(),
     package_data = {'': ['ChangeLog.md']},
     include_package_data = True,
