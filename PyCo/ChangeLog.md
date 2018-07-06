@@ -1,10 +1,15 @@
 Change log for PyCo
 ===================
 
+v0.17.0 (06Jul17)
+-----------------
+
+- Height-difference autocorrelation function.
+
 v0.16.0 (23Oct17)
 -----------------
 
-- PyCo now licensed under MIT license
+- PyCo now licensed under MIT license.
 
 v0.15.0 (06Sep17)
 -----------------
