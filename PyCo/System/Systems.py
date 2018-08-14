@@ -360,7 +360,7 @@ class SmoothContactSystem(SystemBase):
 
     def compute_attractive_contact_area(self):
         "computes and returns the are where contact pressure is attractive"
-        return self.compute_nb_contact_pts()*self.area_per_pt
+        return self.compute_nb_attractive_pts()*self.area_per_pt
 
     def compute_nb_contact_pts(self):
         """
