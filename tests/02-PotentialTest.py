@@ -332,3 +332,35 @@ class PotentialTest(unittest.TestCase):
         ddV_num = np.diff(dV_num)/(r[1]-r[0])
         self.assertLess(abs((dV[:-1]+dV[1:])/2+dV_num).max(), 1e-4)
         self.assertLess(abs(ddV[1:-1]-ddV_num).max(), 1e-2)
+
+    def test_rinfl(self):
+        """
+        Test if the inflection point calculated analyticaly is really a signum change of the second dericative
+        """
+
+        eps = 1.7294663266397667
+        sig = 3.253732668164946
+
+        c_sr = 2.1e-78
+        hamaker = 68.1e-21
+
+        all_ok = True
+        msg=[]
+        for pot in [LJ93(eps,sig),
+                    LJ93SimpleSmooth(eps,sig,3*sig), 
+                    LJ93smooth(eps,sig),LJ93smoothMin(eps,sig),
+                    LJ93smooth(eps, sig,r_t="inflection"),LJ93smoothMin(eps, sig,r_t_ls="inflection"),
+                    LJ93smooth(eps, sig,r_t=LJ93(eps,sig).r_infl*1.05),LJ93smoothMin(eps, sig,r_t_ls=LJ93(eps,sig).r_infl*1.05),
+                    VDW82(c_sr,hamaker),
+                    VDW82smooth(c_sr, hamaker),VDW82smoothMin(c_sr, hamaker),
+                    VDW82smooth(c_sr, hamaker,r_t="inflection"),VDW82smoothMin(c_sr, hamaker,r_t_ls="inflection"),
+                    VDW82smooth(c_sr, hamaker,r_t=VDW82(c_sr,hamaker).r_infl*1.05),VDW82smoothMin(c_sr, hamaker,r_t_ls=VDW82(c_sr,hamaker).r_infl*1.05)
+                    ]:
+            
+            ok = pot.evaluate(pot.r_infl* (1-1e-5) ,True,True,True)[2]*pot.evaluate(pot.r_infl* (1+1e-5) ,True,True,True)[2]  < 0 
+            all_ok &=ok
+            msg.append("{} \n {} ".format(pot,ok))
+
+        self.assertTrue(all_ok,"\n"+"\n\n".join(msg))
+
+
