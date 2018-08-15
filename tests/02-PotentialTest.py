@@ -362,7 +362,7 @@ class PotentialTest(unittest.TestCase):
             VDW82smooth(c_sr,  hamaker, r_t="inflection"),
             VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection"),
             VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05),
-            DW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)
+            VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)
                     ]:
             
             ok = (pot.evaluate(pot.r_infl * (1-1e-5), True, True, True)[2]
