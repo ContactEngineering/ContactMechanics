@@ -155,6 +155,26 @@ class VDW82smooth(VDW82, SmoothPotential):
                     ", r_t = {}".format(
                         self.r_t if has_r_t else "r_min"))  # nopep8
 
+    @property
+    def r_infl(self):
+        """
+        convenience function returning the location of the potential's
+        inflection point
+        Depending on where the transition between VDW82 and spline has been made
+        this returns the inflection point of the spline or of the original 
+        VDW82 Potential
+        """
+        r_infl_poly = SmoothPotential.get_r_infl_spline(self)
+        if r_infl_poly is not None:
+            if r_infl_poly < self.r_t:
+                return super().r_infl
+                # This is the old property implementation in the VDW82 Potential
+            else:
+                return r_infl_poly
+        else:
+            # The Spline wasn't determined already
+            return super().r_infl
+            # This is the old property implementation in the VDW82 Potential
 
 class VDW82smoothMin(VDW82smooth, MinimisationPotential):
     """
@@ -206,6 +226,13 @@ class VDW82SimpleSmooth(VDW82, SimpleSmoothPotential):
         convenience function returning the location of the energy minimum
         """
         return self._r_min
+
+    @property
+    def r_infl(self):
+        """
+        convenience function returning the location of the inflection point
+        """
+        return self._r_infl
 
     def __repr__(self, ):
         return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "

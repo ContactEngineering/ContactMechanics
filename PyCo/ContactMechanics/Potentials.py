@@ -241,6 +241,18 @@ class SmoothPotential(Potential):
     @abc.abstractmethod
     def __repr__(self):
         raise NotImplementedError
+ 
+    def get_r_infl_spline(self):
+        """
+        compute the inflection Point of the spline. The inflexion Point of the
+        smoothed potential could be below r_t and so staying the original one
+        """
+        if hasattr(self, "poly") and self.poly is not None:
+            C4 = self.poly.coeffs[0]
+            C3 = self.poly.coeffs[1]
+            return self.r_c-0.5*C3/C4
+        else:
+            return None
 
     def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
         """Evaluates the potential and its derivatives
@@ -786,6 +798,7 @@ class SimpleSmoothPotential(Potential):
         self.poly = None
         self.compute_poly()
         self._r_min = self.precompute_min()
+        self._r_infl = self.precompute_infl()
 
     def precompute_min(self):
         """
@@ -801,6 +814,24 @@ class SimpleSmoothPotential(Potential):
         if error:
             raise self.PotentialError(
                 ("Couldn't find minimum of potential, something went wrong. "
+                 "This was the full minimisation result: {}").format(result))
+        return float(result[0])
+
+    def precompute_infl(self):
+        """
+        computes r_infl
+        """
+        result = scipy.optimize.fminbound(
+            func=lambda r: self.evaluate(r, False, True, False)[1],
+            x1=0.01*self.r_c,
+            x2=self.r_c,
+            disp=1,
+            xtol=1e-5*self.r_c,
+            full_output=True)
+        error = result[2]
+        if error:
+            raise self.PotentialError(
+                ("Couldn't find minimumm of derivative, something went wrong. "
                  "This was the full minimisation result: {}").format(result))
         return float(result[0])
 
