@@ -190,6 +190,27 @@ class LJ93smooth(LJ93, SmoothPotential):
                     ", r_t = {}".format(
                         self.r_t if has_r_t else "r_min"))
 
+    @property
+    def r_infl(self):
+        """
+        convenience function returning the location of the potential's
+        inflection point
+        Depending on where the transition between LJ93 and spline has been made
+        this returns the inflection point of the spline or of the original LJ93
+        """
+        r_infl_poly = SmoothPotential.get_r_infl_spline(self)
+
+        if r_infl_poly is not None:
+            if r_infl_poly < self.r_t:
+                return super().r_infl 
+                # This is the old property implementation in the LJ93 Potential
+            else:
+                return r_infl_poly
+        else:
+            # The Spline wasn't determined already
+            return super().r_infl  
+            # This is the old property implementation in the LJ93 Potential
+
 
 class LJ93smoothMin(LJ93smooth, MinimisationPotential):
     """
@@ -250,3 +271,10 @@ class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
         convenience function returning the location of the energy minimum
         """
         return self._r_min
+
+    @property
+    def r_infl(self):
+        """
+        convenience function returning the location of the inflection point
+        """
+        return self._r_infl

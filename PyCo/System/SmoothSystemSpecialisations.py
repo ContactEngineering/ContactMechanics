@@ -131,7 +131,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
     def check_margins(self):
         """
         Checks whether the safety margin is sufficient (i.e. the outer ring of
-        the ofrce array equals zero
+        the force array equals zero
         """
         is_ok = True
         if self.dim == 2:
