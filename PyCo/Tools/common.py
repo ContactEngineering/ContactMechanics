@@ -209,7 +209,7 @@ def compute_tilt_from_height(arr, size=None, full_output=False):
     location_matrix = np.matrix(np.hstack(columns))
     offsets = np.ma.compressed(arr)
     #res = scipy.optimize.nnls(location_matrix, offsets)
-    res = np.linalg.lstsq(location_matrix, offsets)
+    res = np.linalg.lstsq(location_matrix, offsets, rcond=None)
     coeffs = np.array(res[0])*\
         np.array(list(arr.shape)+[1.])/np.array(list(size)+[1.])
     if full_output:
@@ -257,7 +257,7 @@ def compute_tilt_and_curvature(arr, size=None, full_output=False):
     location_matrix = np.matrix(np.hstack(columns))
     offsets = np.ma.compressed(arr)
     #res = scipy.optimize.nnls(location_matrix, offsets)
-    res = np.linalg.lstsq(location_matrix, offsets)
+    res = np.linalg.lstsq(location_matrix, offsets, rcond=None)
 
     nx, ny = arr.shape
     sx, sy = size
