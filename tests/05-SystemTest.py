@@ -55,7 +55,7 @@ try:
     from PyCo.System.Systems import SmoothContactSystem
     import PyCo.SolidMechanics as Solid
     import PyCo.ContactMechanics as Contact
-    import PyCo.Topography as Surface
+    import PyCo.Topography as Topography
     import PyCo.Tools as Tools
 except ImportError as err:
     import sys

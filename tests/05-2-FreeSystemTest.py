@@ -45,7 +45,7 @@ try:
     from PyCo.System import SystemFactory
     import PyCo.SolidMechanics as Solid
     import PyCo.ContactMechanics as Contact
-    import PyCo.Topography as Surface
+    import PyCo.Topography as Topography
     import PyCo.Tools as Tools
 except ImportError as err:
     import sys
