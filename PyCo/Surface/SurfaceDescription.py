@@ -41,12 +41,15 @@ from ..Tools import (compute_rms_height, compute_rms_slope, compute_slope,
                      compute_rms_curvature, compute_tilt_from_height,
                      compute_tilt_and_curvature)
 
+
 class Surface(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
          contact problems"""
+
     class Error(Exception):
         # pylint: disable=missing-docstring
         pass
+
     name = 'generic_geom'
 
     def __init__(self, resolution=None, dim=None, size=None, unit=None,
@@ -72,7 +75,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         state -- result of __getstate__
         """
         (self._resolution, self._dim, self._size, self._unit,
-            self.adjustment) = state
+         self.adjustment) = state
 
     def compute_rms_height(self, kind='Sq'):
         "computes the rms height fluctuation of the surface"
@@ -87,8 +90,8 @@ class Surface(object, metaclass=abc.ABCMeta):
         delta -= delta.mean()
         area = np.prod(self.size)
         nb_pts = np.prod(self.resolution)
-        H = area/nb_pts*np.fft.fftn(delta)
-        return 1/area*np.sqrt((np.conj(H)*H).sum().real)
+        H = area / nb_pts * np.fft.fftn(delta)
+        return 1 / area * np.sqrt((np.conj(H) * H).sum().real)
 
     def compute_rms_slope(self):
         "computes the rms height gradient fluctuation of the surface"
@@ -108,15 +111,15 @@ class Surface(object, metaclass=abc.ABCMeta):
         nx, ny = self.resolution
         sx, sy = self.size
         qx = np.arange(nx, dtype=np.float64)
-        qx = np.where(qx <= nx/2, 2*np.pi*qx/sx, 2*np.pi*(nx-qx)/sx)
+        qx = np.where(qx <= nx / 2, 2 * np.pi * qx / sx, 2 * np.pi * (nx - qx) / sx)
         qy = np.arange(ny, dtype=np.float64)
-        qy = np.where(qy <= ny/2, 2*np.pi*qy/sy, 2*np.pi*(ny-qy)/sy)
-        q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
+        qy = np.where(qy <= ny / 2, 2 * np.pi * qy / sy, 2 * np.pi * (ny - qy) / sy)
+        q = np.sqrt((qx * qx).reshape(-1, 1) + (qy * qy).reshape(1, -1))
 
         h_q = np.fft.fft2(self.profile())
         return np.sqrt(
-            np.mean(q**2 * h_q*np.conj(h_q)).real/(
-                float(self.profile().shape[0])*float(self.profile().shape[1])))
+            np.mean(q ** 2 * h_q * np.conj(h_q)).real / (
+                    float(self.profile().shape[0]) * float(self.profile().shape[1])))
 
     def adjust(self):
         """
@@ -128,7 +131,7 @@ class Surface(object, metaclass=abc.ABCMeta):
     def profile(self):
         """ returns an array of possibly adjusted heights
         """
-        return self._profile()-self.adjustment
+        return self._profile() - self.adjustment
 
     @abc.abstractmethod
     def _profile(self):
@@ -140,7 +143,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         return CompoundSurface(self, other)
 
     def __sub__(self, other):
-        return CompoundSurface(self, -1.*other)
+        return CompoundSurface(self, -1. * other)
 
     def __mul__(self, other):
         return ScaledSurface(self, other)
@@ -148,10 +151,10 @@ class Surface(object, metaclass=abc.ABCMeta):
     __rmul__ = __mul__
 
     def __getitem__(self, index):
-        return self._profile()[index]-self.adjustment
+        return self._profile()[index] - self.adjustment
 
     @property
-    def dim(self,):
+    def dim(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
@@ -159,14 +162,15 @@ class Surface(object, metaclass=abc.ABCMeta):
 
     @property
     def pixel_size(self):
-        return np.asarray(self.size)/np.asarray(self.resolution)
+        return np.asarray(self.size) / np.asarray(self.resolution)
 
     @property
-    def resolution(self,):
+    def resolution(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self._resolution
+
     shape = resolution
 
     def set_size(self, size, s_y=None):
@@ -177,7 +181,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         self.size = size
 
     @property
-    def size(self,):
+    def size(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
@@ -187,18 +191,18 @@ class Surface(object, metaclass=abc.ABCMeta):
     def size(self, size):
         """ set the size of the surface """
         if not hasattr(size, "__iter__"):
-            size = (size, )
+            size = (size,)
         else:
             size = tuple(size)
         if len(size) != self.dim:
             raise self.Error(
                 ("The dimension of this surface is {}, you have specified an "
                  "incompatible size of dimension {} ({}).").format(
-                     self.dim, len(size), size))
+                    self.dim, len(size), size))
         self._size = size
 
     @property
-    def unit(self,):
+    def unit(self, ):
         """ Return unit """
         return self._unit
 
@@ -208,7 +212,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         self._unit = unit
 
     @property
-    def info(self,):
+    def info(self, ):
         """ Return info dictionary """
         return self._info
 
@@ -221,7 +225,7 @@ class Surface(object, metaclass=abc.ABCMeta):
     def area_per_pt(self):
         if self.size is None:
             return 1
-        return np.prod([s/r for s, r in zip(self.size, self.resolution)])
+        return np.prod([s / r for s, r in zip(self.size, self.resolution)])
 
     @property
     def has_undefined_data(self):
@@ -251,11 +255,11 @@ class Surface(object, metaclass=abc.ABCMeta):
             coord = coords[i]
             if coord == 0:
                 delta = 1
-            elif coord == self.resolution[i]-1:
+            elif coord == self.resolution[i] - 1:
                 delta = -1
             else:
                 delta = 0
-            irange = (coords[i]-1+delta, coords[i]+delta, coords[i]+1+delta)
+            irange = (coords[i] - 1 + delta, coords[i] + delta, coords[i] + 1 + delta)
             fun_val = np.zeros(len(irange))
             for j, i_val in enumerate(irange):
                 coord_copy = list(coords)
@@ -266,8 +270,8 @@ class Surface(object, metaclass=abc.ABCMeta):
                     raise IndexError(
                         ("{}:\ncoords = {}, i = {}, j = {}, irange = {}, "
                          "coord_copy = {}").format(
-                             err, coords, i, j, irange, coord_copy))  # nopep8
-            laplacian += (fun_val[0] + fun_val[2] - 2*fun_val[1])/pixel_size**2
+                            err, coords, i, j, irange, coord_copy))  # nopep8
+            laplacian += (fun_val[0] + fun_val[2] - 2 * fun_val[1]) / pixel_size ** 2
         return laplacian
 
 
@@ -303,22 +307,23 @@ class ScaledSurface(Surface):
         super().__setstate__(superstate)
 
     @property
-    def dim(self,):
+    def dim(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self.surf.dim
 
     @property
-    def resolution(self,):
+    def resolution(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self.surf.resolution
+
     shape = resolution
 
     @property
-    def size(self,):
+    def size(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
@@ -330,7 +335,7 @@ class ScaledSurface(Surface):
         self.surf.size = size
 
     @property
-    def unit(self,):
+    def unit(self, ):
         """ Return unit """
         return self.surf.unit
 
@@ -340,7 +345,7 @@ class ScaledSurface(Surface):
         self.surf.unit = unit
 
     @property
-    def info(self,):
+    def info(self, ):
         """ Return info dictionary """
         return self.surf.info
 
@@ -352,7 +357,7 @@ class ScaledSurface(Surface):
     def _profile(self):
         """ Computes the combined profile.
         """
-        return self.coeff*self.surf.profile()
+        return self.coeff * self.surf.profile()
 
 
 class DetrendedSurface(Surface):
@@ -390,13 +395,13 @@ class DetrendedSurface(Surface):
             nx, ny = self.surf.shape
             self._coeffs = [-s.mean() for s in compute_slope(self.surf)]
             slx, sly = self._coeffs
-            self._coeffs += [-self.surf[...].mean()-slx*sx*(nx-1)/(2*nx)
-                                                   -sly*sy*(ny-1)/(2*ny)]
+            self._coeffs += [-self.surf[...].mean() - slx * sx * (nx - 1) / (2 * nx)
+                             - sly * sy * (ny - 1) / (2 * ny)]
         elif self._detrend_mode == 'curvature':
             self._coeffs = [-s for s in compute_tilt_and_curvature(self.surf)]
         else:
             raise ValueError("Unknown detrend mode '{}'." \
-                .format(self._detrend_mode))
+                             .format(self._detrend_mode))
 
     def __getstate__(self):
         """ is called and the returned object is pickled as the contents for
@@ -415,22 +420,23 @@ class DetrendedSurface(Surface):
         super().__setstate__(superstate)
 
     @property
-    def dim(self,):
+    def dim(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self.surf.dim
 
     @property
-    def resolution(self,):
+    def resolution(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self.surf.resolution
+
     shape = resolution
 
     @property
-    def size(self,):
+    def size(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
@@ -443,7 +449,7 @@ class DetrendedSurface(Surface):
         self._detrend()
 
     @property
-    def unit(self,):
+    def unit(self, ):
         """ Return unit """
         return self.surf.unit
 
@@ -453,7 +459,7 @@ class DetrendedSurface(Surface):
         self.surf.unit = unit
 
     @property
-    def info(self,):
+    def info(self, ):
         """ Return info dictionary """
         return self.surf.info
 
@@ -463,11 +469,11 @@ class DetrendedSurface(Surface):
         self.surf.info = info
 
     @property
-    def coeffs(self,):
+    def coeffs(self, ):
         return self._coeffs
 
     @property
-    def detrend_mode(self,):
+    def detrend_mode(self, ):
         return self._detrend_mode
 
     @detrend_mode.setter
@@ -483,20 +489,20 @@ class DetrendedSurface(Surface):
             sx, sy = self.size
         except:
             sx, sy = nx, ny
-        x = np.arange(nx).reshape(-1, 1)*sx/nx
-        y = np.arange(ny).reshape(1, -1)*sy/ny
+        x = np.arange(nx).reshape(-1, 1) * sx / nx
+        y = np.arange(ny).reshape(1, -1) * sy / ny
         if len(self._coeffs) == 1:
             h0, = self._coeffs
             return self.surf.profile() + h0
         elif len(self._coeffs) == 3:
             m, n, h0 = self._coeffs
-            return self.surf.profile() + h0 + m*x + n*y
+            return self.surf.profile() + h0 + m * x + n * y
         else:
             m, n, mm, nn, mn, h0 = self._coeffs
-            xx = x*x
-            yy = y*y
-            xy = x*y
-            return self.surf.profile() + h0 + m*x + n*y + mm*xx + nn*yy + mn*xy
+            xx = x * x
+            yy = y * y
+            xy = x * y
+            return self.surf.profile() + h0 + m * x + n * y + mm * xx + nn * yy + mn * xy
 
     def stringify_plane(self, fmt=lambda x: str(x)):
         str_coeffs = [fmt(x) for x in self._coeffs]
@@ -508,6 +514,7 @@ class DetrendedSurface(Surface):
         else:
             return '{5} + {0} x + {1} y + {2} x^2 + {3} y^2 + {4} xy' \
                 .format(*str_coeffs)
+
 
 class TranslatedSurface(Surface):
     """ used when geometries are translated
@@ -526,22 +533,23 @@ class TranslatedSurface(Surface):
         self.offset = offset
 
     @property
-    def dim(self,):
+    def dim(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self.surf.dim
 
     @property
-    def resolution(self,):
+    def resolution(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self.surf.resolution
+
     shape = resolution
 
     @property
-    def size(self,):
+    def size(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
@@ -675,46 +683,46 @@ class Sphere(NumpySurface):
         """
         # pylint: disable=invalid-name
         if not hasattr(resolution, "__iter__"):
-            resolution = (resolution, )
+            resolution = (resolution,)
         dim = len(resolution)
         if not hasattr(size, "__iter__"):
-            size = (size, )
+            size = (size,)
         if centre is None:
-            centre = np.array(size)*.5
+            centre = np.array(size) * .5
         if not hasattr(centre, "__iter__"):
-            centre = (centre, )
+            centre = (centre,)
 
         if not periodic:
             def get_r(res, size, centre):
                 " computes the non-periodic radii to evaluate"
-                return np.linspace(-centre, size-centre, res, endpoint=False)
+                return np.linspace(-centre, size - centre, res, endpoint=False)
         else:
             def get_r(res, size, centre):
                 " computes the periodic radii to evaluate"
-                return np.linspace(-centre + size/2,
-                                   -centre + 3*size/2,
-                                   res, endpoint=False) % size - size/2
+                return np.linspace(-centre + size / 2,
+                                   -centre + 3 * size / 2,
+                                   res, endpoint=False) % size - size / 2
 
         if dim == 1:
             r2 = get_r(resolution[0],
                        size[0],
-                       centre[0])**2
+                       centre[0]) ** 2
         elif dim == 2:
             rx2 = (get_r(resolution[0],
                          size[0],
-                         centre[0])**2).reshape((-1, 1))
+                         centre[0]) ** 2).reshape((-1, 1))
             ry2 = (get_r(resolution[1],
                          size[1],
-                         centre[1]))**2
+                         centre[1])) ** 2
             r2 = rx2 + ry2
         else:
             raise Exception(
                 ("Problem has to be 1- or 2-dimensional. "
                  "Yours is {}-dimensional").format(dim))
-        radius2 = radius**2  # avoid nans for small radiio
+        radius2 = radius ** 2  # avoid nans for small radiio
         outside = r2 > radius2
         r2[outside] = radius2
-        h = np.sqrt(radius2 - r2)-radius
+        h = np.sqrt(radius2 - r2) - radius
         h[outside] -= standoff
         super().__init__(h)
         self._size = size
@@ -762,22 +770,23 @@ class PlasticSurface(Surface):
         super().__setstate__(superstate)
 
     @property
-    def dim(self,):
+    def dim(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self.surf.dim
 
     @property
-    def resolution(self,):
+    def resolution(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
         return self.surf.resolution
+
     shape = resolution
 
     @property
-    def size(self,):
+    def size(self, ):
         """ needs to be testable to make sure that geometry and halfspace are
             compatible
         """
@@ -789,7 +798,7 @@ class PlasticSurface(Surface):
         self.surf.size = size
 
     @property
-    def unit(self,):
+    def unit(self, ):
         """ Return unit """
         return self.surf.unit
 
@@ -799,7 +808,7 @@ class PlasticSurface(Surface):
         self.surf.unit = unit
 
     @property
-    def info(self,):
+    def info(self, ):
         """ Return info dictionary """
         return self.surf.info
 
@@ -837,4 +846,4 @@ class PlasticSurface(Surface):
     def _profile(self):
         """ Computes the combined profile.
         """
-        return self.undeformed_profile()+self.plastic_displ
+        return self.undeformed_profile() + self.plastic_displ

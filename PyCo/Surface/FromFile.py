@@ -49,6 +49,7 @@ voltage_units = {'kV': 1000.0, 'V': 1.0, 'mV': 1e-3, 'µV': 1e-6, 'nV': 1e-9}
 
 units = dict(height=height_units, voltage=voltage_units)
 
+
 def get_unit_conversion_factor(unit1_str, unit2_str):
     """
     Compute factor for conversion from unit1 to unit2. Return None if units are
@@ -66,7 +67,8 @@ def get_unit_conversion_factor(unit1_str, unit2_str):
             unit_scales = values
     if unit1_kind is None or unit2_kind is None or unit1_kind != unit2_kind:
         return None
-    return unit_scales[unit1_str]/unit_scales[unit2_str]
+    return unit_scales[unit1_str] / unit_scales[unit2_str]
+
 
 def mangle_height_unit(unit):
     unit = unit.strip()
@@ -76,6 +78,7 @@ def mangle_height_unit(unit):
         return 'µm'
     else:
         return unit
+
 
 def read_matrix(fobj, size=None, factor=None):
     """
@@ -99,6 +102,7 @@ def read_matrix(fobj, size=None, factor=None):
     if factor is not None:
         surface = ScaledSurface(surface, factor)
     return surface
+
 
 NumpyTxtSurface = read_matrix  # pylint: disable=invalid-name
 
@@ -135,10 +139,10 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
                    "yres"))
 
     # Size keywords
-    checks.append((re.compile(r"\b(?:x-length|Width)\b\s*(?:=|\:)\s*(?P<value>"+
-                   _float_regex+")(?P<unit>.*)"), float, "xsiz"))
-    checks.append((re.compile(r"\b(?:y-length|Height)\b\s*(?:=|\:)\s*(?P<value>"+
-                   _float_regex+")(?P<unit>.*)"), float, "ysiz"))
+    checks.append((re.compile(r"\b(?:x-length|Width)\b\s*(?:=|\:)\s*(?P<value>" +
+                              _float_regex + ")(?P<unit>.*)"), float, "xsiz"))
+    checks.append((re.compile(r"\b(?:y-length|Height)\b\s*(?:=|\:)\s*(?P<value>" +
+                              _float_regex + ")(?P<unit>.*)"), float, "ysiz"))
 
     # Unit keywords
     checks.append((re.compile(r"\b(?:x-unit)\b\s*(?:=|\:)\s*(\w+)"), str, "xunit"))
@@ -147,12 +151,12 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
                    str, "zunit"))
 
     # Scale factor keywords
-    checks.append((re.compile(r"(?:pixel\s+size)\s*=\s*(?P<value>"+_float_regex+
-                   ")(?P<unit>.*)"), float, "xfac"))
+    checks.append((re.compile(r"(?:pixel\s+size)\s*=\s*(?P<value>" + _float_regex +
+                              ")(?P<unit>.*)"), float, "xfac"))
     checks.append((re.compile(
         (r"(?:height\s+conversion\s+factor\s+\(->\s+(?P<unit>.*)\))\s*=\s*(?P<value>" +
-         _float_regex+")")),
-        float, "zfac"))
+         _float_regex + ")")),
+                   float, "zfac"))
 
     xres = yres = xsiz = ysiz = xunit = yunit = zunit = xfac = yfac = None
     zfac = None
@@ -208,7 +212,7 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         raise Exception(
             "The number of rows (={}) read from the file '{}' does "
             "not match the resolution in the file's metadata (={})."
-            .format(nx, fname, xres))
+                .format(nx, fname, xres))
     if yres is not None and yres != ny:
         raise Exception("The number of columns (={}) read from the file '{}' "
                         "does not match the resolution in the file's metadata "
@@ -221,12 +225,12 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         xfac = yfac
     if xfac is not None:
         if xsiz is None:
-            xsiz = xfac*nx
+            xsiz = xfac * nx
         else:
             xsiz *= xfac
     if yfac is not None:
         if ysiz is None:
-            ysiz = yfac*ny
+            ysiz = yfac * ny
         else:
             ysiz *= yfac
     if zfac is None:
@@ -243,19 +247,20 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
         unit = zunit
     if unit is not None:
         if xunit is not None:
-            xsiz *= height_units[xunit]/height_units[unit]
+            xsiz *= height_units[xunit] / height_units[unit]
         if yunit is not None:
-            ysiz *= height_units[yunit]/height_units[unit]
+            ysiz *= height_units[yunit] / height_units[unit]
         if zunit is not None:
-            zfac *= height_units[zunit]/height_units[unit]
+            zfac *= height_units[zunit] / height_units[unit]
 
     if xsiz is None or ysiz is None:
         surface = NumpySurface(data, unit=unit)
     else:
-        surface = NumpySurface(data, size=(x_factor*xsiz, x_factor*ysiz),
+        surface = NumpySurface(data, size=(x_factor * xsiz, x_factor * ysiz),
                                unit=unit)
     surface = ScaledSurface(surface, zfac)
     return surface
+
 
 NumpyAscSurface = read_asc  # pylint: disable=invalid-name
 
@@ -271,15 +276,15 @@ def read_xyz(fobj):
     x, y, z = np.loadtxt(fobj, unpack=True)  # pylint: disable=invalid-name
 
     # Sort x-values into bins. Assume points on surface are equally spaced.
-    dx = x[1]-x[0]
-    binx = np.array(x/dx+0.5, dtype=int)
+    dx = x[1] - x[0]
+    binx = np.array(x / dx + 0.5, dtype=int)
     n = np.bincount(binx)
     ny = n[0]
     assert np.all(n == ny)
 
     # Sort y-values into bins.
-    dy = y[binx == 0][1]-y[binx == 0][0]
-    biny = np.array(y/dy+0.5, dtype=int)
+    dy = y[binx == 0][1] - y[binx == 0][0]
+    biny = np.array(y / dy + 0.5, dtype=int)
     n = np.bincount(biny)
     nx = n[0]
     assert np.all(n == nx)
@@ -293,7 +298,7 @@ def read_xyz(fobj):
     value_present[binx, biny] = True
     assert np.all(value_present)
 
-    return NumpySurface(data, size=(dx*nx, dy*ny))
+    return NumpySurface(data, size=(dx * nx, dy * ny))
 
 
 def read_x3p(fobj):
@@ -363,11 +368,11 @@ def read_x3p(fobj):
         data_link = record3.find('DataLink')
         binfn = data_link.find('PointDataLink').text
 
-        rawdata = x3p.open(binfn).read(nx*ny*dtype.itemsize)
-        data = np.frombuffer(rawdata, count=nx*ny*nz,
+        rawdata = x3p.open(binfn).read(nx * ny * dtype.itemsize)
+        data = np.frombuffer(rawdata, count=nx * ny * nz,
                              dtype=dtype).reshape(nx, ny).T
 
-    return NumpySurface(data, size=(xinc*nx, yinc*ny))
+    return NumpySurface(data, size=(xinc * nx, yinc * ny))
 
 
 def read_mat(fobj, size=None, factor=None, unit=None):
@@ -403,6 +408,7 @@ def read_mat(fobj, size=None, factor=None, unit=None):
     else:
         return surfaces
 
+
 def read_opd(fobj):
     """
     Load Wyko Vision OPD file.
@@ -414,6 +420,7 @@ def read_opd(fobj):
     """
 
     BLOCK_SIZE = 24
+
     def read_block(fobj):
         blkname = fobj.read(16).split(b'\0', 1)[0].decode('latin-1')
         blktype, blklen, blkattr = unpack('<hlH', fobj.read(8))
@@ -432,12 +439,12 @@ def read_opd(fobj):
     if dirname != 'Directory':
         raise IOError("Error reading directory block. "
                       "Header is '{}', expected 'Directory'".format(dirname))
-    num_blocks = dirlen//BLOCK_SIZE
-    if num_blocks*BLOCK_SIZE != dirlen:
+    num_blocks = dirlen // BLOCK_SIZE
+    if num_blocks * BLOCK_SIZE != dirlen:
         raise IOError('Directory length is not a multiple of the block size.')
 
     blocks = []
-    for i in range(num_blocks-1):
+    for i in range(num_blocks - 1):
         blocks += [read_block(fobj)]
 
     data = None
@@ -463,8 +470,8 @@ def read_opd(fobj):
             else:
                 raise IOError("Don't know how to handle element size {}."
                               .format(elsize))
-            rawdata = fobj.read(nx*ny*dtype.itemsize)
-            data = np.frombuffer(rawdata, count=nx*ny,
+            rawdata = fobj.read(nx * ny * dtype.itemsize)
+            data = np.frombuffer(rawdata, count=nx * ny,
                                  dtype=dtype).reshape(nx, ny)
         elif n == 'Wavelength':
             wavelength, = unpack('<f', fobj.read(4))
@@ -484,9 +491,9 @@ def read_opd(fobj):
         raise IOError('No data block encountered.')
 
     # Height are in nm, width in mm
-    surface = NumpySurface(data, size=(nx*pixel_size, ny*pixel_size*aspect),
+    surface = NumpySurface(data, size=(nx * pixel_size, ny * pixel_size * aspect),
                            unit='mm')
-    surface = ScaledSurface(surface, wavelength/mult*1e-6)
+    surface = ScaledSurface(surface, wavelength / mult * 1e-6)
     return surface
 
 
@@ -553,20 +560,20 @@ def read_di(fobj):
             else:
                 raise IOError("Don't know how to handle {} bytes per pixel "
                               "data.".format(elsize))
-            if nx*ny*elsize != length:
+            if nx * ny * elsize != length:
                 raise IOError('Data block size differs from extend of surface.')
             fobj.seek(offset)
-            rawdata = fobj.read(nx*ny*dtype.itemsize)
-            unscaleddata = np.frombuffer(rawdata, count=nx*ny,
+            rawdata = fobj.read(nx * ny * dtype.itemsize)
+            unscaleddata = np.frombuffer(rawdata, count=nx * ny,
                                          dtype=dtype).reshape(nx, ny)
 
             scale_re = re.match('^V \[(.*?)\] \(([0-9\.]+) (.*)\/LSB\) (.*) '
                                 '(.*)', p['@2:z scale'])
             quantity = scale_re.group(1).lower()
-            hard_scale = float(scale_re.group(4))/65536
+            hard_scale = float(scale_re.group(4)) / 65536
             hard_unit = scale_re.group(5)
 
-            s = scanner['@'+quantity].split()
+            s = scanner['@' + quantity].split()
             if s[0] != 'V' or len(s) < 2:
                 raise ValueError('Malformed Nanoscope DI file.')
             soft_scale = float(s[1])
@@ -597,7 +604,7 @@ def read_di(fobj):
 
             surface = NumpySurface(unscaleddata.T, size=(sx, sy), unit=unit)
             surface.info.update(dict(data_source=image_data_key))
-            surface = ScaledSurface(surface, hard_scale*hard_to_soft*soft_scale)
+            surface = ScaledSurface(surface, hard_scale * hard_to_soft * soft_scale)
             surfaces += [surface]
 
     if close_file:
@@ -629,7 +636,7 @@ def read_ibw(fobj):
         fobj.close()
 
     channel = 0
-    data = wave['wData'][:,:,channel].copy()
+    data = wave['wData'][:, :, channel].copy()
     # This is just a wild guess...
     z_unit = wave['wave_header']['dataUnits'][channel].decode('latin-1')
     xy_unit = wave['wave_header']['dimUnits'][channel, channel].decode('latin-1')
@@ -638,7 +645,7 @@ def read_ibw(fobj):
     sfA = wave['wave_header']['sfA']
     nx, ny = data.shape
 
-    surface = NumpySurface(data, size=(nx*sfA[0], ny*sfA[1]), unit=z_unit)
+    surface = NumpySurface(data, size=(nx * sfA[0], ny * sfA[1]), unit=z_unit)
 
     return surface
 
@@ -660,13 +667,13 @@ def read_hgt(fobj):
     fsize = fobj.tell()
     fobj.seek(0)
 
-    dim = int(np.sqrt(fsize/2))
-    if dim*dim*2 != fsize:
+    dim = int(np.sqrt(fsize / 2))
+    if dim * dim * 2 != fsize:
         raise RuntimeError('File size of {0} bytes does not match file size '
                            'for a map of dimension {1}x{1}.'.format(fsize,
                                                                     dim))
     data = np.fromfile(fobj, dtype=np.dtype('>i2'),
-                       count=dim*dim).reshape((dim, dim))
+                       count=dim * dim).reshape((dim, dim))
 
     if close_file:
         fobj.close()
