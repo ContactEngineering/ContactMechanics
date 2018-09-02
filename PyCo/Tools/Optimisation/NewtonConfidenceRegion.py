@@ -73,7 +73,7 @@ def newton_confidence_region(fun, x0, jac, hess, tol, store_iterates=None,
         options[maxiter_key] = 20
 
     counter = 0
-    x = np.matrix(x0.copy()).reshape((-1, 1))
+    x = np.array(x0.copy()).reshape((-1, 1))
     radius = radius0
     iterates = list()
     state = ''
@@ -89,7 +89,7 @@ def newton_confidence_region(fun, x0, jac, hess, tol, store_iterates=None,
         iterates.append(iterate)
     try:
         while True:
-            b = np.matrix(jac(x))  # pylint: disable=invalid-name
+            b = np.array(jac(x))  # pylint: disable=invalid-name
             norm_grad = np.linalg.norm(b)
             if norm_grad < tol:
                 raise ReachedTolerance(
@@ -100,13 +100,13 @@ def newton_confidence_region(fun, x0, jac, hess, tol, store_iterates=None,
                     options['maxiter']))
 
             # 1) solve sub-problem
-            Q = np.matrix(hess(x))  # pylint: disable=invalid-name
+            Q = np.array(hess(x))  # pylint: disable=invalid-name
             direction = method(b, Q, radius)
 
             # 2)
             xpd = x + direction
             rho = ((fun(x)-fun(xpd)) /
-                   (-float(.5*direction.T*Q*direction + direction.T*b)))
+                   (-float(.5*direction.T@Q@direction + direction.T@b)))
 
             # 3)
             if rho < eta1:

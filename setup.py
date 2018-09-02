@@ -96,5 +96,6 @@ setup(
     author_email = "lars.pastewka@imtek.uni-freiburg.de",
     description = "Efficient contact mechanics with Python",
     license = "MIT",
-    test_suite = 'tests'
+    test_suite = 'tests',
+    python_requires='>3.5.0'
 )

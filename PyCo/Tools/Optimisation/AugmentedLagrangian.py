@@ -154,15 +154,15 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
         if key not in options.keys():
             options[key] = val
 
-    if not isinstance(multiplier0, np.matrix):
+    if not isinstance(multiplier0, np.ndarray):
         raise Exception(
             "for sanity reasons, imma require multiplier0 to be column vector "
-            "of type  np.matrix, even if it's scalar. got a {}".format(
+            "of type  np.array, even if it's scalar. got a {}".format(
                 type(multiplier0)))
-    if multiplier0.shape[1] != 1 or len(multiplier0.shape) != 2:
+    if len(multiplier0.shape) != 2 or multiplier0.shape[1] != 1:
         raise Exception(
             "for sanity reasons, imma require multiplier0 to be column vector "
-            "of type  np.matrix, even if it's scalar")
+            "of type np.array, even if it's scalar")
     multiplier = multiplier0  # 'lam' in the objective
     penalty = penalty0        # 'c_pen' in the objective
     update_tol0 = penalty**alpha*update_tol0
@@ -243,7 +243,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
             constraints_eval = constraints(x, *args)
             norm_constraint = np.sqrt((constraints_eval**2).sum())
             norm_grad = np.linalg.norm(iterate.jac)
-            x = np.matrix(iterate.x, copy=False).reshape((-1, 1))
+            x = np.array(iterate.x, copy=False).reshape((-1, 1))
 
             # decide whether to update the multipliers or the penalty
             if norm_constraint <= update_tol:  # update multipliers

@@ -92,10 +92,10 @@ def mean_err(arr1, arr2, rfft=False):
                in zip(arr1.shape, arr2.shape)]
     if rfft:
         comp_sl[-1] = slice(0, comp_sl[-1].stop//2+1)
-    if arr1[comp_sl].shape != arr2[comp_sl].shape:
+    if arr1[tuple(comp_sl)].shape != arr2[tuple(comp_sl)].shape:
         raise Exception("The array shapes differ: a: {}, b:{}".format(
             arr1.shape, arr2.shape))
-    return abs(np.ravel(arr1[comp_sl]-arr2[comp_sl])).mean()
+    return abs(np.ravel(arr1[tuple(comp_sl)]-arr2[tuple(comp_sl)])).mean()
 
 
 def compute_wavevectors(resolution, size, nb_dims):
@@ -206,7 +206,7 @@ def compute_tilt_from_height(arr, size=None, full_output=False):
                    for x in x_grids]
     columns.append(np.ones_like(columns[-1]))
     # linear regression model
-    location_matrix = np.matrix(np.hstack(columns))
+    location_matrix = np.hstack(columns)
     offsets = np.ma.compressed(arr)
     #res = scipy.optimize.nnls(location_matrix, offsets)
     res = np.linalg.lstsq(location_matrix, offsets, rcond=None)
@@ -254,7 +254,7 @@ def compute_tilt_and_curvature(arr, size=None, full_output=False):
                    for x in x_grids]
     columns.append(np.ones_like(columns[-1]))
     # linear regression model
-    location_matrix = np.matrix(np.hstack(columns))
+    location_matrix = np.hstack(columns)
     offsets = np.ma.compressed(arr)
     #res = scipy.optimize.nnls(location_matrix, offsets)
     res = np.linalg.lstsq(location_matrix, offsets, rcond=None)
@@ -305,12 +305,12 @@ def shift_and_tilt_approx(arr, full_output=False):
         sh_ = arr.sum()
         shx = (arr*x_grids[0]).sum()
         shy = (arr*x_grids[1]).sum()
-        location_matrix = np.matrix(((sxx, sxy, sx_),
-                                     (sxy, syy, sy_),
-                                     (sx_, sy_, s__)))
-        offsets = np.matrix(((shx,),
-                             (shy,),
-                             (sh_, )))
+        location_matrix = np.array(((sxx, sxy, sx_),
+                                    (sxy, syy, sy_),
+                                    (sx_, sy_, s__)))
+        offsets = np.array(((shx,),
+                            (shy,),
+                            (sh_, )))
         coeffs = scipy.linalg.solve(location_matrix, offsets)
         corrective = coeffs[0]*x_grids[0] + coeffs[1]*x_grids[1] + coeffs[2]
         if full_output:

@@ -62,9 +62,9 @@ class NewtonConfidenceRegionTest(unittest.TestCase):
         def fun(x):
             return .5*x[0]**2 + 4.5 * x[1]**2
         def grad_f(x):
-            return np.matrix([x[0, 0], 9*x[1, 0]]).T
+            return np.array([x[0], 9*x[1]]).T
         def hess_f(x):
-            return np.matrix([[1, 0], [0, 9]])
+            return np.array([[1, 0], [0, 9]])
 
         self.fun = fun
         self.grad_f = grad_f
@@ -72,15 +72,15 @@ class NewtonConfidenceRegionTest(unittest.TestCase):
 
 
     def test_intersection_confidence_region(self):
-        x_start = np.matrix([0., 0]).T
-        direction = np.matrix([0, -2.]).T
+        x_start = np.array([0., 0]).T
+        direction = np.array([0, -2.]).T
         radius = 4
 
         step_len = intersection_confidence_region(x_start, direction, radius)
         self.assertTrue(step_len == 2)
 
     def test_dogleg(self):
-        x0 = np.matrix([9, 1]).T
+        x0 = np.array([9, 1]).T
         f = self.fun(x0)
         grad = self.grad_f(x0)
         hess = self.hess_f(x0)
@@ -112,7 +112,7 @@ class NewtonConfidenceRegionTest(unittest.TestCase):
         self.assertTrue(error < tol)
 
     def test_steihaug_toint(self):
-        x0 = np.matrix([9., 1.]).T
+        x0 = np.array([9., 1.]).T
         f = self.fun(x0)
         grad = self.grad_f(x0)
         hess = self.hess_f(x0)
@@ -216,13 +216,13 @@ class LinesearchTest(unittest.TestCase):
 
         def test_jac(x):
             x.shape=(-1, 1)
-            return np.matrix([[x[0, 0] + np.cos(x[1, 0])],
-                              [-x[0, 0] * np.sin(x[1, 0])]])
+            return np.array([[x[0, 0] + np.cos(x[1, 0])],
+                             [-x[0, 0] * np.sin(x[1, 0])]])
 
         def test_hess(x):
             x.shape=(-1, 1)
-            return np.matrix([[           1.,        -np.sin(x[1, 0])],
-                     [-np.sin(x[1, 0]), -x[0, 0] * np.cos(x[1, 0])]])
+            return np.array([[           1.,        -np.sin(x[1, 0])],
+                             [-np.sin(x[1, 0]), -x[0, 0] * np.cos(x[1, 0])]])
 
         self.fun = test_fun
         self.grad_f = test_jac
@@ -230,14 +230,14 @@ class LinesearchTest(unittest.TestCase):
 
 
     def test_line_search(self):
-        Q = np.matrix([[1., 0.],
-                       [0., 9.]])
-        obj = lambda x: float(0.5*x.T*Q*x)
-        grad = lambda x: Q*x
+        Q = np.array([[1., 0.],
+                      [0., 9.]])
+        obj = lambda x: float(0.5*x.T@Q@x)
+        grad = lambda x: Q@x
         hess_st = lambda x: Q
 
-        x = np.matrix([10, 1.]).T
-        d = np.matrix([-2., 1,]).T/np.sqrt(5)
+        x = np.array([10, 1.]).T
+        d = np.array([-2., 1,]).T/np.sqrt(5)
         alpha0 = 1e-3
         beta1, beta2 = 0.3, 0.7
         step_factor = 20
@@ -289,11 +289,11 @@ class AugmentedLagrangianTest(unittest.TestCase):
         under the constraint
         $$ x_1^2 + x_2^2 = 1$$
         """
-        Q = np.matrix([[4, 0], [0, 4.]])
-        b = np.matrix([[-1., 0]]).T
+        Q = np.array([[4, 0], [0, 4.]])
+        b = np.array([[-1., 0]]).T
         c = -1.
         def fun(x):
-            return .5*x.T*Q*x + x.T*b + c
+            return .5*x.T@Q@x + x.T@b + c
         def jac(x):
             return(Q*x+b)
 
@@ -301,23 +301,23 @@ class AugmentedLagrangianTest(unittest.TestCase):
             return Q
 
         cQ = .5*Q
-        cb = np.matrix(((0, 0.))).T
+        cb = np.array(((0, 0.))).T
         cc = -1.
         def constraint(x):
-            return .5*x.T*cQ*x + x.T*cb + cc
+            return .5*x.T@cQ@x + x.T@cb + cc
         def constraint_jac(x):
-            return (cQ*x + cb).T
+            return (cQ@x + cb).T
         def constraint_hess(x):
             return Q
 
         tol = 1.e-2
-        print(constraint_jac(np.matrix(([-1], [.1]))))
+        print(constraint_jac(np.array(([-1], [.1]))))
 
-        multiplier0 = np.matrix(((0.)))
+        multiplier0 = np.array(((0.,),))
         print("multiplier0 = {}".format(multiplier0))
         maxiter=1000
         result = minimize(
-            fun, x0=np.matrix(([-1], [.1])),
+            fun, x0=np.array(([-1], [.1])),
        	    constraints={'type':'eq','fun':constraint},
 	    method=augmented_lagrangian, tol=tol,
 	    options={'multiplier0': multiplier0,
