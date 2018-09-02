@@ -34,7 +34,7 @@ SOFTWARE.
 
 import numpy as np
 import scipy.stats as stats
-from ..Surface import NumpySurface
+from ..Surface import NumpyTopography
 from ..Tools.common import compute_wavevectors, ifftn, fftn
 from .SurfaceAnalysis import CharacterisePeriodicSurface
 
@@ -235,7 +235,7 @@ class RandomSurfaceExact(object):
         area = np.prod(self.size)
         profile = ifftn(active_coeffs, area).real
         self.active_coeffs = active_coeffs
-        return NumpySurface(profile, self.size)
+        return NumpyTopography(profile, self.size)
 
 
 class RandomSurfaceGaussian(RandomSurfaceExact):
@@ -406,4 +406,4 @@ class CapillaryWavesExact(object):
         area = np.prod(self.size)
         profile = ifftn(active_coeffs, area).real
         self.active_coeffs = active_coeffs
-        return NumpySurface(profile, self.size)
+        return NumpyTopography(profile, self.size)

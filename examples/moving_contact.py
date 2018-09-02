@@ -9,7 +9,7 @@ import numpy as np
 
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Surface import read_matrix, TranslatedSurface, CompoundSurface
+from PyCo.Surface import read_matrix, TranslatedTopography, CompoundTopography
 from PyCo.System import SystemFactory
 #from PyCo.Tools import compute_rms_height
 from PyCo.Tools.Logger import screen
@@ -41,11 +41,11 @@ print('RMS heights of surfaces = {} {}'.format(surface1.compute_rms_height(),
 nx, ny = surface1.shape
 
 # TranslatedSurface knows how to translate a surface into some direction.
-translated_surface1 = TranslatedSurface(surface1)
+translated_surface1 = TranslatedTopography(surface1)
 
 # This is the compound of the two surfaces, effectively creating a surface
 # that is the difference between the two profiles.
-compound_surface = CompoundSurface(translated_surface1, surface2)
+compound_surface = CompoundTopography(translated_surface1, surface2)
 
 # Periodic substrate and hard-wall interactions.
 substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sx))

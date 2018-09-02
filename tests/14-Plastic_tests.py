@@ -38,7 +38,7 @@ try:
     from scipy.optimize import bisect
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-    from PyCo.Surface import read, PlasticSurface
+    from PyCo.Surface import read, PlasticTopography
     from PyCo.System import SystemFactory
 except ImportError as err:
     import sys
@@ -52,7 +52,7 @@ class PlasticTest(unittest.TestCase):
         # area geometry
         surface = read('examples/surface1.out')
         system = SystemFactory(PeriodicFFTElasticHalfSpace(surface.shape, 1.0),
-                               HardWall(), PlasticSurface(surface, 0.0000000001))
+                               HardWall(), PlasticTopography(surface, 0.0000000001))
         offset = -0.002
         result = system.minimize_proxy(offset=offset)
         c = result.jac > 0.0

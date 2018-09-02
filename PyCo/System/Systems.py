@@ -335,7 +335,7 @@ class SmoothContactSystem(SystemBase):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.Surface)
+                            Surface.Topography)
         return is_ok
 
     def compute_repulsive_force(self):
@@ -552,7 +552,7 @@ class NonSmoothContactSystem(SystemBase):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.Surface)
+                            Surface.Topography)
         return is_ok
 
     @property

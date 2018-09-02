@@ -40,7 +40,7 @@ from zipfile import ZipFile
 
 import numpy as np
 
-from .SurfaceDescription import NumpySurface, ScaledSurface
+from .TopographyDescription import NumpyTopography, ScaledTopography
 
 ###
 
@@ -98,9 +98,9 @@ def read_matrix(fobj, size=None, factor=None):
                 raise FileNotFoundError(
                     "No such file or directory: '{}(.gz)'".format(
                         fobj))
-    surface = NumpySurface(np.loadtxt(fobj), size=size)
+    surface = NumpyTopography(np.loadtxt(fobj), size=size)
     if factor is not None:
-        surface = ScaledSurface(surface, factor)
+        surface = ScaledTopography(surface, factor)
     return surface
 
 
@@ -254,11 +254,11 @@ def read_asc(fobj, unit=None, x_factor=1.0, z_factor=1.0):
             zfac *= height_units[zunit] / height_units[unit]
 
     if xsiz is None or ysiz is None:
-        surface = NumpySurface(data, unit=unit)
+        surface = NumpyTopography(data, unit=unit)
     else:
-        surface = NumpySurface(data, size=(x_factor * xsiz, x_factor * ysiz),
-                               unit=unit)
-    surface = ScaledSurface(surface, zfac)
+        surface = NumpyTopography(data, size=(x_factor * xsiz, x_factor * ysiz),
+                                  unit=unit)
+    surface = ScaledTopography(surface, zfac)
     return surface
 
 
@@ -298,7 +298,7 @@ def read_xyz(fobj):
     value_present[binx, biny] = True
     assert np.all(value_present)
 
-    return NumpySurface(data, size=(dx * nx, dy * ny))
+    return NumpyTopography(data, size=(dx * nx, dy * ny))
 
 
 def read_x3p(fobj):
@@ -372,7 +372,7 @@ def read_x3p(fobj):
         data = np.frombuffer(rawdata, count=nx * ny * nz,
                              dtype=dtype).reshape(nx, ny).T
 
-    return NumpySurface(data, size=(xinc * nx, yinc * ny))
+    return NumpyTopography(data, size=(xinc * nx, yinc * ny))
 
 
 def read_mat(fobj, size=None, factor=None, unit=None):
@@ -399,9 +399,9 @@ def read_mat(fobj, size=None, factor=None, unit=None):
         except (AttributeError, ValueError):
             pass
         if is_2darray:
-            surface = NumpySurface(value, size=size, unit=unit)
+            surface = NumpyTopography(value, size=size, unit=unit)
             if factor is not None:
-                surface = ScaledSurface(surface, factor)
+                surface = ScaledTopography(surface, factor)
             surfaces += [surface]
     if len(surfaces) == 1:
         return surfaces[0]
@@ -491,9 +491,9 @@ def read_opd(fobj):
         raise IOError('No data block encountered.')
 
     # Height are in nm, width in mm
-    surface = NumpySurface(data, size=(nx * pixel_size, ny * pixel_size * aspect),
-                           unit='mm')
-    surface = ScaledSurface(surface, wavelength / mult * 1e-6)
+    surface = NumpyTopography(data, size=(nx * pixel_size, ny * pixel_size * aspect),
+                              unit='mm')
+    surface = ScaledTopography(surface, wavelength / mult * 1e-6)
     return surface
 
 
@@ -602,9 +602,9 @@ def read_di(fobj):
             else:
                 unit = (xy_unit, height_unit)
 
-            surface = NumpySurface(unscaleddata.T, size=(sx, sy), unit=unit)
+            surface = NumpyTopography(unscaleddata.T, size=(sx, sy), unit=unit)
             surface.info.update(dict(data_source=image_data_key))
-            surface = ScaledSurface(surface, hard_scale * hard_to_soft * soft_scale)
+            surface = ScaledTopography(surface, hard_scale * hard_to_soft * soft_scale)
             surfaces += [surface]
 
     if close_file:
@@ -645,7 +645,7 @@ def read_ibw(fobj):
     sfA = wave['wave_header']['sfA']
     nx, ny = data.shape
 
-    surface = NumpySurface(data, size=(nx * sfA[0], ny * sfA[1]), unit=z_unit)
+    surface = NumpyTopography(data, size=(nx * sfA[0], ny * sfA[1]), unit=z_unit)
 
     return surface
 
@@ -678,13 +678,13 @@ def read_hgt(fobj):
     if close_file:
         fobj.close()
 
-    return NumpySurface(data)
+    return NumpyTopography(data)
 
 
 def read_h5(fobj):
     import h5py
     h5 = h5py.File(fobj)
-    return NumpySurface(h5['surface'][...])
+    return NumpyTopography(h5['surface'][...])
 
 
 def detect_format(fobj):

@@ -39,7 +39,7 @@ import PyCo
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                  PeriodicFFTElasticHalfSpace)
-from PyCo.Surface import read, DetrendedSurface, PlasticSurface, ScaledSurface
+from PyCo.Surface import read, DetrendedTopography, PlasticTopography, ScaledTopography
 from PyCo.System import SystemFactory
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -344,7 +344,7 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
     if arguments.height_unit is not None:
         fac *= unit_to_meters[arguments.height_unit]/unit_to_meters[surface.unit]
     logger.pr('Rescaling surface heights by {}.'.format(fac))
-    surface = ScaledSurface(surface, fac)
+    surface = ScaledTopography(surface, fac)
 
 logger.pr('Surface has dimension of {} and size of {} {}.'.format(surface.shape,
                                                                   surface.size,
@@ -352,12 +352,12 @@ logger.pr('Surface has dimension of {} and size of {} {}.'.format(surface.shape,
 logger.pr('RMS height = {}, RMS slope = {}'.format(surface.compute_rms_height(),
                                                    surface.compute_rms_slope()))
 if arguments.detrend is not None:
-    surface = DetrendedSurface(surface, detrend_mode=arguments.detrend)
+    surface = DetrendedTopography(surface, detrend_mode=arguments.detrend)
     logger.pr('After detrending: RMS height = {}, RMS slope = {}' \
         .format(surface.compute_rms_height(), surface.compute_rms_slope()))
 
 if arguments.hardness is not None:
-    surface = PlasticSurface(surface, arguments.hardness)
+    surface = PlasticTopography(surface, arguments.hardness)
 
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':

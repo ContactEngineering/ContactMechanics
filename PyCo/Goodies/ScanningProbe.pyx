@@ -30,12 +30,12 @@ Boston, MA 02111-1307, USA.
 
 import numpy as np
 
-from PyCo.Surface import NumpySurface
+from PyCo.Surface import NumpyTopography
 from PyCo.Tools import _get_size
 
 ###
 
-cdef _scan_surface(int nx, int ny, double[:, :] surface, double tip_radius):
+cdef _scan_topography(int nx, int ny, double[:, :] surface, double tip_radius):
     scanned_surface = np.zeros([nx, ny])
     for i in range(nx):
         for j in range(ny):
@@ -57,5 +57,5 @@ cpdef scan_surface(surface, tip_radius):
     profile = surface.profile()
     nx, ny = surface.shape
     sx, sy = _get_size(surface)
-    return NumpySurface(_scan_surface(nx, ny, profile, tip_radius*nx/sx),
-                        size=(sx, sy))
+    return NumpyTopography(_scan_topography(nx, ny, profile, tip_radius*nx/sx),
+                           size=(sx, sy))

@@ -36,7 +36,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 
 import matplotlib.pyplot as plt
 
-from PyCo.Surface import read, DetrendedSurface
+from PyCo.Surface import read, DetrendedTopography
 from PyCo.Tools import power_spectrum_2D
 
 ###
@@ -60,8 +60,8 @@ arguments = parser.parse_args()
 
 ###
 
-surface = DetrendedSurface(read(arguments.filename),
-                           detrend_mode=arguments.detrend_mode)
+surface = DetrendedTopography(read(arguments.filename),
+                              detrend_mode=arguments.detrend_mode)
 unit = surface.unit
 nx, ny = surface.shape
 nbins = arguments.nbins

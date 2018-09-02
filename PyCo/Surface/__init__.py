@@ -32,10 +32,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .SurfaceDescription import (CompoundSurface, DetrendedSurface,
-                                 NumpySurface, PlasticSurface,
-                                 ScaledSurface, Sphere, Surface,
-                                 TranslatedSurface)
+from .TopographyDescription import (CompoundTopography, DetrendedTopography,
+                                    NumpyTopography, PlasticTopography,
+                                    ScaledTopography, Sphere, Topography,
+                                    TranslatedTopography)
 from .FromFile import (NumpyTxtSurface, NumpyAscSurface, read, read_asc,
                        read_di, read_h5, read_hgt, read_ibw, read_mat,
                        read_matrix, read_opd, read_x3p, read_xyz)

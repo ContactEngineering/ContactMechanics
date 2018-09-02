@@ -42,7 +42,7 @@ from ..Tools import (compute_rms_height, compute_rms_slope, compute_slope,
                      compute_tilt_and_curvature)
 
 
-class Surface(object, metaclass=abc.ABCMeta):
+class Topography(object, metaclass=abc.ABCMeta):
     """ Base class for geometries. These are used to define height profiles for
          contact problems"""
 
@@ -140,13 +140,13 @@ class Surface(object, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     def __add__(self, other):
-        return CompoundSurface(self, other)
+        return CompoundTopography(self, other)
 
     def __sub__(self, other):
-        return CompoundSurface(self, -1. * other)
+        return CompoundTopography(self, -1. * other)
 
     def __mul__(self, other):
-        return ScaledSurface(self, other)
+        return ScaledTopography(self, other)
 
     __rmul__ = __mul__
 
@@ -275,7 +275,7 @@ class Surface(object, metaclass=abc.ABCMeta):
         return laplacian
 
 
-class ScaledSurface(Surface):
+class ScaledTopography(Topography):
     """ used when geometries are scaled
     """
     name = 'scaled_surface'
@@ -287,7 +287,7 @@ class ScaledSurface(Surface):
         coeff -- Scaling factor
         """
         super().__init__()
-        assert isinstance(surf, Surface)
+        assert isinstance(surf, Topography)
         self.surf = surf
         self.coeff = float(coeff)
 
@@ -360,7 +360,7 @@ class ScaledSurface(Surface):
         return self.coeff * self.surf.profile()
 
 
-class DetrendedSurface(Surface):
+class DetrendedTopography(Topography):
     """ used when surface needs to be tilted
     """
     name = 'detrended_surface'
@@ -377,7 +377,7 @@ class DetrendedSurface(Surface):
             minimized.
         """
         super().__init__()
-        assert isinstance(surf, Surface)
+        assert isinstance(surf, Topography)
         self.surf = surf
         self._detrend_mode = detrend_mode
         self._detrend()
@@ -516,7 +516,7 @@ class DetrendedSurface(Surface):
                 .format(*str_coeffs)
 
 
-class TranslatedSurface(Surface):
+class TranslatedTopography(Topography):
     """ used when geometries are translated
     """
     name = 'translated_surface'
@@ -528,7 +528,7 @@ class TranslatedSurface(Surface):
         offset -- Translation offset in number of grid points
         """
         super().__init__()
-        assert isinstance(surf, Surface)
+        assert isinstance(surf, Topography)
         self.surf = surf
         self.offset = offset
 
@@ -569,7 +569,7 @@ class TranslatedSurface(Surface):
                        offsety, axis=1)
 
 
-class CompoundSurface(Surface):
+class CompoundTopography(Topography):
     """ used when geometries are combined
     """
     name = 'combined_surface'
@@ -617,7 +617,7 @@ class CompoundSurface(Surface):
                 self.surf_b.profile())
 
 
-class NumpySurface(Surface):
+class NumpyTopography(Topography):
     """ Dummy surface from a static array
     """
     name = 'surface_from_np_array'
@@ -659,7 +659,7 @@ class NumpySurface(Surface):
         return np.ma.getmask(self.__h) is not np.ma.nomask
 
 
-class Sphere(NumpySurface):
+class Sphere(NumpyTopography):
     """ Spherical surface. Corresponds to a cylinder in 2D
     """
     name = 'sphere'
@@ -734,7 +734,7 @@ class Sphere(NumpySurface):
         return self._centre
 
 
-class PlasticSurface(Surface):
+class PlasticTopography(Topography):
     """ Surface with an additional plastic deformation field.
     """
     name = 'surface_with_plasticity'

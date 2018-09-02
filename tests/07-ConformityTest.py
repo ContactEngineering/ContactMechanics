@@ -55,7 +55,7 @@ class SystemTest(unittest.TestCase):
                              PyCo.SolidMechanics.Substrates,
                              PyCo.Surface,
                              PyCo.Surface.FromFile,
-                             PyCo.Surface.SurfaceDescription,
+                             PyCo.Surface.TopographyDescription,
                              PyCo.System,
                              PyCo.System.SmoothSystemSpecialisations,
                              PyCo.System.Systems,

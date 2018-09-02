@@ -41,8 +41,8 @@ try:
     from tempfile import TemporaryDirectory as tmp_dir
     import os
 
-    from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpySurface,
-                              DetrendedSurface, Sphere, read, read_asc, read_di,
+    from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpyTopography,
+                              DetrendedTopography, Sphere, read, read_asc, read_di,
                               read_h5, read_hgt, read_ibw, read_mat, read_opd,
                               read_x3p)
     from PyCo.Surface.FromFile import detect_format, get_unit_conversion_factor
@@ -73,7 +73,7 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
                 r2[i,j] = x[i]**2 + y[j]**2
         h = np.sqrt(R**2-r2)-R # profile of sphere
 
-        S1 = NumpySurface(h)
+        S1 = NumpyTopography(h)
         with tmp_dir() as dir:
             fname = os.path.join(dir,"surface")
             S1.save(dir+"/surface")
@@ -93,7 +93,7 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
         x = y = np.linspace(0, 8.5, 6)[:-1]
         X, Y = np.meshgrid(x, y)
         F = a*X**2 + b*Y**2
-        surf = NumpySurface(F, size=size)
+        surf = NumpyTopography(F, size=size)
         L = np.zeros_like(F)
         for i in range(L.shape[0]):
             for j in range(L.shape[1]):
@@ -149,14 +149,14 @@ class DetrendedSurfaceTest(unittest.TestCase):
         d = .2
         arr = np.arange(5)*a+d
         arr = arr + np.arange(6).reshape((-1, 1))*b
-        surf = DetrendedSurface(NumpySurface(arr), detrend_mode='slope')
+        surf = DetrendedTopography(NumpyTopography(arr), detrend_mode='slope')
         self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(compute_rms_slope(surf), 0)
-        surf = DetrendedSurface(NumpySurface(arr), detrend_mode='height')
+        surf = DetrendedTopography(NumpyTopography(arr), detrend_mode='height')
         self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(compute_rms_slope(surf), 0)
         self.assertTrue(compute_rms_height(surf) < compute_rms_height(arr))
-        surf2 = DetrendedSurface(NumpySurface(arr, size=(1,1)), detrend_mode='height')
+        surf2 = DetrendedTopography(NumpyTopography(arr, size=(1, 1)), detrend_mode='height')
         self.assertAlmostEqual(compute_rms_slope(surf2), 0)
         self.assertTrue(compute_rms_height(surf2) < compute_rms_height(arr))
         self.assertAlmostEqual(compute_rms_height(surf), compute_rms_height(surf2))
@@ -170,7 +170,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         x = np.arange(5).reshape((1, -1))
         y = np.arange(6).reshape((-1, 1))
         arr = f+x*a+y*b+x*x*c+y*y*d+x*y*e
-        surf = DetrendedSurface(NumpySurface(arr, size=(3., 2.5)), detrend_mode='curvature')
+        surf = DetrendedTopography(NumpyTopography(arr, size=(3., 2.5)), detrend_mode='curvature')
         self.assertAlmostEqual(surf.coeffs[0], -2*b)
         self.assertAlmostEqual(surf.coeffs[1], -2*a)
         self.assertAlmostEqual(surf.coeffs[2], -4*d)
@@ -182,9 +182,9 @@ class DetrendedSurfaceTest(unittest.TestCase):
 
     def test_randomly_rough(self):
         surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
-        cut = NumpySurface(surface[:64,:64], size=(64., 64.))
-        untilt1 = DetrendedSurface(cut, detrend_mode='height')
-        untilt2 = DetrendedSurface(cut, detrend_mode='slope')
+        cut = NumpyTopography(surface[:64, :64], size=(64., 64.))
+        untilt1 = DetrendedTopography(cut, detrend_mode='height')
+        untilt2 = DetrendedTopography(cut, detrend_mode='slope')
         self.assertTrue(untilt1.compute_rms_height() < untilt2.compute_rms_height())
         self.assertTrue(untilt1.compute_rms_slope() > untilt2.compute_rms_slope())
 

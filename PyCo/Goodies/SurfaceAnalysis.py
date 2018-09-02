@@ -40,7 +40,7 @@ import scipy
 from scipy.signal import get_window
 
 from ..Tools.common import compute_wavevectors, fftn, get_q_from_lambda
-from ..Surface import NumpySurface
+from ..Surface import NumpyTopography
 
 
 class CharacterisePeriodicSurface(object):
@@ -286,13 +286,13 @@ class CharacterisePeriodicSurface(object):
         return self.surface.compute_rms_slope()
 
     def compute_rms_height_q_space(self):  # pylint: disable=missing-docstring
-        tmp_surf = NumpySurface(self.surface.profile*self.window,
-                                size=self.surface.size)
+        tmp_surf = NumpyTopography(self.surface.profile * self.window,
+                                   size=self.surface.size)
         return tmp_surf.compute_rms_height_q_space()
 
     def compute_rms_slope_q_space(self):  # pylint: disable=missing-docstring
-        tmp_surf = NumpySurface(self.surface.profile()*self.window,
-                                size=self.surface.size)
+        tmp_surf = NumpyTopography(self.surface.profile() * self.window,
+                                   size=self.surface.size)
         return tmp_surf.compute_rms_slope_q_space()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):

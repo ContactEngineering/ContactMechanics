@@ -64,7 +64,7 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.PlasticSurface)
+                            Surface.PlasticTopography)
         return is_ok
 
     def minimize_proxy(self, **kwargs):

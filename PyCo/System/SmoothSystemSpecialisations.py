@@ -40,7 +40,7 @@ import scipy
 
 from .Systems import SmoothContactSystem
 from .Systems import IncompatibleResolutionError
-from ..Surface import NumpySurface
+from ..Surface import NumpyTopography
 from .. import ContactMechanics, SolidMechanics, Surface
 
 
@@ -159,7 +159,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.Surface)
+                            Surface.Topography)
         return is_ok
 
     def objective(self, offset, disp0=None, gradient=False, disp_scale=1.):
@@ -228,7 +228,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                                            np.zeros(sm_res))
 
         sm_substrate = self.substrate.spawn_child(sm_res)
-        sm_surface = NumpySurface(sm_surf)
+        sm_surface = NumpyTopography(sm_surf)
         # It is necessary to copy the interaction, or else deproxifying an
         # instance of this class changes the babushka!
         self.babushka = SmoothContactSystem(
