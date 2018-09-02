@@ -224,7 +224,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                      self.resolution), disp0)  # nopep8
 
         self.compute_babushka_bounds(sm_res)
-        sm_surf = self._get_babushka_array(self.surface.profile(),
+        sm_surf = self._get_babushka_array(self.surface.array(),
                                            np.zeros(sm_res))
 
         sm_substrate = self.substrate.spawn_child(sm_res)

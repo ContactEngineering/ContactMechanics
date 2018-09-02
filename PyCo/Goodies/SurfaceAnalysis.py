@@ -84,7 +84,7 @@ class CharacterisePeriodicSurface(object):
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
         area = np.prod(size)
-        h_a = fftn(self.surface.profile()*self.window, area)
+        h_a = fftn(self.surface.array() * self.window, area)
         C_q = 1/area*(np.conj(h_a)*h_a).real
 
         q_vecs = compute_wavevectors(res, size, self.surface.dim)
@@ -101,7 +101,7 @@ class CharacterisePeriodicSurface(object):
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
 
-        tmp = np.fft.fft(self.surface.profile()*self.window, axis=0)
+        tmp = np.fft.fft(self.surface.array() * self.window, axis=0)
         D_q_x = np.conj(tmp)*tmp
         D_q = np.mean(D_q_x, axis=1).real
 
@@ -286,12 +286,12 @@ class CharacterisePeriodicSurface(object):
         return self.surface.compute_rms_slope()
 
     def compute_rms_height_q_space(self):  # pylint: disable=missing-docstring
-        tmp_surf = NumpyTopography(self.surface.profile * self.window,
+        tmp_surf = NumpyTopography(self.surface.array * self.window,
                                    size=self.surface.size)
         return tmp_surf.compute_rms_height_q_space()
 
     def compute_rms_slope_q_space(self):  # pylint: disable=missing-docstring
-        tmp_surf = NumpyTopography(self.surface.profile() * self.window,
+        tmp_surf = NumpyTopography(self.surface.array() * self.window,
                                    size=self.surface.size)
         return tmp_surf.compute_rms_slope_q_space()
 

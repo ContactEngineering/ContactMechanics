@@ -51,10 +51,10 @@ def test_surf_analysis(surf, name):
     plt.loglog(q, C, alpha=.1)
     mean, err, q_g = surf_char.grouped_stats(100)
     ax.errorbar(q_g, mean, yerr=err)
-    ax.set_title("{}: H={:.2e}, h_rms={:.2e}".format(name, surf_char.estimate_hurst(), np.sqrt((surf.profile()**2).mean())))
+    ax.set_title("{}: H={:.2e}, h_rms={:.2e}".format(name, surf_char.estimate_hurst(), np.sqrt((surf.array() ** 2).mean())))
     a, b = np.polyfit(np.log(q), np.log(C), 1)
     ax.plot(q, q**a*np.exp(b))
-    print(surf.profile().mean())
+    print(surf.array().mean())
     print("(min, max)(C) : {}".format((C.min(), C.max())))
 
 def main():

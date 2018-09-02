@@ -86,7 +86,7 @@ class AdhesionTest(unittest.TestCase):
             area = []
             for _disp0 in disp0:
                 result = system.minimize_proxy(_disp0,
-                                               lbounds=ext_surface.profile()+_disp0,
+                                               lbounds=ext_surface.array() + _disp0,
                                                tol=self.tol)
                 u = result.x
                 u.shape = ext_surface.shape

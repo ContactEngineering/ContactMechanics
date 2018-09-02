@@ -58,8 +58,8 @@ class PlasticTest(unittest.TestCase):
         c = result.jac > 0.0
         ncontact = c.sum()
 
-        bearing_area = bisect(lambda x: (surface.profile()>x).sum()-ncontact, -0.03, 0.03)
-        cba = surface.profile()>bearing_area
+        bearing_area = bisect(lambda x: (surface.array() > x).sum() - ncontact, -0.03, 0.03)
+        cba = surface.array() > bearing_area
 
         self.assertTrue(np.logical_not(c == cba).sum() < 25)
 

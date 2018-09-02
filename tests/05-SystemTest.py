@@ -431,7 +431,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         disp[:ref_data.size, :ref_data.size] = -ref_data.variables['u'][0]
         gap = S.compute_gap(disp, offset)
         print("gap:     min, max = {}, offset = {}".format((gap.min(), gap.max()), offset))
-        print("profile: min, max = {}".format((S.surface.profile().min(), S.surface.profile().max())))
+        print("profile: min, max = {}".format((S.surface.array().min(), S.surface.array().max())))
         options = dict(ftol = 1e-15, gtol = 1e-12)
         result = minimize(fun, disp, jac=True, callback=S.callback(force=True), method = 'L-BFGS-B', options=options)
 

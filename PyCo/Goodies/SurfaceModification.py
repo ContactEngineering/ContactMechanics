@@ -60,7 +60,7 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
 
     def generate_amplitudes(self):
         area = np.prod(self.size)
-        self.coeffs = fftn(self.surface.profile(), area)
+        self.coeffs = fftn(self.surface.array(), area)
 
 
 def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None,

@@ -80,8 +80,8 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
 
             S2 = NumpyTxtSurface(fname)
         S3 = Sphere(R, (res, res), (l, l), (x_c, y_c))
-        self.assertTrue(np.array_equal(S1.profile(), S2.profile()))
-        self.assertTrue(np.array_equal(S1.profile(), S3.profile()),)
+        self.assertTrue(np.array_equal(S1.array(), S2.array()))
+        self.assertTrue(np.array_equal(S1.array(), S3.array()), )
 
     def test_laplacian_estimation(self):
         a = np.random.rand()-.5

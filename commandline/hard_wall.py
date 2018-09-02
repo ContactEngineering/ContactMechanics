@@ -92,7 +92,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     """
 
     # Get the profile as a numpy array
-    profile = surface.profile()
+    profile = surface.array()
 
     # Find max, min and mean heights
     top = np.max(profile)

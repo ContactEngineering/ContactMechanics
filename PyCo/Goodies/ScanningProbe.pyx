@@ -54,7 +54,7 @@ cpdef scan_surface(surface, tip_radius):
     Scan surface with a power-law shaped tip.
     """
 
-    profile = surface.profile()
+    profile = surface.array()
     nx, ny = surface.shape
     sx, sy = _get_size(surface)
     return NumpyTopography(_scan_topography(nx, ny, profile, tip_radius*nx/sx),

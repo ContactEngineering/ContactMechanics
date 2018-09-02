@@ -64,7 +64,7 @@ container = NetCDFContainer('traj.nc', mode='w', double=True)
 # NetCDF needs to know the resolution/shape
 container.set_shape(surface2)
 # This creates a field called 'surface2' inside the NetCDF file.
-container.surface2 = surface2.profile()
+container.surface2 = surface2.array()
 
 # Loop over nd displacement steps.
 nd = 3
@@ -90,7 +90,7 @@ for i, c in zip(range(0, step_size*nd, step_size), ['r', 'g', 'b', 'y']):
 
     # Dump the information to the NetCDF file.
     frame = container.get_next_frame()
-    frame.translated_surface1 = translated_surface1.profile()
+    frame.translated_surface1 = translated_surface1.array()
     frame.displacements = disp
     frame.forces = disp
 

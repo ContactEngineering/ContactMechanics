@@ -58,8 +58,8 @@ def main():
         h_rms_fromC_in = 2*np.pi*np.sqrt((abs(surf_gen.active_coeffs)**2/4/np.pi**2).sum())
         area = np.prod(siz)
         nb_pts = np.prod(res)
-        space_integral = (surf.profile()**2).sum()*area/nb_pts
-        H = area/nb_pts*np.fft.fftn(surf.profile())
+        space_integral = (surf.array() ** 2).sum() * area / nb_pts
+        H = area/nb_pts*np.fft.fftn(surf.array())
         frequ_integral = (np.conj(H)*H).sum().real/np.prod(siz)
         print("Parseval: {} =?= {}, rel_error = {}".format(space_integral, frequ_integral, abs(1-space_integral/frequ_integral)))
 

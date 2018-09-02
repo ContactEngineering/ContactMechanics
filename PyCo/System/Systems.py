@@ -123,10 +123,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         """
         if self.dim == 1:
             return (disp[:self.resolution[0]] -
-                    (self.surface.profile(*profile_args, **profile_kwargs) +
+                    (self.surface.array(*profile_args, **profile_kwargs) +
                      offset))
         return (disp[:self.resolution[0], :self.resolution[1]] -
-                (self.surface.profile(*profile_args, **profile_kwargs) +
+                (self.surface.array(*profile_args, **profile_kwargs) +
                  offset))
 
     @abc.abstractmethod
