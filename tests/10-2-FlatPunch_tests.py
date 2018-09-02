@@ -37,7 +37,7 @@ try:
     import numpy as np
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Surface import NumpyTopography
+    from PyCo.Topography import NumpyTopography
     from PyCo.System import SystemFactory
 except ImportError as err:
     import sys

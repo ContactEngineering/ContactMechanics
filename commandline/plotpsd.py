@@ -36,7 +36,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 
 import matplotlib.pyplot as plt
 
-from PyCo.Surface import read, DetrendedTopography
+from PyCo.Topography import read, DetrendedTopography
 from PyCo.Tools import power_spectrum_2D
 
 ###

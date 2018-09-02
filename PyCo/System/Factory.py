@@ -31,7 +31,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from .. import ContactMechanics, SolidMechanics, Surface
+from .. import ContactMechanics, SolidMechanics, Topography
 from ..Tools import compare_containers
 from .Systems import SystemBase
 from .Systems import IncompatibleFormulationError
@@ -48,7 +48,7 @@ def SystemFactory(substrate, interaction, surface):
     substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                    the substrate
     interaction -- An instance of Interaction. Defines the contact formulation
-    surface     -- An instance of Surface, defines the profile.
+    surface     -- An instance of Topography, defines the profile.
     """
     # pylint: disable=invalid-name
     # pylint: disable=no-member

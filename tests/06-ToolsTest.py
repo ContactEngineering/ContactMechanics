@@ -38,7 +38,7 @@ try:
     import warnings
 
     import PyCo.Tools as Tools
-    from PyCo.Surface import NumpyTopography
+    from PyCo.Topography import NumpyTopography
     from PyCo.Goodies import RandomSurfaceGaussian
 except ImportError as err:
     import sys

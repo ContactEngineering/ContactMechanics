@@ -50,7 +50,7 @@ def autocorrelation_1D(surface_xy,  # pylint: disable=invalid-name
         Physical size of the 2D grid. (Default: Size is equal to number of grid
         points.)
     periodic : bool, optional
-        Surface is periodic topography map. (Default: False)
+        Topography is periodic topography map. (Default: False)
 
     Returns
     -------
@@ -111,7 +111,7 @@ def autocorrelation_2D(surface_xy, nbins=100,  # pylint: disable=invalid-name
         Physical size of the 2D grid. (Default: Size is equal to number of grid
         points.)
     periodic : bool, optional
-        Surface is periodic topography map. (Default: False)
+        Topography is periodic topography map. (Default: False)
     return_map : bool, optional
         Return full 2D autocorrelation map. (Default: False)
 

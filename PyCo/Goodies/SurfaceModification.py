@@ -46,7 +46,7 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
         """
         Generates a surface with an Gaussian amplitude distribution
         Keyword Arguments:
-        surface -- Surface to be modified.
+        surface -- Topography to be modified.
         """
         self.surface = surface
         surf_char = CharacterisePeriodicSurface(self.surface)

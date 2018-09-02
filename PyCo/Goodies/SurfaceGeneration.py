@@ -34,7 +34,7 @@ SOFTWARE.
 
 import numpy as np
 import scipy.stats as stats
-from ..Surface import NumpyTopography
+from ..Topography import NumpyTopography
 from ..Tools.common import compute_wavevectors, ifftn, fftn
 from .SurfaceAnalysis import CharacterisePeriodicSurface
 
@@ -296,7 +296,7 @@ class CapillaryWavesExact(object):
                              dimension. If the tuple has less entries than dimensions,
                              the last value in repeated.
         mass_density      -- Mass density
-        surface_tension   -- Surface tension
+        surface_tension   -- Topography tension
         bending_stiffness -- Bending stiffness
         rms_height        -- root mean square asperity height
         rms_slope         -- root mean square slope of surface

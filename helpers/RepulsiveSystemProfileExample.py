@@ -37,7 +37,7 @@ import numpy as np
 
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from PyCo.ContactMechanics import HardWall
-from PyCo.Surface import Sphere
+from PyCo.Topography import Sphere
 from PyCo.System import SystemFactory
 import sys
 

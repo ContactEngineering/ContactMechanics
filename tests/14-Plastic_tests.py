@@ -38,7 +38,7 @@ try:
     from scipy.optimize import bisect
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-    from PyCo.Surface import read, PlasticTopography
+    from PyCo.Topography import read, PlasticTopography
     from PyCo.System import SystemFactory
 except ImportError as err:
     import sys

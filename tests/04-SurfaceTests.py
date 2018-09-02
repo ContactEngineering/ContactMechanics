@@ -41,11 +41,11 @@ try:
     from tempfile import TemporaryDirectory as tmp_dir
     import os
 
-    from PyCo.Surface import (NumpyTxtSurface, NumpyAscSurface, NumpyTopography,
-                              DetrendedTopography, Sphere, read, read_asc, read_di,
-                              read_h5, read_hgt, read_ibw, read_mat, read_opd,
-                              read_x3p)
-    from PyCo.Surface.FromFile import detect_format, get_unit_conversion_factor
+    from PyCo.Topography import (NumpyTxtSurface, NumpyAscSurface, NumpyTopography,
+                                 DetrendedTopography, Sphere, read, read_asc, read_di,
+                                 read_h5, read_hgt, read_ibw, read_mat, read_opd,
+                                 read_x3p)
+    from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor
     from PyCo.Tools import (compute_rms_height, compute_rms_slope,
                             compute_slope, shift_and_tilt)
     from PyCo.Goodies.SurfaceGeneration import RandomSurfaceGaussian

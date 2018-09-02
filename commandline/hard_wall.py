@@ -39,7 +39,7 @@ import PyCo
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                  PeriodicFFTElasticHalfSpace)
-from PyCo.Surface import read, DetrendedTopography, PlasticTopography, ScaledTopography
+from PyCo.Topography import read, DetrendedTopography, PlasticTopography, ScaledTopography
 from PyCo.System import SystemFactory
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -70,7 +70,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     ----------
     system : PyCo.System.SystemBase object
         The contact mechanical system.
-    surface : PyCo.Surface.Surface object
+    surface : PyCo.Topography.Topography object
         The rigid rough surface.
     history : tuple
         History returned by past calls to next_step
@@ -325,7 +325,7 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 
 ###
 
-# Read a surface topography from a text file. Returns a PyCo.Surface.Surface
+# Read a surface topography from a text file. Returns a PyCo.Topography.Topography
 # object.
 surface = read(arguments.filename)
 # Set the *physical* size of the surface. We here set it to equal the shape,
@@ -346,7 +346,7 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
     logger.pr('Rescaling surface heights by {}.'.format(fac))
     surface = ScaledTopography(surface, fac)
 
-logger.pr('Surface has dimension of {} and size of {} {}.'.format(surface.shape,
+logger.pr('Topography has dimension of {} and size of {} {}.'.format(surface.shape,
                                                                   surface.size,
                                                                   surface.unit))
 logger.pr('RMS height = {}, RMS slope = {}'.format(surface.compute_rms_height(),

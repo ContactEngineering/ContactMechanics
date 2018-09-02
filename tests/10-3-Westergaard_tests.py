@@ -38,7 +38,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.ReferenceSolutions.Westergaard import _pressure
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
-    from PyCo.Surface import NumpyTopography
+    from PyCo.Topography import NumpyTopography
     from PyCo.System import SystemFactory
     from PyCo.Tools.Logger import screen
     from .PyCoTest import PyCoTestCase

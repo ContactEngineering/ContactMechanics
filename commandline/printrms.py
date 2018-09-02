@@ -36,7 +36,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 import numpy as np
 import matplotlib.pyplot as plt
 
-from PyCo.Surface.FromFile import read, detect_format
+from PyCo.Topography.FromFile import read, detect_format
 
 ###
 

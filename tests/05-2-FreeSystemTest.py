@@ -45,7 +45,7 @@ try:
     from PyCo.System import SystemFactory
     import PyCo.SolidMechanics as Solid
     import PyCo.ContactMechanics as Contact
-    import PyCo.Surface as Surface
+    import PyCo.Topography as Surface
     import PyCo.Tools as Tools
 except ImportError as err:
     import sys
@@ -71,8 +71,8 @@ class FastSystemTest(unittest.TestCase):
         self.interaction = Contact.LJ93smooth(self.eps, self.sig, self.gam)
         self.min_pot = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.surface = Surface.Sphere(self.radius, self.res, self.size,
-                                      standoff=float('inf'))
+        self.surface = Topography.Sphere(self.radius, self.res, self.size,
+                                         standoff=float('inf'))
 
     def test_FastSmoothContactSystem(self):
         S = FastSmoothContactSystem(self.substrate,
@@ -252,7 +252,7 @@ class FastSystemTest(unittest.TestCase):
                 res, young[i], size[i])
             interaction = Contact.LJ93smoothMin(
                 eps[i], sig[i], gam[i])
-            surface = Surface.Sphere(
+            surface = Topography.Sphere(
                 radius[i], res, size[i], standoff=float(sig[i]*1000))
             systems.append(SystemFactory(substrate, interaction, surface))
             offsets.append(.8*systems[i].interaction.r_c)

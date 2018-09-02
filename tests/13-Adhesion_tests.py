@@ -44,7 +44,7 @@ try:
     from PyCo.ContactMechanics import ExpPotential
     from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                      PeriodicFFTElasticHalfSpace)
-    from PyCo.Surface import Sphere
+    from PyCo.Topography import Sphere
     from PyCo.System import SystemFactory, SmoothContactSystem
 except ImportError as err:
     import sys

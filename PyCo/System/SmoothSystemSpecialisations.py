@@ -40,8 +40,8 @@ import scipy
 
 from .Systems import SmoothContactSystem
 from .Systems import IncompatibleResolutionError
-from ..Surface import NumpyTopography
-from .. import ContactMechanics, SolidMechanics, Surface
+from ..Topography import NumpyTopography
+from .. import ContactMechanics, SolidMechanics, Topography
 
 
 # convenient container for storing correspondences betwees small and large
@@ -83,7 +83,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                        forces etc, these are supposed to be expressed per unit
                        area in whatever units you use. The conversion is
                        performed by the system
-        surface     -- An instance of Surface, defines the profile.
+        surface     -- An instance of Topography, defines the profile.
         margin      -- (default 4) safety margin (in pixels) around the initial
                        contact area bounding box
         """
@@ -159,7 +159,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.Topography)
+                            Topography.Topography)
         return is_ok
 
     def objective(self, offset, disp0=None, gradient=False, disp_scale=1.):

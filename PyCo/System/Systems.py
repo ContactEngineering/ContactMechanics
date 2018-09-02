@@ -37,7 +37,7 @@ import abc
 import numpy as np
 import scipy
 
-from .. import ContactMechanics, SolidMechanics, Surface
+from .. import ContactMechanics, SolidMechanics, Topography
 from ..Tools import compare_containers
 from ..Tools.Optimisation import constrained_conjugate_gradients, simple_relaxation
 
@@ -64,7 +64,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                        forces etc, these are supposed to be expressed per unit
                        area in whatever units you use. The conversion is
                        performed by the system
-        surface     -- An instance of Surface, defines the profile.
+        surface     -- An instance of Topography, defines the profile.
         """
         self.substrate = substrate
         self.area_per_pt = self.substrate.area_per_pt
@@ -304,7 +304,7 @@ class SmoothContactSystem(SystemBase):
                        forces etc, these are supposed to be expressed per unit
                        area in whatever units you use. The conversion is
                        performed by the system
-        surface     -- An instance of Surface, defines the profile.
+        surface     -- An instance of Topography, defines the profile.
         """
         super().__init__(substrate, interaction, surface)
         if not compare_containers(surface.resolution, substrate.resolution):
@@ -335,7 +335,7 @@ class SmoothContactSystem(SystemBase):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.Topography)
+                            Topography.Topography)
         return is_ok
 
     def compute_repulsive_force(self):
@@ -519,7 +519,7 @@ class NonSmoothContactSystem(SystemBase):
                        forces etc, these are supposed to be expressed per unit
                        area in whatever units you use. The conversion is
                        performed by the system
-        surface     -- An instance of Surface, defines the profile.
+        surface     -- An instance of Topography, defines the profile.
         """
         super().__init__(substrate, interaction, surface)
         if not compare_containers(surface.resolution, substrate.resolution):
@@ -552,7 +552,7 @@ class NonSmoothContactSystem(SystemBase):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.Topography)
+                            Topography.Topography)
         return is_ok
 
     @property

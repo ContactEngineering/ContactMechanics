@@ -9,7 +9,7 @@ import numpy as np
 
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Surface import read_matrix, TranslatedTopography, CompoundTopography
+from PyCo.Topography import read_matrix, TranslatedTopography, CompoundTopography
 from PyCo.System import SystemFactory
 #from PyCo.Tools import compute_rms_height
 from PyCo.Tools.Logger import screen

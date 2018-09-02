@@ -40,7 +40,7 @@ import scipy
 from scipy.signal import get_window
 
 from ..Tools.common import compute_wavevectors, fftn, get_q_from_lambda
-from ..Surface import NumpyTopography
+from ..Topography import NumpyTopography
 
 
 class CharacterisePeriodicSurface(object):
@@ -52,7 +52,7 @@ class CharacterisePeriodicSurface(object):
     def __init__(self, surface, one_dimensional=False):
         """
         Keyword Arguments:
-        surface -- Instance of PyCo.Surface or subclass with specified
+        surface -- Instance of PyCo.Topography or subclass with specified
                    size
         one_dimensional -- (default False). if True, evaluation of 1D (line-
                            scan) power spectrum is emulated
@@ -60,7 +60,7 @@ class CharacterisePeriodicSurface(object):
         # pylint: disable=invalid-name
         self.surface = surface
         if self.surface.size is None:
-            raise Exception("Surface size has to be known (and specified)!")
+            raise Exception("Topography size has to be known (and specified)!")
         if self.surface.dim != 2:
             raise Exception("Only 2D surfaces, for the time being")
         if self.surface.size[0] != self.surface.size[1]:
@@ -79,7 +79,7 @@ class CharacterisePeriodicSurface(object):
     def eval(self):
         """
         Generates the phases and amplitudes, readies the metasurface to
-        generate Surface objects
+        generate Topography objects
         """
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
@@ -96,7 +96,7 @@ class CharacterisePeriodicSurface(object):
     def eval_1D(self):  # pylint: disable=invalid-name
         """
         Generates the phases and amplitudes, readies the metasurface to
-        generate Surface objects
+        generate Topography objects
         """
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
@@ -412,7 +412,7 @@ class CharacteriseSurface(CharacterisePeriodicSurface):
     def __init__(self, surface, window_type='hanning', window_params=None):
         """
         Keyword Arguments:
-        surface       -- Instance of PyCo.Surface or subclass with
+        surface       -- Instance of PyCo.Topography or subclass with
                          specified size
         window_type   -- (default 'hanning') numpy windowing function name
         window_params -- (default dict())
