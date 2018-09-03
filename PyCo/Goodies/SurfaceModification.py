@@ -37,7 +37,8 @@ from scipy.optimize import brentq
 
 from .SurfaceAnalysis import CharacterisePeriodicSurface
 from .SurfaceGeneration import RandomSurfaceExact
-from ..Tools.common import compute_rms_slope, compute_rms_curvature, fftn
+from ..Tools.common import fftn
+from ..Topography import compute_rms_slope, compute_rms_curvature
 
 
 class ModifyExistingPeriodicSurface(RandomSurfaceExact):

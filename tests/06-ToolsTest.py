@@ -37,8 +37,9 @@ try:
     import numpy as np
     import warnings
 
-    import PyCo.Tools as Tools
-    from PyCo.Topography import NumpyTopography
+    from PyCo.Tools import evaluate_gradient, mean_err
+    from PyCo.Topography import (autocorrelation_1D, compute_derivative, compute_tilt_from_height, shift_and_tilt,
+                                 shift_and_tilt_approx, shift_and_tilt_from_slope, NumpyTopography)
     from PyCo.Goodies import RandomSurfaceGaussian
 except ImportError as err:
     import sys
@@ -55,8 +56,8 @@ class ToolTest(unittest.TestCase):
         tol = 1e-8
         f = fun(x)
         g = grad(x)
-        approx_g = Tools.evaluate_gradient(fun, x, 1e-5)
-        error = Tools.mean_err(g, approx_g)
+        approx_g = evaluate_gradient(fun, x, 1e-5)
+        error = mean_err(g, approx_g)
 
         msg = []
         msg.append("f = {}".format(f))
@@ -102,12 +103,12 @@ class ToolTest(unittest.TestCase):
         d = .2
         # 1D
         arr = np.arange(5)*a+d
-        arr_out = Tools.shift_and_tilt(arr)
+        arr_out = shift_and_tilt(arr)
         self.assertTrue(arr_out.sum() <tol, "{}".format(arr_out))
 
         # 2D
         arr = arr + np.arange(6).reshape((-1, 1))*b
-        arr_out = Tools.shift_and_tilt(arr)
+        arr_out = shift_and_tilt(arr)
         error = arr_out.sum()
         self.assertTrue(error <tol, "error = {}, tol = {}, arr_out = {}".format(
             error, tol, arr_out))
@@ -116,28 +117,28 @@ class ToolTest(unittest.TestCase):
                     "arr.shape = {}, arr_out.shape = {}".format(
                         arr.shape, arr_out.shape))
 
-        arr_approx, x = Tools.shift_and_tilt_approx(arr, full_output=True)
+        arr_approx, x = shift_and_tilt_approx(arr, full_output=True)
         error  =arr_approx.sum()
         self.assertTrue(error < tol, "error = {}, tol = {}, arr_out = {}".format(
             error, tol, arr_approx))
 
-        mean_slope = [x.mean() for x in Tools.compute_slope(arr)]
-        arr_out = Tools.shift_and_tilt_from_slope(arr)
-        mean_slope = [x.mean() for x in Tools.compute_slope(arr_out)]
+        mean_slope = [x.mean() for x in compute_derivative(arr)]
+        arr_out = shift_and_tilt_from_slope(arr)
+        mean_slope = [x.mean() for x in compute_derivative(arr_out)]
         self.assertAlmostEqual(mean_slope[0], 0)
         self.assertAlmostEqual(mean_slope[1], 0)
 
-        mean_slope = Tools.compute_tilt_from_height(arr)
+        mean_slope = compute_tilt_from_height(arr)
         self.assertAlmostEqual(mean_slope[0], b)
         self.assertAlmostEqual(mean_slope[1], a)
         self.assertAlmostEqual(mean_slope[2], d)
 
-        mean_slope = Tools.compute_tilt_from_height(NumpyTopography(arr))
+        mean_slope = compute_tilt_from_height(NumpyTopography(arr))
         self.assertAlmostEqual(mean_slope[0], b)
         self.assertAlmostEqual(mean_slope[1], a)
         self.assertAlmostEqual(mean_slope[2], d)
 
-        mean_slope = Tools.compute_tilt_from_height(NumpyTopography(arr, size=(3, 2.5)))
+        mean_slope = compute_tilt_from_height(NumpyTopography(arr, size=(3, 2.5)))
         self.assertAlmostEqual(mean_slope[0], 2*b)
         self.assertAlmostEqual(mean_slope[1], 2*a)
         self.assertAlmostEqual(mean_slope[2], d)
@@ -149,7 +150,7 @@ class ToolTest(unittest.TestCase):
                            (nx//2, 5, 1, False), (nx//3, 6, 2.5, False)]:
             y = np.zeros([nx, 1])
             y[x-w//2:x+(w+1)//2] = h
-            r, A = Tools.autocorrelation_1D(y, periodic=True)
+            r, A = autocorrelation_1D(y, periodic=True)
 
             A_ana = np.zeros_like(A)
             A_ana[:w] = h**2*np.linspace(w/nx, 1/nx, w)

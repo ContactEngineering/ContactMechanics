@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.
 import numpy as np
 
 from PyCo.Topography import NumpyTopography
-from PyCo.Tools import _get_size
+from PyCo.Topography.common import _get_size
 
 ###
 

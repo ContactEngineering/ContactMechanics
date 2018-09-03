@@ -36,7 +36,6 @@ import numpy as np
 import scipy.stats as stats
 from ..Topography import NumpyTopography
 from ..Tools.common import compute_wavevectors, ifftn, fftn
-from .SurfaceAnalysis import CharacterisePeriodicSurface
 
 
 class RandomSurfaceExact(object):

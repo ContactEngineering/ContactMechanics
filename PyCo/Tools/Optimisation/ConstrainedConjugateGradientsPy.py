@@ -40,7 +40,7 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Tools import compute_rms_height
+from PyCo.Topography import compute_rms_height
 
 ###
 

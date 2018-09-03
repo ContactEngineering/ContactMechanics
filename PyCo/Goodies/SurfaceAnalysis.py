@@ -33,11 +33,9 @@ SOFTWARE.
 """
 
 from __future__ import absolute_import, division, print_function
-from math import pi
 
 import numpy as np
 import scipy
-from scipy.signal import get_window
 
 from ..Tools.common import compute_wavevectors, fftn, get_q_from_lambda
 from ..Topography import NumpyTopography

@@ -36,8 +36,8 @@ import unittest
 
 import numpy as np
 
-from PyCo.Tools import assign_patch_numbers, assign_segment_numbers
-from PyCo.Tools import distance_map, inner_perimeter, outer_perimeter
+from PyCo.Tools.ContactAreaAnalysis import (assign_patch_numbers, assign_segment_numbers, distance_map,
+                                            inner_perimeter, outer_perimeter)
 from .PyCoTest import PyCoTestCase
 
 ###

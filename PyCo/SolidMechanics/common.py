@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-#*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 """
-@file   __init__.py
+@file   common.py
 
 @author Till Junge <till.junge@kit.edu>
 
-@date   27 Jan 2015
+@date   11 Feb 2015
 
-@brief  Helper tools for PyCo
+@brief  Bin for small common helper function and classes
 
-@section LICENSE
+@section LICENCE
 
-Copyright 2015-2017 Till Junge, Lars Pastewka
+Copyright 2015-2018 Till Junge, Lars Pastewka
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .common import compare_containers, compute_wavevectors, evaluate_gradient, get_q_from_lambda, mean_err, fftn, ifftn
-from .DistributedComputation import BaseResultManager, BaseWorker
-from .Logger import Logger
-from . import Optimisation
-from . import fftext
+import numpy as np
+
