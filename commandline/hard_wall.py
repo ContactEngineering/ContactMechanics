@@ -349,12 +349,12 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
 logger.pr('Topography has dimension of {} and size of {} {}.'.format(surface.shape,
                                                                   surface.size,
                                                                   surface.unit))
-logger.pr('RMS height = {}, RMS slope = {}'.format(surface.compute_rms_height(),
-                                                   surface.compute_rms_slope()))
+logger.pr('RMS height = {}, RMS slope = {}'.format(surface.rms_height(),
+                                                   surface.rms_slope()))
 if arguments.detrend is not None:
     surface = DetrendedTopography(surface, detrend_mode=arguments.detrend)
     logger.pr('After detrending: RMS height = {}, RMS slope = {}' \
-        .format(surface.compute_rms_height(), surface.compute_rms_slope()))
+              .format(surface.rms_height(), surface.rms_slope()))
 
 if arguments.hardness is not None:
     surface = PlasticTopography(surface, arguments.hardness)

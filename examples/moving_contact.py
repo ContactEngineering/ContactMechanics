@@ -34,8 +34,8 @@ sx, sy = 1, 1
 surface1 = read_matrix('surface1.out', size=(sx, sy))
 surface2 = read_matrix('surface2.out', size=(sx, sy))
 
-print('RMS heights of surfaces = {} {}'.format(surface1.compute_rms_height(),
-      surface2.compute_rms_height()))
+print('RMS heights of surfaces = {} {}'.format(surface1.rms_height(),
+                                               surface2.rms_height()))
 
 # This is the grid resolution of the two surfaces.
 nx, ny = surface1.shape

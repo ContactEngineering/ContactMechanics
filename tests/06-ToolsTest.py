@@ -38,7 +38,7 @@ try:
     import warnings
 
     from PyCo.Tools import evaluate_gradient, mean_err
-    from PyCo.Topography import (autocorrelation_1D, compute_derivative, compute_tilt_from_height, shift_and_tilt,
+    from PyCo.Topography import (autocorrelation_1D, compute_derivative, tilt_from_height, shift_and_tilt,
                                  shift_and_tilt_approx, shift_and_tilt_from_slope, NumpyTopography)
     from PyCo.Goodies import RandomSurfaceGaussian
 except ImportError as err:
@@ -128,17 +128,17 @@ class ToolTest(unittest.TestCase):
         self.assertAlmostEqual(mean_slope[0], 0)
         self.assertAlmostEqual(mean_slope[1], 0)
 
-        mean_slope = compute_tilt_from_height(arr)
+        mean_slope = tilt_from_height(arr)
         self.assertAlmostEqual(mean_slope[0], b)
         self.assertAlmostEqual(mean_slope[1], a)
         self.assertAlmostEqual(mean_slope[2], d)
 
-        mean_slope = compute_tilt_from_height(NumpyTopography(arr))
+        mean_slope = tilt_from_height(NumpyTopography(arr))
         self.assertAlmostEqual(mean_slope[0], b)
         self.assertAlmostEqual(mean_slope[1], a)
         self.assertAlmostEqual(mean_slope[2], d)
 
-        mean_slope = compute_tilt_from_height(NumpyTopography(arr, size=(3, 2.5)))
+        mean_slope = tilt_from_height(NumpyTopography(arr, size=(3, 2.5)))
         self.assertAlmostEqual(mean_slope[0], 2*b)
         self.assertAlmostEqual(mean_slope[1], 2*a)
         self.assertAlmostEqual(mean_slope[2], d)

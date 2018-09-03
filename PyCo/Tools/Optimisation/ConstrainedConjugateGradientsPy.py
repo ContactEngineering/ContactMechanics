@@ -40,7 +40,7 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Topography import compute_rms_height
+from PyCo.Topography import rms_height
 
 ###
 
@@ -98,7 +98,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = compute_rms_height(surface)/(10*np.mean(surface.shape))
+        pentol = rms_height(surface) / (10 * np.mean(surface.shape))
         # If pentol is zero, then this is a flat surface. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance

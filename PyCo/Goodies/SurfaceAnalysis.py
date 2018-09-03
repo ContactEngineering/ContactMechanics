@@ -278,20 +278,20 @@ class CharacterisePeriodicSurface(object):
             return Hurst
 
     def compute_rms_height(self):  # pylint: disable=missing-docstring
-        return self.surface.compute_rms_height()
+        return self.surface.rms_height()
 
     def compute_rms_slope(self):  # pylint: disable=missing-docstring
-        return self.surface.compute_rms_slope()
+        return self.surface.rms_slope()
 
     def compute_rms_height_q_space(self):  # pylint: disable=missing-docstring
         tmp_surf = NumpyTopography(self.surface.array * self.window,
                                    size=self.surface.size)
-        return tmp_surf.compute_rms_height_q_space()
+        return tmp_surf.rms_height_q_space()
 
     def compute_rms_slope_q_space(self):  # pylint: disable=missing-docstring
         tmp_surf = NumpyTopography(self.surface.array() * self.window,
                                    size=self.surface.size)
-        return tmp_surf.compute_rms_slope_q_space()
+        return tmp_surf.rms_slope_q_space()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):
         """
