@@ -36,7 +36,7 @@ import numpy as np
 from scipy.optimize import brentq
 
 from .SurfaceAnalysis import CharacterisePeriodicSurface
-from PyCo.Topography.SurfaceGeneration import RandomSurfaceExact
+from PyCo.Topography.Generation import RandomSurfaceExact
 from ..Tools.common import fftn
 
 

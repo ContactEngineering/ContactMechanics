@@ -40,7 +40,7 @@ try:
     from PyCo.Tools import evaluate_gradient, mean_err
     from PyCo.Topography import (autocorrelation_1D, compute_derivative, tilt_from_height, shift_and_tilt,
                                  shift_and_tilt_approx, shift_and_tilt_from_slope, NumpyTopography)
-    from PyCo.Goodies import RandomSurfaceGaussian
+    from PyCo.Topography.Generation import RandomSurfaceGaussian
 except ImportError as err:
     import sys
     print(err)
