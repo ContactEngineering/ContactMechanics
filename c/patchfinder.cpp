@@ -1,62 +1,49 @@
-#include "Python.h"
-#include "numpy/arrayobject.h"
-#include "patchfinder.h"
+/*
+@file   patchfinder.cpp
+
+@author Lars Pastewka <lars.pastewka@imtek.uni-freiburg.de>
+
+@date   10 Apr 2017
+
+@brief  Analysis of contact patch geometries
+
+@section LICENCE
+
+Copyright 2015-2018 Till Junge, Lars Pastewka
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 #include <math.h>
 
+#include <Python.h>
+#define PY_ARRAY_UNIQUE_SYMBOL PYCO_ARRAY_API
+#define NO_IMPORT_ARRAY
+#include <numpy/arrayobject.h>
+
+#include "patchfinder.h"
 #include "stack.h"
 
 /* This is sufficient for typically 2048x2048 */
 #define DEFAULT_STACK_SIZE 16*1024*1024
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
-
-static PyMethodDef PyCo_methods[] = {
-  {"assign_patch_numbers", assign_patch_numbers, METH_VARARGS},
-  {"assign_segment_numbers", assign_segment_numbers, METH_VARARGS},
-  {"correlation_function", correlation_function, METH_VARARGS},
-  {"distance_map", distance_map, METH_VARARGS},
-  {"perimeter_length", perimeter_length, METH_VARARGS},
-  {"shortest_distance", shortest_distance, METH_VARARGS},
-  {NULL, NULL, 0, NULL}     /* Sentinel - marks the end of this structure */
-};
-
-/*
- * Module initialization
- */
-
-#ifndef PyMODINIT_FUNC  /* declarations for DLL import/export */
-#define PyMODINIT_FUNC void
-#endif
-
-/*
- * Module declaration
- */
-
-#if PY_MAJOR_VERSION >= 3
-    #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
-    #define MOD_DEF(ob, name, methods, doc) \
-        static struct PyModuleDef moduledef = { \
-            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
-        ob = PyModule_Create(&moduledef);
-#else
-    #define MOD_INIT(name) PyMODINIT_FUNC init##name(void)
-    #define MOD_DEF(ob, name, methods, doc) \
-        ob = Py_InitModule3(name, methods, doc);
-#endif
-
-MOD_INIT(_PyCo)  {
-  PyObject *m;
-
-  import_array();
-
-  MOD_DEF(m, "_PyCo", PyCo_methods,
-          "C support functions for PyCo.");
-
-#if PY_MAJOR_VERSION >= 3
-    return m;
-#endif
-}
-
 
 /*
  * Find continous 2d patches
@@ -112,7 +99,8 @@ void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, int i0, int j0,
 }
 
 
-static PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
+extern "C"
+PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
 {
   PyObject *py_map, *py_stencil;
 
@@ -130,7 +118,7 @@ static PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
   PyArrayObject *py_long_stencil = NULL;
 
   if (py_stencil) {
-    py_long_stencil = 
+    py_long_stencil =
       (PyArrayObject*) PyArray_FROMANY((PyObject *) py_stencil, NPY_LONG,
 				       2, 2, NPY_C_CONTIGUOUS);
     if (!py_long_stencil)
@@ -228,7 +216,8 @@ void fill_segment(npy_intp nx, npy_bool *map, int i, npy_int p, npy_int *id)
  * Assign a unique number to each segment on the map
  */
 
-static PyObject *assign_segment_numbers(PyObject *self, PyObject *args)
+extern "C"
+PyObject *assign_segment_numbers(PyObject *self, PyObject *args)
 {
   PyObject *py_map;
 
@@ -278,7 +267,8 @@ static PyObject *assign_segment_numbers(PyObject *self, PyObject *args)
 
 
 
-static PyObject *shortest_distance(PyObject *self, PyObject *args)
+extern "C"
+PyObject *shortest_distance(PyObject *self, PyObject *args)
 {
   PyObject *py_fromc = NULL, *py_fromp = NULL, *py_to = NULL;
   int maxd = -1;
@@ -305,7 +295,7 @@ static PyObject *shortest_distance(PyObject *self, PyObject *args)
   npy_intp nx = PyArray_DIM(py_bool_fromc, 0);
   npy_intp ny = PyArray_DIM(py_bool_fromc, 1);
 
-  if (PyArray_DIM(py_bool_fromp, 0) != nx || 
+  if (PyArray_DIM(py_bool_fromp, 0) != nx ||
       PyArray_DIM(py_bool_fromp, 1) != ny) {
     PyErr_SetString(PyExc_TypeError,
 		    "All three maps need to have identical dimensions.");
@@ -371,7 +361,7 @@ static PyObject *shortest_distance(PyObject *self, PyObject *args)
 	    //printf("%i\n", n);
 	    int jj;
 	    on_some_patch = 0;
-	    
+
 	    for (jj = -n; jj <= n; jj++) {
 
 	      int jjj = j+jj;
@@ -388,7 +378,7 @@ static PyObject *shortest_distance(PyObject *self, PyObject *args)
 		  while (iii >= nx) iii -= nx;
 
 		  int m = jjj*nx+iii;
-		  
+
 		  if (fromp[m])
 		    on_some_patch = 1;
 
@@ -397,7 +387,7 @@ static PyObject *shortest_distance(PyObject *self, PyObject *args)
 		    if (curd < d) {
 		      d = curd;
 		      /*
-		       * this could be at distance sqrt(2)*n, hence we need to 
+		       * this could be at distance sqrt(2)*n, hence we need to
 		       * go to rectangles with side length >sqrt(2)*n
 		       */
 		      int newter = (int) (n*(sqrt2+1));
@@ -405,15 +395,15 @@ static PyObject *shortest_distance(PyObject *self, PyObject *args)
 			ter = newter;
 		    }
 		  } // if (to[m])
-		  
+
 		} // if (abs(ii) ...
 
 	      } // for ii
-	      
+
 	    } // for jj
-	    
+
 	  } // for n
-	  
+
 	} // if (to[k])
 
 	if (d < maxd)
@@ -451,7 +441,7 @@ void track_distance(int nx, int ny, npy_bool *map, npy_double *dist,
                 /* Start tracking here with zero distance */
                 stack.push(i, j, i, j);
             }
-    
+
             k++;
         }
     }
@@ -497,13 +487,13 @@ void track_distance(int nx, int ny, npy_bool *map, npy_double *dist,
                         int iii = i+ii;
                         while (iii < 0)   iii += nx;
                         while (iii >= nx) iii -= nx;
-	    
+
                         /* Push to stack if not on map */
                         int kkk = iii*ny+jjj;
                         if (!map[kkk]) {
                             stack.push(iii, jjj, i0, j0);
                         } /* if (!map[kkk]) */
-      
+
                     } /* if (abs(ii) == ... */
 
                 } /* for (ii = ... */
@@ -522,7 +512,8 @@ void track_distance(int nx, int ny, npy_bool *map, npy_double *dist,
  * Given a bool map, compute the minimal distance from each of the points
  * marked on the map. Distance from a point which is marked is 0.
  */
-static PyObject *distance_map(PyObject *self, PyObject *args)
+extern "C"
+PyObject *distance_map(PyObject *self, PyObject *args)
 {
   PyObject *py_map_xy = NULL;
 
@@ -641,7 +632,8 @@ void fill_correlation_function(int, int, double, int, int,
 			       int, int, npy_double *,
 			       npy_double *, npy_int *);
 
-static PyObject *correlation_function(PyObject *self, PyObject *args)
+extern "C"
+PyObject *correlation_function(PyObject *self, PyObject *args)
 {
   PyObject *py_map1 = NULL, *py_map2 = NULL;
   int max_dist, max_dist_sq;
@@ -850,7 +842,8 @@ void fill_correlation_function(int max_lin_dist, int max_dist_sq,
  * Compute the total length of the perimeter
  */
 
-static PyObject *perimeter_length(PyObject *self, PyObject *args)
+extern "C"
+PyObject *perimeter_length(PyObject *self, PyObject *args)
 {
   double sqrt2 = sqrt(2.0);
 

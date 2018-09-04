@@ -59,7 +59,8 @@ scripts =  ['commandline/hard_wall.py',
 extensions = [
     Extension(
         name='_PyCo',
-        sources=['c/patchfinder.cpp'],
+        sources=['c/patchfinder.cpp',
+                 'c/PyCo_module.cpp'],
         include_dirs=[np.get_include()]
         ),
     Extension(
