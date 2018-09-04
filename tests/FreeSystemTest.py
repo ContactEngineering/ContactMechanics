@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   05-2-FreeSystemTest.py
+@file   FreeSystemTest.py
 
 @author Till Junge <till.junge@kit.edu>
 

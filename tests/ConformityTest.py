@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   07-ConformityTest.py
+@file   ConformityTest.py
 
 @author Till Junge <till.junge@kit.edu>
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   04-SurfaceTests.py
+@file   SurfaceTests.py
 
 @author Till Junge <till.junge@kit.edu>
 

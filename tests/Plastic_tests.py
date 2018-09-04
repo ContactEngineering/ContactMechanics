@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   14-Plastic_tests.py
+@file   Plastic_tests.py
 
 @author Lars Pastewka <lars.pastewka@kit.edu>
 
