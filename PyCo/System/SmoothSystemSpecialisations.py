@@ -73,6 +73,14 @@ class FastSmoothContactSystem(SmoothContactSystem):
             super().__init__(message)
             self.disp = disp
 
+    class BabushkaBoundaryError(Exception):
+        """
+        Called when the choosen size of the Babushka System had an Influence on
+        the Solution. In the Future, one may catch this error,
+        increase the margin and restart minimization
+        """
+        pass
+
     def __init__(self, substrate, interaction, surface, margin=4):
         """ Represents a contact problem
         Keyword Arguments:
@@ -144,6 +152,27 @@ class FastSmoothContactSystem(SmoothContactSystem):
             raise self.FreeBoundaryError(
                 ("Small system probably too small, increase the margins and "
                  "reevaluate self.objective(...)."), self.disp)
+
+    def check_margins_babushka(self):
+        """
+        Inspired from check_margins but acts on the babushka System:
+        When the pressures are non-zero at the boundary of the babushka-area,
+        boundaries have an effect on the Solution
+        this raises an error because the area has been chosen too small and the
+
+        """
+        is_ok = True
+        if self.dim == 2:
+            is_ok &= (self.babushka.interaction.force[:, 0] == 0.).all()
+            is_ok &= (self.babushka.interaction.force[:, -1] == 0.).all()
+            is_ok &= (self.babushka.interaction.force[0, :] == 0.).all()
+            is_ok &= (self.babushka.interaction.force[-1, :] == 0.).all()
+            
+        if not is_ok:
+            self.deproxified()
+            raise self.BabushkaBoundaryError(
+                ("Babushka Area has been chosen too small: "
+                 "Pressure is non-zero at the bounds of the Babushka System"))
 
     @staticmethod
     def handles(substrate_type, interaction_type, surface_type):
@@ -418,6 +447,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
             if deproxify_everytime:
                 self.deproxified()
             self.check_margins()
+            self.check_margins_babushka()
             return use_callback(disp_k)
 
         bnds = None
