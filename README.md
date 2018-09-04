@@ -45,6 +45,11 @@ Run `python3 setup.py test` in the main source directory to run the automated te
 Development
 -----------
 
+Please follow pep-8 when developing this code, with the following exception: One big exception to PEP 8 is our
+preference of longer line lengths. We’re well into the 21st Century, and we have high-resolution computer screens that
+can fit way more than 79 characters on a screen. Don’t limit lines of code to 79 characters if it means the code looks
+significantly uglier or is harder to read.
+
 To use the code without installing it, e.g. for development purposes, use the `env.sh` script to set the environment:
 
 ```source /path/to/PyCo/env.sh [python3]```
