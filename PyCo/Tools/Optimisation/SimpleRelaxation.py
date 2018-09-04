@@ -43,7 +43,7 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Tools import compute_rms_height
+from PyCo.Topography import rms_height
 
 ###
 
@@ -112,7 +112,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = compute_rms_height(surface)/(10*np.mean(surface.shape))
+        pentol = rms_height(surface) / (10 * np.mean(surface.shape))
         # If pentol is zero, then this is a flat surface. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance

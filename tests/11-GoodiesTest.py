@@ -38,6 +38,7 @@ try:
     import warnings
 
     import PyCo.Goodies as Goodies
+    from PyCo.Topography.Generation import RandomSurfaceExact, RandomSurfaceGaussian
 except ImportError as err:
     import sys
     print(err)
@@ -53,10 +54,9 @@ class GoodiesTest(unittest.TestCase):
         res = 100
         resolution = (res, res)
         lam_max = .5
-        surf_gen = Goodies.RandomSurfaceExact(resolution, size, hurst,
-                                            rms_height, lambda_max=lam_max)
+        surf_gen = RandomSurfaceExact(resolution, size, hurst, rms_height, lambda_max=lam_max)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
-        rms_height_fromC_in = surf.compute_rms_height_q_space()
+        rms_height_fromC_in = surf.rms_height_q_space()
 
         error = abs(1-rms_height_fromC_in/rms_height)
         rough_tol = .02
@@ -90,8 +90,7 @@ class GoodiesTest(unittest.TestCase):
         res = 100
         resolution = (res, res)
         lam_max = .5
-        surf_gen = Goodies.RandomSurfaceExact(resolution, size, hurst,
-                                            rms_height, lambda_max=lam_max)
+        surf_gen = RandomSurfaceExact(resolution, size, hurst, rms_height, lambda_max=lam_max)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
         surf_char = Goodies.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
@@ -116,9 +115,7 @@ class GoodiesTest(unittest.TestCase):
         res = 100
         resolution = (res, res)
         lam_max = .5
-        surf_gen = Goodies.RandomSurfaceGaussian(resolution, size, hurst,
-                                               rms_height, lambda_max=lam_max,
-                                               seed=10)
+        surf_gen = RandomSurfaceGaussian(resolution, size, hurst, rms_height, lambda_max=lam_max, seed=10)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
         surf_char = Goodies.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2

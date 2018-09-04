@@ -39,7 +39,7 @@ try:
     import math
 
     from PyCo.System import SystemFactory
-    from PyCo.Surface import Sphere
+    from PyCo.Topography import Sphere
     from PyCo.ContactMechanics import LJ93smoothMin as LJ_pot
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
 

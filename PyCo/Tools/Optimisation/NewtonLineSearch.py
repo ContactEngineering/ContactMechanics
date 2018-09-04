@@ -61,7 +61,7 @@ def newton_linesearch(fun, x0, jac, hess, tol, args=(), store_iterates=None,
     **options -- none of those will be used
     """
     # pylint: disable=too-many-branches
-    x = np.matrix(x0.copy()).reshape((-1, 1))
+    x = np.array(x0.copy()).reshape((-1, 1))
     try:
         fprime = jac(x, *args)
     except Exception:

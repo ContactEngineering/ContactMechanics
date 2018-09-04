@@ -33,14 +33,12 @@ SOFTWARE.
 """
 
 from __future__ import absolute_import, division, print_function
-from math import pi
 
 import numpy as np
 import scipy
-from scipy.signal import get_window
 
 from ..Tools.common import compute_wavevectors, fftn, get_q_from_lambda
-from ..Surface import NumpySurface
+from ..Topography import NumpyTopography
 
 
 class CharacterisePeriodicSurface(object):
@@ -52,7 +50,7 @@ class CharacterisePeriodicSurface(object):
     def __init__(self, surface, one_dimensional=False):
         """
         Keyword Arguments:
-        surface -- Instance of PyCo.Surface or subclass with specified
+        surface -- Instance of PyCo.Topography or subclass with specified
                    size
         one_dimensional -- (default False). if True, evaluation of 1D (line-
                            scan) power spectrum is emulated
@@ -60,7 +58,7 @@ class CharacterisePeriodicSurface(object):
         # pylint: disable=invalid-name
         self.surface = surface
         if self.surface.size is None:
-            raise Exception("Surface size has to be known (and specified)!")
+            raise Exception("Topography size has to be known (and specified)!")
         if self.surface.dim != 2:
             raise Exception("Only 2D surfaces, for the time being")
         if self.surface.size[0] != self.surface.size[1]:
@@ -79,12 +77,12 @@ class CharacterisePeriodicSurface(object):
     def eval(self):
         """
         Generates the phases and amplitudes, readies the metasurface to
-        generate Surface objects
+        generate Topography objects
         """
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
         area = np.prod(size)
-        h_a = fftn(self.surface.profile()*self.window, area)
+        h_a = fftn(self.surface.array() * self.window, area)
         C_q = 1/area*(np.conj(h_a)*h_a).real
 
         q_vecs = compute_wavevectors(res, size, self.surface.dim)
@@ -96,12 +94,12 @@ class CharacterisePeriodicSurface(object):
     def eval_1D(self):  # pylint: disable=invalid-name
         """
         Generates the phases and amplitudes, readies the metasurface to
-        generate Surface objects
+        generate Topography objects
         """
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
 
-        tmp = np.fft.fft(self.surface.profile()*self.window, axis=0)
+        tmp = np.fft.fft(self.surface.array() * self.window, axis=0)
         D_q_x = np.conj(tmp)*tmp
         D_q = np.mean(D_q_x, axis=1).real
 
@@ -132,8 +130,8 @@ class CharacterisePeriodicSurface(object):
 
         # and do it 'by hand'
         # pylint: disable=invalid-name
-        A = np.matrix(np.vstack((np.log(self.q[sl])*weights, weights))).T
-        exponent, offset = np.linalg.lstsq(A, np.log(self.C[sl])*weights)[0]
+        A = np.vstack((np.log(self.q[sl])*weights, weights)).T
+        exponent, offset = np.linalg.lstsq(A, np.log(self.C[sl])*weights, rcond=None)[0]
         C0 = np.exp(offset)
         Hurst = -(exponent+2)/2
         if full_output:
@@ -280,20 +278,20 @@ class CharacterisePeriodicSurface(object):
             return Hurst
 
     def compute_rms_height(self):  # pylint: disable=missing-docstring
-        return self.surface.compute_rms_height()
+        return self.surface.rms_height()
 
     def compute_rms_slope(self):  # pylint: disable=missing-docstring
-        return self.surface.compute_rms_slope()
+        return self.surface.rms_slope()
 
     def compute_rms_height_q_space(self):  # pylint: disable=missing-docstring
-        tmp_surf = NumpySurface(self.surface.profile*self.window,
-                                size=self.surface.size)
-        return tmp_surf.compute_rms_height_q_space()
+        tmp_surf = NumpyTopography(self.surface.array * self.window,
+                                   size=self.surface.size)
+        return tmp_surf.rms_height_q_space()
 
     def compute_rms_slope_q_space(self):  # pylint: disable=missing-docstring
-        tmp_surf = NumpySurface(self.surface.profile()*self.window,
-                                size=self.surface.size)
-        return tmp_surf.compute_rms_slope_q_space()
+        tmp_surf = NumpyTopography(self.surface.array() * self.window,
+                                   size=self.surface.size)
+        return tmp_surf.rms_slope_q_space()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):
         """
@@ -412,7 +410,7 @@ class CharacteriseSurface(CharacterisePeriodicSurface):
     def __init__(self, surface, window_type='hanning', window_params=None):
         """
         Keyword Arguments:
-        surface       -- Instance of PyCo.Surface or subclass with
+        surface       -- Instance of PyCo.Topography or subclass with
                          specified size
         window_type   -- (default 'hanning') numpy windowing function name
         window_params -- (default dict())

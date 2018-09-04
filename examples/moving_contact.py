@@ -9,7 +9,7 @@ import numpy as np
 
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Surface import read_matrix, TranslatedSurface, CompoundSurface
+from PyCo.Topography import read_matrix, TranslatedTopography, CompoundTopography
 from PyCo.System import SystemFactory
 #from PyCo.Tools import compute_rms_height
 from PyCo.Tools.Logger import screen
@@ -34,18 +34,18 @@ sx, sy = 1, 1
 surface1 = read_matrix('surface1.out', size=(sx, sy))
 surface2 = read_matrix('surface2.out', size=(sx, sy))
 
-print('RMS heights of surfaces = {} {}'.format(surface1.compute_rms_height(),
-      surface2.compute_rms_height()))
+print('RMS heights of surfaces = {} {}'.format(surface1.rms_height(),
+                                               surface2.rms_height()))
 
 # This is the grid resolution of the two surfaces.
 nx, ny = surface1.shape
 
 # TranslatedSurface knows how to translate a surface into some direction.
-translated_surface1 = TranslatedSurface(surface1)
+translated_surface1 = TranslatedTopography(surface1)
 
 # This is the compound of the two surfaces, effectively creating a surface
 # that is the difference between the two profiles.
-compound_surface = CompoundSurface(translated_surface1, surface2)
+compound_surface = CompoundTopography(translated_surface1, surface2)
 
 # Periodic substrate and hard-wall interactions.
 substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sx))
@@ -64,7 +64,7 @@ container = NetCDFContainer('traj.nc', mode='w', double=True)
 # NetCDF needs to know the resolution/shape
 container.set_shape(surface2)
 # This creates a field called 'surface2' inside the NetCDF file.
-container.surface2 = surface2.profile()
+container.surface2 = surface2.array()
 
 # Loop over nd displacement steps.
 nd = 3
@@ -90,7 +90,7 @@ for i, c in zip(range(0, step_size*nd, step_size), ['r', 'g', 'b', 'y']):
 
     # Dump the information to the NetCDF file.
     frame = container.get_next_frame()
-    frame.translated_surface1 = translated_surface1.profile()
+    frame.translated_surface1 = translated_surface1.array()
     frame.displacements = disp
     frame.forces = disp
 

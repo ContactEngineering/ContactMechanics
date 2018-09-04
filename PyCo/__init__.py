@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import ContactMechanics, SolidMechanics, System, Surface
+from . import ContactMechanics, SolidMechanics, System, Topography
 
 from ._version import get_versions
 __version__ = get_versions()['version']

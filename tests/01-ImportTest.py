@@ -64,7 +64,7 @@ class ImportabilityChecks(unittest.TestCase):
         self.assertEqual(self.import_module("PyCo.System"), 0)
 
     def test_Surface(self):
-        self.assertEqual(self.import_module("PyCo.Surface"), 0)
+        self.assertEqual(self.import_module("PyCo.Topography"), 0)
 
 if __name__ == '__main__':
     unittest.main()

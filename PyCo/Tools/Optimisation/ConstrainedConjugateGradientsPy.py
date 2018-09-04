@@ -40,7 +40,7 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Tools import compute_rms_height
+from PyCo.Topography import rms_height
 
 ###
 
@@ -98,7 +98,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = compute_rms_height(surface)/(10*np.mean(surface.shape))
+        pentol = rms_height(surface) / (10 * np.mean(surface.shape))
         # If pentol is zero, then this is a flat surface. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
@@ -129,13 +129,13 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
                  substrate.dim))
 
     comp_mask = np.zeros(substrate.computational_resolution, dtype=bool)
-    comp_mask[comp_slice] = True
+    comp_mask[tuple(comp_slice)] = True
 
     surf_mask = np.ma.getmask(surface)
     if surf_mask is np.ma.nomask:
         surf_mask = np.ones(substrate.resolution, dtype=bool)
     else:
-        comp_mask[comp_slice][surf_mask] = False
+        comp_mask[tuple(comp_slice)][surf_mask] = False
         surf_mask = np.logical_not(surf_mask)
     pad_mask = np.logical_not(comp_mask)
     N_pad = pad_mask.sum()
@@ -358,9 +358,9 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             result.x = u_r#[comp_mask]
             # Return partial p_r because pressure outside computational region
             # is zero anyway
-            result.jac = -p_r[comp_slice]
+            result.jac = -p_r[tuple(comp_slice)]
             # Compute elastic energy
-            result.fun = -(p_r[comp_slice]*u_r[comp_slice]).sum()/2
+            result.fun = -(p_r[tuple(comp_slice)]*u_r[tuple(comp_slice)]).sum()/2
             result.offset = offset
             result.success = True
             result.message = "Polonsky converged"
@@ -391,9 +391,9 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     result.x = u_r#[comp_mask]
     # Return partial p_r because pressure outside computational region
     # is zero anyway
-    result.jac = -p_r[comp_slice]
+    result.jac = -p_r[tuple(comp_slice)]
     # Compute elastic energy
-    result.fun = -(p_r[comp_slice]*u_r[comp_slice]).sum()/2
+    result.fun = -(p_r[tuple(comp_slice)]*u_r[tuple(comp_slice)]).sum()/2
     result.offset = offset
     result.message = "Reached maxiter = {}".format(maxiter)
     return result

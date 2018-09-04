@@ -36,7 +36,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 import PyCo.Tools as Tools
-import PyCo.Surface as Surf
+import PyCo.Topography as Surf
 
 
 def plot_naive(surface, lam_max):
@@ -58,7 +58,7 @@ def plot_naive(surface, lam_max):
     q_g = q_g[mask]
 
     ax.errorbar(q_g, mean, yerr=err)
-    ax.set_title("Naive: H={:.2f}, h_rms={:.2e}".format(H, np.sqrt((surface.profile()**2).mean())))
+    ax.set_title("Naive: H={:.2f}, h_rms={:.2e}".format(H, np.sqrt((surface.array() ** 2).mean())))
     a, b = np.polyfit(np.log(q), np.log(C), 1)
     ax.plot(q, q**(-2-2*H)*alpha, label="{}, H={:.2f}".format('fit', H))
     ax.legend(loc='best')
@@ -173,7 +173,7 @@ def compare_to_PyPy(surface, lam_max, H_ref, C0_ref):
     q_g = q_g[mask]
 
     ax.errorbar(q_g, mean, yerr=err)
-    ax.set_title("New: H_pypy={:.2f}, H_ref = {:.2f}, h_rms={:.2e}".format(H, H_ref, np.sqrt((surface.profile()**2).mean())))
+    ax.set_title("New: H_pypy={:.2f}, H_ref = {:.2f}, h_rms={:.2e}".format(H, H_ref, np.sqrt((surface.array() ** 2).mean())))
     
     ax.plot(q[sl], q[sl]**(-2-2*H)*alpha, label="{}, H={:.4f}".format('fit', H), lw = 3)
     ax.plot(q[sl], q[sl]**(-2-2*H_ref)*C0_ref, label="{}, H={:.4f}".format('ref_fit', H_ref), lw = 3)

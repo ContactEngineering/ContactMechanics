@@ -39,7 +39,7 @@ import PyCo
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                  PeriodicFFTElasticHalfSpace)
-from PyCo.Surface import read, DetrendedSurface, PlasticSurface, ScaledSurface
+from PyCo.Topography import read, DetrendedTopography, PlasticTopography, ScaledTopography
 from PyCo.System import SystemFactory
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -70,7 +70,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     ----------
     system : PyCo.System.SystemBase object
         The contact mechanical system.
-    surface : PyCo.Surface.Surface object
+    surface : PyCo.Topography.Topography object
         The rigid rough surface.
     history : tuple
         History returned by past calls to next_step
@@ -92,7 +92,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     """
 
     # Get the profile as a numpy array
-    profile = surface.profile()
+    profile = surface.array()
 
     # Find max, min and mean heights
     top = np.max(profile)
@@ -325,7 +325,7 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 
 ###
 
-# Read a surface topography from a text file. Returns a PyCo.Surface.Surface
+# Read a surface topography from a text file. Returns a PyCo.Topography.Topography
 # object.
 surface = read(arguments.filename)
 # Set the *physical* size of the surface. We here set it to equal the shape,
@@ -344,20 +344,20 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
     if arguments.height_unit is not None:
         fac *= unit_to_meters[arguments.height_unit]/unit_to_meters[surface.unit]
     logger.pr('Rescaling surface heights by {}.'.format(fac))
-    surface = ScaledSurface(surface, fac)
+    surface = ScaledTopography(surface, fac)
 
-logger.pr('Surface has dimension of {} and size of {} {}.'.format(surface.shape,
+logger.pr('Topography has dimension of {} and size of {} {}.'.format(surface.shape,
                                                                   surface.size,
                                                                   surface.unit))
-logger.pr('RMS height = {}, RMS slope = {}'.format(surface.compute_rms_height(),
-                                                   surface.compute_rms_slope()))
+logger.pr('RMS height = {}, RMS slope = {}'.format(surface.rms_height(),
+                                                   surface.rms_slope()))
 if arguments.detrend is not None:
-    surface = DetrendedSurface(surface, detrend_mode=arguments.detrend)
+    surface = DetrendedTopography(surface, detrend_mode=arguments.detrend)
     logger.pr('After detrending: RMS height = {}, RMS slope = {}' \
-        .format(surface.compute_rms_height(), surface.compute_rms_slope()))
+              .format(surface.rms_height(), surface.rms_slope()))
 
 if arguments.hardness is not None:
-    surface = PlasticSurface(surface, arguments.hardness)
+    surface = PlasticTopography(surface, arguments.hardness)
 
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':

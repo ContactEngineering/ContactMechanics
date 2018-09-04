@@ -36,8 +36,8 @@ import numpy as np
 from scipy.optimize import brentq
 
 from .SurfaceAnalysis import CharacterisePeriodicSurface
-from .SurfaceGeneration import RandomSurfaceExact
-from ..Tools.common import compute_rms_slope, compute_rms_curvature, fftn
+from PyCo.Topography.Generation import RandomSurfaceExact
+from ..Tools.common import fftn
 
 
 class ModifyExistingPeriodicSurface(RandomSurfaceExact):
@@ -46,12 +46,12 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
         """
         Generates a surface with an Gaussian amplitude distribution
         Keyword Arguments:
-        surface -- Surface to be modified.
+        surface -- Topography to be modified.
         """
         self.surface = surface
         surf_char = CharacterisePeriodicSurface(self.surface)
         hurst = surf_char.estimate_hurst()
-        rms_height = self.surface.compute_rms_height()
+        rms_height = self.surface.rms_height()
         super().__init__(surface.resolution, surface.size, hurst, rms_height,
                          seed=None, lambda_max=None)
 
@@ -60,7 +60,7 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
 
     def generate_amplitudes(self):
         area = np.prod(self.size)
-        self.coeffs = fftn(self.surface.profile(), area)
+        self.coeffs = fftn(self.surface.array(), area)
 
 
 def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None,
@@ -68,14 +68,14 @@ def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None,
     surf = ModifyExistingPeriodicSurface(surface)
     cutoff1 = np.mean(surf.size)
     cutoff2 = np.mean([x/y for x, y in zip(surf.size, surf.resolution)])/2
-    initial_slope = compute_rms_slope(surf.get_surface())
-    initial_curvature = compute_rms_curvature(surf.get_surface())
+    initial_slope = rms_slope(surf.get_surface())
+    initial_curvature = rms_curvature(surf.get_surface())
     if rms_slope is not None:
         if rms_curvature is not None:
             raise ValueError('Please specify either target rms slope or target '
                              'rms curvature, not both.')
-        slope1 = compute_rms_slope(surf.get_surface(lambda_min=cutoff1))
-        slope2 = compute_rms_slope(surf.get_surface(lambda_min=cutoff2))
+        slope1 = rms_slope(surf.get_surface(lambda_min=cutoff1))
+        slope2 = rms_slope(surf.get_surface(lambda_min=cutoff2))
         if rms_slope < slope1 or rms_slope > slope2:
             if return_bounds:
                 if rms_slope < slope1:
@@ -87,11 +87,11 @@ def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None,
                                  'slopes for largest (={}) and smallest (={}) '
                                  'small wavelength cutoff.' \
                                  .format(rms_slope, slope1, slope2))
-        cutoff = brentq(lambda cutoff: compute_rms_slope(
-            surf.get_surface(lambda_min=cutoff))-rms_slope, cutoff1, cutoff2)
+        cutoff = brentq(lambda cutoff: rms_slope(
+            surf.get_surface(lambda_min=cutoff)) - rms_slope, cutoff1, cutoff2)
     elif rms_curvature is not None:
-        curvature1 = compute_rms_curvature(surf.get_surface(lambda_min=cutoff1))
-        curvature2 = compute_rms_curvature(surf.get_surface(lambda_min=cutoff2))
+        curvature1 = rms_curvature(surf.get_surface(lambda_min=cutoff1))
+        curvature2 = rms_curvature(surf.get_surface(lambda_min=cutoff2))
         if rms_curvature < curvature1 or rms_curvature > curvature2:
             if return_bounds:
                 if rms_curvature < curvature1:
@@ -103,8 +103,8 @@ def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None,
                                  'between curvatures for largest (={}) and '
                                  'smallest (={}) small wavelength cutoff.' \
                                  .format(rms_curvature, curvature1, curvature2))
-        cutoff = brentq(lambda cutoff: compute_rms_curvature(
-            surf.get_surface(lambda_min=cutoff))-rms_curvature, cutoff1,
+        cutoff = brentq(lambda cutoff: rms_curvature(
+            surf.get_surface(lambda_min=cutoff)) - rms_curvature, cutoff1,
             cutoff2)
     else:
         raise ValueError('Please specify either target rms slope or target rms '

@@ -34,7 +34,7 @@ SOFTWARE.
 
 import numpy as np
 
-from .. import ContactMechanics, SolidMechanics, Surface
+from .. import ContactMechanics, SolidMechanics, Topography
 from .Systems import NonSmoothContactSystem
 
 import matplotlib.pyplot as plt
@@ -64,7 +64,7 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Surface.PlasticSurface)
+                            Topography.PlasticTopography)
         return is_ok
 
     def minimize_proxy(self, **kwargs):

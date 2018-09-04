@@ -36,7 +36,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 import numpy as np
 import matplotlib.pyplot as plt
 
-from PyCo.Surface.FromFile import read, detect_format
+from PyCo.Topography.FromFile import read, detect_format
 
 ###
 
@@ -58,7 +58,7 @@ for surface in surfaces:
         print('---', surface.info['data'], '---')
     except:
         print('---')
-    print('RMS height =', surface.compute_rms_height(), surface.unit)
-    print('RMS slope = ', surface.compute_rms_slope())
-    print('RMS curvature =', surface.compute_rms_curvature(),
+    print('RMS height =', surface.rms_height(), surface.unit)
+    print('RMS slope = ', surface.rms_slope())
+    print('RMS curvature =', surface.rms_curvature(),
           '{}^-1'.format(surface.unit))

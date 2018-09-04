@@ -55,7 +55,7 @@ try:
     from PyCo.System.Systems import SmoothContactSystem
     import PyCo.SolidMechanics as Solid
     import PyCo.ContactMechanics as Contact
-    import PyCo.Surface as Surface
+    import PyCo.Topography as Topography
     import PyCo.Tools as Tools
 except ImportError as err:
     import sys
@@ -79,7 +79,7 @@ class SystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.sphere = Surface.Sphere(self.radius, self.res, self.size)
+        self.sphere = Topography.Sphere(self.radius, self.res, self.size)
 
     def test_RejectInconsistentInputTypes(self):
         with self.assertRaises(IncompatibleFormulationError):
@@ -87,7 +87,7 @@ class SystemTest(unittest.TestCase):
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
-        incompat_sphere = Surface.Sphere(self.radius, incompat_res, self.size)
+        incompat_sphere = Topography.Sphere(self.radius, incompat_res, self.size)
         with self.assertRaises(IncompatibleResolutionError):
             SystemFactory(self.substrate, self.smooth, incompat_sphere)
 
@@ -102,7 +102,7 @@ class SystemTest(unittest.TestCase):
         size = [r*1.28 for r in self.res]##[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, size)
-        sphere = Surface.Sphere(self.radius, res, size)
+        sphere = Topography.Sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         disp = random(res)*self.sig/10
         disp -= disp.mean()
@@ -206,7 +206,7 @@ class SystemTest(unittest.TestCase):
         size = self.size[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
-        sphere = Surface.Sphere(self.radius, res, size)
+        sphere = Topography.Sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
         disp = np.zeros(res)
@@ -245,7 +245,7 @@ class SystemTest(unittest.TestCase):
         size = self.size
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
-        sphere = Surface.Sphere(self.radius, res, size)
+        sphere = Topography.Sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
         nb_scales = 5
@@ -266,7 +266,7 @@ class SystemTest(unittest.TestCase):
         size = self.size
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
-        sphere = Surface.Sphere(self.radius, res, size)
+        sphere = Topography.Sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
 
@@ -322,7 +322,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smooth(self.eps, self.sig, self.gam)
 
-        self.sphere = Surface.Sphere(self.radius, self.res, self.size)
+        self.sphere = Topography.Sphere(self.radius, self.res, self.size)
 
     def test_unconfirmed_minimization(self):
         ## this merely makes sure that the code doesn't throw exceptions
@@ -331,7 +331,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         size = self.size[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
-        sphere = Surface.Sphere(self.radius, res, size)
+        sphere = Topography.Sphere(self.radius, res, size)
         # here, i deliberately avoid using the SystemFactory, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a
         # free, non-periodic  boundary. A user who invokes a system constructor
@@ -401,10 +401,10 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ## 3. replicate surface
         radius = ref_data.Hertz
         centre = (15.5, 15.5)
-        surface = Surface.Sphere(radius, res, size, centre=centre)
+        surface = Topography.Sphere(radius, res, size, centre=centre)
         ## ref_h = -np.array(ref_data.variables['h'])
         ## ref_h -= ref_h.max()
-        ## surface = Surface.NumpySurface(ref_h)
+        ## surface = Topography.NumpySurface(ref_h)
         ## 4. Set up system:
         S = SmoothContactSystem(substrate, potential, surface)
 
@@ -431,7 +431,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         disp[:ref_data.size, :ref_data.size] = -ref_data.variables['u'][0]
         gap = S.compute_gap(disp, offset)
         print("gap:     min, max = {}, offset = {}".format((gap.min(), gap.max()), offset))
-        print("profile: min, max = {}".format((S.surface.profile().min(), S.surface.profile().max())))
+        print("profile: min, max = {}".format((S.surface.array().min(), S.surface.array().max())))
         options = dict(ftol = 1e-15, gtol = 1e-12)
         result = minimize(fun, disp, jac=True, callback=S.callback(force=True), method = 'L-BFGS-B', options=options)
 
@@ -524,7 +524,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
             ## 3. replicate surface
             radius = ref_data.Hertz
-            surface = Surface.Sphere(radius, res, size)
+            surface = Topography.Sphere(radius, res, size)
 
             ## 4. Set up system:
             S = SmoothContactSystem(substrate, potential, surface)

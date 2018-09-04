@@ -8,7 +8,7 @@ Tries to guess displacements such that areas are equally spaced on a log scale.
 import numpy as np
 from PyCo.ContactMechanics import ExpPotential, LJ93smoothMin
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Surface import read_matrix
+from PyCo.Topography import read_matrix
 from PyCo.System import SystemFactory
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -28,7 +28,7 @@ rho = 1.0
 
 ###
 
-# Read a surface topography from a text file. Returns a PyCo.Surface.Surface
+# Read a surface topography from a text file. Returns a PyCo.Topography.Topography
 # object.
 surface = read_matrix('surface1.out')
 # Set the *physical* size of the surface. We here set it to equal the shape,
@@ -58,7 +58,7 @@ container.set_shape(surface.shape)
 u = None
 tol = 1e-9
 for disp0 in np.linspace(-10, 10, 11):
-    opt = system.minimize_proxy(disp0, u, lbounds=surface.profile()+disp0,
+    opt = system.minimize_proxy(disp0, u, lbounds=surface.array() + disp0,
                                 method='L-BFGS-B', tol=0.0001)
     #opt = system.minimize_proxy(disp0, x0, method='L-BFGS-B', tol=0.0001)
     u = opt.x
@@ -68,7 +68,7 @@ for disp0 in np.linspace(-10, 10, 11):
     # a jacobian is NOT the force.
     f = substrate.evaluate_force(u)
 
-    gap = u-surface.profile()-disp0
+    gap = u - surface.array() - disp0
     mean_gap = np.mean(gap)
     load = -f.sum()/np.prod(surface.size)
     #area = (f>0).sum()/np.prod(surface.shape)

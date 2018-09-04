@@ -77,9 +77,9 @@ def intersection_confidence_region(x_start, direction, radius):
     radius    -- scalar > 0
     """
     # pylint: disable=invalid-name
-    a = float(direction.T * direction)
-    b = float(2 * x_start.T * direction)
-    c = float(x_start.T * x_start - radius**2)
+    a = float(direction.T @ direction)
+    b = float(2 * x_start.T @ direction)
+    c = float(x_start.T @ x_start - radius**2)
     return (-b + np.sqrt(b**2 - 4*a*c))/(2*a)
 
 
@@ -95,14 +95,14 @@ def dogleg(grad_f, hess_f, radius):
     """
     # Cauchy point
     # 1) Computation of the curvature in steepest descent direction
-    beta = float(grad_f.T * hess_f * grad_f)
+    beta = float(grad_f.T @ hess_f @ grad_f)
 
     # 2) If beta <=0, the model is not locally convex.
     if beta <= 0:
         return -radius / np.linalg.norm(grad_f) * grad_f
 
     # 3) else, compute the Cauchy point
-    alpha = float(grad_f.T * grad_f)
+    alpha = float(grad_f.T @ grad_f)
     d_c = - alpha / beta * grad_f
 
     # 4) make sure we're still in the confidence interval
@@ -115,7 +115,7 @@ def dogleg(grad_f, hess_f, radius):
     d_n = np.linalg.solve(hess_f, -grad_f)
 
     # 2) If not convex, stop with Cauchy point
-    if float(d_n.T * hess_f * d_n) <= 0:
+    if float(d_n.T @ hess_f @ d_n) <= 0:
         return d_c
 
     # 3) if d_n in region, return with it
@@ -124,7 +124,7 @@ def dogleg(grad_f, hess_f, radius):
 
     # Dogleg point
     # 1)
-    eta = 0.2 + (0.8 * alpha**2) / (beta * float(abs(grad_f.T * d_n)))
+    eta = 0.2 + (0.8 * alpha**2) / (beta * float(abs(grad_f.T @ d_n)))
     d_d = eta * d_n
 
     # 2)
@@ -156,27 +156,26 @@ def steihaug_toint(grad_f, hess_f, radius, tol=1e-14):
 
     for _ in range(grad_f.size + 1):
         # 1) Computation of the curvature in steepest descent direction
-        if float(direction.T * hess_f * direction) <= 0:
+        if float(direction.T @ hess_f @ direction) <= 0:
             step_len = intersection_confidence_region(xk, direction, radius)
             return xk + step_len * direction
 
         # 2) Compute step length
-        alpha = (- float(direction.T*(hess_f * xk + grad_f)) /
-                 float(direction.T * hess_f * direction))
+        alpha = (- float(direction.T@(hess_f @ xk + grad_f)) /
+                 float(direction.T @ hess_f @ direction))
 
         # 3) compute next iterate
         xkp1 = xk + alpha * direction
 
         # 4)
         if np.linalg.norm(xkp1) > radius:
-            step_len = intersection_confidence_region(xk,
-                                                      direction, radius)
+            step_len = intersection_confidence_region(xk, direction, radius)
             return xk + step_len * direction
 
         # 5) compute beta
-        grad_k = hess_f * xk + grad_f
-        grad_kp1 = hess_f * xkp1 + grad_f
-        beta = float((grad_kp1.T * grad_kp1) / (grad_k.T * grad_k))
+        grad_k = hess_f @ xk + grad_f
+        grad_kp1 = hess_f @ xkp1 + grad_f
+        beta = float((grad_kp1.T @ grad_kp1) / (grad_k.T @ grad_k))
 
         # 6) compute new direction
         direction = - grad_kp1 + beta * direction
@@ -230,7 +229,7 @@ def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
     beta1       -- lower wolfe bound
     """
     return float(fun(x0+alpha*direction)) <= float(fun(x0)) + \
-        alpha * beta1 * float(fprime(x0).T * direction)
+        alpha * beta1 * float(fprime(x0).T @ direction)
 
 
 # -----------------------------------------------------------------------------
@@ -245,8 +244,8 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     alpha     -- step size
     beta2     -- upper wolfe bound
     """
-    return (float(fprime(x0 + alpha*direction).T * direction) >=
-            beta2*float(fprime(x0).T * direction))
+    return (float(fprime(x0 + alpha*direction).T @ direction) >=
+            beta2*float(fprime(x0).T @ direction))
 
 
 # -----------------------------------------------------------------------------
@@ -359,7 +358,7 @@ def construct_augmented_lagrangian(fun, constraints):
         *args -- additional arguments passed to the objective function and its
                  derivatives
         """
-        x = np.matrix(x, copy=False).reshape((-1, 1))
+        x = np.array(x, copy=False).reshape((-1, 1))
         constraints_eval = constraints(x, *args)
         return (fun(x, *args) + float(
             (lam.T*constraints_eval +

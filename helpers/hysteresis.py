@@ -36,7 +36,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from PyCo.System import SystemFactory
-from PyCo.Surface import Sphere
+from PyCo.Topography import Sphere
 from PyCo.ContactMechanics import VDW82smoothMin as VdwPot
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
 

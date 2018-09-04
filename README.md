@@ -55,6 +55,8 @@ Note that the parameter to `env.sh` specifies the Python interpreter for which t
 
 whenever any of the Cython (.pyx) sources are modified.
 
+Please read [CONTRIBUTING](CONTRIBUTING.md) if you plan to contribute to this code.
+
 Usage
 -----
 

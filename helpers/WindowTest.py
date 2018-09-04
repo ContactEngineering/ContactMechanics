@@ -39,7 +39,7 @@ import os.path
 import matplotlib.pyplot as plt
 
 import PyCo.Tools as Tools
-import PyCo.Surface as Surf
+import PyCo.Topography as Surf
 
 counter = 0
 def process(surf_name, surface):
@@ -69,7 +69,7 @@ def process(surf_name, surface):
         print('Hello {}'.format(counter))
         #H, alpha, res = surf.estimate_hurst_alt(lambda_min=lambda_min, full_output=True, H_bracket=(0, 3))
         H, alpha = surf.estimate_hurst(lambda_min=lambda_min, full_output=True)
-        title="{}: H={:.2f}, h_rms={:.2e}".format(surf_name, H, np.sqrt((surface.profile()**2).mean()))
+        title="{}: H={:.2f}, h_rms={:.2e}".format(surf_name, H, np.sqrt((surface.array() ** 2).mean()))
         print("for '{}': Hurst = {}, C0 = {}".format(title, H, alpha))
         #print(res)
         sl = C>0
@@ -126,13 +126,13 @@ def main():
     surface = Surf.NumpyTxtSurface(path, size=size, factor=1e-9)
     surfs = []
     surfs.append(('Topo1', surface))
-    arr, x, residual = Tools.shift_and_tilt(surface.profile(), full_output=True)
+    arr, x, residual = Tools.shift_and_tilt(surface.array(), full_output=True)
     print("ň = {[0]:.15e}, d = {}, residual = {}, mean(arr) = {}".format(
         (float(x[0]), float(x[1]), float(np.sqrt(1-x[0]**2 - x[1]**2))),
         float(x[-1]), residual, arr.mean()))
-    arr = Tools.shift_and_tilt_approx(surface.profile())
-    surface = Surf.NumpySurface(arr, size=size)
-    plot_distro('Topo1_corr', surface.profile())
+    arr = Tools.shift_and_tilt_approx(surface.array())
+    surface = Surf.NumpyTopography(arr, size=size)
+    plot_distro('Topo1_corr', surface.array())
     surfs.append(('Topo1_corr', surface))
 
     hurst = .85
@@ -145,7 +145,7 @@ def main():
     dsize = (2*siz, 2*siz)
     dres = (res[0], res[0])
     dsurface = Tools.RandomSurfaceGaussian(dres, dsize, hurst, h_rms).get_surface()
-    surface = Surf.NumpySurface(dsurface.profile()[:res[0], :res[0]], size = size)
+    surface = Surf.NumpyTopography(dsurface.array()[:res[0], :res[0]], size = size)
     surfs.append(('Gauss aperiodic', surface))
 
     for name, surf in surfs:#(surfs[-1],):
