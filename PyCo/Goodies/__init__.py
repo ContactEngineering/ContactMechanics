@@ -33,7 +33,6 @@ SOFTWARE.
 """
 
 from .SurfaceAnalysis import CharacterisePeriodicSurface, CharacteriseSurface
-from .SurfaceGeneration import RandomSurfaceExact, RandomSurfaceGaussian
 from .SurfaceModification import (ModifyExistingPeriodicSurface,
                                   estimate_short_cutoff)
 from .ScanningProbe import scan_surface
