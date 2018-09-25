@@ -184,8 +184,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 q *= 2*np.pi*self.thickness
                 fac = 3 - 4*self.poisson
                 off = 4*self.poisson*(2*self.poisson - 3) + 5
-                corr = (fac*np.cosh(2*q) + 2*q**2 + off)/ \
-                    (fac*np.sinh(2*q) - 2*q)
+                with np.errstate(over="ignore",invalid="ignore"):
+                    corr = (fac*np.cosh(2*q) + 2*q**2 + off)/ \
+                        (fac*np.sinh(2*q) - 2*q)
                 # The expression easily overflows numerically. These are then
                 # q-values that are converged to the infinite system expression.
                 corr[np.isnan(corr)] = 1.0
