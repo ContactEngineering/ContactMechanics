@@ -177,6 +177,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             qy = np.arange(ny, dtype=np.float64)
             qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
             q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
+            q[0,0] = np.NaN; #q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings
             facts = np.pi*self.contact_modulus*q
             if self.thickness is not None:
                 # Compute correction for finite thickness
