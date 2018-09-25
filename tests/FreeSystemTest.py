@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   05-2-FreeSystemTest.py
+@file   FreeSystemTest.py
 
 @author Till Junge <till.junge@kit.edu>
 
@@ -324,3 +324,49 @@ class FastSystemTest(unittest.TestCase):
         self.assertTrue(error < tol,
                         "error = {} ≥ tol = {}, (c = {})".format(error, tol, length_c))
 
+
+    def test_BabushkaBoundaryError(self):
+        """
+        makes a Simulation in JKR-Like condition so that the contact area jump (snap-in) will lead to a too small
+        babushka-subdomain area
+        """
+        with self.assertRaises(FastSmoothContactSystem.BabushkaBoundaryError):
+            s = 128
+            n = 64
+            dx = 2
+            size = (s, s)
+            res = (n,n)
+            radius = 100
+            young = 1
+            gam = 0.05
+
+            surface = Topography.Sphere(radius, res, size)
+            ext_surface = Topography.Sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s),
+                                         centre=(s / 2, s / 2))
+
+            interaction = Contact.LJ93smoothMin(young/18*np.sqrt(2/5),2.5**(1/6),gamma=gam)
+
+            substrate = Solid.FreeFFTElasticHalfSpace(surface.shape, young, surface.size)
+            system = FastSmoothContactSystem(substrate, interaction, surface, margin=4)
+
+            start_disp = - interaction.r_c + 1e-10
+            load_history = np.concatenate((
+                np.array((start_disp,)),
+                np.arange(-1.63, -1.6, 2e-3),
+                np.arange(-1.6, 0.6, 2e-1)[1:]))
+
+            u=None
+            for offset in load_history:
+
+                opt = system.minimize_proxy(offset,
+                                            u,
+                                            method='L-BFGS-B',
+                                            options=dict(ftol=1e-18, gtol=1e-10),
+                                            lbounds=ext_surface._array() + offset)
+
+                u = system.disp
+
+            import matplotlib.pyplot as plt
+            X, Y = np.meshgrid((np.arange(0, int(n / 2))) * dx, (np.arange(0, int(n / 2))) * dx)
+            fig, ax = plt.subplots()
+            plt.colorbar(ax.pcolormesh(X, Y, substrate.interact_forces[-1, int(n / 2):, int(n / 2):]))

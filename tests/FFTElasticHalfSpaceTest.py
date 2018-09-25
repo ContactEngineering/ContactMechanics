@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   03-FFTElasticHalfSpaceTest.py
+@file   FFTElasticHalfSpaceTest.py
 
 @author Till Junge <till.junge@kit.edu>
 

@@ -177,14 +177,16 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             qy = np.arange(ny, dtype=np.float64)
             qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
             q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
+            q[0,0] = np.NaN; #q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
             facts = np.pi*self.contact_modulus*q
             if self.thickness is not None:
                 # Compute correction for finite thickness
                 q *= 2*np.pi*self.thickness
                 fac = 3 - 4*self.poisson
                 off = 4*self.poisson*(2*self.poisson - 3) + 5
-                corr = (fac*np.cosh(2*q) + 2*q**2 + off)/ \
-                    (fac*np.sinh(2*q) - 2*q)
+                with np.errstate(over="ignore",invalid="ignore",divide="ignore"):
+                    corr = (fac*np.cosh(2*q) + 2*q**2 + off)/ \
+                        (fac*np.sinh(2*q) - 2*q)
                 # The expression easily overflows numerically. These are then
                 # q-values that are converged to the infinite system expression.
                 corr[np.isnan(corr)] = 1.0

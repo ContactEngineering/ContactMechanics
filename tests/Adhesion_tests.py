@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   10-Hertz_tests.py
+@file   Hertz_tests.py
 
 @author Till Junge <till.junge@kit.edu>
 
