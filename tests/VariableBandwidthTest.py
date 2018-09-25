@@ -1,11 +1,12 @@
-/*
-@file   patchfinder.h
+# -*- coding:utf-8 -*-
+"""
+@file   VariableBandwidthTests.py
 
 @author Lars Pastewka <lars.pastewka@imtek.uni-freiburg.de>
 
-@date   10 Apr 2017
+@date   06 Sep 2018
 
-@brief  Analysis of contact patch geometries
+@brief  Test tools for variable bandwidth analysis.
 
 @section LICENCE
 
@@ -28,24 +29,33 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
+"""
 
-#ifndef __PATCHFINDER_H
-#define __PATCHFINDER_H
+from math import sqrt
+import unittest
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+import numpy as np
 
-PyObject *assign_patch_numbers(PyObject *self, PyObject *args);
-PyObject *assign_segment_numbers(PyObject *self, PyObject *args);
-PyObject *shortest_distance(PyObject *self, PyObject *args);
-PyObject *distance_map(PyObject *self, PyObject *args);
-PyObject *correlation_function(PyObject *self, PyObject *args);
-PyObject *perimeter_length(PyObject *self, PyObject *args);
+from PyCo.Topography.VariableBandwidth import checkerboard_tilt_correction
+from .PyCoTest import PyCoTestCase
 
-#ifdef __cplusplus
-}
-#endif
+###
 
-#endif
+class TestAnalysis(PyCoTestCase):
+
+    def test_checkerboard_tilt_correction_2d(self):
+        arr = np.zeros([4, 4])
+        arr[:2, :2] = 1.0
+        outarr = checkerboard_tilt_correction(arr, (4, 4, 4), (1, 1, 1))
+        self.assertArrayAlmostEqual(outarr, np.zeros([4, 4]))
+
+        arr = np.zeros([4, 4])
+        arr[:2, :2] = 1.0
+        arr[:2, 1] = 2.0
+        outarr = checkerboard_tilt_correction(arr, (4, 4, 4), (1, 1, 1))
+        self.assertArrayAlmostEqual(outarr, np.zeros([4, 4]))
+
+###
+
+if __name__ == '__main__':
+    unittest.main()
