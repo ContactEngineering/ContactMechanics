@@ -42,7 +42,7 @@ class LJ93(Potential):
         9-3 Lennard-Jones potential:
         V_l (r) = ε[ 2/15 (σ/r)**9 - (σ/r)**3]
 
-        When used with a cutoff radius, the potential is shifted in orden to
+        When used with a cutoff radius, the potential is shifted in order to
         guarantee continuity of forces
 
         V_lc (r) = V_l (r) - V_l (r_c)
