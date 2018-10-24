@@ -32,8 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import abc
 
-class Substrate(object):
+class Substrate(object,metaclass=abc.ABCMeta):
     """ Generic baseclass from which all substate classes derive
     """
     _periodic = None
@@ -58,8 +59,16 @@ class Substrate(object):
             ("periodicity of Substrate type '{}' ('{}') is not defined"
              "").format(cls.name, cls.__name__))
 
+    @property
+    @abc.abstractmethod
+    def computational_resolution(self):
+        """
+        """
+        pass
 
-class ElasticSubstrate(Substrate):
+
+
+class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
     """ Generic baseclass for elastic substrates
     """
     name = 'generic_elastic_halfspace'
