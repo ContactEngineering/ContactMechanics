@@ -34,7 +34,8 @@ SOFTWARE.
 
 from collections import namedtuple
 import numpy as np
-from ..Tools.fftext import rfftn, irfftn
+#from ..Tools.fftext import rfftn, irfftn
+from FFTEngine import FFTWEngine
 
 from .Substrates import ElasticSubstrate
 
@@ -54,7 +55,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     _periodic = True
 
     def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=None,
-                 thickness=None, poisson=0.0, superclass=True):
+                 thickness=None, poisson=0.0, superclass=True, fftengine=FFTWEngine):
         """
         Keyword Arguments:
         resolution   -- Tuple containing number of points in spatial directions.
@@ -118,6 +119,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         if superclass:
             self._compute_fourier_coeffs()
             self._compute_i_fourier_coeffs()
+
+        self.fftengine=fftengine(self.domain_resolution)
 
     @property
     def domain_resolution(self, ):
@@ -217,7 +220,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      forces.shape, self.domain_resolution))  # nopep8
-        return irfftn(self.weights * rfftn(-forces), s=self.domain_resolution).real / self.area_per_pt
+        return self.fftengine.irfftn(self.weights * self.fftengine.rfftn(-forces), s=self.domain_resolution).real / self.area_per_pt
 
     def evaluate_force(self, disp):
         """ Computes the force (*not* pressures) due to a given displacement array
@@ -229,7 +232,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
                      disp.shape, self.domain_resolution))  # nopep8
-        return -irfftn(self.iweights * rfftn(disp), s=self.domain_resolution).real * self.area_per_pt
+        return -self.fftengine.irfftn(self.iweights * self.fftengine.rfftn(disp), s=self.domain_resolution).real * self.area_per_pt
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
@@ -241,7 +244,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      forces.shape, self.domain_resolution))  # nopep8
-        return self.weights * rfftn(-forces)/self.area_per_pt
+        return self.weights * self.fftengine.rfftn(-forces)/self.area_per_pt
 
     def evaluate_k_force(self, disp):
         """ Computes the K-space forces (*not* pressures) due to a given displacement array
@@ -253,7 +256,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
                      disp.shape, self.domain_resolution))  # nopep8
-        return -self.iweights*rfftn(disp)*self.area_per_pt
+        return -self.iweights*self.fftengine.rfftn(disp)*self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
         """
@@ -295,7 +298,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         elif pot:
             kforce = self.evaluate_k_force(disp)
             potential = self.evaluate_elastic_energy_k_space(
-                kforce, rfftn(disp))
+                kforce, self.fftengine.rfftn(disp))
         return potential, force
 
 
@@ -402,7 +405,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                              (y_p+sqrt_yp_xm)) +
                 y_m * np.log((x_m+sqrt_ym_xm) /
                              (x_p+sqrt_ym_xp)))
-        return rfftn(facts), facts
+        return self.fftengine.rfftn(facts), facts
 
     def _compute_fourier_coeffs(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
@@ -443,7 +446,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                                 (x_s-a)*(x_s-a))) /
                                ((x_s+a)+np.sqrt((y_s-b)*(y_s-b) +
                                                 (x_s+a)*(x_s+a)))))
-        self.weights = rfftn(facts)
+        self.weights = self.fftengine.rfftn(facts)
         return self.weights, facts
 
     def evaluate_disp(self, forces):
