@@ -57,6 +57,27 @@ class Substrate(object,metaclass=abc.ABCMeta):
         """
         pass
 
+
+    @property
+    @abc.abstractmethod
+    def subdomain_resolution(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        pass
+
+    @property
+    @abc.abstractmethod
+    def subdomain_location(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        pass
+
     @property
     def dim(self, ):
         "return the substrate's physical dimension"
