@@ -34,11 +34,17 @@ SOFTWARE.
 
 from collections import namedtuple
 import numpy as np
+import sys
 #from ..Tools.fftext import rfftn, irfftn
-from FFTEngine import FFTWEngine
+from FFTEngine import FFTWEngine, npFFTEngine
 
 from .Substrates import ElasticSubstrate
 
+if 'darwin' in sys.platform:
+    #print("FFTWEngine causes failure on darwin, will not be tested")
+    DEFAULTENGINE=npFFTEngine
+else:
+    DEFAULTENGINE=FFTWEngine
 
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
@@ -55,7 +61,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     _periodic = True
 
     def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=None,
-                 thickness=None, poisson=0.0, superclass=True, fftengine=FFTWEngine):
+                 thickness=None, poisson=0.0, superclass=True, fftengine=DEFAULTENGINE):
         """
         Keyword Arguments:
         resolution   -- Tuple containing number of points in spatial directions.
@@ -116,12 +122,14 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.contact_modulus = young/(1-poisson**2)
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
+        self.fftengine = fftengine(self.domain_resolution)  # because when called in subclass,
+                                                            # the computational resolution isn't known already
         if superclass:
             self._compute_fourier_coeffs()
             self._compute_i_fourier_coeffs()
 
-        self.fftengine=fftengine(self.domain_resolution)
 
+    @property
     def dim(self, ):
         "return the substrate's physical dimension"
         return self.__dim
@@ -242,7 +250,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      forces.shape, self.domain_resolution))  # nopep8
-        return self.fftengine.irfftn(self.weights * self.fftengine.rfftn(-forces), s=self.domain_resolution).real / self.area_per_pt
+        return self.fftengine.irfftn(self.weights * self.fftengine.rfftn(-forces)).real / self.area_per_pt
 
     def evaluate_force(self, disp):
         """ Computes the force (*not* pressures) due to a given displacement array
@@ -254,7 +262,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
                      disp.shape, self.domain_resolution))  # nopep8
-        return -self.fftengine.irfftn(self.iweights * self.fftengine.rfftn(disp), s=self.domain_resolution).real * self.area_per_pt
+        return -self.fftengine.irfftn(self.iweights * self.fftengine.rfftn(disp)).real * self.area_per_pt
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
@@ -342,7 +350,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     name = "free_fft_elastic_halfspace"
     _periodic = False
 
-    def __init__(self, resolution, young, size=2*np.pi):
+    def __init__(self, resolution, young, size=2*np.pi,fftengine=DEFAULTENGINE):
         """
         Keyword Arguments:
         resolution  -- Tuple containing number of points in spatial directions.
@@ -359,10 +367,11 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                        dimension. If the tuple has less entries than
                        dimensions, the last value in repeated.
         """
-        super().__init__(resolution, young, size, superclass=False)
+        self._comp_resolution = tuple((2 * r for r in resolution))
+        super().__init__(resolution, young, size, superclass=False,fftengine=fftengine)
         self._compute_fourier_coeffs()
         self._compute_i_fourier_coeffs()
-        self._comp_resolution = tuple((2*r for r in self.resolution))
+
 
     def spawn_child(self, resolution):
         """
