@@ -122,6 +122,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         self.fftengine=fftengine(self.domain_resolution)
 
+    def dim(self, ):
+        "return the substrate's physical dimension"
+        return self.__dim
+
     @property
     def domain_resolution(self, ):
         """
@@ -131,6 +135,24 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         see FreeFFTElasticHalfSpace.
         """
         return self.resolution
+
+    @property
+    def subdomain_resolution(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        return self.resolution
+
+    @property
+    def subdomain_location(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        return (0,0)
 
     def __repr__(self):
         dims = 'x', 'y', 'z'

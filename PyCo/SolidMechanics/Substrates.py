@@ -79,9 +79,10 @@ class Substrate(object,metaclass=abc.ABCMeta):
         pass
 
     @property
+    @abc.abstractmethod
     def dim(self, ):
         "return the substrate's physical dimension"
-        return self.__dim
+        pass
 
 
 
