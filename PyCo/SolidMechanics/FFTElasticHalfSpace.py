@@ -125,7 +125,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return self.__dim
 
     @property
-    def computational_resolution(self, ):
+    def domain_resolution(self, ):
         """
         usually, the resolution of the system is equal to the geometric
         resolution (of the surface). For example free boundary conditions,
@@ -217,35 +217,35 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
-        if forces.shape != self.computational_resolution:
+        if forces.shape != self.domain_resolution:
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
-                     forces.shape, self.computational_resolution))  # nopep8
-        return irfftn(self.weights * rfftn(-forces), s=self.computational_resolution).real/self.area_per_pt
+                     forces.shape, self.domain_resolution))  # nopep8
+        return irfftn(self.weights * rfftn(-forces), s=self.domain_resolution).real / self.area_per_pt
 
     def evaluate_force(self, disp):
         """ Computes the force (*not* pressures) due to a given displacement array
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
         """
-        if disp.shape != self.computational_resolution:
+        if disp.shape != self.domain_resolution:
             raise self.Error(
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
-                     disp.shape, self.computational_resolution))  # nopep8
-        return -irfftn(self.iweights*rfftn(disp), s=self.computational_resolution).real*self.area_per_pt
+                     disp.shape, self.domain_resolution))  # nopep8
+        return -irfftn(self.iweights * rfftn(disp), s=self.domain_resolution).real * self.area_per_pt
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
-        if forces.shape != self.computational_resolution:
+        if forces.shape != self.domain_resolution:
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
-                     forces.shape, self.computational_resolution))  # nopep8
+                     forces.shape, self.domain_resolution))  # nopep8
         return self.weights * rfftn(-forces)/self.area_per_pt
 
     def evaluate_k_force(self, disp):
@@ -253,11 +253,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
         """
-        if disp.shape != self.computational_resolution:
+        if disp.shape != self.domain_resolution:
             raise self.Error(
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
-                     disp.shape, self.computational_resolution))  # nopep8
+                     disp.shape, self.domain_resolution))  # nopep8
         return -self.iweights*rfftn(disp)*self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
@@ -354,7 +354,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         return type(self)(resolution, self.young, size)
 
     @property
-    def computational_resolution(self, ):
+    def domain_resolution(self, ):
         """
         usually, the resolution of the system is equal to the geometric
         resolution (of the surface). For example free boundary conditions,
@@ -456,16 +456,16 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
-        if forces.shape != self.computational_resolution:
+        if forces.shape != self.domain_resolution:
             # Automatically pad forces if force array is half of computational
             # resolution
             if np.any(np.array(forces.shape) !=
-                      np.array(self.computational_resolution)/2):
+                      np.array(self.domain_resolution) / 2):
                 raise self.Error("force array has a different shape ({0}) "
                                  "than this halfspace's resolution ({1}) or "
                                  "half of it".format(forces.shape,
-                                                     self.computational_resolution))
-            padded_forces = np.zeros(self.computational_resolution)
+                                                     self.domain_resolution))
+            padded_forces = np.zeros(self.domain_resolution)
             s = [slice(0, forces.shape[i])
                  for i in range(len(forces.shape))]
             padded_forces[s] = forces

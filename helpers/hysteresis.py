@@ -72,7 +72,7 @@ for base_res in (32, 64, 128, 256, 512):
     pullof_forces = list()
     offsets = list()
     contact_area = list()
-    disp = np.zeros(substrate.computational_resolution)
+    disp = np.zeros(substrate.domain_resolution)
     force = -1.
 
     def iterator(initial_offset):

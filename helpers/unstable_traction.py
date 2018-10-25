@@ -63,7 +63,7 @@ for base_res in (64, ):#128, 256, 512, 1024):
         pullof_forces = list()
         offsets = list()
         contact_area = list()
-        disp = np.zeros(substrate.computational_resolution)
+        disp = np.zeros(substrate.domain_resolution)
         force = -1.
         while force < 0:
             result = system.minimize_proxy(offset, disp)

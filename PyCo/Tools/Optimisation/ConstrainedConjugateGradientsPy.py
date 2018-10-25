@@ -116,7 +116,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         offset = 0
 
     if disp0 is None:
-        u_r = np.zeros(substrate.computational_resolution)
+        u_r = np.zeros(substrate.domain_resolution)
     else:
         u_r = disp0.copy()
 
@@ -128,7 +128,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
              "or 2 dimensions (Your substrate has {}.).").format(
                  substrate.dim))
 
-    comp_mask = np.zeros(substrate.computational_resolution, dtype=bool)
+    comp_mask = np.zeros(substrate.domain_resolution, dtype=bool)
     comp_mask[tuple(comp_slice)] = True
 
     surf_mask = np.ma.getmask(surface)

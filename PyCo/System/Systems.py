@@ -168,7 +168,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         in_array -- array with the initial guess. has the intuitive shape you
                     think it has
         """
-        if np.prod(self.substrate.computational_resolution) == in_array.size:
+        if np.prod(self.substrate.domain_resolution) == in_array.size:
             return in_array.reshape(-1)
         raise IncompatibleResolutionError()
 
@@ -184,8 +184,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         in_array -- array with the initial guess. has the intuitive shape you
                     think it has
         """
-        if np.prod(self.substrate.computational_resolution) == in_array.size:
-            return in_array.reshape(self.substrate.computational_resolution)
+        if np.prod(self.substrate.domain_resolution) == in_array.size:
+            return in_array.reshape(self.substrate.domain_resolution)
         raise IncompatibleResolutionError()
 
     def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
@@ -223,7 +223,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
                              logger=logger)
         if disp0 is None:
-            disp0 = np.zeros(self.substrate.computational_resolution)
+            disp0 = np.zeros(self.substrate.domain_resolution)
         disp0 = self.shape_minimisation_input(disp0)
         if callback is True:
             callback = self.callback(force=gradient)
@@ -450,7 +450,7 @@ class SmoothContactSystem(SystemBase):
         logger     -- (default None) log information at every iteration.
         """
         dummy = disp0
-        res = self.substrate.computational_resolution
+        res = self.substrate.domain_resolution
         if gradient:
             def fun(disp):
                 # pylint: disable=missing-docstring
@@ -617,7 +617,7 @@ class NonSmoothContactSystem(SystemBase):
         """
         # pylint: disable=arguments-differ
         dummy = disp0
-        res = self.substrate.computational_resolution
+        res = self.substrate.domain_resolution
         if gradient:
             def fun(disp):
                 # pylint: disable=missing-docstring

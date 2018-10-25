@@ -61,7 +61,7 @@ class Substrate(object,metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def computational_resolution(self):
+    def domain_resolution(self):
         """
         """
         pass
