@@ -50,21 +50,17 @@ class Substrate(object,metaclass=abc.ABCMeta):
         raise self.Error(
             "Only substrates with free boundaries can do this")
 
-    @classmethod
-    def is_periodic(cls):
-        "non-periodic substrates can use some optimisations"
-        if cls._periodic is not None:
-            return cls._periodic
-        raise cls.Error(
-            ("periodicity of Substrate type '{}' ('{}') is not defined"
-             "").format(cls.name, cls.__name__))
-
     @property
     @abc.abstractmethod
     def domain_resolution(self):
         """
         """
         pass
+
+    @property
+    def dim(self, ):
+        "return the substrate's physical dimension"
+        return self.__dim
 
 
 
@@ -78,6 +74,14 @@ class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
     def __init__(self):
         self.energy = None
         self.force = None
+
+    def __repr__(self):
+        dims = 'x', 'y', 'z'
+        size_str = ', '.join('{}: {}({})'.format(dim, size, resolution) for
+                             dim, size, resolution in zip(dims, self.size,
+                                                          self.resolution))
+        return ("{0.dim}-dimensional halfspace '{0.name}', size(resolution) in"
+                " {1}, E' = {0.young}").format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):
         """

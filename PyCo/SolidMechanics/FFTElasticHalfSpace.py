@@ -120,11 +120,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             self._compute_i_fourier_coeffs()
 
     @property
-    def dim(self, ):
-        "return the substrate's physical dimension"
-        return self.__dim
-
-    @property
     def domain_resolution(self, ):
         """
         usually, the resolution of the system is equal to the geometric
