@@ -50,13 +50,21 @@ class Substrate(object,metaclass=abc.ABCMeta):
         raise self.Error(
             "Only substrates with free boundaries can do this")
 
+    @classmethod
+    def is_periodic(cls):
+        "non-periodic substrates can use some optimisations"
+        if cls._periodic is not None:
+            return cls._periodic
+        raise cls.Error(
+            ("periodicity of Substrate type '{}' ('{}') is not defined"
+             "").format(cls.name, cls.__name__))
+
     @property
     @abc.abstractmethod
     def domain_resolution(self):
         """
         """
         pass
-
 
     @property
     @abc.abstractmethod
@@ -78,11 +86,11 @@ class Substrate(object,metaclass=abc.ABCMeta):
         """
         pass
 
-    @property
-    @abc.abstractmethod
-    def dim(self, ):
-        "return the substrate's physical dimension"
-        pass
+    #@property
+    #@abc.abstractmethod
+    #def dim(self, ):
+    #    "return the substrate's physical dimension"
+    #    pass
 
 
 
