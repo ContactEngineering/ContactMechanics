@@ -36,15 +36,26 @@ from collections import namedtuple
 import numpy as np
 import sys
 #from ..Tools.fftext import rfftn, irfftn
-from FFTEngine import FFTWEngine, npFFTEngine
+
 
 from .Substrates import ElasticSubstrate
 
+# Decide what is default FFTEngine:
+try:
+    from mpi4py import MPI
+    __with_MPI__ = MPI.COMM_WORLD.Get_size() > 1
+except:
+    __with_MPI__ = False #TODO: This maybe uselesss
+
+# I will never take the parallel as default because most of the tests will fail because of this
+
 if 'darwin' in sys.platform:
-    #print("FFTWEngine causes failure on darwin, will not be tested")
-    DEFAULTENGINE=npFFTEngine
+    # print("FFTWEngine causes failure on darwin, will not be tested")
+    from FFTEngine import NumpyFFTEngine
+    DEFAULTENGINE = NumpyFFTEngine
 else:
-    DEFAULTENGINE=FFTWEngine
+    from FFTEngine import FFTWEngine
+    DEFAULTENGINE = FFTWEngine
 
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
@@ -151,7 +162,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.resolution
+        return self.fftengine.subdomain_resolution
 
     @property
     def subdomain_location(self):
@@ -160,7 +171,44 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return (0,0)
+        return self.fftengine.subdomain_location
+
+    @property
+    def subdomain_slice(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        return self.fftengine.subdomain_slice
+
+    @property
+    def fourier_resolution(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        return self.fftengine.fourier_resolution
+
+    @property
+    def fourier_location(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        return self.fftengine.fourier_location
+
+    @property
+    def fourier_slice(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        return self.fftengine.fourier_slice
+
 
     def __repr__(self):
         dims = 'x', 'y', 'z'
@@ -188,15 +236,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             2015]
         """
         if self.dim == 1:
-            facts = np.zeros(self.resolution)
-            for index in range(2, self.resolution[0]//2+2):
-                facts[-index+1] = facts[index - 1] = \
+            facts = np.zeros(self.fourier_resolution)
+            for index in range(self.fourier_location[0]+2, self.fourier_resolution[0]+1):
+                 facts[index - 1] = \
                     self.size[0]/(self.contact_modulus*index*np.pi)
-            # real to complex fft allows saving some time and memory
-            nb_cols = facts.shape[-1]//2+1
-            self.weights = facts[..., :nb_cols]
-
-        elif self.dim == 2:
+            self.weights= facts
+        elif self.dim == 2:  # TODO: compute facts only on the fourier slice
             nx, ny = self.resolution
             sx, sy = self.size
             # Note: q-values from 0 to 1, not from 0 to 2*pi
@@ -228,9 +273,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     facts[0, 0] = 1.0
                 else:
                     facts[0, 0] = self.stiffness_q0
-            # real to complex fft allows saving some time and memory
-            nb_cols = facts.shape[-1]//2+1
-            self.weights = 1/facts[..., :nb_cols]
+
+            self.weights = 1/facts[self.fourier_slice]
+
             if self.stiffness_q0 == 0.0:
                 self.weights[0, 0] = 0.0
 
