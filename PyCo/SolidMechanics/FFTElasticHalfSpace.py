@@ -43,9 +43,9 @@ from .Substrates import ElasticSubstrate
 # Decide what is default FFTEngine:
 try:
     from mpi4py import MPI
-    __with_MPI__ = MPI.COMM_WORLD.Get_size() > 1
+    _with_MPI = MPI.COMM_WORLD.Get_size() > 1
 except:
-    __with_MPI__ = False #TODO: This maybe uselesss
+    _with_MPI = False #TODO: This maybe uselesss
 
 # I will never take the parallel as default because most of the tests will fail because of this
 
@@ -290,11 +290,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
-        if forces.shape != self.domain_resolution:
+        if forces.shape != self.subdomain_resolution:
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
-                     forces.shape, self.domain_resolution))  # nopep8
+                     forces.shape, self.subdomain_resolution))  # nopep8
         return self.fftengine.irfftn(self.weights * self.fftengine.rfftn(-forces)).real / self.area_per_pt
 
     def evaluate_force(self, disp):
@@ -302,11 +302,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
         """
-        if disp.shape != self.domain_resolution:
+        if disp.shape != self.subdomain_resolution:
             raise self.Error(
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
-                     disp.shape, self.domain_resolution))  # nopep8
+                     disp.shape, self.subdomain_resolution))  # nopep8
         return -self.fftengine.irfftn(self.iweights * self.fftengine.rfftn(disp)).real * self.area_per_pt
 
     def evaluate_k_disp(self, forces):
@@ -314,11 +314,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
-        if forces.shape != self.domain_resolution:
+        if forces.shape != self.subdomain_resolution:
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
-                     forces.shape, self.domain_resolution))  # nopep8
+                     forces.shape, self.subdomain_resolution))  # nopep8
         return self.weights * self.fftengine.rfftn(-forces)/self.area_per_pt
 
     def evaluate_k_force(self, disp):
@@ -326,11 +326,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
         """
-        if disp.shape != self.domain_resolution:
+        if disp.shape != self.subdomain_resolution:
             raise self.Error(
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
-                     disp.shape, self.domain_resolution))  # nopep8
+                     disp.shape, self.subdomain_resolution))  # nopep8
         return -self.iweights*self.fftengine.rfftn(disp)*self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
