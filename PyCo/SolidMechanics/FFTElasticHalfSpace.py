@@ -361,32 +361,22 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         #           np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real)/self.nb_pts
 
         # Now compatible with parallel code
-
-        # The dot product of the Fourier Spectrum is multiplied by 2 to account for the symetric part of the spectrum that
-        #  is not stored in the arrays. The Row with the highest wavevector has no symetric counterpart so it has to be
-        # taken away.
-
-        return .5 * (2 * np.vdot(kdisp, -kforces).real
-                     -
-                     (np.vdot(kdisp[..., -1], -kforces[..., -1]).real
-                      if self.fourier_location[-1]+self.fourier_resolution[-1] # check if this is the row with highest wavevector
-                         == self.domain_resolution[-1] //2 + 1
-                      else 0)
-                     -
-                     (np.vdot(kdisp[..., 0], -kforces[..., 0]).real
-                      if self.fourier_location[-1]== 0
-                      else 0)
-                     )/self.nb_pts
-        # just another implementation
-        #start= 1 if self.fourier_location[-1] == 0 else None
-        #stop = -1 if self.fourier_location[-1] + self.fourier_resolution[-1] == self.domain_resolution[-1] // 2 + 1 \
-        #    else None
-#
-        #sl = slice(start,stop)
-
-
-        #return .5 * (np.vdot(kdisp, -kforces).real +
-        #             np.vdot(kdisp[..., slice], -kforces[..., slice]).real / self.nb_pts
+        # The inner part of the fourier data should always be symetrized (i.e. multiplied by 2)
+        # When the fourier subdomain contains boundary values (wavevector 0 and ny//2) these values should only be added once
+        if kdisp.shape[-1] > 0:
+            return .5 * (2 * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
+                         +
+                         np.vdot(kdisp[..., -1], -kforces[..., -1]).real *
+                         (2 if self.fourier_location[-1] + self.fourier_resolution[-1]
+                               != self.domain_resolution[-1] // 2 + 1
+                          else 1)
+                         +
+                         np.vdot(kdisp[..., 0], -kforces[..., 0]).real *
+                         (2 if self.fourier_location[-1] != 0
+                          else 1)
+                         ) / self.nb_pts
+        else:
+            return 0
 
 
     def evaluate(self, disp, pot=True, forces=False):
@@ -404,7 +394,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         elif pot:
             kforce = self.evaluate_k_force(disp)
             potential = self.evaluate_elastic_energy_k_space(
-                kforce, self.fftengine.rfftn(disp))
+                kforce, self.fftengine.rfftn(disp)) # TODO: OPTIMISATION: here kdisp is computed twice, because it's needed in kforce
         return potential, force
 
 
