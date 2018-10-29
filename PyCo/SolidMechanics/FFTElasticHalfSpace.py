@@ -355,8 +355,21 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # using vdot instead of dot because of conjugate
         # The 2nd term at the end comes from the fact that we use a reduced
         # rfft transform
+
+        # This will not work in parallel, because not all Processors pocess the line of data that should not be symetrized
         return .5*(np.vdot(kdisp, -kforces).real +
-                   np.vdot(kdisp[..., :-1], -kforces[..., :-1]).real)/self.nb_pts
+                   np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real)/self.nb_pts
+
+        # Now compatible with parallel code
+
+        # The dot product of the Fourier Spectrum is multiplied by 2 to account for the symetric part of the spectrum that
+        #  is not stored in the arrays. The Row with the highest wavevector has no symetric counterpart so it has to be
+        # taken away.
+        # return .5 * (2 * np.vdot(kdisp, -kforces).real -
+        #              (np.vdot(kdisp[..., -1], -kforces[..., -1]).real
+        #               if self.fourier_location[-1]+self.fourier_resolution[-1] # check if this is the row with highest wavevector
+        #                  == self.domain_resolution[-1] //2 + 1
+        #               else 0))/self.nb_pts
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces
