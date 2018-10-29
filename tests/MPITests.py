@@ -14,6 +14,7 @@ except ImportError:
 if _withMPI:
     from FFTEngine import PFFTEngine
     from FFTEngine.helpers import gather
+    from PyCo.Tools.ParallelNumpy import ParallelNumpy
 
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
@@ -22,11 +23,39 @@ from FFTEngine import NumpyFFTEngine
 DEFAULTFFTENGINE = NumpyFFTEngine
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
+class test_ParallelNumpy(unittest.TestCase):
+
+    def setUp(self):
+        self.np = ParallelNumpy()
+
+    def test_array(self):
+        nparr = np.array(((1,2,3),(4,5,6)))
+        arr = self.np.array(((1,2,3),(4,5,6)))
+        self.assertTrue(isinstance(arr, np.ndarray))
+        self.assertTrue(np.array_equal(arr,nparr))
+
+    def test_sum_scalar(self):
+        res=self.np.sum(np.array(1))
+        self.assertEqual(res, self.np.comm.Get_size())
+
+    def test_sum_1D(self):
+        arr=np.array((1,2.1,3))
+        res = self.np.sum(arr)
+        self.assertEqual(res, self.np.comm.Get_size() * 6.1)
+
+    def test_sum_2D(self):
+        arr=np.array(((1,2.1,3),
+                     (4,5,6)))
+        res = self.np.sum(arr)
+        self.assertEqual(res, self.np.comm.Get_size() * 21.1)
+
+
+
+@unittest.skipUnless(_withMPI,"requires mpi4py")
 class Parallel_FFTElasticHalfSpace_weights(unittest.TestCase):
     """
 
     """
-
     def setUp(self):
         self.sx = 30.0
         self.sy = 1.0
@@ -74,14 +103,17 @@ class Parallel_FFTElasticHalfSpace_compute(unittest.TestCase):
         self.sx = 2  # 30.0
         self.sy = 1.0
 
-        self.nx = 32
-        self.ny = 64
+        self.nx = 16
+        self.ny = 32
 
         # equivalent Young's modulus
         self.E_s = 1.0
         # self.substrate = PeriodicFFTElasticHalfSpace(resolution=(32,32))
 
         self.comm = MPI.COMM_WORLD
+
+        self.pnp = ParallelNumpy(comm=self.comm)
+
     def test_disp_sineWave(self):
         Y,X = np.meshgrid(np.linspace(0,self.sy,self.ny+1)[:-1],np.linspace(0,self.sx,self.nx+1)[:-1])
 
@@ -103,12 +135,106 @@ class Parallel_FFTElasticHalfSpace_compute(unittest.TestCase):
             np.testing.assert_allclose(computedpressure, refpressure[substrate.subdomain_slice],atol = 1e-7, rtol = 1e-2)
 
     def test_force_sineWave(self):
-        pass
+        Y, X = np.meshgrid(np.linspace(0, self.sy, self.ny + 1)[:-1], np.linspace(0, self.sx, self.nx + 1)[:-1])
 
-    def test_k_force(self):
-        pass
+        qx = 1 * np.pi * 2 / self.sx
+        qy = 4 * np.pi * 2 / self.sy
+
+        q = np.sqrt(qx ** 2 + qy ** 2)
+        p = np.cos(qx * X + qy * Y)
+
+        refdisp = - p / self.E_s * 2 / q
+        # refpressure = PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=NumpyFFTEngine).evaluate_force(p)
+
+        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine)
+                         for engine in [PFFTEngine]]
+
+        for substrate in MPIsubstrates:
+            computeddisp = substrate.evaluate_disp(p[substrate.subdomain_slice]*substrate.area_per_pt)
+
+            np.testing.assert_allclose(computeddisp, refdisp[substrate.subdomain_slice], atol=1e-7, rtol=1e-2)
+
+#    def test_k_force_maxq(self):
+#        Y, X = np.meshgrid(np.linspace(0, self.sy, self.ny + 1)[:-1], np.linspace(0, self.sx, self.nx + 1)[:-1])
+#
+#        qx = 1 * np.pi * 2 / self.sx
+#        qy = self.ny//2 * np.pi * 2 / self.sy
+#
+#        q = np.sqrt(qx ** 2 + qy ** 2)
+#        h=1
+#        disp = h*np.cos(qx * X + qy * Y)
+#
+#        ref_k_force= np.zeros((self.nx, self.ny//2+1))
+#        ref_k_force[1,ny//2] = q * h *self.E_s /2
+
+
     def test_k_disp(self):
         pass
+
+    def test_evaluate_elastic_energy(self):
+        pass
+
+    def test_evaluate(self):
+        Y, X = np.meshgrid(np.linspace(0, self.sy, self.ny + 1)[:-1], np.linspace(0, self.sx, self.nx + 1)[:-1])
+
+        disp = np.zeros((self.nx,self.ny))
+        refForce = np.zeros((self.nx,self.ny))
+
+        refEnergy = 0
+        for qx,qy in zip((1 , 0,5,self.nx//2-1),
+                         (4 , 4,0,self.ny//2-2)):
+            qx = qx *np.pi * 2 / self.sx
+            qy = qy* np.pi * 2 / self.sy
+
+            q = np.sqrt(qx ** 2 + qy ** 2)
+            h=1#q**(-0.8)
+            disp += h *np.cos(qx * X + qy * Y)
+            refForce += h *np.cos(qx * X + qy * Y) * self.E_s / 2 * q
+
+            refEnergy+= self.E_s /8 * q * h**2
+
+        # max possible Wavelengths at the edge
+        for qx, qy in zip((self.nx//2 , self.nx//2   , 0            ),
+                          (self.ny//2 ,   0          , self.ny//2 )):
+            qx = qx *np.pi * 2 / self.sx
+            qy = qy* np.pi * 2 / self.sy
+
+            q = np.sqrt(qx ** 2 + qy ** 2)
+            h=1#q**(-0.8)
+            disp += h *np.cos(qx * X + qy * Y)
+            refForce += h *np.cos(qx * X + qy * Y) * self.E_s / 2 * q
+
+            refEnergy+= self.E_s /8 * q * h**2 * 2 # when the wavevector is equal to n//2 2pi/s (2 points per period),
+            # the discretization is bad and it's not the energy of a cos wave anymore
+
+        refEnergy *= self.sx * self.sy
+        refForce *= -self.sx * self.sy / (self.nx * self.ny)
+
+        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine)
+                         for engine in [PFFTEngine]]
+        for substrate in MPIsubstrates:
+            computed_E_k_space = substrate.evaluate(disp[substrate.subdomain_slice],pot=True,forces=False)[0] # If force is not queried this computes the energy using kspace
+            computed_E_realspace,computed_force = substrate.evaluate(disp[substrate.subdomain_slice],pot=True,forces=True)
+
+            print(self.pnp.sum(computed_E_k_space))
+            print(computed_E_k_space)
+            print(refEnergy)
+
+            computed_E_k_space = self.pnp.sum(computed_E_k_space)
+            computed_E_realspace = self.pnp.sum(computed_E_realspace)
+
+            # Make an MPI-Reduce of the Energies !
+            #print(substrate.evaluate_elastic_energy(refForce, disp))
+            #print(0.5*np.vdot(refForce,disp))
+            #print(substrate.evaluate_elastic_energy(substrate.evaluate_force(disp),disp))
+            #print(computed_E_k_space)
+            #print(computed_E_realspace)
+            #print(refEnergy)
+
+            self.assertAlmostEqual(computed_E_k_space,refEnergy)
+            self.assertAlmostEqual(computed_E_realspace, refEnergy)
+            np.testing.assert_allclose(computed_force, refForce[substrate.subdomain_slice], atol=1e-10, rtol=1e-10)
+
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
 class Parallel_FreeFFTElasticHalfSpace(unittest.TestCase):
