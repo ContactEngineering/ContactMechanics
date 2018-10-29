@@ -16,10 +16,10 @@ class ParallelNumpy :
 
         Returns
         -------
-        scalar, the sum of all Elements of the Array over all the Processors
+        scalar np.ndarray , the sum of all Elements of the Array over all the Processors
         """
 
-        result = np.asarray(0)
+        result = np.asarray(0,dtype=arr.dtype)
         self.comm.Allreduce(np.sum(arr),result,op = MPI.SUM)
         return result
 
