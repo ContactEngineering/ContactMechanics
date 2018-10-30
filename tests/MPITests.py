@@ -27,6 +27,7 @@ class test_ParallelNumpy(unittest.TestCase):
 
     def setUp(self):
         self.np = ParallelNumpy()
+        self.comm = MPI.COMM_WORLD
 
     def test_array(self):
         nparr = np.array(((1,2,3),(4,5,6)))
@@ -49,6 +50,60 @@ class test_ParallelNumpy(unittest.TestCase):
         res = self.np.sum(arr)
         self.assertEqual(res, self.np.comm.Get_size() * 21.1)
 
+    def test_max_2D(self):
+        arr=np.reshape(np.array((-1,1,5,4,
+                             4,5,4,5,
+                             7,0,1,0)),(3,4))
+
+        rank = self.comm.Get_rank()
+        if self.comm.Get_size() >=4:
+            if rank ==0 :   local_arr = arr[0:2,0:2]
+            elif rank ==1 : local_arr = arr[0:2,2:]
+            elif rank == 2 :local_arr = arr[2:,0:2]
+            elif rank == 3 : local_arr = arr[2:,2:]
+            else : local_arr = np.empty(0,dtype=arr.dtype)
+        elif self.comm.Get_size() >=2 :
+            if   rank ==0 :   local_arr = arr[0:2,:]
+            elif rank ==1 : local_arr = arr[2:,:]
+            else:           local_arr = np.empty(0, dtype=arr.dtype)
+        else:
+            local_arr = arr
+        self.assertEqual(self.np.max(local_arr),7)
+
+
+    def test_min(self):
+        arr = np.reshape(np.array((-1, 1, 5, 4,
+                                   4, 5, 4, 5,
+                                   7, 0, 1, 0)), (3, 4))
+
+        rank = self.comm.Get_rank()
+        if self.comm.Get_size() >= 4:
+            if rank == 0:
+                local_arr = arr[0:2, 0:2]
+            elif rank == 1:
+                local_arr = arr[0:2, 2:]
+            elif rank == 2:
+                local_arr = arr[2:, 0:2]
+            elif rank == 3:
+                local_arr = arr[2:, 2:]
+            else:
+                local_arr = np.empty(0, dtype=arr.dtype)
+        elif self.comm.Get_size() >= 2:
+            if rank == 0:
+                local_arr = arr[0:2, :]
+            elif rank == 1:
+                local_arr = arr[2:, :]
+            else:
+                local_arr = np.empty(0, dtype=arr.dtype)
+        else:
+            local_arr = arr
+        self.assertEqual(self.np.min(local_arr), -1)
+
+    def test_ones(self):
+        print(np.ones is self.np.ones)
+        print(np.ones)
+        print(ParallelNumpy.ones)
+        print(np.ones((10,10),dtype=bool))
 
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
@@ -216,9 +271,9 @@ class Parallel_FFTElasticHalfSpace_compute(unittest.TestCase):
             computed_E_k_space = substrate.evaluate(disp[substrate.subdomain_slice],pot=True,forces=False)[0] # If force is not queried this computes the energy using kspace
             computed_E_realspace,computed_force = substrate.evaluate(disp[substrate.subdomain_slice],pot=True,forces=True)
 
-            print(self.pnp.sum(computed_E_k_space))
-            print(computed_E_k_space)
-            print(refEnergy)
+            #print(self.pnp.sum(computed_E_k_space))
+            #print(computed_E_k_space)
+            #print(refEnergy)
 
             computed_E_k_space = self.pnp.sum(computed_E_k_space)
             computed_E_realspace = self.pnp.sum(computed_E_realspace)
@@ -235,6 +290,8 @@ class Parallel_FFTElasticHalfSpace_compute(unittest.TestCase):
             self.assertAlmostEqual(computed_E_realspace, refEnergy)
             np.testing.assert_allclose(computed_force, refForce[substrate.subdomain_slice], atol=1e-10, rtol=1e-10)
 
+    def test_evaluate_elastic_energy_k_space_speed(self):
+        pass
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
 class Parallel_FreeFFTElasticHalfSpace(unittest.TestCase):
@@ -249,7 +306,7 @@ class Parallel_FreeFFTElasticHalfSpace(unittest.TestCase):
         """
         pass
 
-    def test_Hertzian_Pressurez(self):
+    def test_Hertzian_Pressure(self):
         """
         Apply Pressure Profile and look that the Deformation is hertzian
         Returns
