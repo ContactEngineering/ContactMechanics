@@ -50,12 +50,18 @@ class ParallelNumpy :
 
     def max(self,arr):
         result = np.asarray(0, dtype=arr.dtype)
-        self.comm.Allreduce(np.max(arr) if arr.size > 0 else np.array(None,dtype=arr.dtype), result, op=MPI.MAX)
+        self.comm.Allreduce(np.max(arr) if arr.size > 0 else np.array([-np.inf],dtype=arr.dtype), result, op=MPI.MAX)
+        #TODO: Not elegant, but following options didn't work
+        #self.comm.Allreduce(np.max(arr) if arr.size > 0 else np.array(None, dtype=arr.dtype), result, op=MPI.MAX)
+        # Here when the first array isn't empty it is fine, but otherwise the result will be nan
+        #
+        #self.comm.Allreduce(np.max(arr) if arr.size > 0 else np.array([], dtype=arr.dtype), result, op=MPI.MAX)
+        # Her MPI claims that the input and output array have not the same datatype
         return result
 
     def min(self,arr):
         result = np.asarray(0, dtype=arr.dtype)
-        self.comm.Allreduce(np.min(arr) if arr.size > 0 else np.array(None,dtype=arr.dtype) , result, op=MPI.MIN)
+        self.comm.Allreduce(np.min(arr) if arr.size > 0 else np.array([np.inf],dtype=arr.dtype) , result, op=MPI.MIN)
         return result
 
     def mean(self,arr): #TODO: this needs also the global number of elements, so it's not

@@ -71,15 +71,27 @@ class test_ParallelNumpy(unittest.TestCase):
         """
         if self.MPIsize >=2 :
             if self.rank==0:
-                local_arr = np.array([1],dtype = float)
+                local_arr = np.array([], dtype=float)
+
             else :
-                local_arr = np.array([],dtype=float)
-            self.assertEqual(self.np.max(local_arr), 1)
-            self.assertEqual(self.np.min(local_arr), 1)
+                local_arr = np.array([1, 0, 4], dtype=float)
+            self.assertEqual(self.np.max(local_arr), 4)
+            self.assertEqual(self.np.min(local_arr), 0)
+
+            if self.rank==0:
+                local_arr = np.array([1, 0, 4], dtype=float)
+            else :
+
+                local_arr = np.array([], dtype=float)
+            self.assertEqual(self.np.max(local_arr), 4)
+            self.assertEqual(self.np.min(local_arr), 0)
+
         else :
             local_arr = np.array([],dtype = float)
-            self.assertTrue(np.isnan(self.np.max(local_arr)))
-            self.assertTrue(np.isnan(self.np.min(local_arr)))
+            #self.assertTrue(np.isnan(self.np.max(local_arr)))
+            #self.assertTrue(np.isnan(self.np.min(local_arr)))
+            self.assertEqual(self.np.max(local_arr),-np.inf)
+            self.assertEqual(self.np.min(local_arr),np.inf)
 
 
 
