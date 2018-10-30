@@ -4,6 +4,21 @@ from mpi4py import MPI
 
 class ParallelNumpy :
 
+    # just forward standart numpy functions
+    #array = np.array
+    #zeros=np.zeros
+    #ones = np.ones
+    #ones_like = np.ones_like
+
+    #ma = np.ma
+    #logical_and = np.logical_and
+    #logical_or = np.logical_or
+
+    #asscalar = np.asscalar
+
+    #prod = np.prod #TODO: will I  or force using standart numpy directly ?
+
+
     def __init__(self,comm=MPI.COMM_WORLD):
         self.comm = comm
 
@@ -23,15 +38,25 @@ class ParallelNumpy :
         self.comm.Allreduce(np.sum(arr),result,op = MPI.SUM)
         return result
 
-    def array(self,*args,**kwargs):
-        return np.array(*args, **kwargs)
+    #def array(self,*args,**kwargs):
+    #    return np.array(*args, **kwargs)
+#
+#
+    #def zeros(self,*args,**kwargs):
+    #    return np.zeros(*args, **kwargs)
+#
+    #def ones(self,*args,**kwargs):
+    #    return np.ones(*args, **kwargs)
 
+    def max(self,arr):
+        result = np.asarray(0, dtype=arr.dtype)
+        self.comm.Allreduce(np.max(arr), result, op=MPI.MAX)
+        return result
 
-    def zeros(self,*args,**kwargs):
-        return np.zeros(*args, **kwargs)
-
-    def ones(self,*args,**kwargs):
-        return np.ones(*args, **kwargs)
+    def min(self,arr):
+        result = np.asarray(0, dtype=arr.dtype)
+        self.comm.Allreduce(np.min(arr), result, op=MPI.MIN)
+        return result
 
     def mean(self,arr): #TODO: this needs also the global number of elements, so it's not
         """
@@ -43,5 +68,5 @@ class ParallelNumpy :
         -------
         scalar, the mean of all Elements of the Array over all the Processors
         """
-        pass
+        return NotImplementedError("will never, use sum")
 
