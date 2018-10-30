@@ -353,7 +353,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
                             'max. pad force', 'max. du', 'CG area',
                             'frac. CG area', 'sum(nc_r)']
             log_values += [rms_pen, max_pen, max_pres, pad_pres, maxdu, A_cg,
-                           A_cg/pnp.sum(surf_mask), pnp.sum(nc_r)]
+                           A_cg/pnp.sum(surf_mask*1), pnp.sum(nc_r*1)]
             if delta_str == 'mix':
                 log_headers += ['mixfac']
                 log_values += [mixfac]
