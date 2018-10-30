@@ -296,6 +296,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
                                          poisson=self.poisson, thickness=100)
         self.assertTrue(np.count_nonzero(np.isnan(hs.weights)) == 0)
 
+    #TODO: Test independence of result of x and y Direction
 
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
@@ -340,7 +341,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             error = Tools.mean_err(w2, w3)
             self.assertTrue(error == 0)
 
-    def test_realnessEnergy(self):
+    def test_realnessEnergy(self): # TODO: correct this test also
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.size)
         force = np.zeros(hs.domain_resolution)
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
