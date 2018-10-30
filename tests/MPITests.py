@@ -28,7 +28,8 @@ class test_ParallelNumpy(unittest.TestCase):
     def setUp(self):
         self.np = ParallelNumpy()
         self.comm = MPI.COMM_WORLD
-
+        self.rank  = self.comm.Get_rank()
+        self.MPIsize = self.comm.Get_size()
     def test_sum_scalar(self):
         res=self.np.sum(np.array(1))
         self.assertEqual(res, self.np.comm.Get_size())
@@ -63,6 +64,23 @@ class test_ParallelNumpy(unittest.TestCase):
         else:
             local_arr = arr
         self.assertEqual(self.np.max(local_arr),7)
+
+    def test_max_min_empty(self):
+        """
+        Sometimes the input array is empty
+        """
+        if self.MPIsize >=2 :
+            if self.rank==0:
+                local_arr = np.array([1],dtype = float)
+            else :
+                local_arr = np.array([],dtype=float)
+            self.assertEqual(self.np.max(local_arr), 1)
+            self.assertEqual(self.np.min(local_arr), 1)
+        else :
+            local_arr = np.array([],dtype = float)
+            self.assertTrue(np.isnan(self.np.max(local_arr)))
+            self.assertTrue(np.isnan(self.np.min(local_arr)))
+
 
 
     def test_min(self):

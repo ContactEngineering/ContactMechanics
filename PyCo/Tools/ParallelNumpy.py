@@ -50,12 +50,12 @@ class ParallelNumpy :
 
     def max(self,arr):
         result = np.asarray(0, dtype=arr.dtype)
-        self.comm.Allreduce(np.max(arr), result, op=MPI.MAX)
+        self.comm.Allreduce(np.max(arr) if arr.size > 0 else np.array(None,dtype=arr.dtype), result, op=MPI.MAX)
         return result
 
     def min(self,arr):
         result = np.asarray(0, dtype=arr.dtype)
-        self.comm.Allreduce(np.min(arr), result, op=MPI.MIN)
+        self.comm.Allreduce(np.min(arr) if arr.size > 0 else np.array(None,dtype=arr.dtype) , result, op=MPI.MIN)
         return result
 
     def mean(self,arr): #TODO: this needs also the global number of elements, so it's not
