@@ -29,12 +29,6 @@ class test_ParallelNumpy(unittest.TestCase):
         self.np = ParallelNumpy()
         self.comm = MPI.COMM_WORLD
 
-    def test_array(self):
-        nparr = np.array(((1,2,3),(4,5,6)))
-        arr = self.np.array(((1,2,3),(4,5,6)))
-        self.assertTrue(isinstance(arr, np.ndarray))
-        self.assertTrue(np.array_equal(arr,nparr))
-
     def test_sum_scalar(self):
         res=self.np.sum(np.array(1))
         self.assertEqual(res, self.np.comm.Get_size())
