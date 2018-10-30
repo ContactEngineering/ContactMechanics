@@ -99,11 +99,6 @@ class test_ParallelNumpy(unittest.TestCase):
             local_arr = arr
         self.assertEqual(self.np.min(local_arr), -1)
 
-    def test_ones(self):
-        print(np.ones is self.np.ones)
-        print(np.ones)
-        print(ParallelNumpy.ones)
-        print(np.ones((10,10),dtype=bool))
 
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
