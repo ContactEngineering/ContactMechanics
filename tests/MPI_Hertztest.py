@@ -59,10 +59,11 @@ class HertzTest(unittest.TestCase):
                     disp = result.x
                     forces = -result.jac
                     converged = result.success
-                    print("converged %s" % converged)
+                    self.assertTrue(converged)
+
 
                     if normal_force is not None:
-                        print("given {}, is: {}".format(normal_force, -forces.sum()))
+                        self.assertAlmostEqual(normal_force, self.pnp.sum(forces))
                     normal_force = -self.pnp.sum(forces)
                     a, p0 = radius_and_pressure(normal_force, self.r_s,
                                                 self.E_s)
