@@ -43,29 +43,45 @@ nnn_stencil = [(1,1), (1,0), (1,-1), (0,-1), (-1,-1), (-1,0), (-1,1), (0,1)]
 
 ###
 
-def outer_perimeter(c, stencil=nn_stencil):
+def coordination(c, stencil=nn_stencil):
     """
-    Return a map where the outer perimeter is marked with the patch number
+    Return a map with coordination numbers, i.e. number of neighboring patches that also contact
     """
 
-    c_nearby = np.zeros_like(c, dtype=bool)
+    coordination = np.zeros_like(c, dtype=int)
     for dx, dy in stencil:
-        tmp = c.copy()
+        tmp = np.array(c, dtype=bool, copy=True)
         if dx != 0:
             tmp = np.roll(tmp, dx, 0)
         if dy != 0:
             tmp = np.roll(tmp, dy, 1)
-        c_nearby = np.logical_or(c_nearby, tmp)
-    return np.logical_and(np.logical_not(c), c_nearby)
+        coordination += tmp
+    return coordination
 
 
-def inner_perimeter(patch_ids, stencil=nn_stencil):
+def edge_perimeter_length(c, stencil=nn_stencil):
     """
-    Return a map where the inner perimeter is marked with the patch number
+    Return the length of the perimeter as measured by tracing the length of
+    the interface between contacting and non-contacting points.
     """
 
-    c = outer_perimeter(patch_ids == 0, stencil)
-    return c*patch_ids
+    return np.sum(np.logical_not(c) * coordination(c, stencil=stencil))
+
+
+def outer_perimeter(c, stencil=nn_stencil):
+    """
+    Return a map where surface points on the outer perimeter are marked.
+    """
+
+    return np.logical_and(np.logical_not(c), coordination(c, stencil=stencil) > 0)
+
+
+def inner_perimeter(c, stencil=nn_stencil):
+    """
+    Return a map where surface points on the inner perimeter are marked.
+    """
+
+    return np.logical_and(c, coordination(c, stencil=stencil) < len(stencil))
 
 
 def patch_areas(patch_ids):
