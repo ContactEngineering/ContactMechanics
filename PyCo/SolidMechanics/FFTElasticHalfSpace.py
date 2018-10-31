@@ -458,52 +458,6 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """
         return self._comp_resolution
 
-    def _compute_fourier_coeffs2(self):
-        """Compute the weights w relating fft(displacement) to fft(pressure):
-           fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
-
-           Now Deprecated
-           This is the fastest version, about 2 orders faster than the python
-           versions, however a bit memory-hungry, this version used to be
-           default, but turns out to have no significant advantage over the
-           matscipy implementation
-        """
-        # pylint: disable=too-many-locals
-        if self.dim == 1:
-            pass
-        else:
-            x_grid = np.arange(self.resolution[0]*2)
-            x_grid = np.where(x_grid <= self.resolution[0], x_grid,
-                              x_grid-self.resolution[0]*2) * self.steps[0]
-            x_grid.shape = (-1, 1)
-            y_grid = np.arange(self.resolution[1]*2)
-            y_grid = np.where(y_grid <= self.resolution[1], y_grid,
-                              y_grid-self.resolution[1]*2) * self.steps[1]
-            y_grid.shape = (1, -1)
-            x_p = (x_grid+self.steps[0]*.5).reshape((-1, 1))
-            x_m = (x_grid-self.steps[0]*.5).reshape((-1, 1))
-            xp2 = x_p*x_p
-            xm2 = x_m*x_m
-
-            y_p = y_grid+self.steps[1]*.5
-            y_m = y_grid-self.steps[1]*.5
-            yp2 = y_p*y_p
-            ym2 = y_m*y_m
-            sqrt_yp_xp = np.sqrt(yp2 + xp2)
-            sqrt_ym_xp = np.sqrt(ym2 + xp2)
-            sqrt_yp_xm = np.sqrt(yp2 + xm2)
-            sqrt_ym_xm = np.sqrt(ym2 + xm2)
-            facts = 1/(np.pi * self.young) * (
-                x_p * np.log((y_p+sqrt_yp_xp) /
-                             (y_m+sqrt_ym_xp)) +
-                y_p * np.log((x_p+sqrt_yp_xp) /
-                             (x_m+sqrt_yp_xm)) +
-                x_m * np.log((y_m+sqrt_ym_xm) /
-                             (y_p+sqrt_yp_xm)) +
-                y_m * np.log((x_m+sqrt_ym_xm) /
-                             (x_p+sqrt_ym_xp)))
-        return self.fftengine.rfftn(facts), facts
-
     def _compute_fourier_coeffs(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
            fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
@@ -512,17 +466,17 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
            concern
         """
         # pylint: disable=invalid-name
-        facts = np.zeros(tuple((res*2 for res in self.resolution)))
+        facts = np.zeros(tuple((res*2 for res in self.subdomain_resolution)))
         a = self.steps[0]*.5
         if self.dim == 1:
             pass
         else:
             b = self.steps[1]*.5
-            x_s = np.arange(self.resolution[0]*2)
+            x_s = np.arange(self.subdomain_location[0],self.subdomain_location[0] + self.subdomain_resolution[0])
             x_s = np.where(x_s <= self.resolution[0], x_s,
                            x_s-self.resolution[0] * 2) * self.steps[0]
             x_s.shape = (-1, 1)
-            y_s = np.arange(self.resolution[1]*2)
+            y_s = np.arange(self.subdomain_location[1],self.subdomain_location[1] + self.subdomain_resolution[1])
             y_s = np.where(y_s <= self.resolution[1], y_s,
                            y_s-self.resolution[1]*2) * self.steps[1]
             y_s.shape = (1, -1)
@@ -550,23 +504,39 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """ Computes the displacement due to a given force array
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
+
+        if running in MPI this should be only the forces in the Subdomain
+
+        if running in serial one can give the force array with or without the padded region
+
         """
-        if forces.shape != self.domain_resolution:
-            # Automatically pad forces if force array is half of computational
-            # resolution
-            if np.any(np.array(forces.shape) !=
-                      np.array(self.domain_resolution) / 2):
-                raise self.Error("force array has a different shape ({0}) "
-                                 "than this halfspace's resolution ({1}) or "
-                                 "half of it".format(forces.shape,
-                                                     self.domain_resolution))
-            padded_forces = np.zeros(self.domain_resolution)
-            s = [slice(0, forces.shape[i])
-                 for i in range(len(forces.shape))]
-            padded_forces[s] = forces
-            return super().evaluate_disp(padded_forces)[s]
-        else:
+        if forces.shape == self.subdomain_resolution:
             return super().evaluate_disp(forces)
+
+        elif not self.fftengine.is_MPI:
+            if forces.shape == self.resolution:
+                # Automatically pad forces if force array is half of subdomain
+                # resolution
+                padded_forces = np.zeros(self.computational_resolution)
+                s = [slice(0, forces.shape[i])
+                     for i in range(len(forces.shape))]
+                padded_forces[s] = forces
+                return super().evaluate_disp(padded_forces)[s]
+        else:
+            raise self.Error("forces should be of subdomain resolution when using MPI")
+
+        raise self.Error("force array has a different shape ({0}) "
+                         "than the subdomain resolution ({1}), this halfspace's resolution ({2}) or "
+                         "half of it.".format(forces.shape,self.subdomain_resolution,
+                                             self.domain_resolution))
+
+        # possible implementation in parallel with adding gather
+        #padded_forces = np.zeros(self.domain_resolution)
+        #s = [slice(0, max(0, min(self.resolution[i] - self.subdomain_location[i], self.subdomain_resolution[i])))
+        #     for i in range(self.dim)]
+        #padded_forces[s] = forces
+        #return super().evaluate_disp(padded_forces)[s]
+
 
 # convenient container for storing correspondences betwees small and large
 # system
