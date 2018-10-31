@@ -1,11 +1,12 @@
 Change log for PyCo
 ===================
 
-v0.18.0 (21Aug18)
+v0.18.0 (31Oct18)
 -----------------
 
-- corrected computation of attractive contact area in Smooth contact system
-- corrected computation of inflexion point in LJ93 and VW82 smoothed potentials
+- Refactored "Surface" to "Topography".
+- Bug fix: Corrected computation of attractive contact area in Smooth contact system.
+- Bug fix: Corrected computation of inflexion point in LJ93 and VW82 smoothed potentials.
 
 v0.17.0 (06Jul17)
 -----------------
