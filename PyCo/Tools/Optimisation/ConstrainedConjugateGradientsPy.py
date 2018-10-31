@@ -121,6 +121,13 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     surface_domain_resolution = surface.shape
     nb_surface_pts = np.prod(surface_domain_resolution)  # TODO
 
+    surf_mask = np.ma.getmask(surface)  #TODO: Test behaviour with masked arrays.
+    if surf_mask is np.ma.nomask:
+        nb_surface_pts_mask = nb_surface_pts
+    else:
+        nb_surface_pts_mask = np.sum(np.logical_not(surf_mask)) # count the number of points that are not masked
+
+    #now the surface is only local
     surface=surface[substrate.subdomain_slice] #
 
 
@@ -203,7 +210,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         if external_force is not None:
             offset = 0
             if A_cg > 0:
-                offset = pnp.sum(g_r[c_r[comp_mask]]) / nb_surface_pts
+                offset = pnp.sum(g_r[c_r[comp_mask]]) / A_cg
         g_r -= offset
 
         # Compute G = sum(g*g) (over contact area only)
@@ -288,7 +295,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             if psum != 0:
                 p_r *= external_force/psum
             else:
-                p_r = -external_force/np.prod(surface.shape)*np.ones_like(p_r)
+                p_r = -external_force/nb_surface_pts*np.ones_like(p_r)
                 p_r[pad_mask] = 0.0
 
         # If hardness is specified, set all stress larger than hardness to the
