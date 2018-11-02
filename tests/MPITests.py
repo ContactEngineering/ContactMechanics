@@ -49,7 +49,7 @@ class test_ParallelNumpy(unittest.TestCase):
     def test_max_2D(self):
         arr=np.reshape(np.array((-1,1,5,4,
                              4,5,4,5,
-                             7,0,1,0)),(3,4))
+                             7,0,1,0.),dtype=float),(3,4))
 
         rank = self.comm.Get_rank()
         if self.comm.Get_size() >=4:
@@ -99,7 +99,7 @@ class test_ParallelNumpy(unittest.TestCase):
     def test_min(self):
         arr = np.reshape(np.array((-1, 1, 5, 4,
                                    4, 5, 4, 5,
-                                   7, 0, 1, 0)), (3, 4))
+                                   7, 0, 1, 0),dtype = float), (3, 4))
 
         rank = self.comm.Get_rank()
         if self.comm.Get_size() >= 4:
@@ -135,8 +135,8 @@ class test_FFTElasticHalfSpace_weights(unittest.TestCase):
         self.sx = 30.0
         self.sy = 1.0
 
-        self.nx = 16
-        self.ny = 9
+        self.nx = 64
+        self.ny = 33
 
         # equivalent Young's modulus
         self.E_s = 1.0
@@ -178,8 +178,8 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
         self.sx = 2  # 30.0
         self.sy = 1.0
 
-        self.nx = 16
-        self.ny = 32
+        self.nx = 32
+        self.ny = 64
 
         # equivalent Young's modulus
         self.E_s = 1.0
@@ -228,6 +228,8 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
             computeddisp = substrate.evaluate_disp(p[substrate.subdomain_slice]*substrate.area_per_pt)
 
             np.testing.assert_allclose(computeddisp, refdisp[substrate.subdomain_slice], atol=1e-7, rtol=1e-2)
+
+
 
 #    def test_k_force_maxq(self):
 #        Y, X = np.meshgrid(np.linspace(0, self.sy, self.ny + 1)[:-1], np.linspace(0, self.sx, self.nx + 1)[:-1])
@@ -291,12 +293,21 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
             computed_E_k_space = substrate.evaluate(disp[substrate.subdomain_slice],pot=True,forces=False)[0] # If force is not queried this computes the energy using kspace
             computed_E_realspace,computed_force = substrate.evaluate(disp[substrate.subdomain_slice],pot=True,forces=True)
 
-            #print(self.pnp.sum(computed_E_k_space))
+            #print("{}: Local: E_kspace: {}, E_realspace: {}".format(substrate.fftengine.comm.Get_rank(),computed_E_k_space,computed_E_realspace))
+
+
             #print(computed_E_k_space)
             #print(refEnergy)
 
-            computed_E_k_space = self.pnp.sum(computed_E_k_space)
-            computed_E_realspace = self.pnp.sum(computed_E_realspace)
+            computed_E_k_space = self.pnp.sum(np.array(computed_E_k_space,dtype = float))
+            computed_E_realspace = self.pnp.sum(np.array(computed_E_realspace, dtype=float))
+
+            #if substrate.fftengine.comm.Get_rank() == 0 :
+            #    print(computed_E_k_space)
+            #    print(computed_E_realspace)
+
+            #print("{}: Global: E_kspace: {}, E_realspace: {}".format(substrate.fftengine.comm.Get_rank(),
+                                                                     #computed_E_k_space, computed_E_realspace))
 
             # Make an MPI-Reduce of the Energies !
             #print(substrate.evaluate_elastic_energy(refForce, disp))
@@ -322,7 +333,7 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
         self.pnp = ParallelNumpy(self.comm)
 
     def test_resolutions(self):
-        nx,ny = 32,16
+        nx,ny = 64,32
         sx,sy = 100,200
 
         for fftengine in self.fftengineList:
@@ -376,7 +387,7 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
             self.weights = np.fft.rfftn(facts)
             return self.weights, facts
 
-        nx, ny = 32, 16
+        nx, ny = 64, 32
         sx, sy = 100, 200
 
         ref_weights, ref_facts = _compute_fourier_coeffs_serial_impl(
@@ -386,11 +397,11 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
             with self.subTest(fftengine=fftengine):
                 substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine)
                 local_weights,local_facts = substrate._compute_fourier_coeffs()
-                np.testing.assert_allclose(local_weights,ref_weights[substrate.fourier_slice],1e-14)
-                np.testing.assert_allclose(local_facts,ref_facts[substrate.subdomain_slice],1e-14)
+                np.testing.assert_allclose(local_weights,ref_weights[substrate.fourier_slice],1e-12)
+                np.testing.assert_allclose(local_facts,ref_facts[substrate.subdomain_slice],1e-12)
 
     def test_evaluate_disp_uniform_pressure(self):
-        nx, ny = 32, 16
+        nx, ny = 64, 32
         sx, sy = 100, 200
 
         forces = np.zeros((2 * nx, 2 * ny))

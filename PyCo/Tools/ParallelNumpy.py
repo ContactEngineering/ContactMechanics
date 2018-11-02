@@ -24,6 +24,7 @@ class ParallelNumpy :
 
     def sum(self,arr):
         """
+        take care that the input arrays have the same datatype on all Processors !
 
         Parameters
         ----------
@@ -49,6 +50,17 @@ class ParallelNumpy :
     #    return np.ones(*args, **kwargs)
 
     def max(self,arr):
+        """
+        take care that the input arrays have the same datatype on all Processors !
+        Parameters
+        ----------
+        arr: numpy float array, can be empty
+
+        Returns
+        -------
+        np.array of size 1, the max value of arr over all arrays, if all are empty this is -np.inf
+
+        """
         result = np.asarray(0, dtype=arr.dtype)
         self.comm.Allreduce(np.max(arr) if arr.size > 0 else np.array([-np.inf],dtype=arr.dtype), result, op=MPI.MAX)
         #TODO: Not elegant, but following options didn't work
@@ -60,6 +72,17 @@ class ParallelNumpy :
         return result
 
     def min(self,arr):
+        """
+        take care that the input arrays have the same datatype on all Processors !
+        Parameters
+        ----------
+        arr: numpy float array, can be empty
+
+        Returns
+        -------
+        np.array of size 1, the min value of arr over all arrays, if all are empty this is np.inf
+
+        """
         result = np.asarray(0, dtype=arr.dtype)
         self.comm.Allreduce(np.min(arr) if arr.size > 0 else np.array([np.inf],dtype=arr.dtype) , result, op=MPI.MIN)
         return result
