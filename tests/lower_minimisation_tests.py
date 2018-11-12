@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   09-lower_minimisation_tests.py
+@file   lower_minimisation_tests.py
 
 @author Till Junge <till.junge@altermail.ch>
 

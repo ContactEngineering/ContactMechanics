@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 """
-@file   15-ContactAreaAnalysis_tests.py
+@file   ContactAreaAnalysis_tests.py
 
 @author Lars Pastewka <lars.pastewka@imtek.uni-freiburg.de>
 

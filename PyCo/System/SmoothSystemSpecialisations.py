@@ -163,10 +163,13 @@ class FastSmoothContactSystem(SmoothContactSystem):
         """
         is_ok = True
         if self.dim == 2:
-            is_ok &= (self.babushka.interaction.force[:, 0] == 0.).all()
-            is_ok &= (self.babushka.interaction.force[:, -1] == 0.).all()
-            is_ok &= (self.babushka.interaction.force[0, :] == 0.).all()
-            is_ok &= (self.babushka.interaction.force[-1, :] == 0.).all()
+            # Sometimes, the Topograsphy.__h is a masked array, where the masked values represent infinite heights
+            # At this points there is no interaction
+
+            is_ok &= np.ma.filled(self.babushka.interaction.force[:, 0] == 0.,True).all()
+            is_ok &= np.ma.filled(self.babushka.interaction.force[:, -1] == 0.,True).all()
+            is_ok &= np.ma.filled(self.babushka.interaction.force[0, :] == 0.,True).all()
+            is_ok &= np.ma.filled(self.babushka.interaction.force[-1, :] == 0.,True).all()
             
         if not is_ok:
             self.deproxified()

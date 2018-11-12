@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   08-higher_minimisation_tests.py
+@file   higher_minimisation_tests.py
 
 @author Till Junge <till.junge@kit.edu>
 
