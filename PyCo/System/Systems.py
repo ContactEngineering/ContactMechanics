@@ -450,7 +450,7 @@ class SmoothContactSystem(SystemBase):
         logger     -- (default None) log information at every iteration.
         """
         dummy = disp0
-        res = self.substrate.domain_resolution
+        res = self.substrate.domain_resolution #TODO: replace with subdomain_resolution ?
         if gradient:
             def fun(disp):
                 # pylint: disable=missing-docstring

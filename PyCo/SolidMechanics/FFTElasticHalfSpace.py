@@ -252,7 +252,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
             q[0,0] = np.NaN; #q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
             facts = np.pi*self.contact_modulus*q
-            if self.thickness is not None:
+            if self.thickness is not None: #TODO: parallel test for this case
                 # Compute correction for finite thickness
                 q *= 2*np.pi*self.thickness
                 fac = 3 - 4*self.poisson
@@ -363,7 +363,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # Now compatible with parallel code
         # The inner part of the fourier data should always be symetrized (i.e. multiplied by 2)
         # When the fourier subdomain contains boundary values (wavevector 0 and ny//2) these values should only be added once
-        if kdisp.shape[-1] > 0:
+        if kdisp.shape[-1] > 0: # TODO: also handle the case with odd number of points
             return .5 * (2 * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
                          +
                          np.vdot(kdisp[..., -1], -kforces[..., -1]).real *
