@@ -40,13 +40,15 @@ try:
     from PyCo.Tools import evaluate_gradient, mean_err
     from PyCo.Topography import (autocorrelation_1D, compute_derivative, tilt_from_height, shift_and_tilt,
                                  shift_and_tilt_approx, shift_and_tilt_from_slope, NumpyTopography)
-    from PyCo.Topography.Generation import RandomSurfaceGaussian
+    from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
+
+    from .PyCoTest import PyCoTestCase
 except ImportError as err:
     import sys
     print(err)
     sys.exit(-1)
 
-class ToolTest(unittest.TestCase):
+class ToolTest(PyCoTestCase):
     def test_gradient(self):
         coeffs = np.random.random(2)+1.
         fun = lambda x: (coeffs*x**2).sum()
@@ -66,34 +68,6 @@ class ToolTest(unittest.TestCase):
         msg.append("error = {}".format(error))
         msg.append("tol = {}".format(tol))
         self.assertTrue(error < tol, ", ".join(msg))
-
-
-##     def test_compare_exact_1Dvs2D_power_spectrum(self):
-##         siz = 3
-##         size = (siz, siz)
-##         hurst = .9
-##         rms_height = 1
-##         res = 100
-##         resolution = (res, res)
-##         lam_max = .5
-##         surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst,
-##                                             rms_height, lambda_max=lam_max)
-##         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
-##         surf_char2D = Tools.CharacterisePeriodicSurface(surf)
-##         surf_char1D = Tools.CharacterisePeriodicSurface(surf, one_dimensional=True)
-## 
-##         import matplotlib.pyplot as plt
-##         fig = plt.figure()
-##         ax = fig.add_subplot(111)
-##         ax.plot(surf_char1D.q, surf_char1D.C, label="1D")
-##         ax.plot(surf_char2D.q, surf_char2D.C, label="2D", ls='--')
-##         ax.legend(loc='best')
-##         plt.show()
-##         hurst_out2D, prefactor_out2D = surf_char2D.estimate_hurst(full_output=True)
-##         hurst_out1D, prefactor_out1D = surf_char1D.estimate_hurst(full_output=True)
-## 
-##         self.assertTrue(hurst_out1D == hurst_out2D, "1D: {},\n2D{}".format(hurst_out1D, hurst_out2D))
-
 
 
     def test_shift_and_tilt(self):
@@ -156,3 +130,21 @@ class ToolTest(unittest.TestCase):
             A_ana[:w] = h**2*np.linspace(w/nx, 1/nx, w)
             A_ana = A_ana[0] - A_ana
             self.assertTrue(np.allclose(A, A_ana))
+
+
+    def test_brute_force_autocorrelation(self):
+        n = 10
+        for surf in [NumpyTopography(np.ones(n).reshape(n, 1)),
+                     NumpyTopography(np.arange(n).reshape(n, 1)),
+                     NumpyTopography(np.random.random(n).reshape(n, 1))]:
+            r, A = autocorrelation_1D(surf, periodic=False)
+            s = surf[:, 0]
+
+            n = len(A)
+            dir_A = np.zeros(n)
+            for d in range(n):
+                for i in range(n-d):
+                    dir_A[d] += (surf[i] - surf[i+d])**2/2
+                    #dir_A[d] += surf[i] * surf[i + d]
+                dir_A[d] /= (n-d)
+            self.assertArrayAlmostEqual(A, dir_A)

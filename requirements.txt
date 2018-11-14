@@ -7,3 +7,4 @@ scipy>=0.14.0
 cython>=0.15
 netCDF4>=1.0.0
 h5py
+pandas
