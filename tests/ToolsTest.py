@@ -38,11 +38,11 @@ try:
     import warnings
 
     from PyCo.Tools import evaluate_gradient, mean_err
-    from PyCo.Topography import (autocorrelation_1D, compute_derivative, tilt_from_height, shift_and_tilt,
-                                 shift_and_tilt_approx, shift_and_tilt_from_slope, NumpyTopography)
+    from PyCo.Topography import (autocorrelation_1D, autocorrelation_2D, compute_derivative, tilt_from_height,
+                                 shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope, NumpyTopography)
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
 
-    from .PyCoTest import PyCoTestCase
+    from PyCoTest import PyCoTestCase
 except ImportError as err:
     import sys
     print(err)
@@ -132,19 +132,35 @@ class ToolTest(PyCoTestCase):
             self.assertTrue(np.allclose(A, A_ana))
 
 
-    def test_brute_force_autocorrelation(self):
+    def test_brute_force_autocorrelation_1D(self):
         n = 10
         for surf in [NumpyTopography(np.ones(n).reshape(n, 1)),
                      NumpyTopography(np.arange(n).reshape(n, 1)),
                      NumpyTopography(np.random.random(n).reshape(n, 1))]:
             r, A = autocorrelation_1D(surf, periodic=False)
-            s = surf[:, 0]
 
             n = len(A)
             dir_A = np.zeros(n)
             for d in range(n):
                 for i in range(n-d):
                     dir_A[d] += (surf[i] - surf[i+d])**2/2
-                    #dir_A[d] += surf[i] * surf[i + d]
                 dir_A[d] /= (n-d)
             self.assertArrayAlmostEqual(A, dir_A)
+
+
+    def test_brute_force_autocorrelation_2D(self):
+        n = 2
+        m = 3
+        for surf in [NumpyTopography(np.ones([n, m])),
+                     NumpyTopography(np.random.random([n, m]))]:
+            r, A, A_xy = autocorrelation_2D(surf, periodic=False, return_map=True)
+
+            nx, ny = surf.shape
+            dir_A = np.zeros([n, m])
+            for dx in range(n):
+                for dy in range(m):
+                    for i in range(nx-dx):
+                        for j in range(ny-dy):
+                            dir_A[dx, dy] += (surf[i, j] - surf[i+dx, j+dy])**2/2
+                    dir_A[dx, dy] /= (nx-dx)*(ny-dy)
+            self.assertArrayAlmostEqual(A_xy, dir_A)
