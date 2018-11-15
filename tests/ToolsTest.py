@@ -42,7 +42,7 @@ try:
                                  shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope, NumpyTopography)
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
 
-    from PyCoTest import PyCoTestCase
+    from .PyCoTest import PyCoTestCase
 except ImportError as err:
     import sys
     print(err)
