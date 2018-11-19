@@ -56,7 +56,7 @@ class GoodiesTest(unittest.TestCase):
         lam_max = .5
         surf_gen = RandomSurfaceExact(resolution, size, hurst, rms_height, lambda_max=lam_max)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
-        rms_height_fromC_in = surf.rms_height_q_space()
+        rms_height_fromC_in = surf.rms_height()
 
         error = abs(1-rms_height_fromC_in/rms_height)
         rough_tol = .02

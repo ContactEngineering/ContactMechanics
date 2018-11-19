@@ -37,7 +37,7 @@ try:
     import numpy as np
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import NumpyTopography
+    from PyCo.Topography import UniformNumpyTopography
     from PyCo.System import SystemFactory
 except ImportError as err:
     import sys
@@ -63,7 +63,7 @@ class FlatPunchTest(unittest.TestCase):
                     interaction = HardWall()
                     r_sq = (sx/nx*(np.arange(nx)-nx//2)).reshape(-1,1)**2 + \
                            (sy/ny*(np.arange(ny)-ny//2)).reshape(1,-1)**2
-                    surface = NumpyTopography(
+                    surface = UniformNumpyTopography(
                         np.ma.masked_where(r_sq > self.r_s**2,
                                            np.zeros([nx, ny]))
                         )

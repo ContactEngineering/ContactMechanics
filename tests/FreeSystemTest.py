@@ -362,7 +362,7 @@ class FastSystemTest(unittest.TestCase):
                                             u,
                                             method='L-BFGS-B',
                                             options=dict(ftol=1e-18, gtol=1e-10),
-                                            lbounds=ext_surface._array() + offset)
+                                            lbounds=ext_surface.array() + offset)
 
                 u = system.disp
 

@@ -39,7 +39,7 @@ try:
 
     from PyCo.Tools import evaluate_gradient, mean_err
     from PyCo.Topography import (autocorrelation_1D, autocorrelation_2D, compute_derivative, tilt_from_height,
-                                 shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope, NumpyTopography)
+                                 shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope, UniformNumpyTopography)
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
 
     from .PyCoTest import PyCoTestCase
@@ -107,12 +107,12 @@ class ToolTest(PyCoTestCase):
         self.assertAlmostEqual(mean_slope[1], a)
         self.assertAlmostEqual(mean_slope[2], d)
 
-        mean_slope = tilt_from_height(NumpyTopography(arr))
+        mean_slope = tilt_from_height(UniformNumpyTopography(arr))
         self.assertAlmostEqual(mean_slope[0], b)
         self.assertAlmostEqual(mean_slope[1], a)
         self.assertAlmostEqual(mean_slope[2], d)
 
-        mean_slope = tilt_from_height(NumpyTopography(arr, size=(3, 2.5)))
+        mean_slope = tilt_from_height(UniformNumpyTopography(arr, size=(3, 2.5)))
         self.assertAlmostEqual(mean_slope[0], 2*b)
         self.assertAlmostEqual(mean_slope[1], 2*a)
         self.assertAlmostEqual(mean_slope[2], d)
@@ -134,9 +134,9 @@ class ToolTest(PyCoTestCase):
 
     def test_brute_force_autocorrelation_1D(self):
         n = 10
-        for surf in [NumpyTopography(np.ones(n).reshape(n, 1)),
-                     NumpyTopography(np.arange(n).reshape(n, 1)),
-                     NumpyTopography(np.random.random(n).reshape(n, 1))]:
+        for surf in [UniformNumpyTopography(np.ones(n).reshape(n, 1)),
+                     UniformNumpyTopography(np.arange(n).reshape(n, 1)),
+                     UniformNumpyTopography(np.random.random(n).reshape(n, 1))]:
             r, A = autocorrelation_1D(surf, periodic=False)
 
             n = len(A)
@@ -151,8 +151,8 @@ class ToolTest(PyCoTestCase):
     def test_brute_force_autocorrelation_2D(self):
         n = 2
         m = 3
-        for surf in [NumpyTopography(np.ones([n, m])),
-                     NumpyTopography(np.random.random([n, m]))]:
+        for surf in [UniformNumpyTopography(np.ones([n, m])),
+                     UniformNumpyTopography(np.random.random([n, m]))]:
             r, A, A_xy = autocorrelation_2D(surf, periodic=False, return_map=True)
 
             nx, ny = surf.shape
