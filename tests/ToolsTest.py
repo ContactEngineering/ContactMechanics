@@ -149,18 +149,27 @@ class ToolTest(PyCoTestCase):
 
 
     def test_brute_force_autocorrelation_2D(self):
-        n = 2
-        m = 3
+        n = 10
+        m = 11
         for surf in [UniformNumpyTopography(np.ones([n, m])),
                      UniformNumpyTopography(np.random.random([n, m]))]:
             r, A, A_xy = autocorrelation_2D(surf, periodic=False, return_map=True)
 
             nx, ny = surf.shape
-            dir_A = np.zeros([n, m])
+            dir_A_xy = np.zeros([n, m])
+            dir_A = np.zeros_like(A)
+            dir_n = np.zeros_like(A)
             for dx in range(n):
                 for dy in range(m):
                     for i in range(nx-dx):
                         for j in range(ny-dy):
-                            dir_A[dx, dy] += (surf[i, j] - surf[i+dx, j+dy])**2/2
-                    dir_A[dx, dy] /= (nx-dx)*(ny-dy)
-            self.assertArrayAlmostEqual(A_xy, dir_A)
+                            dir_A_xy[dx, dy] += (surf[i, j] - surf[i+dx, j+dy])**2/2
+                    dir_A_xy[dx, dy] /= (nx-dx)*(ny-dy)
+                    d = np.sqrt(dx**2 + dy**2)
+                    i = np.argmin(np.abs(r-d))
+                    dir_A[i] += dir_A_xy[dx, dy]
+                    dir_n[i] += 1
+            dir_n[dir_n==0] = 1
+            dir_A /= dir_n
+            self.assertArrayAlmostEqual(A_xy, dir_A_xy)
+            self.assertArrayAlmostEqual(A[:-2], dir_A[:-2])
