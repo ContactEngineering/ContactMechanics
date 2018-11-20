@@ -295,3 +295,15 @@ class h5SurfaceTest(unittest.TestCase):
         nx, ny = surface.shape
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
+
+class xyzSurfaceTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_detect_format_then_read(self):
+        self.assertEqual(detect_format('tests/file_format_examples/example.asc'), 'xyz')
+    def test_read(self):
+        surface = read_xyz('tests/file_format_examples/example.asc')
+        self.assertFalse(surface.is_uniform)
+        x, y = surface.points()
+        self.assertGreater(len(x), 0)
+        self.assertEqual(len(x), len(y))
