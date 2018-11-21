@@ -91,7 +91,7 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         # pylint: disable=arguments-differ
         energy, self.force, self.curb = self.evaluate(
             gap, pot, forces, curb, area_scale)
-        self.energy = energy.sum() if pot else None
+        self.energy = energy.sum() if pot else None #TODO: Parallelize ?
 
     @abc.abstractmethod
     def naive_pot(self, r, pot=True, forces=False, curb=False):

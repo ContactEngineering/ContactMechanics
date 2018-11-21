@@ -190,7 +190,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         result.nit = it
 
         # Reset contact area (area that feels compressive stress)
-        c_r = p_r < 0.0
+        c_r = p_r < 0.0 # TODO: maybe np.where(self.interaction.force < 0., 1., 0.)
 
         # Compute total contact area (area with compressive pressure)
         A_contact = pnp.sum(c_r*1)
