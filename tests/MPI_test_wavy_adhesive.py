@@ -6,7 +6,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import Sphere, NumpyTopography
+    from PyCo.Topography import Sphere,UniformNumpyTopography
     from PyCo.System import SystemFactory
     #from PyCo.Tools.Logger import screen
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
@@ -60,7 +60,7 @@ def test_smoothsphere():
             return self.surface.array()[self.subdomain_slice]
 
 
-    surface = NumpyTopography(np.cos(np.arange(0,n) * np.pi * 2. /n ) * np.ones((n,1)),size = surf_size)
+    surface =UniformNumpyTopography(np.cos(np.arange(0,n) * np.pi * 2. /n ) * np.ones((n,1)),size = surf_size)
     psurface = Parallel_Topography(surface, fftengine)
 
     system = SmoothContactSystem(substrate, inter, psurface)
