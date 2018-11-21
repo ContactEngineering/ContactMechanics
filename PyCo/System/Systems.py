@@ -40,7 +40,7 @@ import scipy
 from .. import ContactMechanics, SolidMechanics, Topography
 from ..Tools import compare_containers
 from ..Tools.Optimisation import constrained_conjugate_gradients, simple_relaxation
-
+from ..Tools import ParallelNumpy
 
 class IncompatibleFormulationError(Exception):
     # pylint: disable=missing-docstring
@@ -54,7 +54,7 @@ class IncompatibleResolutionError(Exception):
 
 class SystemBase(object, metaclass=abc.ABCMeta):
     "Base class for contact systems"
-    def __init__(self, substrate, interaction, surface):
+    def __init__(self, substrate, interaction, surface, pnp = np):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -73,6 +73,14 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         self.dim = None
         self.gap = None
         self.disp = None
+
+        self.pnp = pnp
+
+        self.comp_slice = tuple([slice(0, max(0, min(substrate.resolution[i] - substrate.subdomain_location[i],
+                                          substrate.subdomain_resolution[i])))
+                      for i in range(substrate.dim)])# For FreeElasticHalfspace: slice of the subdomain that is not in the padding area
+
+
     _proxyclass = False
 
     @abc.abstractmethod
@@ -122,10 +130,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         non-penetrating contact has gap >= 0
         """
         if self.dim == 1:
-            return (disp[:self.resolution[0]] -
+            return (disp[self.comp_slice] - # TODO: Check 1D Compatibility
                     (self.surface.array(*profile_args, **profile_kwargs) +
                      offset))
-        return (disp[:self.resolution[0], :self.resolution[1]] -
+        return (disp[self.comp_slice] -
                 (self.surface.array(*profile_args, **profile_kwargs) +
                  offset))
 
@@ -168,7 +176,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         in_array -- array with the initial guess. has the intuitive shape you
                     think it has
         """
-        if np.prod(self.substrate.domain_resolution) == in_array.size:
+        if np.prod(self.substrate.subdomain_resolution) == in_array.size:
             return in_array.reshape(-1)
         raise IncompatibleResolutionError()
 
@@ -184,8 +192,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         in_array -- array with the initial guess. has the intuitive shape you
                     think it has
         """
-        if np.prod(self.substrate.domain_resolution) == in_array.size:
-            return in_array.reshape(self.substrate.domain_resolution)
+        if np.prod(self.substrate.subdomain_resolution) == in_array.size:
+            return in_array.reshape(self.substrate.subdomain_resolution)
         raise IncompatibleResolutionError()
 
     def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
@@ -223,7 +231,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
                              logger=logger)
         if disp0 is None:
-            disp0 = np.zeros(self.substrate.domain_resolution)
+            disp0 = np.zeros(self.substrate.subdomain_resolution)
         disp0 = self.shape_minimisation_input(disp0)
         if callback is True:
             callback = self.callback(force=gradient)
@@ -294,7 +302,7 @@ class SmoothContactSystem(SystemBase):
     For smooth contact mechanics (i.e. the ones for which optimization is only
     kinda-hell
     """
-    def __init__(self, substrate, interaction, surface):
+    def __init__(self, substrate, interaction, surface,pnp = np):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -306,7 +314,7 @@ class SmoothContactSystem(SystemBase):
                        performed by the system
         surface     -- An instance of Topography, defines the profile.
         """
-        super().__init__(substrate, interaction, surface)
+        super().__init__(substrate, interaction, surface,pnp)
         if not compare_containers(surface.resolution, substrate.resolution):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
@@ -352,7 +360,7 @@ class SmoothContactSystem(SystemBase):
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
-        return self.interaction.force.sum()
+        return self.pnp.sum(self.interaction.force)
 
     def compute_repulsive_contact_area(self):
         "computes and returns the area where contact pressure is repulsive"
@@ -367,7 +375,7 @@ class SmoothContactSystem(SystemBase):
         compute and return the number of contact points. Note that this is of
         no physical interest, as it is a purely numerical artefact
         """
-        return np.where(self.interaction.force != 0., 1., 0.).sum()
+        return self.pnp.sum(np.where(self.interaction.force != 0., 1., 0.))
 
     def compute_nb_repulsive_pts(self):
         """
@@ -375,7 +383,7 @@ class SmoothContactSystem(SystemBase):
         pressure. Note that this is of no physical interest, as it is a
         purely numerical artefact
         """
-        return np.where(self.interaction.force > 0., 1., 0.).sum()
+        return self.pnp.sum(np.where(self.interaction.force > 0., 1., 0.))
 
     def compute_nb_attractive_pts(self):
         """
@@ -383,7 +391,7 @@ class SmoothContactSystem(SystemBase):
         pressure. Note that this is of no physical interest, as it is a
         purely numerical artefact
         """
-        return np.where(self.interaction.force < 0., 1., 0.).sum()
+        return self.pnp.sum(np.where(self.interaction.force < 0., 1., 0.))
 
     def compute_repulsive_coordinates(self):
         """
@@ -409,26 +417,25 @@ class SmoothContactSystem(SystemBase):
         self.gap = self.compute_gap(disp, offset)
         self.interaction.compute(self.gap, pot=pot, forces=forces, curb=False,
                                  area_scale=self.area_per_pt)
+
         self.substrate.compute(disp, pot, forces)
-        self.energy = (self.interaction.energy +
-                       self.substrate.energy
+        self.energy = (self.pnp.sum(self.interaction.energy+
+                       self.substrate.energy)
                        if pot else None)
         if forces:
             self.force = self.substrate.force.copy()
             if self.dim == 1:
-                self.force[:self.resolution[0]] += \
-                  self.interaction.force  # nopep8
+                self.force[self.comp_slice] += \
+                  self.interaction.force#[self.comp_slice]  # nopep8
             else:
-                self.force[:self.resolution[0], :self.resolution[1]] += \
-                  self.interaction.force  # nopep8
+                self.force[self.comp_slice] += \
+                  self.interaction.force#[self.comp_slice]  # nopep8
         else:
             self.force = None
-
         if logger is not None:
             logger.st(['energy', 'mean gap', 'rel. area', 'load'],
                       [self.energy, np.mean(self.gap), np.mean(self.gap<1e-9),
                        -np.sum(self.substrate.force)])
-
         return (self.energy, self.force)
 
     def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
@@ -450,7 +457,7 @@ class SmoothContactSystem(SystemBase):
         logger     -- (default None) log information at every iteration.
         """
         dummy = disp0
-        res = self.substrate.domain_resolution #TODO: replace with subdomain_resolution ?
+        res = self.substrate.subdomain_resolution
         if gradient:
             def fun(disp):
                 # pylint: disable=missing-docstring
@@ -509,7 +516,7 @@ class NonSmoothContactSystem(SystemBase):
     """
     # pylint: disable=abstract-method
 
-    def __init__(self, substrate, interaction, surface):
+    def __init__(self, substrate, interaction, surface,pnp = np):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -521,7 +528,7 @@ class NonSmoothContactSystem(SystemBase):
                        performed by the system
         surface     -- An instance of Topography, defines the profile.
         """
-        super().__init__(substrate, interaction, surface)
+        super().__init__(substrate, interaction, surface,pnp = np)
         if not compare_containers(surface.resolution, substrate.resolution):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
@@ -562,14 +569,14 @@ class NonSmoothContactSystem(SystemBase):
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
-        return self.substrate.force.sum()
+        return self.pnp.sum(self.substrate.force)
 
     def compute_nb_contact_pts(self):
         """
         compute and return the number of contact points. Note that this is of
         no physical interest, as it is a purely numerical artefact
         """
-        return self.contact_zone.sum()
+        return self.pnp.sum(self.contact_zone)
 
     def compute_contact_coordinates(self):
         """
@@ -590,7 +597,7 @@ class NonSmoothContactSystem(SystemBase):
                                  area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
 
-        self.energy = self.substrate.energy if pot else None
+        self.energy = self.pnp.sum(self.substrate.energy) if pot else None
         if forces:
             self.force = self.substrate.force
         else:
