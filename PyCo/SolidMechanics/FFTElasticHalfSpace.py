@@ -72,7 +72,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     _periodic = True
 
     def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=None,
-                 thickness=None, poisson=0.0, superclass=True, fftengine=DEFAULTENGINE):
+                 thickness=None, poisson=0.0, superclass=True, fftengine=None, pnp = np):
         """
         Keyword Arguments:
         resolution   -- Tuple containing number of points in spatial directions.
@@ -133,7 +133,15 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.contact_modulus = young/(1-poisson**2)
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
-        self.fftengine = fftengine(self.domain_resolution)  # because when called in subclass,
+
+        if fftengine is not None:
+            self.fftengine = fftengine
+        else:
+            self.fftengine = DEFAULTENGINE(self.domain_resolution)
+
+        self.pnp = pnp
+
+        #self.fftengine = fftengine(self.domain_resolution)  # because when called in subclass,
                                                             # the computational resolution isn't known already
         if superclass:
             self._compute_fourier_coeffs()
@@ -389,6 +397,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         force = potential = None
         if forces:
             force = self.evaluate_force(disp)
+
             if pot:
                 potential = self.evaluate_elastic_energy(force, disp)
         elif pot:
@@ -416,7 +425,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     name = "free_fft_elastic_halfspace"
     _periodic = False
 
-    def __init__(self, resolution, young, size=2*np.pi,fftengine=DEFAULTENGINE):
+    def __init__(self, resolution, young, size=2*np.pi,fftengine=None, pnp = np):
         """
         Keyword Arguments:
         resolution  -- Tuple containing number of points in spatial directions.
@@ -434,7 +443,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                        dimensions, the last value in repeated.
         """
         self._comp_resolution = tuple((2 * r for r in resolution))
-        super().__init__(resolution, young, size, superclass=False,fftengine=fftengine)
+        super().__init__(resolution, young, size, superclass=False,fftengine=fftengine,pnp=pnp)
         self._compute_fourier_coeffs()
         self._compute_i_fourier_coeffs()
 
