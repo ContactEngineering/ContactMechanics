@@ -153,23 +153,23 @@ class test_FFTElasticHalfSpace_weights(unittest.TestCase):
 
         """
 
-        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx,self.ny),self.E_s,(self.sx, self.sy),fftengine= engine) for engine in [PFFTEngine]]
+        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx,self.ny),self.E_s,(self.sx, self.sy),fftengine= engine((self.nx,self.ny),self.comm)) for engine in [PFFTEngine]]
         for substrate in MPIsubstrates:
             fourres = (substrate.domain_resolution[0], substrate.domain_resolution[1] //2 +1 )
             weights = gather(substrate.weights,substrate.fourier_slice,fourres,self.comm,root=0)
             iweights = gather(substrate.iweights,substrate.fourier_slice,fourres,self.comm,root=0)
             if self.comm.Get_rank() == 0:
-                reference = PeriodicFFTElasticHalfSpace((self.nx,self.ny),self.E_s,(self.sx, self.sy),fftengine=DEFAULTFFTENGINE)
+                reference = PeriodicFFTElasticHalfSpace((self.nx,self.ny),self.E_s,(self.sx, self.sy),fftengine=DEFAULTFFTENGINE((self.nx,self.ny),comm=self.comm))
                 np.testing.assert_allclose(reference.weights,weights,rtol=0, atol=1e-16, err_msg="weights are different after gather")
                 np.testing.assert_allclose(reference.iweights, iweights, rtol=0, atol=1e-16,err_msg="iweights are different after gather")
 
     def test_weights(self):
-        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine)
+        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine((self.nx,self.ny),self.comm))
                          for engine in [PFFTEngine]]
         for substrate in MPIsubstrates:
 
             reference = PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy),
-                                                        fftengine=DEFAULTFFTENGINE)
+                                                        fftengine=DEFAULTFFTENGINE((self.nx,self.ny),comm=self.comm))
             np.testing.assert_allclose(reference.weights[substrate.fourier_slice], substrate.weights, rtol=0, atol=1e-16,err_msg="weights are different")
             np.testing.assert_allclose(reference.iweights[substrate.fourier_slice], substrate.iweights, rtol=0, atol=1e-16, err_msg="iweights are different")
 
@@ -201,7 +201,7 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
         refpressure = - disp * self.E_s / 2 * q
         #refpressure = PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=NumpyFFTEngine).evaluate_force(disp)
 
-        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine)
+        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine((self.nx,self.ny),self.comm))
                          for engine in [PFFTEngine]]
 
         for substrate in MPIsubstrates:
@@ -221,7 +221,7 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
         refdisp = - p / self.E_s * 2 / q
         # refpressure = PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=NumpyFFTEngine).evaluate_force(p)
 
-        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine)
+        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine((self.nx,self.ny),self.comm))
                          for engine in [PFFTEngine]]
 
         for substrate in MPIsubstrates:
@@ -287,7 +287,7 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
         refEnergy *= self.sx * self.sy
         refForce *= -self.sx * self.sy / (self.nx * self.ny)
 
-        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine)
+        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine((self.nx,self.ny),self.comm))
                          for engine in [PFFTEngine]]
         for substrate in MPIsubstrates:
             computed_E_k_space = substrate.evaluate(disp[substrate.subdomain_slice],pot=True,forces=False)[0] # If force is not queried this computes the energy using kspace
@@ -338,7 +338,7 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
 
         for fftengine in self.fftengineList:
             with self.subTest(fftengine=fftengine):
-                substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine)
+                substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine((2*nx,2*ny),self.comm))
                 self.assertEqual(substrate.resolution,(nx,ny))
                 self.assertEqual(substrate.domain_resolution, (2*nx, 2*ny))
 
@@ -391,11 +391,11 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
         sx, sy = 100, 200
 
         ref_weights, ref_facts = _compute_fourier_coeffs_serial_impl(
-        FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sy), fftengine=NumpyFFTEngine))
+        FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sy), fftengine=NumpyFFTEngine((2*nx,2*ny),self.comm)))
 
         for fftengine in self.fftengineList:
             with self.subTest(fftengine=fftengine):
-                substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine)
+                substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine((2*nx,2*ny),self.comm))
                 local_weights,local_facts = substrate._compute_fourier_coeffs()
                 np.testing.assert_allclose(local_weights,ref_weights[substrate.fourier_slice],1e-12)
                 np.testing.assert_allclose(local_facts,ref_facts[substrate.subdomain_slice],1e-12)
@@ -433,7 +433,7 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
 
         for fftengine in self.fftengineList:
             with self.subTest(fftengine=fftengine):
-                substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sy), fftengine=PFFTEngine)
+                substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sy), fftengine=PFFTEngine((2*nx,2*ny),self.comm))
 
                 if self.comm.Get_size() > 1:
                     with self.assertRaises(FreeFFTElasticHalfSpace.Error):

@@ -74,7 +74,11 @@ class WestergaardTest(PyCoTestCase):
         self.sy = 1.0
         # equivalent Young's modulus
         self.E_s = 3.56
-        self.pnp = ParallelNumpy()
+
+        self.comm = MPI.COMM_WORLD
+
+        self.pnp = ParallelNumpy(self.comm)
+
 
     def test_constrained_conjugate_gradients(self):
         for kind in ['ref']: # Add 'opt' to test optimized solver, but does
@@ -82,7 +86,7 @@ class WestergaardTest(PyCoTestCase):
             for nx, ny in [(256, 16)]: #, (256, 15), (255, 16)]: #256,16
                 for disp0, normal_force in [(-0.9, None), (-0.1, None)]: # (0.1, None),
                     substrate = PeriodicFFTElasticHalfSpace((nx, ny), self.E_s,
-                                                            (self.sx, self.sy),fftengine=PFFTEngine)
+                                                            (self.sx, self.sy),fftengine=PFFTEngine((nx,ny),self.comm))
                     interaction = HardWall()
                     profile = np.resize(np.cos(2*np.pi*np.arange(nx)/nx), (ny, nx))
                     surface = NumpyTopography(profile.T, size=(self.sx, self.sy))

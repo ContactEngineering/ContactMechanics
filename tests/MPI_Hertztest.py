@@ -12,6 +12,7 @@ try:
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
                                                surface_displacements,
                                                surface_stress)
+    from mpi4py import MPI
     from FFTEngine import PFFTEngine
     from PyCo.Tools.ParallelNumpy import ParallelNumpy
 
@@ -32,7 +33,9 @@ class HertzTest(unittest.TestCase):
         self.p_0 = 2.5
         # equivalent Young's modulus
         self.E_s = 102.
-        self.pnp = ParallelNumpy()
+        self.comm = MPI.COMM_WORLD
+        self.pnp = ParallelNumpy(self.comm)
+
 
     def test_elastic_solution(self):
         r = np.linspace(0, self.r_s, 6)/self.r_c
@@ -47,7 +50,7 @@ class HertzTest(unittest.TestCase):
                     sx = 5.0
 
                     substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
-                                                        (sx, sx), fftengine=PFFTEngine)
+                                                        (sx, sx), fftengine=PFFTEngine((2*nx, 2*ny),comm=self.comm))
 
                     interaction = HardWall()
                     surface = Sphere(self.r_s, (nx, ny), (sx, sx))
