@@ -467,6 +467,54 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """
         return self._comp_resolution
 
+    def _compute_fourier_coeffs2(self):
+        """Compute the weights w relating fft(displacement) to fft(pressure):
+           fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
+           Now Deprecated
+           This is the fastest version, about 2 orders faster than the python
+           versions, however a bit memory-hungry, this version used to be
+           default, but turns out to have no significant advantage over the
+           matscipy implementation
+        """
+        # pylint: disable=too-many-locals
+        if self.fftengine.is_MPI:
+            raise NotImplementedError("This implementation of the computation of the fourier coeffs is not compatible with MPI FFTEngines")
+
+        if self.dim == 1:
+            pass
+        else:
+            x_grid = np.arange(self.resolution[0] * 2)
+            x_grid = np.where(x_grid <= self.resolution[0], x_grid,
+                              x_grid - self.resolution[0] * 2) * self.steps[0]
+            x_grid.shape = (-1, 1)
+            y_grid = np.arange(self.resolution[1] * 2)
+            y_grid = np.where(y_grid <= self.resolution[1], y_grid,
+                              y_grid - self.resolution[1] * 2) * self.steps[1]
+            y_grid.shape = (1, -1)
+            x_p = (x_grid + self.steps[0] * .5).reshape((-1, 1))
+            x_m = (x_grid - self.steps[0] * .5).reshape((-1, 1))
+            xp2 = x_p * x_p
+            xm2 = x_m * x_m
+
+            y_p = y_grid + self.steps[1] * .5
+            y_m = y_grid - self.steps[1] * .5
+            yp2 = y_p * y_p
+            ym2 = y_m * y_m
+            sqrt_yp_xp = np.sqrt(yp2 + xp2)
+            sqrt_ym_xp = np.sqrt(ym2 + xp2)
+            sqrt_yp_xm = np.sqrt(yp2 + xm2)
+            sqrt_ym_xm = np.sqrt(ym2 + xm2)
+            facts = 1 / (np.pi * self.young) * (
+                    x_p * np.log((y_p + sqrt_yp_xp) /
+                                 (y_m + sqrt_ym_xp)) +
+                    y_p * np.log((x_p + sqrt_yp_xp) /
+                                 (x_m + sqrt_yp_xm)) +
+                    x_m * np.log((y_m + sqrt_ym_xm) /
+                                 (y_p + sqrt_yp_xm)) +
+                    y_m * np.log((x_m + sqrt_ym_xm) /
+                                 (x_p + sqrt_ym_xp)))
+        return self.fftengine.rfftn(facts), facts
+
     def _compute_fourier_coeffs(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
            fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
