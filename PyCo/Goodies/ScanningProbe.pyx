@@ -33,7 +33,7 @@ SOFTWARE.
 
 import numpy as np
 
-from PyCo.Topography import NumpyTopography
+from PyCo.Topography import UniformNumpyTopography
 from PyCo.Topography.common import _get_size
 
 ###
@@ -60,5 +60,5 @@ cpdef scan_surface(surface, tip_radius):
     profile = surface.array()
     nx, ny = surface.shape
     sx, sy = _get_size(surface)
-    return NumpyTopography(_scan_topography(nx, ny, profile, tip_radius*nx/sx),
-                           size=(sx, sy))
+    return UniformNumpyTopography(_scan_topography(nx, ny, profile, tip_radius*nx/sx),
+                                  size=(sx, sy))

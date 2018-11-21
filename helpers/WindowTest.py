@@ -131,7 +131,7 @@ def main():
         (float(x[0]), float(x[1]), float(np.sqrt(1-x[0]**2 - x[1]**2))),
         float(x[-1]), residual, arr.mean()))
     arr = Tools.shift_and_tilt_approx(surface.array())
-    surface = Surf.NumpyTopography(arr, size=size)
+    surface = Surf.UniformNumpyTopography(arr, size=size)
     plot_distro('Topo1_corr', surface.array())
     surfs.append(('Topo1_corr', surface))
 
@@ -145,7 +145,7 @@ def main():
     dsize = (2*siz, 2*siz)
     dres = (res[0], res[0])
     dsurface = Tools.RandomSurfaceGaussian(dres, dsize, hurst, h_rms).get_surface()
-    surface = Surf.NumpyTopography(dsurface.array()[:res[0], :res[0]], size = size)
+    surface = Surf.UniformNumpyTopography(dsurface.array()[:res[0], :res[0]], size = size)
     surfs.append(('Gauss aperiodic', surface))
 
     for name, surf in surfs:#(surfs[-1],):
