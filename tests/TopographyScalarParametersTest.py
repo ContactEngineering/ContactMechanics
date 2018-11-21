@@ -4,7 +4,7 @@ try:
     import time
     import math
 
-    from PyCo.Topography.ScalarParameters import rms_curvature, rms_slope, rms_height
+    from PyCo.Topography.Uniform.ScalarParameters import rms_curvature, rms_slope, rms_height
 
 except ImportError as err:
     import sys

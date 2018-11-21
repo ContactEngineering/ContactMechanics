@@ -31,12 +31,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from math import sqrt
 import unittest
 
 import numpy as np
 
-from PyCo.Topography.VariableBandwidth import checkerboard_tilt_correction
+from PyCo.Topography.Uniform.VariableBandwidth import checkerboard_tilt_correction
 from .PyCoTest import PyCoTestCase
 
 ###
