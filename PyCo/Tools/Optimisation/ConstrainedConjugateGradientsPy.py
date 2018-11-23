@@ -95,7 +95,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     if substrate.fftengine.is_MPI:
         from PyCo.Tools.ParallelNumpy import ParallelNumpy
         pnp = ParallelNumpy(comm = substrate.fftengine.comm)
-        print("Parallel fftengine")
+        #print("Parallel fftengine")
     else:
         pnp=np
     # Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays
