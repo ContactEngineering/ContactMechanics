@@ -528,7 +528,7 @@ class NonSmoothContactSystem(SystemBase):
                        performed by the system
         surface     -- An instance of Topography, defines the profile.
         """
-        super().__init__(substrate, interaction, surface,pnp = np)
+        super().__init__(substrate, interaction, surface,pnp = pnp)
         if not compare_containers(surface.resolution, substrate.resolution):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
