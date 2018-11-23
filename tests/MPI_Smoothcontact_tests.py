@@ -13,8 +13,8 @@ try:
                                                surface_displacements,
                                                surface_stress)
     from FFTEngine import PFFTEngine
-    from PyLBGFS.MPI_LBFGS_Matrix_H import LBFGS
-    from PyLBGFS.Tools.ParallelNumpy import ParallelNumpy  # TODO: This should be explicitly from PyLBGFS
+    from PyLBFGS.MPI_LBFGS_Matrix_H import LBFGS
+    from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy  # TODO: This should be explicitly from PyLBFGS
     from mpi4py import MPI
     from PyCo.ContactMechanics import VDW82smoothMin, VDW82
     from PyCo.System import SmoothContactSystem

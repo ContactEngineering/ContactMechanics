@@ -13,7 +13,7 @@ try:
                                                surface_displacements,
                                                surface_stress)
     from FFTEngine import PFFTEngine
-    from PyLBGFS.MPI_LBFGS_Matrix_H import LBFGS
+    from PyLBFGS.MPI_LBFGS_Matrix_H import LBFGS
     from PyCo.Tools.ParallelNumpy import ParallelNumpy
     from mpi4py import MPI
     from PyCo.ContactMechanics import VDW82smoothMin, VDW82
@@ -26,7 +26,7 @@ except ImportError as err:
     sys.exit(-1)
 
 
-def test_smoothsphere():
+def test_wavy():
     comm = MPI.COMM_WORLD
 
     n=32
@@ -87,7 +87,7 @@ def test_smoothsphere():
 
     if toPlot:
         import matplotlib
-        matplotlib.use("Agg")
+        #matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         fig, ax  = plt.subplots()
         ax.set_xlabel("displacement")
@@ -98,4 +98,4 @@ def test_smoothsphere():
         fig.savefig("MPI_Smoothcontact_tests.png")
 
 if __name__ == "__main__":
-    test_smoothsphere()
+    test_wavy()
