@@ -35,6 +35,8 @@ SOFTWARE.
 from .Systems import IncompatibleFormulationError
 from .Systems import IncompatibleResolutionError
 from .Systems import SmoothContactSystem
+from .Systems import NonSmoothContactSystem
+
 from .SmoothSystemSpecialisations import FastSmoothContactSystem
 from .PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
 from .Factory import SystemFactory
