@@ -7,14 +7,17 @@ try:
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
     from PyCo.Topography import Sphere
-    from PyCo.System import SystemFactory
+    from PyCo.System import NonSmoothContactSystem
+
     #from PyCo.Tools.Logger import screen
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
                                                surface_displacements,
-                                               surface_stress)
+                                               surface_stress,
+                                               penetration,
+                                               normal_load)
     from mpi4py import MPI
     from FFTEngine import PFFTEngine
-    from PyCo.Tools.ParallelNumpy import ParallelNumpy
+    from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
 
 except ImportError as err:
     import sys
@@ -45,7 +48,7 @@ class HertzTest(unittest.TestCase):
     def test_constrained_conjugate_gradients(self):
         for kind in ['ref']: # Add 'opt' to test optimized solver, but does
                              # not work on Travis!
-            for nx, ny in [(256, 256), (256, 255), (255, 256)]:
+            for nx, ny in [(512, 512)]:#, (256, 255), (255, 256)]:
                 for disp0, normal_force in [(0.1, None), (0, 15.0)]:
                     sx = 5.0
 
@@ -54,7 +57,7 @@ class HertzTest(unittest.TestCase):
 
                     interaction = HardWall()
                     surface = Sphere(self.r_s, (nx, ny), (sx, sx))
-                    system = SystemFactory(substrate, interaction, surface)
+                    system = NonSmoothContactSystem(substrate, interaction, surface,self.pnp)
 
                     result = system.minimize_proxy(offset=disp0,
                                                    external_force=normal_force,
@@ -64,12 +67,25 @@ class HertzTest(unittest.TestCase):
                     converged = result.success
                     self.assertTrue(converged)
 
-
+                    comp_normal_force = -self.pnp.sum(forces)
                     if normal_force is not None:
-                        self.assertAlmostEqual(normal_force, -self.pnp.sum(forces))
-                    normal_force = -self.pnp.sum(forces)
-                    a, p0 = radius_and_pressure(normal_force, self.r_s,
-                                                self.E_s)
+                        self.assertAlmostEqual(normal_force, comp_normal_force,
+                            msg="Convergence Problem: computed normal Force doesn't match imposed normal force")
+                        # assert the disp is OK with analytical Solution
+
+                        print("penetration: computed: {}"
+                              "               Hertz : {}".format(result.offset,penetration(normal_force,self.r_s,self.E_s)))
+                        np.testing.assert_allclose(result.offset,penetration(normal_force,self.r_s,self.E_s),rtol=1e-2,
+                            err_msg="computed offset doesn't match with hertz theory for imposed Load {}".format(normal_force))
+                    elif disp0 is not None:
+                        self.assertAlmostEqual(disp0, result.offset,msg="Convergence Problem: computed penetration doesn't match imposed penetration")
+                        np.testing.assert_allclose(comp_normal_force,normal_load(disp0,self.r_s,self.E_s),rtol=1e-2,
+                            err_msg="computed normal force doesn't match with hertz theory for imposed Penetration {}".format(disp0))
+
+
+                    a, p0 = radius_and_pressure(comp_normal_force, self.r_s,self.E_s)
+
+                    np.testing.assert_allclose(system.compute_contact_area(),np.pi*a**2,rtol=1e-1,err_msg="Computed area doesn't match Hertz Theory")
 
                     p_numerical = -forces * (nx * ny / (sx * sx))
                     p_analytical = np.zeros_like(p_numerical)
@@ -115,7 +131,7 @@ class HertzTest(unittest.TestCase):
                     msg += "\np_analytical_max:  {}".format(self.pnp.max(p_analytical))
                     msg += "\nslice_size:        {}".format((r < .99 * a).sum())
                     msg += "\ncontact_radius a:  {}".format(a)
-                    msg += "\nnormal_force:      {}".format(normal_force)
+                    msg += "\ncomputed normal_force:      {}".format(comp_normal_force)
                     msg += "\n{}".format(self.pnp.max(result.jac) - self.pnp.min(result.jac))
 
                     if DEBUG:
@@ -140,6 +156,14 @@ class HertzTest(unittest.TestCase):
                         self.assertLess(self.pnp.max(np.abs(p_analytical[r<0.99*a]-
                                             p_numerical[r<0.99*a]))/self.E_s, 1e-3,
                                         msg)
+
+
+
+
+                        # assert the Contact area is OK
+
+
+
                     except ValueError as err:
                         msg = str(err) + msg
                         raise ValueError(msg)
