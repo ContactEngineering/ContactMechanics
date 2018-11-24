@@ -40,6 +40,50 @@ import numpy as np
 
 ###
 
+def penetration(N,R,Es):
+    """
+    Given normal load, sphere radius and contact modulus compute rigid body penetration
+
+    Parameters
+    ----------
+    N : float
+        Normal force.
+    R : float
+        Sphere radius.
+    Es : float
+        Contact modulus: Es = E/(1-nu**2) with Young's modulus E and Poisson
+        number nu.
+
+    Returns
+    -------
+    float
+    Normal load
+
+    """
+
+    return (9*N**2/(16*R*Es**2))**(1/3)
+
+def normal_load(d,R,Es):
+    """
+    Given rigid Body Penetration, sphere radius and contact modulus compute normal load
+    Parameters
+    ----------
+    d : float
+        Rigid Body Penetration
+    R : float
+        Sphere Radius
+    Es: float
+        Contact modulus:  Es = E/(1-nu**2) with Young's modulus E and Poisson
+        number nu.
+
+    Returns
+    -------
+    float
+    normal_load
+
+    """
+    return (4/3*Es*math.sqrt(d**3*R))
+
 def radius_and_pressure(N, R, Es):
     """
     Given normal load, sphere radius and contact modulus compute contact radius
