@@ -419,8 +419,8 @@ class SmoothContactSystem(SystemBase):
                                  area_scale=self.area_per_pt)
 
         self.substrate.compute(disp, pot, forces)
-        self.energy = (self.pnp.sum(self.interaction.energy+
-                       self.substrate.energy)
+        self.energy = (self.interaction.energy+
+                       self.substrate.energy
                        if pot else None)
         if forces:
             self.force = self.substrate.force.copy()
@@ -597,7 +597,7 @@ class NonSmoothContactSystem(SystemBase):
                                  area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
 
-        self.energy = self.pnp.sum(self.substrate.energy) if pot else None
+        self.energy = self.substrate.energy if pot else None
         if forces:
             self.force = self.substrate.force
         else:

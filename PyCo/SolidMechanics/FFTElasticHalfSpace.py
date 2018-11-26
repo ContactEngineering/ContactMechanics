@@ -349,7 +349,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         disp   -- array of displacements
         """
         # pylint: disable=no-self-use
-        return .5*np.dot(np.ravel(disp), np.ravel(-forces))
+        return .5*self.pnp.dot(np.ravel(disp), np.ravel(-forces))
 
     def evaluate_elastic_energy_k_space(self, kforces, kdisp):
         """
@@ -372,7 +372,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # The inner part of the fourier data should always be symetrized (i.e. multiplied by 2)
         # When the fourier subdomain contains boundary values (wavevector 0 and ny//2) these values should only be added once
         if kdisp.shape[-1] > 0: # TODO: also handle the case with odd number of points
-            return .5 * (2 * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
+            return self.pnp.sum(.5 * (2 * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
                          +
                          np.vdot(kdisp[..., -1], -kforces[..., -1]).real *
                          (2 if self.fourier_location[-1] + self.fourier_resolution[-1]
@@ -382,7 +382,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                          np.vdot(kdisp[..., 0], -kforces[..., 0]).real *
                          (2 if self.fourier_location[-1] != 0
                           else 1)
-                         ) / self.nb_pts
+                         ) / self.nb_pts)
         else:
             return 0
 

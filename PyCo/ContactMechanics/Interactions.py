@@ -58,9 +58,10 @@ class HardWall(Interaction):
 
 class SoftWall(Interaction):
     "base class for smooth contact mechanics"
-    def __init__(self):
+    def __init__(self,pnp=np):
         self.energy = None
         self.force = None
+        self.pnp = pnp
 
     def compute(self, gap, pot=True, forces=False, area_scale=1.):
         """
@@ -76,7 +77,7 @@ class SoftWall(Interaction):
         """
         energy, self.force = self.evaluate(
             gap, pot, forces, area_scale)
-        self.energy = energy.sum()
+        self.energy = self.pnp.sum(energy)
 
     def evaluate(self, gap, pot=True, forces=False, area_scale=1.):
         """
