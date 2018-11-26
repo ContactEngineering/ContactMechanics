@@ -95,7 +95,7 @@ class ReferenceSolutionsTest(PyCoTestCase):
         "Compare with values computed once"
 
         Es = 5
-        print("Es {}".format(Es))
+        #print("Es {}".format(Es))
         R = 4
 
         Fprescribed = 7 #N
