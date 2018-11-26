@@ -37,4 +37,3 @@ from .DistributedComputation import BaseResultManager, BaseWorker
 from .Logger import Logger
 from . import Optimisation
 from . import fftext
-from . import ParallelNumpy

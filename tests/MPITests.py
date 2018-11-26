@@ -14,116 +14,14 @@ except ImportError:
 if _withMPI:
     from FFTEngine import PFFTEngine
     from FFTEngine.helpers import gather
-    from PyCo.Tools.ParallelNumpy import ParallelNumpy
 
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from .PyCoTest import PyCoTestCase
+from PyLBFGS.Tools import ParallelNumpy
 
 from FFTEngine import NumpyFFTEngine
 DEFAULTFFTENGINE = NumpyFFTEngine
-
-@unittest.skipUnless(_withMPI,"requires mpi4py")
-class test_ParallelNumpy(unittest.TestCase):
-
-    def setUp(self):
-        self.np = ParallelNumpy()
-        self.comm = MPI.COMM_WORLD
-        self.rank  = self.comm.Get_rank()
-        self.MPIsize = self.comm.Get_size()
-    def test_sum_scalar(self):
-        res=self.np.sum(np.array(1))
-        self.assertEqual(res, self.np.comm.Get_size())
-
-    def test_sum_1D(self):
-        arr=np.array((1,2.1,3))
-        res = self.np.sum(arr)
-        self.assertEqual(res, self.np.comm.Get_size() * 6.1)
-
-    def test_sum_2D(self):
-        arr=np.array(((1,2.1,3),
-                     (4,5,6)))
-        res = self.np.sum(arr)
-        self.assertEqual(res, self.np.comm.Get_size() * 21.1)
-
-    def test_max_2D(self):
-        arr=np.reshape(np.array((-1,1,5,4,
-                             4,5,4,5,
-                             7,0,1,0.),dtype=float),(3,4))
-
-        rank = self.comm.Get_rank()
-        if self.comm.Get_size() >=4:
-            if rank ==0 :   local_arr = arr[0:2,0:2]
-            elif rank ==1 : local_arr = arr[0:2,2:]
-            elif rank == 2 :local_arr = arr[2:,0:2]
-            elif rank == 3 : local_arr = arr[2:,2:]
-            else : local_arr = np.empty(0,dtype=arr.dtype)
-        elif self.comm.Get_size() >=2 :
-            if   rank ==0 :   local_arr = arr[0:2,:]
-            elif rank ==1 : local_arr = arr[2:,:]
-            else:           local_arr = np.empty(0, dtype=arr.dtype)
-        else:
-            local_arr = arr
-        self.assertEqual(self.np.max(local_arr),7)
-
-    def test_max_min_empty(self):
-        """
-        Sometimes the input array is empty
-        """
-        if self.MPIsize >=2 :
-            if self.rank==0:
-                local_arr = np.array([], dtype=float)
-
-            else :
-                local_arr = np.array([1, 0, 4], dtype=float)
-            self.assertEqual(self.np.max(local_arr), 4)
-            self.assertEqual(self.np.min(local_arr), 0)
-
-            if self.rank==0:
-                local_arr = np.array([1, 0, 4], dtype=float)
-            else :
-
-                local_arr = np.array([], dtype=float)
-            self.assertEqual(self.np.max(local_arr), 4)
-            self.assertEqual(self.np.min(local_arr), 0)
-
-        else :
-            local_arr = np.array([],dtype = float)
-            #self.assertTrue(np.isnan(self.np.max(local_arr)))
-            #self.assertTrue(np.isnan(self.np.min(local_arr)))
-            self.assertEqual(self.np.max(local_arr),-np.inf)
-            self.assertEqual(self.np.min(local_arr),np.inf)
-
-
-
-    def test_min(self):
-        arr = np.reshape(np.array((-1, 1, 5, 4,
-                                   4, 5, 4, 5,
-                                   7, 0, 1, 0),dtype = float), (3, 4))
-
-        rank = self.comm.Get_rank()
-        if self.comm.Get_size() >= 4:
-            if rank == 0:
-                local_arr = arr[0:2, 0:2]
-            elif rank == 1:
-                local_arr = arr[0:2, 2:]
-            elif rank == 2:
-                local_arr = arr[2:, 0:2]
-            elif rank == 3:
-                local_arr = arr[2:, 2:]
-            else:
-                local_arr = np.empty(0, dtype=arr.dtype)
-        elif self.comm.Get_size() >= 2:
-            if rank == 0:
-                local_arr = arr[0:2, :]
-            elif rank == 1:
-                local_arr = arr[2:, :]
-            else:
-                local_arr = np.empty(0, dtype=arr.dtype)
-        else:
-            local_arr = arr
-        self.assertEqual(self.np.min(local_arr), -1)
-
 
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
@@ -472,6 +370,9 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
 
         """
         pass
+
+# TODO: test that scalar quantities are the same on all the processors
+
 
 if __name__ == '__main__':
     unittest.main()

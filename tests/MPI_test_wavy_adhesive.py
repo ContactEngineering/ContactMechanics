@@ -14,7 +14,7 @@ try:
                                                surface_stress)
     from FFTEngine import PFFTEngine
     from PyLBFGS.MPI_LBFGS_Matrix_H import LBFGS
-    from PyCo.Tools.ParallelNumpy import ParallelNumpy
+    from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
     from mpi4py import MPI
     from PyCo.ContactMechanics import VDW82smoothMin, VDW82
     from PyCo.System import SmoothContactSystem

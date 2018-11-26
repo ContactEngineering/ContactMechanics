@@ -93,7 +93,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     """
 
     if substrate.fftengine.is_MPI:
-        from PyCo.Tools.ParallelNumpy import ParallelNumpy
+        from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
         pnp = ParallelNumpy(comm = substrate.fftengine.comm)
         #print("Parallel fftengine")
     else:

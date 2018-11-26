@@ -40,7 +40,7 @@ import scipy
 from .. import ContactMechanics, SolidMechanics, Topography
 from ..Tools import compare_containers
 from ..Tools.Optimisation import constrained_conjugate_gradients, simple_relaxation
-from ..Tools import ParallelNumpy
+from PyLBFGS.Tools import ParallelNumpy
 
 class IncompatibleFormulationError(Exception):
     # pylint: disable=missing-docstring

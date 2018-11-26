@@ -37,7 +37,7 @@ from .Systems import SystemBase
 from .Systems import IncompatibleFormulationError
 from .Systems import IncompatibleResolutionError
 
-
+# TODO: give the parallel numpy thrue to the
 def SystemFactory(substrate, interaction, surface):
     """
     Factory function for contact systems. Checks the compatibility between the
@@ -51,7 +51,7 @@ def SystemFactory(substrate, interaction, surface):
     surface     -- An instance of Topography, defines the profile.
     """
     # pylint: disable=invalid-name
-    # pylint: disable=no-member
+    # pylint: disable=no-membe
     args = substrate, interaction, surface
     subclasses = list()
 

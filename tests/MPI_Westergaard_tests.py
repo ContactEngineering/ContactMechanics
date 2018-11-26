@@ -46,7 +46,7 @@ except ImportError:
 if _withMPI:
     from FFTEngine import PFFTEngine
     from FFTEngine.helpers import gather
-    from PyCo.Tools.ParallelNumpy import ParallelNumpy
+    from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
 
 try:
     import unittest
