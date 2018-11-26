@@ -56,7 +56,7 @@ class VDW82(Potential):
         """
         self.c_sr = c_sr
         self.hamaker = hamaker
-        Potential.__init__(self, r_cut,pnp)
+        Potential.__init__(self, r_cut,pnp=pnp)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
@@ -142,7 +142,7 @@ class VDW82smooth(VDW82, SmoothPotential):
         gamma   -- (default ε) Work of adhesion, defaults to ε
         r_t     -- (default r_min) transition point, defaults to r_min
         """
-        VDW82.__init__(self, c_sr, hamaker,pnp)
+        VDW82.__init__(self, c_sr, hamaker,pnp=pnp)
         SmoothPotential.__init__(self, gamma, r_t)
 
     def __repr__(self):
@@ -197,7 +197,7 @@ class VDW82smoothMin(VDW82smooth, MinimisationPotential):
         r_t_ls  -- (default r_min) transition point between lj and spline,
                     defaults to r_min
         """
-        VDW82smooth.__init__(self, c_sr, hamaker, gamma, r_t_ls,pnp)
+        VDW82smooth.__init__(self, c_sr, hamaker, gamma, r_t_ls,pnp=pnp)
         MinimisationPotential.__init__(self, r_ti)
 
     def __repr__(self):
@@ -217,7 +217,7 @@ class VDW82SimpleSmooth(VDW82, SimpleSmoothPotential):
         hamaker -- Hamaker constant for substrate
         r_c     -- emposed cutoff radius
         """
-        VDW82.__init__(self, c_sr, hamaker, r_c,pnp)
+        VDW82.__init__(self, c_sr, hamaker, r_c,pnp=pnp)
         SimpleSmoothPotential.__init__(self, r_c)
 
     @property

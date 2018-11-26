@@ -59,7 +59,7 @@ class LJ93(Potential):
         """
         self.eps = epsilon
         self.sig = sigma
-        Potential.__init__(self, r_cut,pnp=np)
+        Potential.__init__(self, r_cut,pnp=pnp)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': ε = {0.eps}, σ = {0.sig}, "
@@ -177,7 +177,7 @@ class LJ93smooth(LJ93, SmoothPotential):
         gamma   -- (default ε) Work of adhesion, defaults to ε
         r_t     -- (default r_min) transition point, defaults to r_min
         """
-        LJ93.__init__(self, epsilon, sigma, None,pnp)
+        LJ93.__init__(self, epsilon, sigma, None,pnp=pnp)
         SmoothPotential.__init__(self, gamma, r_t)
 
     def __repr__(self):
@@ -234,7 +234,7 @@ class LJ93smoothMin(LJ93smooth, MinimisationPotential):
         r_t_ls  -- (default r_min) transition point between lj and spline,
                     defaults to r_min
         """
-        LJ93smooth.__init__(self, epsilon, sigma, gamma, r_t_ls,pnp)
+        LJ93smooth.__init__(self, epsilon, sigma, gamma, r_t_ls,pnp=pnp)
         MinimisationPotential.__init__(self, r_ti)
 
     def __repr__(self):
