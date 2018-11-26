@@ -73,8 +73,8 @@ class HertzTest(unittest.TestCase):
                             msg="Convergence Problem: computed normal Force doesn't match imposed normal force")
                         # assert the disp is OK with analytical Solution
 
-                        print("penetration: computed: {}"
-                              "               Hertz : {}".format(result.offset,penetration(normal_force,self.r_s,self.E_s)))
+                        #print("penetration: computed: {}"
+                        #      "               Hertz : {}".format(result.offset,penetration(normal_force,self.r_s,self.E_s)))
                         np.testing.assert_allclose(result.offset,penetration(normal_force,self.r_s,self.E_s),rtol=1e-2,
                             err_msg="computed offset doesn't match with hertz theory for imposed Load {}".format(normal_force))
                     elif disp0 is not None:
