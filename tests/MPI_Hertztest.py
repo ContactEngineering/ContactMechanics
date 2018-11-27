@@ -10,11 +10,14 @@ try:
     from PyCo.System import NonSmoothContactSystem
 
     #from PyCo.Tools.Logger import screen
-    from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
-                                               surface_displacements,
-                                               surface_stress,
-                                               penetration,
-                                               normal_load)
+    from PyCo.ReferenceSolutions import Hertz as Hz
+
+   # (radius_and_pressure,
+   #  surface_displacements,
+   #  surface_stress,
+   #  penetration,
+   #  normal_load)
+
     from mpi4py import MPI
     from FFTEngine import PFFTEngine
     from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
@@ -39,11 +42,10 @@ class HertzTest(unittest.TestCase):
         self.comm = MPI.COMM_WORLD
         self.pnp = ParallelNumpy(self.comm)
 
-
     def test_elastic_solution(self):
         r = np.linspace(0, self.r_s, 6)/self.r_c
-        u = surface_displacements(r) / (self.p_0/self.E_s*self.r_c)
-        sig = surface_stress(r)[0]/self.p_0
+        u = Hz.surface_displacements(r) / (self.p_0/self.E_s*self.r_c)
+        sig = Hz.surface_stress(r)[0]/self.p_0
 
     def test_constrained_conjugate_gradients(self):
         for kind in ['ref']: # Add 'opt' to test optimized solver, but does
@@ -53,7 +55,7 @@ class HertzTest(unittest.TestCase):
                     sx = 5.0
 
                     substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
-                                                        (sx, sx), fftengine=PFFTEngine((2*nx, 2*ny),comm=self.comm))
+                                                        (sx, sx), fftengine=PFFTEngine((2*nx, 2*ny),comm=self.comm),pnp=self.pnp)
 
                     interaction = HardWall()
                     surface = Sphere(self.r_s, (nx, ny), (sx, sx))
@@ -69,23 +71,37 @@ class HertzTest(unittest.TestCase):
 
                     comp_normal_force = -self.pnp.sum(forces)
                     if normal_force is not None:
+
                         self.assertAlmostEqual(normal_force, comp_normal_force,
-                            msg="Convergence Problem: computed normal Force doesn't match imposed normal force")
+                            msg="Convergence Problem: resultant normal Force doesn't match imposed normal force")
+                        self.assertAlmostEqual(system.compute_normal_force(),normal_force,msg = "computed normal force doesn't match imposed force" )
                         # assert the disp is OK with analytical Solution
 
                         #print("penetration: computed: {}"
                         #      "               Hertz : {}".format(result.offset,penetration(normal_force,self.r_s,self.E_s)))
-                        np.testing.assert_allclose(result.offset,penetration(normal_force,self.r_s,self.E_s),rtol=1e-2,
+                        np.testing.assert_allclose(result.offset,Hz.penetration(normal_force,self.r_s,self.E_s),rtol=1e-2,
                             err_msg="computed offset doesn't match with hertz theory for imposed Load {}".format(normal_force))
+                        Eel_ref = Hz.elastic_energy(Hz.penetration(normal_force,self.r_s,self.E_s), self.r_s, self.E_s)
+
                     elif disp0 is not None:
+                        Eel_ref = Hz.elastic_energy(disp0, self.r_s, self.E_s)
                         self.assertAlmostEqual(disp0, result.offset,msg="Convergence Problem: computed penetration doesn't match imposed penetration")
-                        np.testing.assert_allclose(comp_normal_force,normal_load(disp0,self.r_s,self.E_s),rtol=1e-2,
+                        np.testing.assert_allclose(comp_normal_force,Hz.normal_load(disp0,self.r_s,self.E_s),rtol=1e-2,
                             err_msg="computed normal force doesn't match with hertz theory for imposed Penetration {}".format(disp0))
+                        np.testing.assert_allclose(system.compute_normal_force(), Hz.normal_load(disp0,self.r_s,self.E_s),rtol=1e-2,
+                                               err_msg="computed normal force doesn't match with hertz theory for imposed Penetration {}".format(disp0))
 
 
-                    a, p0 = radius_and_pressure(comp_normal_force, self.r_s,self.E_s)
+                    a, p0 = Hz.radius_and_pressure(comp_normal_force, self.r_s,self.E_s)
 
                     np.testing.assert_allclose(system.compute_contact_area(),np.pi*a**2,rtol=1e-1,err_msg="Computed area doesn't match Hertz Theory")
+
+                    Eel_computed_kspace = system.substrate.evaluate(disp,pot=True,forces=False)[0]
+                    Eel_computed_rspace = system.substrate.evaluate(disp,pot=True,forces=True)[0]
+
+
+                    np.testing.assert_allclose(Eel_computed_kspace,Eel_ref,rtol=1e-2)
+                    np.testing.assert_allclose(Eel_computed_rspace,Eel_ref,rtol=1e-2)
 
                     p_numerical = -forces * (nx * ny / (sx * sx))
                     p_analytical = np.zeros_like(p_numerical)
