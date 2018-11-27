@@ -103,4 +103,11 @@ class ReferenceSolutionsTest(PyCoTestCase):
         np.testing.assert_allclose(Hz.penetration(Fprescribed,R,Es), 0.6507879989531481,rtol=1e-7)
         np.testing.assert_allclose(Hz.radius_and_pressure(Fprescribed,R,Es),(1.6134286460245437,1.2839257217043503),rtol=1e-7)
 
+    def test_Hertz_energy(self):
+        Es = 7;
+        R = 5;
+        ds = np.linspace(0, 3,100)
+        np.testing.assert_allclose(Hz.elastic_energy(ds[-1], R, Es),np.trapz(Hz.normal_load(ds, R, Es),x=ds),rtol = 1e-4)
+
+
 
