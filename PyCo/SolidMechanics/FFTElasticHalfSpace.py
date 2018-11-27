@@ -72,7 +72,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     _periodic = True
 
     def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=None,
-                 thickness=None, poisson=0.0, superclass=True, fftengine=None, pnp = np):
+                 thickness=None, poisson=0.0, superclass=True, fftengine=None, pnp = None):
         """
         Keyword Arguments:
         resolution   -- Tuple containing number of points in spatial directions.
@@ -139,14 +139,24 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         else:
             self.fftengine = DEFAULTENGINE(self.domain_resolution)
 
-        self.pnp = pnp
+        if pnp is None:
+            if self.fftengine.is_MPI:
+                from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
+                self.pnp = ParallelNumpy(self.fftengine.comm)
+            else:
+                self.pnp = np
+        #TODO: test the choice of parallelnumpy and FFTEngine, automatically use ParallelNuzmpy if fftengine is parallel ?
+        else:
+            self.pnp = pnp
+            #if self.fftengine.is_MPI:
+                #from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
+                #if isinstance(self.pnp,ParallelNumpy): raise ValueError("fftengine is parallel but you provided a computation tool ({}) different from ({})".format(self.pnp.__class__,ParallelNumpy.__))
 
         #self.fftengine = fftengine(self.domain_resolution)  # because when called in subclass,
                                                             # the computational resolution isn't known already
         if superclass:
             self._compute_fourier_coeffs()
             self._compute_i_fourier_coeffs()
-
 
     @property
     def dim(self, ):
@@ -425,7 +435,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     name = "free_fft_elastic_halfspace"
     _periodic = False
 
-    def __init__(self, resolution, young, size=2*np.pi,fftengine=None, pnp = np):
+    def __init__(self, resolution, young, size=2*np.pi,fftengine=None, pnp = None):
         """
         Keyword Arguments:
         resolution  -- Tuple containing number of points in spatial directions.
