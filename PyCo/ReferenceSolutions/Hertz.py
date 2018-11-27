@@ -82,7 +82,26 @@ def normal_load(d,R,Es):
     normal_load
 
     """
-    return (4/3*Es*math.sqrt(d**3*R))
+    return (4/3*Es*np.sqrt(d**3*R))
+
+def elastic_energy(d,R,Es):
+    """
+
+    Parameters
+    ----------
+    d : float
+        Rigid Body Penetration
+    R : float
+        Sphere Radius
+    Es: float
+        Contact modulus:  Es = E/(1-nu**2) with Young's modulus E and Poisson
+        number nu.
+
+    Returns
+    -------
+    Elastic energy
+    """
+    return 8/15 * np.sqrt(R) * Es * d**(5/2)
 
 def radius_and_pressure(N, R, Es):
     """
