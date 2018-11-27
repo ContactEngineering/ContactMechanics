@@ -54,7 +54,7 @@ class IncompatibleResolutionError(Exception):
 
 class SystemBase(object, metaclass=abc.ABCMeta):
     "Base class for contact systems"
-    def __init__(self, substrate, interaction, surface, pnp = np):
+    def __init__(self, substrate, interaction, surface):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -74,7 +74,9 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         self.gap = None
         self.disp = None
 
-        self.pnp = pnp
+        self.pnp = substrate.pnp
+
+        #TODO: assert that the interaction pnp is the same
 
         self.comp_slice = tuple([slice(0, max(0, min(substrate.resolution[i] - substrate.subdomain_location[i],
                                           substrate.subdomain_resolution[i])))
@@ -302,7 +304,7 @@ class SmoothContactSystem(SystemBase):
     For smooth contact mechanics (i.e. the ones for which optimization is only
     kinda-hell
     """
-    def __init__(self, substrate, interaction, surface,pnp = np):
+    def __init__(self, substrate, interaction, surface):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -314,7 +316,7 @@ class SmoothContactSystem(SystemBase):
                        performed by the system
         surface     -- An instance of Topography, defines the profile.
         """
-        super().__init__(substrate, interaction, surface,pnp)
+        super().__init__(substrate, interaction, surface)
         if not compare_containers(surface.resolution, substrate.resolution):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
@@ -516,7 +518,7 @@ class NonSmoothContactSystem(SystemBase):
     """
     # pylint: disable=abstract-method
 
-    def __init__(self, substrate, interaction, surface,pnp = np):
+    def __init__(self, substrate, interaction, surface):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -528,7 +530,7 @@ class NonSmoothContactSystem(SystemBase):
                        performed by the system
         surface     -- An instance of Topography, defines the profile.
         """
-        super().__init__(substrate, interaction, surface,pnp = pnp)
+        super().__init__(substrate, interaction, surface)
         if not compare_containers(surface.resolution, substrate.resolution):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "

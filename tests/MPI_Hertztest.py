@@ -59,7 +59,7 @@ class HertzTest(unittest.TestCase):
 
                     interaction = HardWall()
                     surface = Sphere(self.r_s, (nx, ny), (sx, sx))
-                    system = NonSmoothContactSystem(substrate, interaction, surface,self.pnp)
+                    system = NonSmoothContactSystem(substrate, interaction, surface)
 
                     result = system.minimize_proxy(offset=disp0,
                                                    external_force=normal_force,

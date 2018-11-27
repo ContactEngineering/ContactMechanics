@@ -66,7 +66,7 @@ def test_smoothsphere():
     surface = Sphere(radius = R, resolution = surf_res ,size =surf_size)
     psurface = Parallel_Topography(surface, fftengine)
 
-    system = SmoothContactSystem(substrate, inter, psurface,pnp = pnp)
+    system = SmoothContactSystem(substrate, inter, psurface)
 
     offsets = np.linspace(-2,1,50)
 
