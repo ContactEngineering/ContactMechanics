@@ -392,7 +392,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                          np.vdot(kdisp[..., 0], -kforces[..., 0]).real *
                          (2 if self.fourier_location[-1] != 0
                           else 1)
-                         ) / self.nb_pts)
+                         ) / np.prod(self.domain_resolution))
         else:
             return 0
 
