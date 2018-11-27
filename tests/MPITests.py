@@ -99,13 +99,22 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
         refpressure = - disp * self.E_s / 2 * q
         #refpressure = PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=NumpyFFTEngine).evaluate_force(disp)
 
-        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine((self.nx,self.ny),self.comm))
+        MPIsubstrates = [PeriodicFFTElasticHalfSpace((self.nx, self.ny), self.E_s, (self.sx, self.sy), fftengine=engine((self.nx,self.ny),self.comm),pnp=self.pnp)
                          for engine in [PFFTEngine]]
 
         for substrate in MPIsubstrates:
             computedpressure = substrate.evaluate_force(disp[substrate.subdomain_slice]) / substrate.area_per_pt
 
             np.testing.assert_allclose(computedpressure, refpressure[substrate.subdomain_slice],atol = 1e-7, rtol = 1e-2)
+
+            computedenergy_kspace = substrate.evaluate(disp[substrate.subdomain_slice],pot=True, forces=False)[0]
+            computedenergy = substrate.evaluate(disp[substrate.subdomain_slice], pot=True, forces=True)[0]
+
+            refenergy = self.E_s / 8 * 1 * q * self.sx * self.sy
+
+            np.testing.assert_allclose(computedenergy,refenergy       , rtol= 1e-10)
+            np.testing.assert_allclose(computedenergy_kspace,refenergy, rtol= 1e-10)
+
 
     def test_force_sineWave(self):
         Y, X = np.meshgrid(np.linspace(0, self.sy, self.ny + 1)[:-1], np.linspace(0, self.sx, self.nx + 1)[:-1])
@@ -127,6 +136,12 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
 
             np.testing.assert_allclose(computeddisp, refdisp[substrate.subdomain_slice], atol=1e-7, rtol=1e-2)
 
+            #computedenergy = substrate.evaluate(p[substrate.subdomain_slice]*substrate.area_per_pt)
+
+            #refenergy = self.sx * self.sy/(2 * q * self.E_s) * 1
+            #np.testing.assert_allclose(computedenergy,refenergy,rtol = 1e-4)
+
+
 
 
 #    def test_k_force_maxq(self):
@@ -146,8 +161,7 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
     def test_k_disp(self):
         pass
 
-    def test_evaluate_elastic_energy(self):
-        pass
+
 
     def test_evaluate(self):
         Y, X = np.meshgrid(np.linspace(0, self.sy, self.ny + 1)[:-1], np.linspace(0, self.sx, self.nx + 1)[:-1])
@@ -197,8 +211,8 @@ class test_FFTElasticHalfSpace_compute(unittest.TestCase):
             #print(computed_E_k_space)
             #print(refEnergy)
 
-            computed_E_k_space = self.pnp.sum(np.array(computed_E_k_space,dtype = float))
-            computed_E_realspace = self.pnp.sum(np.array(computed_E_realspace, dtype=float))
+            computed_E_k_space = computed_E_k_space
+            computed_E_realspace = computed_E_realspace
 
             #if substrate.fftengine.comm.Get_rank() == 0 :
             #    print(computed_E_k_space)
@@ -236,7 +250,7 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
 
         for fftengine in self.fftengineList:
             with self.subTest(fftengine=fftengine):
-                substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine((2*nx,2*ny),self.comm))
+                substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine((2*nx,2*ny),self.comm),pnp = self.pnp)
                 self.assertEqual(substrate.resolution,(nx,ny))
                 self.assertEqual(substrate.domain_resolution, (2*nx, 2*ny))
 
@@ -293,7 +307,7 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
 
         for fftengine in self.fftengineList:
             with self.subTest(fftengine=fftengine):
-                substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine((2*nx,2*ny),self.comm))
+                substrate=FreeFFTElasticHalfSpace((nx,ny),self.E_s,(sx,sy),fftengine=fftengine((2*nx,2*ny),self.comm),pnp=self.pnp)
                 local_weights,local_facts = substrate._compute_fourier_coeffs()
                 np.testing.assert_allclose(local_weights,ref_weights[substrate.fourier_slice],1e-12)
                 np.testing.assert_allclose(local_facts,ref_facts[substrate.subdomain_slice],1e-12)
@@ -331,7 +345,7 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
 
         for fftengine in self.fftengineList:
             with self.subTest(fftengine=fftengine):
-                substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sy), fftengine=PFFTEngine((2*nx,2*ny),self.comm))
+                substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sy), fftengine=PFFTEngine((2*nx,2*ny),self.comm),pnp = self.pnp)
 
                 if self.comm.Get_size() > 1:
                     with self.assertRaises(FreeFFTElasticHalfSpace.Error):
