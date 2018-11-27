@@ -70,7 +70,7 @@ def SystemFactory(substrate, interaction, surface):
     check_subclasses(SystemBase, subclasses)
     for cls in subclasses:
         if cls.handles(*(type(arg) for arg in args)):
-            return cls(*args)
+            return cls(*args,substrate.pnp)  # TODO : check equality of the parallel numpys ?
     raise IncompatibleFormulationError(
         ("There is no class that handles the combination of substrates of type"
          " '{}', interactions of type '{}' and surfaces of type '{}'").format(
