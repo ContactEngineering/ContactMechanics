@@ -37,15 +37,17 @@ def test_wavy():
     Es = 1
 
     R = 100
-    w = 0.0001*z0 * Es
+    w = 0.01*z0 * Es
 
     fftengine = PFFTEngine((n,n),comm=comm)
 
-    inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w) # TODO: Maybe interaction will also need to be parallel !
+    pnp = ParallelNumpy(comm=comm)
+
+    inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w,pnp = pnp)
 
     # Parallel Topography Patch
 
-    substrate = PeriodicFFTElasticHalfSpace(surf_res,young=Es,size=surf_size,fftengine=fftengine)
+    substrate = PeriodicFFTElasticHalfSpace(surf_res,young=Es,size=surf_size,fftengine=fftengine,pnp=pnp)
 
     class Parallel_Topography(): # Just some Temp implementation of the interface
         def __init__(self,surface,fftengine):
@@ -75,13 +77,14 @@ def test_wavy():
     for i in range(nsteps):
 
 
-        result = system.minimize_proxy(offsets[i], disp0=None,method = LBFGS,options=dict(gtol = 1e-3, maxiter =100,maxls=10))
+        result = system.minimize_proxy(offsets[i], disp0=None,method = LBFGS,options=dict(gtol = 1e-5, maxiter =100,maxls=10))
 
 
         assert result.success
 
         force[i] = system.compute_normal_force()
-        print("step {}".format(i))
+
+        #print("step {}".format(i))
 
     toPlot = comm.Get_rank() == 0 and True
 
@@ -95,7 +98,10 @@ def test_wavy():
 
         ax.plot(offsets, force)
         #plt.show(block=True)
-        fig.savefig("MPI_Smoothcontact_tests.png")
+        figname="MPI_Smoothcontact_tests.png"
+        fig.savefig(figname)
+        import subprocess
+        subprocess.check_call("open {}".format(figname),shell=True)
 
 if __name__ == "__main__":
     test_wavy()

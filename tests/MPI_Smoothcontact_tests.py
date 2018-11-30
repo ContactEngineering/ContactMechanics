@@ -41,7 +41,7 @@ def test_smoothsphere():
 
     fftengine = PFFTEngine((2*n,2*n),comm=comm)
     pnp =ParallelNumpy(comm=comm)
-    inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w) # TODO: Maybe interaction will also need to be parallel !
+    inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w, pnp = pnp)
 
     # Parallel Topography Patch
 
@@ -53,7 +53,7 @@ def test_smoothsphere():
     class Parallel_Topography(): # Just some Temp implementation of the interface
         def __init__(self,surface,fftengine):
             self.surface = surface
-            self.subdomain_resolution = fftengine.subdomain_resolution # TODO: FreeElastHS: sometimes the subdomain is emptym, comp_slice ?
+            self.subdomain_resolution = fftengine.subdomain_resolution # TODO: FreeElastHS: sometimes the subdomain is empty, comp_slice ?
             self.subdomain_slice = fftengine.subdomain_slice
 
             self.domain_resolution = fftengine.domain_resolution
