@@ -12,7 +12,7 @@ except ImportError:
     print("No MPI")
     _withMPI =False
 
-from PyCo.Tools.MPI_FileIO import save_npy, load_npy, MPIFileReadError, MPIFileIncompatibleResolutionError
+from PyCo.Tools.MPI_FileIO import save_npy, load_npy, MPIFileReadError, MPIFileIncompatibleResolutionError, MPI_FileView
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
 class test_MPI_2D_npy(unittest.TestCase):
@@ -74,7 +74,7 @@ class test_MPI_2D_npy(unittest.TestCase):
             os.remove("test_Filesave_2D.npy")
 
 
-    def test_FileLoad_2D(self):
+    def test_FileView_2D(self):
         for decompfun in self.decomp_2D_slab_x,self.decomp_2D_slab_y:
             with self.subTest(decompfun = decompfun):
                 decompfun()
@@ -83,21 +83,38 @@ class test_MPI_2D_npy(unittest.TestCase):
                 #arr = np.load("test_FileLoad_2D.npy")
                 #assert arr.shape == self.domain_resolution
 
-                loaded_data = load_npy("test_FileLoad_2D.npy",
-                                       subdomain_resolution=self.subdomain_resolution,
-                                       subdomain_location= self.subdomain_location,
-                                       domain_resolution=self.domain_resolution,
-                                       comm=self.comm)
+                file = MPI_FileView("test_FileLoad_2D.npy",comm=self.comm)
+
+                assert file.resolution == self.domain_resolution
+                assert file.dtype == self.globaldata.dtype
+
+                loaded_data = file.read(subdomain_resolution=self.subdomain_resolution,
+                                       subdomain_location= self.subdomain_location)
 
 
                 np.testing.assert_array_equal(loaded_data,self.localdata)
 
+    def test_FileLoad_2D(self):
+        for decompfun in self.decomp_2D_slab_x, self.decomp_2D_slab_y:
+            with self.subTest(decompfun=decompfun):
+                decompfun()
 
-                with self.assertRaises(MPIFileIncompatibleResolutionError) :
+                # arr = np.load("test_FileLoad_2D.npy")
+                # assert arr.shape == self.domain_resolution
+
+                loaded_data = load_npy("test_FileLoad_2D.npy",
+                                       subdomain_resolution=self.subdomain_resolution,
+                                       subdomain_location=self.subdomain_location,
+                                       domain_resolution=self.domain_resolution,
+                                       comm=self.comm)
+
+                np.testing.assert_array_equal(loaded_data, self.localdata)
+
+                with self.assertRaises(MPIFileIncompatibleResolutionError):
                     load_npy("test_FileLoad_2D.npy",
                              subdomain_resolution=self.subdomain_resolution,
                              subdomain_location=self.subdomain_location,
-                             domain_resolution=tuple([a +1 for a in self.domain_resolution]),
+                             domain_resolution=tuple([a + 1 for a in self.domain_resolution]),
                              comm=self.comm)
 
     def tearDown(self):
