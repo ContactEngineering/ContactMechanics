@@ -23,3 +23,6 @@ dist
 /PyCo/Tools/Optimisation/ConstrainedConjugateGradients.html
 /PyCo/Tools/fftext.cpp
 /PyCo/Tools/fftext.cpython*.so
+
+
+*.so
