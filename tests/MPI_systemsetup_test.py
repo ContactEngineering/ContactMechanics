@@ -34,7 +34,7 @@ class system_setup_workflow(unittest.TestCase):
         interaction = HardWall()
 
         # Read metadata from the file and returns a UniformTopgraphy Object
-        fileReader = read_npy(self.fn,headers_only=True)  # TODO: This mayBe of the lass Topography or a FileView Class
+        fileReader = read_npy(self.fn,comm=comm,headers_only=True)  # TODO: This mayBe of the lass Topography or a FileView Class
 
         assert fileReader.resolution == self.res
 
