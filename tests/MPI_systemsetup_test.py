@@ -8,6 +8,7 @@ from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSp
 from FFTEngine import PFFTEngine
 from PyCo.System.Factory import SystemFactory
 from PyCo.ContactMechanics.Interactions import HardWall
+from PyCo.Topography import MPITopographyLoader
 
 import numpy as np
 
@@ -18,36 +19,45 @@ class system_setup_workflow(unittest.TestCase):
 
     """
     def setUp(self):
-
         self.fn = "worflowtest.npy"
-
         self.res = (128,64)
+        np.random.seed(1)
+        self.data  = np.random.random(self.res )
+        self.data -= np.mean(self.data)
 
-        data  = np.random.random(self.res )
-        data -= np.mean(data)
+        np.save(self.fn,self.data)
 
-        np.save(self.fn,data)
-
-    def test_workflow_superuser(self): # TODO: loop over all the cases, maybe with a pytest fixture  ?
+    def test_setup_from_topoFile_superuser(self): # TODO: loop over all the cases, maybe with a pytest fixture  ?
         comm = MPI.COMM_WORLD
 
-        interaction = HardWall()
+        for HS in [PeriodicFFTElasticHalfSpace,FreeFFTElasticHalfSpace]:
+            with self.subTest(HS=HS):
+                interaction = HardWall()
 
-        # Read metadata from the file and returns a UniformTopgraphy Object
-        fileReader = read_npy(self.fn,comm=comm,headers_only=True)  # TODO: This mayBe of the lass Topography or a FileView Class
+                # Read metadata from the file and returns a UniformTopgraphy Object
+                fileReader = MPITopographyLoader(self.fn,comm=comm)
 
-        assert fileReader.resolution == self.res
+                assert fileReader.resolution == self.res
 
-        # create a substrate according to the topography
+                # create a substrate according to the topography
 
-        fftengine = PFFTEngine(domain_resolution = fileReader.resolution, comm = comm)
-        Es = 1
+                fftengine = PFFTEngine(domain_resolution = fileReader.resolution, comm = comm)
+                Es = 1
+                if fileReader.size is not None:
+                    substrate = HS(resolution=fileReader.resolution,size = fileReader.size,young = Es, fftengine=fftengine )
+                else:
+                    substrate = HS(resolution=fileReader.resolution,young = Es, fftengine=fftengine )
 
-        substrate = PeriodicFFTElasticHalfSpace(resolution=fileReader.resolution,size = fileReader.size,young = Es, fftengine=fftengine )
+                top = fileReader.getTopography(substrate)
 
-        top = fileReader.MPI_read(substrate)
+                assert top.resolution == substrate.resolution
+                assert top.subdomain_resolution == substrate.subdomain_resolution \
+                       or top.subdomain_resolution == (0,0) # for FreeFFTElHS
+                assert top.subdomain_location == substrate.subdomain_location
 
-        system = SystemFactory(substrate,interaction,top)
+                np.testing.assert_array_equal(top.array(),self.data[top.subdomain_slice])
+
+                system = SystemFactory(substrate,interaction,top)
 
         # make some tests on the system
 
