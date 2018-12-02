@@ -183,6 +183,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return self.fftengine.subdomain_resolution
 
     @property
+    def topography_subdomain_resolution(self):
+        return self.subdomain_resolution
+
+    @property
     def subdomain_location(self):
         """
         When working in Parallel one processor holds only Part of the Data
@@ -190,6 +194,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         :return:
         """
         return self.fftengine.subdomain_location
+
+    @property
+    def topography_subdomain_location(self):
+        return self.subdomain_location
 
     @property
     def subdomain_slice(self):
@@ -476,6 +484,12 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         see FreeFFTElasticHalfSpace.
         """
         return self._comp_resolution
+
+    @property
+    def topography_subdomain_resolution(self):
+        return tuple([max(0,min(self.resolution[i] - self.subdomain_location[i],
+                                self.subdomain_resolution[i]))
+                  for i in range(self.dim)])
 
     def _compute_fourier_coeffs2(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
