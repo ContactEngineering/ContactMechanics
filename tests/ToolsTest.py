@@ -37,12 +37,15 @@ try:
     import numpy as np
     import warnings
 
+    import PyCo.Topography.Nonuniform as Nonuniform
+    import PyCo.Topography.Uniform as Uniform
     from PyCo.Tools import evaluate_gradient, mean_err
     from PyCo.Topography import (autocorrelation_1D, autocorrelation_2D, compute_derivative, tilt_from_height,
-                                 shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope, UniformNumpyTopography)
+                                 shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope,
+                                 NonuniformNumpyTopography, UniformNumpyTopography)
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
 
-    from .PyCoTest import PyCoTestCase
+    from PyCoTest import PyCoTestCase
 except ImportError as err:
     import sys
     print(err)
@@ -173,3 +176,14 @@ class ToolTest(PyCoTestCase):
             dir_A /= dir_n
             self.assertArrayAlmostEqual(A_xy, dir_A_xy)
             self.assertArrayAlmostEqual(A[:-2], dir_A[:-2])
+
+
+    def test_nonuniform_rms_height(self):
+        n = 1024
+        dx = 0.12
+        # make a function that is smooth on short scales
+        h = np.fft.irfft(np.exp(1j*np.random.random(n//2+1))*(np.arange(n//2+1) < (n//64)))
+        h1 = Uniform.rms_height(h)
+        x = np.arange(n)*dx
+        h2 = Nonuniform.rms_height(x, h)
+        self.assertAlmostEqual(h1, h2, places=3)
