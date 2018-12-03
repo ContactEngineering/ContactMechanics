@@ -45,7 +45,7 @@ try:
                                  NonuniformNumpyTopography, UniformNumpyTopography)
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
 
-    from PyCoTest import PyCoTestCase
+    from .PyCoTest import PyCoTestCase
 except ImportError as err:
     import sys
     print(err)
