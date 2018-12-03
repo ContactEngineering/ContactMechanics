@@ -20,8 +20,12 @@
 import os
 import sys
 
-# TODO
-sys.path[1] = os.path.abspath('../..')
+
+# Search and replace PyCo path with Folder containing it.
+for i, path in enumerate(sys.path):
+    if path == os.path.abspath('../../PyCo'):
+        sys.path[i] = os.path.abspath('../..')
+
 
 # -- General configuration ------------------------------------------------
 
