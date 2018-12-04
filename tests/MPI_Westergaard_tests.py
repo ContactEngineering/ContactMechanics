@@ -89,7 +89,11 @@ class WestergaardTest(PyCoTestCase):
                                                             (self.sx, self.sy),fftengine=PFFTEngine((nx,ny),self.comm))
                     interaction = HardWall()
                     profile = np.resize(np.cos(2*np.pi*np.arange(nx)/nx), (ny, nx))
-                    surface =UniformNumpyTopography(profile.T, size=(self.sx, self.sy))
+                    surface =UniformNumpyTopography(profile.T, size=(self.sx, self.sy),
+                                                    #resolution=substrate.resolution,
+                                                    subdomain_location = substrate.topography_subdomain_location,
+                                                    subdomain_resolution = substrate.topography_subdomain_resolution,
+                                                    pnp=substrate.pnp)
                     system = SystemFactory(substrate, interaction, surface)
 
                     result = system.minimize_proxy(offset=disp0,
