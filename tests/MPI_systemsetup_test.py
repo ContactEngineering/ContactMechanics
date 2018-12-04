@@ -35,7 +35,7 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
                 interaction = HardWall()
 
                 # Read metadata from the file and returns a UniformTopgraphy Object
-                fileReader = MPITopographyLoader(self.fn,comm=comm)
+                fileReader = MPITopographyLoader(self.fn, comm=comm)
 
                 assert fileReader.resolution == self.res
 

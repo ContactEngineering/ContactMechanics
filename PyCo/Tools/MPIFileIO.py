@@ -80,7 +80,7 @@ def MPI_read_bytes(file, nbytes):
 
 
 def load_npy(fn, subdomain_location, subdomain_resolution, domain_resolution, comm):
-    file = MPIFileView_npy(fn, comm)
+    file = MPIFileViewNPY(fn, comm)
     if file.resolution != domain_resolution:
         raise MPIFileIncompatibleResolutionError("domain_resolution is {} but file resolution is {}".format(domain_resolution,file.resolution))
 
@@ -99,17 +99,28 @@ class MPIFileView(metaclass=abc.ABCMeta):
     def read(self):
         pass
 
-def mpi_fileview_chameleon(fn, comm): #TODO: DISCUSS: oder als __init__ von der MPIFileView Klasse ?
-    readers = [
-        MPIFileView_npy
-    ]
-    for reader in readers:
-        try :
-            return reader(fn,comm)
+
+def MPIFileViewFactory(fn, comm, format = None): #TODO: DISCUSS: oder als __init__ von der MPIFileView Klasse ?
+    readers = {
+        "npy": MPIFileViewNPY
+    }
+
+    if format is not None:
+        try:
+            reader = readers[format]
+        except KeyError:
+            raise (ValueError("Given format is not recognised, you should give {}".format(readers.keys())))
+        return reader(fn, comm)
+
+    for reader in readers.values():
+        try:
+            return reader(fn, comm)
         except MPIFileTypeError:
             pass
+    raise MPIFileTypeError("No MPI filereader was able to read this file")
 
-class MPIFileView_npy(MPIFileView):
+
+class MPIFileViewNPY(MPIFileView):
     def __init__(self, fn, comm):
         super().__init__(fn,comm)
         self._read_header()

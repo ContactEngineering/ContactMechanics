@@ -12,7 +12,7 @@ except ImportError:
     print("No MPI")
     _withMPI =False
 
-from PyCo.Tools.MPIFileIO import save_npy, load_npy, MPIFileTypeError, MPIFileIncompatibleResolutionError, MPIFileView_npy
+from PyCo.Tools.MPIFileIO import save_npy, load_npy, MPIFileTypeError, MPIFileIncompatibleResolutionError, MPIFileViewNPY
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
 class test_MPI_2D_npy(unittest.TestCase):
@@ -28,7 +28,7 @@ class test_MPI_2D_npy(unittest.TestCase):
         np.random.seed(2)
         self.globaldata = np.random.random(self.domain_resolution)
 
-        if self.rank == 0 :
+        if self.rank == 0:
             np.save("test_FileLoad_2D.npy",self.globaldata)
 
         self.comm.barrier()
@@ -83,7 +83,7 @@ class test_MPI_2D_npy(unittest.TestCase):
                 #arr = np.load("test_FileLoad_2D.npy")
                 #assert arr.shape == self.domain_resolution
 
-                file = MPIFileView_npy("test_FileLoad_2D.npy", comm=self.comm)
+                file = MPIFileViewNPY("test_FileLoad_2D.npy", comm=self.comm)
 
                 assert file.resolution == self.domain_resolution
                 assert file.dtype == self.globaldata.dtype
