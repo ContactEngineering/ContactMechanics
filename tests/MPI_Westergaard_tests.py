@@ -127,5 +127,7 @@ class WestergaardTest(PyCoTestCase):
                     #plt.show()
                     self.assertArrayAlmostEqual(forces[:, 0]/substrate.area_per_pt, pth[substrate.subdomain_slice[0]], tol=1e-2)
 
-if __name__ == '__main__':
-    unittest.main()
+suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(WestergaardTest)])
+if __name__ in  ['__main__','builtins']:
+    print("Running unittest MPI_FileIO_Test")
+    result = unittest.TextTestRunner().run(suite)

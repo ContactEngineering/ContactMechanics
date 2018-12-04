@@ -151,3 +151,10 @@ class test_MPI_1D_npy(unittest.TestCase):
 
         loaded_data = np.load("test_Filesave_1D.npy")
         np.testing.assert_array_equal(loaded_data,self.globaldata)
+
+
+suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(test_MPI_2D_npy)])
+
+if __name__ in  ['__main__','builtins']:
+    print("Running unittest MPI_FileIO_Test")
+    result = unittest.TextTestRunner().run(suite)

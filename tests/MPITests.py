@@ -1,12 +1,8 @@
-
-
 import unittest
 import numpy as np
-
 try :
     from mpi4py import MPI
     _withMPI=True
-
 except ImportError:
     print("No MPI")
     _withMPI =False
@@ -14,15 +10,14 @@ except ImportError:
 if _withMPI:
     from FFTEngine import PFFTEngine
     from FFTEngine.helpers import gather
-
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-from .PyCoTest import PyCoTestCase
-from PyLBFGS.Tools import ParallelNumpy
-
 from FFTEngine import NumpyFFTEngine
 DEFAULTFFTENGINE = NumpyFFTEngine
 
+from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
+
+from .PyCoTest import PyCoTestCase
+from PyLBFGS.Tools import ParallelNumpy
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
 class test_FFTElasticHalfSpace_weights(unittest.TestCase):
@@ -387,6 +382,13 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
 
 # TODO: test that scalar quantities are the same on all the processors
 
+suite1 = unittest.TestLoader().loadTestsFromTestCase(test_FFTElasticHalfSpace_weights)
+suite2 = unittest.TestLoader().loadTestsFromTestCase(test_FFTElasticHalfSpace_compute)
+suite2 = unittest.TestLoader().loadTestsFromTestCase(test_FreeFFTElasticHalfSpace)
+suite = unittest.TestSuite([suite1, suite2])
 
-if __name__ == '__main__':
-    unittest.main()
+if __name__ in  ['__main__','builtins']:
+    print("Running unittest MPITests")
+    #if MPI.COMM_WORLD.Get_rank() == 0:
+    #unittest.main(module="MPITests",verbosity=2,exit=False)
+    result = unittest.TextTestRunner().run(suite)

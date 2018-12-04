@@ -39,13 +39,13 @@ def test_smoothsphere():
     R = 100
     w = 0.0001*z0 * Es
 
-    fftengine = PFFTEngine((2*n,2*n),comm=comm)
+    fftengine = PFFTEngine((2*n, 2*n), comm=comm)
     pnp =ParallelNumpy(comm=comm)
     inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w, pnp = pnp)
 
     # Parallel Topography Patch
 
-    substrate = FreeFFTElasticHalfSpace(surf_res,young=Es,size=surf_size,fftengine=fftengine,pnp=pnp)
+    substrate = FreeFFTElasticHalfSpace(surf_res, young=Es, size=surf_size, fftengine=fftengine, pnp=pnp)
     print(substrate._comp_resolution)
     print(fftengine.domain_resolution)
 
