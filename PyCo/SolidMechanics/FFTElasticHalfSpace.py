@@ -389,20 +389,27 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # Now compatible with parallel code
         # The inner part of the fourier data should always be symetrized (i.e. multiplied by 2)
         # When the fourier subdomain contains boundary values (wavevector 0 and ny//2) these values should only be added once
-        if kdisp.shape[-1] > 0: # TODO: also handle the case with odd number of points
-            return self.pnp.sum(.5 * (2 * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
-                         +
-                         np.vdot(kdisp[..., -1], -kforces[..., -1]).real *
-                         (2 if self.fourier_location[-1] + self.fourier_resolution[-1]
-                               != self.domain_resolution[-1] // 2 + 1
-                          else 1)
-                         +
-                         np.vdot(kdisp[..., 0], -kforces[..., 0]).real *
-                         (2 if self.fourier_location[-1] != 0
-                          else 1)
-                         ) / np.prod(self.domain_resolution))
+
+        # TODO: also handle the case with odd number of points
+        #FIXME: why this test was done in earlier versions
+        # if kdisp.shape[-1] > 0:
+        if kdisp.size > 0:
+            locsum = .5 * (2 * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
+                  +
+                  np.vdot(kdisp[..., -1], -kforces[..., -1]).real *
+                  (2 if self.fourier_location[-1] + self.fourier_resolution[-1]
+                        != self.domain_resolution[-1] // 2 + 1
+                   else 1)
+                  +
+                  np.vdot(kdisp[..., 0], -kforces[..., 0]).real *
+                  (2 if self.fourier_location[-1] != 0
+                   else 1)
+                  ) / np.prod(self.domain_resolution)
         else:
-            return 0
+            locsum = np.array([], dtype = kdisp.real.dtype)
+        return self.pnp.sum(locsum)
+        #else:
+        #    return 0
 
 
     def evaluate(self, disp, pot=True, forces=False):
