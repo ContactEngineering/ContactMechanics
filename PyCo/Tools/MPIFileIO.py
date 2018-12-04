@@ -1,10 +1,10 @@
 
 import numpy as np
 from mpi4py import MPI
-
 import numpy as np
 import struct
 import os.path
+import abc
 
 
 from numpy.lib.format import read_magic, _read_array_header,magic, MAGIC_PREFIX, _filter_header
@@ -64,7 +64,7 @@ def save_npy(fn,data, subdomain_location,resolution,comm):
     file.Write_all(data.copy()) #TODO: is the copy needed ?
     filetype.Free()
 
-class MPIFileReadError(Exception):
+class MPIFileTypeError(Exception):
     pass
 
 class MPIFileIncompatibleResolutionError(Exception):
@@ -80,31 +80,53 @@ def MPI_read_bytes(file, nbytes):
 
 
 def load_npy(fn, subdomain_location, subdomain_resolution, domain_resolution, comm):
-    file = MPI_FileView(fn,comm)
-
+    file = MPIFileView_npy(fn, comm)
     if file.resolution != domain_resolution:
         raise MPIFileIncompatibleResolutionError("domain_resolution is {} but file resolution is {}".format(domain_resolution,file.resolution))
 
     return file.read(subdomain_location, subdomain_resolution)
 
-
-class MPI_FileView():
+class MPIFileView(metaclass=abc.ABCMeta):
     def __init__(self, fn, comm):
         self.fn = fn
         self.comm = comm
 
-        extension = os.path.splitext(self.fn)[1]
+    @abc.abstractmethod
+    def _read_header(self):
+        pass
 
-        if extension == ".npy":
-            self._read_header_npy()
-        else:
-            raise ValueError("Can only read .npy files")
-    def _read_header_npy(self):
+    @abc.abstractmethod
+    def read(self):
+        pass
+
+def mpi_fileview_chameleon(fn, comm): #TODO: DISCUSS: oder als __init__ von der MPIFileView Klasse ?
+    readers = [
+        MPIFileView_npy
+    ]
+    for reader in readers:
+        try :
+            return reader(fn,comm)
+        except MPIFileTypeError:
+            pass
+
+class MPIFileView_npy(MPIFileView):
+    def __init__(self, fn, comm):
+        super().__init__(fn,comm)
+        self._read_header()
+
+    def detect_format(self): # TODO: maybe useless
+        try:
+            self._read_header()
+            return True
+        except:
+            return False
+
+    def _read_header(self):
         magic_str = magic(1, 0)
         self.file = MPI.File.Open(self.comm, self.fn, MPI.MODE_RDONLY)  #
         magic_str = MPI_read_bytes(self.file, len(magic_str))
         if magic_str[:-2] != MAGIC_PREFIX:
-            raise MPIFileReadError("MAGIC_PREFIX missing at the beginning of file {}".format(self.fn))
+            raise MPIFileTypeError("MAGIC_PREFIX missing at the beginning of file {}".format(self.fn))
 
         version = magic_str[-2:]
 
@@ -113,7 +135,7 @@ class MPI_FileView():
         elif version == b'\x02\x00':
             hlength_type = '<I'
         else:
-            raise MPIFileReadError("Invalid version %r" % version)
+            raise MPIFileTypeError("Invalid version %r" % version)
 
         hlength_str = MPI_read_bytes(self.file, struct.calcsize(hlength_type))
         header_length = struct.unpack(hlength_type, hlength_str)[0]
@@ -127,11 +149,9 @@ class MPI_FileView():
         self.resolution = d['shape']
         self.fortran_order = d['fortran_order']
 
-        self.read = self._read_npy
-
-    def _read_npy(self,subdomain_location, subdomain_resolution):
+    def read(self,subdomain_location, subdomain_resolution):
         if self.fortran_order:  # TODO: implement fortranorder compatibility
-            raise MPIFileReadError("File in fortranorder")
+            raise MPIFileTypeError("File in fortranorder")
 
         # Now how to start reading ?
 
