@@ -12,7 +12,7 @@ from PyCo.Topography import MPITopographyLoader
 
 import numpy as np
 
-class system_setup_workflow(unittest.TestCase):
+class MPI_TopographyLoading_Test(unittest.TestCase):
     """
 
     represents the UseCase of creating System with MPI parallelization
@@ -27,7 +27,7 @@ class system_setup_workflow(unittest.TestCase):
 
         np.save(self.fn,self.data)
 
-    def test_setup_from_topoFile_superuser(self): # TODO: loop over all the cases, maybe with a pytest fixture  ?
+    def test_LoadTopoFromFile(self): # TODO: loop over all the cases, maybe with a pytest fixture  ?
         comm = MPI.COMM_WORLD
 
         for HS in [PeriodicFFTElasticHalfSpace,FreeFFTElasticHalfSpace]:
@@ -57,12 +57,24 @@ class system_setup_workflow(unittest.TestCase):
 
                 np.testing.assert_array_equal(top.array(),self.data[top.subdomain_slice])
 
+                # test that the slicing is what is expected
+
+                fulldomain_field = np.arange(np.prod(substrate.domain_resolution)).reshape(substrate.domain_resolution)
+
+                np.testing.assert_array_equal(fulldomain_field[top.subdomain_slice],fulldomain_field[tuple([slice(substrate.subdomain_location[i],substrate.subdomain_location[i]+max(0,min(substrate.resolution[i] - substrate.subdomain_location[i],substrate.subdomain_resolution[i]))) for i in range(substrate.dim)])])
+
+                # Test Computation of the rms_height
+                # Sq
+                assert top.rms_height(kind="Sq") == np.sqrt(np.mean((self.data - np.mean(self.data))**2))
+                #Rq
+                assert top.rms_height(kind="Rq") == np.sqrt(np.mean((self.data - np.mean(self.data,axis = 0))**2))
+
                 system = SystemFactory(substrate,interaction,top)
 
         # make some tests on the system
 
     @unittest.expectedFailure
-    def test_workflow_casualuser(self):
+    def test_SystemFactoryFromFile(self):
         """
         longtermgoal for confortable and secure use
         Returns
