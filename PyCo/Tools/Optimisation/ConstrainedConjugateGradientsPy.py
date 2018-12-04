@@ -40,11 +40,11 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Topography import rms_height
+from PyCo.Topography import rms_height, UniformNumpyTopography
 
 ###
 
-def constrained_conjugate_gradients(substrate, surface, hardness=None,
+def constrained_conjugate_gradients(substrate, topography, hardness=None,
                                     external_force=None, offset=None,
                                     disp0=None,
                                     pentol=None, prestol=1e-5,
@@ -63,8 +63,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     ----------
     substrate : elastic manifold
         Elastic manifold.
-    surface : array_like
-        Height profile of the rigid counterbody.
+    topography: UniformNumpyTopography object describing the height profile of the rigid counterbody
     hardness : array_like
         Hardness of the substrate. Pressure cannot exceed this value. Can be
         scalar or array (i.e. per pixel) value.
@@ -95,21 +94,36 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     if substrate.fftengine.is_MPI:
         from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
         pnp = ParallelNumpy(comm = substrate.fftengine.comm)
+
+        # check that a topography instance is provided and not only a numpy array
+        if not hasattr(topography, "resolution"): raise ValueError(
+            "You should provide a topography object when working with MPI")
         #print("Parallel fftengine")
     else:
         pnp=np
+
+    # surface is the array holding the data assigned to the processsor
+    if not hasattr(topography, "resolution"):
+        surface = topography
+        topography = UniformNumpyTopography(surface)
+    else :
+        surface = topography.array()  # Local data
+
     # Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays
 
-    if pentol is None: #TODO: scalar props of surface
+
+
+    nb_surface_pts = np.prod(topography.resolution)
+    if pentol is None:
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = rms_height(surface) / (10 * np.mean(surface.shape))
+        pentol = topography.rms_height() / (10 * np.mean(topography.resolution))
         # If pentol is zero, then this is a flat surface. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
         if pentol == 0:
-            pentol = (offset+np.mean(surface[...]))/1000
+            pentol = (offset+  pnp.sum(surface[...]) / nb_surface_pts )/1000
         # If we are still zero use an arbitrary value
         if pentol == 0:
             pentol = 1e-3
@@ -117,18 +131,12 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     #TODO: parallelized surface
     # Now I only need the surface that belongs to the processor
 
-    # properties of the total surface
-    surface_domain_resolution = surface.shape
-    nb_surface_pts = np.prod(surface_domain_resolution)  # TODO
 
     surf_mask = np.ma.getmask(surface)  #TODO: Test behaviour with masked arrays.
     if surf_mask is np.ma.nomask:
         nb_surface_pts_mask = nb_surface_pts
     else:
-        nb_surface_pts_mask = np.sum(np.logical_not(surf_mask)) # count the number of points that are not masked
-
-    #now the surface is only local
-    surface=surface[substrate.subdomain_slice] #
+        nb_surface_pts_mask = pnp.sum(np.logical_not(surf_mask)) # count the number of points that are not masked
 
 
     if logger is not None:
@@ -143,8 +151,12 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     else:
         u_r = disp0.copy()
 
+    # slice of the local data of the computation subdomain corresponding to the topography subdomain.
+    # It's typically the first half of the computation subdomain (along the non-parallelized dimension) for FreeFFTElHS
+    # It's the same for PeriodicFFTElHS
     comp_slice = [slice(0,max(0,min(substrate.resolution[i] - substrate.subdomain_location[i],substrate.subdomain_resolution[i])))
                   for i in range(substrate.dim)]
+
     if substrate.dim not in (1, 2):
         raise Exception(
             ("Constrained conjugate gradient currently only implemented for 1 "
@@ -156,7 +168,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
     surf_mask = np.ma.getmask(surface)
     if surf_mask is np.ma.nomask:
-        surf_mask = np.ones(surface.shape, dtype=bool)
+        surf_mask = np.ones(topography.subdomain_resolution, dtype=bool)
     else:
         comp_mask[tuple(comp_slice)][surf_mask] = False
         surf_mask = np.logical_not(surf_mask)

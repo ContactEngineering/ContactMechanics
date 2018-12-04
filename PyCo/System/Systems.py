@@ -39,7 +39,7 @@ import scipy
 
 from .. import ContactMechanics, SolidMechanics, Topography
 from ..Tools import compare_containers
-from ..Tools.Optimisation import constrained_conjugate_gradients, simple_relaxation
+from ..Tools.Optimisation import constrained_conjugate_gradients, simple_relaxation, constrained_conjugate_gradients_mpi
 from PyLBFGS.Tools import ParallelNumpy
 
 class IncompatibleFormulationError(Exception):
@@ -670,10 +670,16 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        result = solver(
-            self.substrate,
-            self.surface[:, :],
-            **kwargs)
+        if self.substrate.fftengine.is_MPI:
+            result = constrained_conjugate_gradients_mpi(
+                self.substrate,
+                self.surface,
+                **kwargs)
+        else :
+            result = solver(
+                self.substrate,
+                self.surface[:, :],
+                **kwargs)
         if result.success:
             self.disp = result.x
             self.force = self.substrate.force = result.jac

@@ -34,16 +34,8 @@ SOFTWARE.
 """
 
 from .ConstrainedConjugateGradientsPy import constrained_conjugate_gradients as ref
+from .ConstrainedConjugateGradientsOpt import constrained_conjugate_gradients as opt
 
-# FIXME: This is a convenience fix because I get following error
-#        when using mpirun
-#        ImportError: /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.21' not found (required by /home/fr/fr_fr/fr_as1412/development_debug/PyCo/PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.cpython-36m-x86_64-linux-gnu.so)
-
-try :
-    from .ConstrainedConjugateGradientsOpt import constrained_conjugate_gradients as opt
-except ImportError:
-    print("ConstrainedConjugateGradientsOpt not available, don't use ")
-    opt = None
 
 def constrained_conjugate_gradients(substrate, surface, kind='ref', **kwargs):
     """
