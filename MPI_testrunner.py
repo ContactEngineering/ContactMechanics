@@ -16,11 +16,11 @@ MPI_tests= [
     "MPITests",
     "MPI_FileIO_Test",
     "MPI_Hertztest",
-    "MPI_Smoothcontact_tests",
+#    "MPI_Smoothcontact_tests",
     "MPI_Topography_Test",
     "MPI_Westergaard_tests",
     "MPI_systemsetup_test",
-    "MPI_test_wavy_adhesive"
+#    "MPI_test_wavy_adhesive"
 ]
 
 MPI_unittests = [

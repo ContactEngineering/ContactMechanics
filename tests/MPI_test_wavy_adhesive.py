@@ -75,15 +75,9 @@ def test_wavy():
 
 
     for i in range(nsteps):
-
-
         result = system.minimize_proxy(offsets[i], disp0=None,method = LBFGS,options=dict(gtol = 1e-5, maxiter =100,maxls=10))
-
-
         assert result.success
-
         force[i] = system.compute_normal_force()
-
         #print("step {}".format(i))
 
     toPlot = comm.Get_rank() == 0 and True
@@ -101,7 +95,7 @@ def test_wavy():
         figname="MPI_Smoothcontact_tests.png"
         fig.savefig(figname)
         import subprocess
-        subprocess.check_call("open {}".format(figname),shell=True)
+        subprocess.check_call("open {}".format(figname), shell=True)
 
 if __name__ == "__main__":
     test_wavy()
