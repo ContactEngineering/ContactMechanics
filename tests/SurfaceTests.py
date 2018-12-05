@@ -131,16 +131,22 @@ class DetrendedSurfaceTest(unittest.TestCase):
         arr = np.arange(5)*a+d
         arr = arr + np.arange(6).reshape((-1, 1))*b
         surf = DetrendedTopography(UniformNumpyTopography(arr), detrend_mode='slope')
+        self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(rms_slope(surf), 0)
         surf = DetrendedTopography(UniformNumpyTopography(arr), detrend_mode='height')
+        self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(rms_slope(surf), 0)
         self.assertTrue(rms_height(surf) < rms_height(arr))
         surf2 = DetrendedTopography(UniformNumpyTopography(arr, size=(1, 1)), detrend_mode='height')
+        self.assertTrue(surf2.is_uniform)
         self.assertAlmostEqual(rms_slope(surf2), 0)
         self.assertTrue(rms_height(surf2) < rms_height(arr))
         self.assertAlmostEqual(rms_height(surf), rms_height(surf2))
+        x, y, z = surf2.points()
+        self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0]/surf2.resolution[0])
+        self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1]/surf2.resolution[1])
     def test_smooth_curved(self):
         a = 1.2
         b = 2.5
@@ -152,6 +158,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         y = np.arange(6).reshape((-1, 1))
         arr = f+x*a+y*b+x*x*c+y*y*d+x*y*e
         surf = DetrendedTopography(UniformNumpyTopography(arr, size=(3., 2.5)), detrend_mode='curvature')
+        self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf.coeffs[0], -2*b)
         self.assertAlmostEqual(surf.coeffs[1], -2*a)
         self.assertAlmostEqual(surf.coeffs[2], -4*d)
@@ -163,11 +170,19 @@ class DetrendedSurfaceTest(unittest.TestCase):
 
     def test_randomly_rough(self):
         surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
+        self.assertTrue(surface.is_uniform)
         cut = UniformNumpyTopography(surface[:64, :64], size=(64., 64.))
+        self.assertTrue(cut.is_uniform)
         untilt1 = DetrendedTopography(cut, detrend_mode='height')
         untilt2 = DetrendedTopography(cut, detrend_mode='slope')
+        self.assertTrue(untilt1.is_uniform)
+        self.assertTrue(untilt2.is_uniform)
         self.assertTrue(untilt1.rms_height() < untilt2.rms_height())
         self.assertTrue(untilt1.rms_slope() > untilt2.rms_slope())
+
+    def test_nonuniform(self):
+        surf = read_xyz('tests/file_format_examples/example.asc')
+        self.assertFalse(surf.is_uniform)
 
 class detectFormatTest(unittest.TestCase):
     def setUp(self):
@@ -211,6 +226,11 @@ class x3pSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(sx, 8.29767313942749e-05)
         self.assertAlmostEqual(sy, 0.0002044783737930349)
         self.assertTrue(surface.is_uniform)
+    def test_points_for_uniform_topography(self):
+        surface = read_x3p('tests/file_format_examples/example.x3p')
+        x, y, z = surface.points()
+        self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surface.size[0]/surface.resolution[0])
+        self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surface.size[1]/surface.resolution[1])
 
 class opdSurfaceTest(unittest.TestCase):
     def setUp(self):
