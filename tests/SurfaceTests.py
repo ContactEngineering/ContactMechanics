@@ -90,6 +90,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[1], 2000)
         self.assertAlmostEqual(surf.rms_height(), 17.22950485567042)
         self.assertAlmostEqual(rms_slope(surf), 0.45604053876290829)
+        self.assertTrue(surf.is_uniform)
         self.assertEqual(surf.unit, 'nm')
     def test_example2(self):
         surf = read_asc('tests/file_format_examples/example2.txt')
@@ -98,6 +99,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[1], 0.0002404103)
         self.assertAlmostEqual(surf.rms_height(), 2.7722350402740072e-07)
         self.assertAlmostEqual(rms_slope(surf), 0.35157901772258338)
+        self.assertTrue(surf.is_uniform)
         self.assertEqual(surf.unit, 'm')
     def test_example3(self):
         surf = read_asc('tests/file_format_examples/example3.txt')
@@ -106,6 +108,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[1], 10e-6)
         self.assertAlmostEqual(surf.rms_height(), 3.5222918750198742e-08)
         self.assertAlmostEqual(rms_slope(surf), 0.19231536279425226)
+        self.assertTrue(surf.is_uniform)
         self.assertEqual(surf.unit, 'm')
     def test_example4(self):
         surf = read_asc('tests/file_format_examples/example4.txt')
@@ -115,6 +118,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.rms_height(), 1.1745891510991089e-07)
         self.assertAlmostEqual(surf.rms_height(kind='Rq'), 1.1745891510991089e-07)
         self.assertAlmostEqual(rms_slope(surf), 0.067915823359553706)
+        self.assertTrue(surf.is_uniform)
         self.assertEqual(surf.unit, 'm')
 
 class DetrendedSurfaceTest(unittest.TestCase):
@@ -186,6 +190,7 @@ class matSurfaceTest(unittest.TestCase):
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
         self.assertAlmostEqual(surface.rms_height(), 1.234061e-07)
+        self.assertTrue(surface.is_uniform)
 
 class x3pSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -205,6 +210,7 @@ class x3pSurfaceTest(unittest.TestCase):
         sx, sy = surface.size
         self.assertAlmostEqual(sx, 8.29767313942749e-05)
         self.assertAlmostEqual(sy, 0.0002044783737930349)
+        self.assertTrue(surface.is_uniform)
 
 class opdSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -217,6 +223,7 @@ class opdSurfaceTest(unittest.TestCase):
         sx, sy = surface.size
         self.assertAlmostEqual(sx, 0.125909140)
         self.assertAlmostEqual(sy, 0.094431855)
+        self.assertTrue(surface.is_uniform)
 
 class diSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -256,6 +263,7 @@ class diSurfaceTest(unittest.TestCase):
                 if rms is not None:
                     self.assertAlmostEqual(surface.rms_height(), rms)
                     self.assertEqual(unit, 'nm')
+                self.assertTrue(surface.is_uniform)
 
 class ibwSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -269,6 +277,8 @@ class ibwSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(sx, 5.00978e-8)
         self.assertAlmostEqual(sy, 5.00978e-8)
         self.assertEqual(surface.unit, 'm')
+        self.assertTrue(surface.is_uniform)
+
     def test_detect_format_then_read(self):
         f = open('tests/file_format_examples/example.ibw', 'rb')
         fmt = detect_format(f)
@@ -284,6 +294,7 @@ class hgtSurfaceTest(unittest.TestCase):
         nx, ny = surface.shape
         self.assertEqual(nx, 3601)
         self.assertEqual(ny, 3601)
+        self.assertTrue(surface.is_uniform)
 
 class h5SurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -295,6 +306,7 @@ class h5SurfaceTest(unittest.TestCase):
         nx, ny = surface.shape
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
+        self.assertTrue(surface.is_uniform)
 
 class xyzSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -307,3 +319,4 @@ class xyzSurfaceTest(unittest.TestCase):
         x, y = surface.points()
         self.assertGreater(len(x), 0)
         self.assertEqual(len(x), len(y))
+        self.assertFalse(surface.is_uniform)
