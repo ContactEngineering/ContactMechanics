@@ -183,6 +183,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
     def test_nonuniform(self):
         surf = read_xyz('tests/file_format_examples/example.asc')
         self.assertFalse(surf.is_uniform)
+        #surf = DetrendedTopography(surf)
+        #self.assertFalse(surf.is_uniform)
 
 class detectFormatTest(unittest.TestCase):
     def setUp(self):
@@ -327,6 +329,7 @@ class h5SurfaceTest(unittest.TestCase):
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
         self.assertTrue(surface.is_uniform)
+        self.assertEqual(surface.dim, 2)
 
 class xyzSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -340,3 +343,4 @@ class xyzSurfaceTest(unittest.TestCase):
         self.assertGreater(len(x), 0)
         self.assertEqual(len(x), len(y))
         self.assertFalse(surface.is_uniform)
+        self.assertEqual(surface.dim, 1)
