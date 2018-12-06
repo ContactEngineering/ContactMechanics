@@ -14,7 +14,6 @@ import importlib
 
 MPI_tests= [
     "MPITests",
-    "MPI_FileIO_Test",
     "MPI_Hertztest",
 #    "MPI_Smoothcontact_tests",
     "MPI_Topography_Test",
@@ -33,7 +32,6 @@ tests = MPI_tests
 
 import os
 PROJDIR= os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-
 
 
 def run_test(test):
