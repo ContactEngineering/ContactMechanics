@@ -17,7 +17,7 @@ from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 
 from .PyCoTest import PyCoTestCase
-from PyLBFGS.Tools import ParallelNumpy
+from MPITools.Tools import ParallelNumpy
 
 @unittest.skipUnless(_withMPI,"requires mpi4py")
 class test_FFTElasticHalfSpace_weights(unittest.TestCase):

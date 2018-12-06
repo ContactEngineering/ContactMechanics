@@ -20,7 +20,7 @@ try:
 
     from mpi4py import MPI
     from FFTEngine import PFFTEngine
-    from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
+    from MPITools.Tools.ParallelNumpy import ParallelNumpy
 
 except ImportError as err:
     import sys

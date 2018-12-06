@@ -92,7 +92,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     """
 
     if substrate.fftengine.is_MPI:
-        from PyLBFGS.Tools.ParallelNumpy import ParallelNumpy
+        from MPITools.Tools.ParallelNumpy import ParallelNumpy
         pnp = ParallelNumpy(comm = substrate.fftengine.comm)
 
         # check that a topography instance is provided and not only a numpy array
