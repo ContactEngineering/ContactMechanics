@@ -4,6 +4,7 @@ try:
     import time
     import math
 
+    from PyCo.Topography import UniformNumpyTopography, NonuniformNumpyTopography
     import PyCo.Topography.Uniform.ScalarParameters as Uniform
     import PyCo.Topography.Nonuniform.ScalarParameters as Nonuniform
 
@@ -23,22 +24,24 @@ class SinewaveTestUniform(unittest.TestCase):
         self.sinsurf = np.sin(2 * np.pi / self.L * X) * np.sin(2 * np.pi / self.L * Y) * self.hm
         self.size= (self.L,self.L)
 
+        self.surf = UniformNumpyTopography(self.sinsurf, size=self.size)
+
         self.precision = 5
 
     def test_rms_curvature(self):
-        numerical = Uniform.rms_curvature(self.sinsurf, size=self.size)
+        numerical = self.surf.rms_curvature()
         analytical = np.sqrt(16*np.pi**4 *self.hm**2 / self.L**4 )
         #print(numerical-analytical)
         self.assertAlmostEqual(numerical,analytical,self.precision)
 
     def test_rms_slope(self):
-        numerical = Uniform.rms_slope(self.sinsurf, size=self.size)
+        numerical = self.surf.rms_slope()
         analytical = np.sqrt(2*np.pi ** 2 * self.hm**2 / self.L**2)
         # print(numerical-analytical)
         self.assertAlmostEqual(numerical, analytical, self.precision)
 
     def test_rms_height(self):
-        numerical = Uniform.rms_height(self.sinsurf )
+        numerical = self.surf.rms_height()
         analytical = np.sqrt(self.hm**2 / 4)
 
         self.assertEqual(numerical,analytical)

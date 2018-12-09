@@ -40,7 +40,7 @@ try:
     import PyCo.Topography.Nonuniform as Nonuniform
     import PyCo.Topography.Uniform as Uniform
     from PyCo.Tools import evaluate_gradient, mean_err
-    from PyCo.Topography import (autocorrelation_1D, autocorrelation_2D, compute_derivative, tilt_from_height,
+    from PyCo.Topography import (autocorrelation_1D, autocorrelation_2D, tilt_from_height,
                                  shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope,
                                  NonuniformNumpyTopography, UniformNumpyTopography)
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
@@ -99,9 +99,9 @@ class ToolTest(PyCoTestCase):
         self.assertTrue(error < tol, "error = {}, tol = {}, arr_out = {}".format(
             error, tol, arr_approx))
 
-        mean_slope = [x.mean() for x in compute_derivative(arr)]
+        mean_slope = [np.diff(arr, axis=d).mean() for d in range(len(arr.shape))]
         arr_out = shift_and_tilt_from_slope(arr)
-        mean_slope = [x.mean() for x in compute_derivative(arr_out)]
+        mean_slope = [np.diff(arr_out, axis=d).mean() for d in range(len(arr_out.shape))]
         self.assertAlmostEqual(mean_slope[0], 0)
         self.assertAlmostEqual(mean_slope[1], 0)
 
