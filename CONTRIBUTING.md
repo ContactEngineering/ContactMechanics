@@ -15,9 +15,18 @@ work in 2018, the branch could be called "18_line_scans".
 Commits
 -------
 Prepend you commits with a shortcut indicating the type of changes they contain:
+* BUG: Bug fix
+* CI: Changes to the CI configuration
+* DOC: Changes to documentation strings
 * ENH: Enhancement (e.g. a new feature)
 * MAINT: Maintenance (e.g. fixing a typo)
-* DOC: Changes to documentation strings
-* BUG: Bug fix
 * TST: Changes to the unit test environment
-* CI: Changes to the CI configuration
+* WIP: Work in progress
+* API: changes to the user exposed API
+
+The changelog will be based on the content of the commits with tag BUG, API and ENH.
+
+Examples: 
+- If your are working on a new feature, uase ENH on the commit making the feature ready. Befoere use the WI tag.
+- use TST when your changes only deal with the testing environment. If you fix a bug and implement the test for it, use BUG.
+- minor changes that doesn't change the codes behaviour (for example rewrite file in a cleaner or slightly efficienter way) belong to the tag MAINT
