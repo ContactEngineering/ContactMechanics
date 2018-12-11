@@ -1,5 +1,5 @@
-Contributing to PyCo-web
-========================
+Contributing to PyCo
+====================
 
 Code style
 ----------
