@@ -24,7 +24,7 @@ Prepend you commits with a shortcut indicating the type of changes they contain:
 * WIP: Work in progress
 * API: changes to the user exposed API
 
-The changelog will be based on the content of the commits with tag BUG and ENH.
+The changelog will be based on the content of the commits with tag BUG, API and ENH.
 
 Examples: 
 - If your are working on a new feature, uase ENH on the commit making the feature ready. Befoere use the WI tag.
