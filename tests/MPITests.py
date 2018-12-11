@@ -384,8 +384,8 @@ class test_FreeFFTElasticHalfSpace(PyCoTestCase):
 
 suite1 = unittest.TestLoader().loadTestsFromTestCase(test_FFTElasticHalfSpace_weights)
 suite2 = unittest.TestLoader().loadTestsFromTestCase(test_FFTElasticHalfSpace_compute)
-suite2 = unittest.TestLoader().loadTestsFromTestCase(test_FreeFFTElasticHalfSpace)
-suite = unittest.TestSuite([suite1, suite2])
+suite3 = unittest.TestLoader().loadTestsFromTestCase(test_FreeFFTElasticHalfSpace)
+suite = unittest.TestSuite([suite1, suite2,suite3])
 
 if __name__ in  ['__main__','builtins']:
     print("Running unittest MPITests")

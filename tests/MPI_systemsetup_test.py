@@ -87,3 +87,9 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
         interaction = HardWall
 
         system = SystemFactory(substrate,interaction,self.fn)
+
+
+suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(MPI_TopographyLoading_Test)])
+if __name__ in  ['__main__','builtins']:
+    print("Running unittest MPI_FileIO_Test")
+    result = unittest.TextTestRunner().run(suite)

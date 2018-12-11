@@ -14,6 +14,7 @@ import importlib
 
 MPI_tests= [
     "MPITests",
+    "test_unittestFail",
     "MPI_Hertztest",
 #    "MPI_Smoothcontact_tests",
     "MPI_Topography_Test",
@@ -22,8 +23,14 @@ MPI_tests= [
 #    "MPI_test_wavy_adhesive"
 ]
 
+# MPI Tests using the unittest framework
 MPI_unittests = [
-#"MPITests"
+"MPITests",
+"test_unittestFail",
+"MPI_Topography_Test",
+"MPI_Hertztest",
+"MPI_Westergaard_tests",
+"MPI_systemsetup_test",
 ]
 
 exclude = []
@@ -33,6 +40,8 @@ tests = MPI_tests
 import os
 PROJDIR= os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
+class UnittestFail(Exception):
+    pass
 
 def run_test(test):
     if test in exclude:
@@ -41,8 +50,17 @@ def run_test(test):
 
     if test in MPI_unittests:
         print("unittest")
-        importlib.import_module(test)
+        #importlib.import_module(test)
         #print(unittest.TextTestRunner().run(importlib.import_module(test).suite).result)
+        locvars = {"__name__": "__main__", "__package__": "tests"}
+        with open(PROJDIR + "/tests/" + test + ".py") as codefile:
+            exec(codefile.read(), locvars)
+            # print(locvars["__name__"])
+            result = locvars["result"]
+            if not result.wasSuccessful():
+                raise UnittestFail(test)   # Or maybe raise this error already into the main of the test itself ?
+            del locvars
+
     else:
         locvars={"__name__":"__main__","__package__" :"tests"}
         with open(PROJDIR+"/tests/"+test+".py") as codefile:
@@ -77,13 +95,12 @@ if __name__ == "__main__":
 
         if _withMPI:
             comm = MPI.COMM_WORLD
-
             if comm.Get_rank() ==0 :
                 print("#########  Process Rank 0: setup before tests  #########")
                 try:
                     # makes what a `python setup.py test` call makes before running the test
-                    print(subprocess.check_call("python setup.py egg_info",cwd=PROJDIR,shell=True))
-                    print(subprocess.check_call("python setup.py build_ext -i",cwd=PROJDIR,shell=True))
+                    print(subprocess.check_call("python setup.py egg_info", cwd=PROJDIR, shell=True))
+                    print(subprocess.check_call("python setup.py build_ext -i", cwd=PROJDIR, shell=True))
 
                 except subprocess.CalledProcessError as err:
                     print(err.stderr)
@@ -109,17 +126,14 @@ if __name__ == "__main__":
                 if anyfailed:
                     if comm.Get_rank() == 0: print("failed")
                     failedTests.append(test)
-
-
             print("The following {} tests Failed: {}".format(len(failedTests),failedTests))
         else:
             print("#########  setup before tests  #########")
-            print(subprocess.check_call("python setup.py egg_info",shell=True))
-            print(subprocess.check_call("python setup.py build_ext",shell=True))
+            print(subprocess.check_call("python setup.py egg_info", shell=True))
+            print(subprocess.check_call("python setup.py build_ext", shell=True))
 
             print("Start running tests")
             #print(tests.difference(exclude))
             for test in tests:
                 print("calling {}".format(test))
-
                 run_test(test)
