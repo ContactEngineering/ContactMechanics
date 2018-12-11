@@ -22,9 +22,10 @@ import sys
 
 
 # Search and replace PyCo path with Folder containing it.
-for i, path in enumerate(sys.path):
-    if path == os.path.abspath('../../PyCo'):
-        sys.path[i] = os.path.abspath('../..')
+#for i, path in enumerate(sys.path):
+#    print(path, os.path.abspath('../../PyCo'))
+#    if path == os.path.abspath('../../PyCo'):
+#        sys.path[i] = os.path.abspath('../..')
 
 
 # -- General configuration ------------------------------------------------

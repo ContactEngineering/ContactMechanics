@@ -44,6 +44,7 @@ try:
                                  shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope,
                                  NonuniformNumpyTopography, UniformNumpyTopography)
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
+    from PyCo.Topography.Nonuniform.Detrending import polyfit
 
     from .PyCoTest import PyCoTestCase
 except ImportError as err:
@@ -187,3 +188,28 @@ class ToolTest(PyCoTestCase):
         x = np.arange(n)*dx
         h2 = Nonuniform.rms_height(x, h)
         self.assertAlmostEqual(h1, h2, places=3)
+
+
+    def test_polynomial_fit(self):
+        x = np.linspace(0, 10, 11)**2
+        y = 1.8*x+1.2
+        b, m = polyfit(x, y, 1)
+        self.assertAlmostEqual(b, 1.2)
+        self.assertAlmostEqual(m, 1.8)
+
+        y += 0.1*np.sin(2*np.pi*x)
+        b, m = polyfit(x, y, 1)
+        self.assertAlmostEqual(b, 1.2)
+        self.assertAlmostEqual(m, 1.8)
+
+        b, m, m2 = polyfit(x, y, 2)
+        self.assertAlmostEqual(b, 1.2)
+        self.assertAlmostEqual(m, 1.8)
+        self.assertAlmostEqual(m2, 0.0)
+
+        y = 1.8*x+1.2+2.3*x**2
+        b, m, m2 = polyfit(x, y, 2)
+        self.assertAlmostEqual(b, 1.2)
+        self.assertAlmostEqual(m, 1.8)
+        self.assertAlmostEqual(m2, 2.3)
+
