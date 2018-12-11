@@ -41,8 +41,8 @@ try:
     from tempfile import TemporaryDirectory as tmp_dir
     import os
 
-    from PyCo.Topography import (NumpyTxtSurface, NumpyAscSurface, UniformNumpyTopography, DetrendedTopography, Sphere,
-                                 rms_height, rms_slope, shift_and_tilt, read,
+    from PyCo.Topography import (NumpyTxtSurface, NumpyAscSurface, UniformNumpyTopography, NonuniformNumpyTopography,
+                                 DetrendedTopography, Sphere, rms_height, rms_slope, shift_and_tilt, read,
                                  read_asc, read_di, read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
     from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor
     from PyCo.Topography.Generation import RandomSurfaceGaussian
@@ -167,7 +167,6 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.coeffs[5], -f)
         self.assertAlmostEqual(surf.rms_height(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
-
     def test_randomly_rough(self):
         surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
         self.assertTrue(surface.is_uniform)
@@ -179,12 +178,17 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertTrue(untilt2.is_uniform)
         self.assertTrue(untilt1.rms_height() < untilt2.rms_height())
         self.assertTrue(untilt1.rms_slope() > untilt2.rms_slope())
-
     def test_nonuniform(self):
         surf = read_xyz('tests/file_format_examples/example.asc')
         self.assertFalse(surf.is_uniform)
-        #surf = DetrendedTopography(surf)
-        #self.assertFalse(surf.is_uniform)
+        surf = DetrendedTopography(surf, detrend_mode='height')
+        self.assertFalse(surf.is_uniform)
+    def test_uniform_linear(self):
+        x = np.linspace(0, 10, 11)**2
+        y = 1.8*x+1.2
+        surf = DetrendedTopography(NonuniformNumpyTopography(x, y), detrend_mode='height')
+        self.assertAlmostEqual(surf.mean(), 0.0)
+        self.assertAlmostEqual(surf.rms_slope(), 0.0)
 
 class detectFormatTest(unittest.TestCase):
     def setUp(self):
