@@ -34,7 +34,7 @@ SOFTWARE.
 import numpy as np
 
 from PyCo.Topography import UniformNumpyTopography
-from PyCo.Topography.common import _get_size
+from PyCo.Topography.Uniform.common import _get_size
 
 ###
 
