@@ -42,8 +42,9 @@ try:
     import os
 
     from PyCo.Topography import (NumpyTxtSurface, NumpyAscSurface, UniformNumpyTopography, NonuniformNumpyTopography,
-                                 DetrendedTopography, Sphere, rms_height, rms_slope, shift_and_tilt, read,
-                                 read_asc, read_di, read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
+                                 DetrendedTopography, Sphere, ScaledTopography, rms_height, rms_slope, shift_and_tilt,
+                                 read, read_asc, read_di, read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p,
+                                 read_xyz)
     from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor
     from PyCo.Topography.Generation import RandomSurfaceGaussian
 
@@ -348,3 +349,10 @@ class xyzSurfaceTest(unittest.TestCase):
         self.assertEqual(len(x), len(y))
         self.assertFalse(surface.is_uniform)
         self.assertEqual(surface.dim, 1)
+
+class PipelineTests(unittest.TestCase):
+    def test_scaled_topography(self):
+        surf = read_xyz('tests/file_format_examples/example.asc')
+        for fac in [1.0, 2.0, np.pi]:
+            surf2 = ScaledTopography(surf, fac)
+            self.assertAlmostEqual(fac*surf.rms_height(kind='Rq'), surf2.rms_height(kind='Rq'))
