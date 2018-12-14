@@ -17,7 +17,7 @@ Commits
 Prepend you commits with a shortcut indicating the type of changes they contain:
 * BUG: Bug fix
 * CI: Changes to the CI configuration
-* DOC: Changes to documentation strings
+* DOC: Changes to documentation strings or documentation in general (not only typos)
 * ENH: Enhancement (e.g. a new feature)
 * MAINT: Maintenance (e.g. fixing a typo)
 * TST: Changes to the unit test environment
@@ -27,6 +27,7 @@ Prepend you commits with a shortcut indicating the type of changes they contain:
 The changelog will be based on the content of the commits with tag BUG, API and ENH.
 
 Examples: 
-- If your are working on a new feature, uase ENH on the commit making the feature ready. Befoere use the WIP tag.
+- If your are working on a new feature, use ENH on the commit making the feature ready. Before use the WIP tag.
 - use TST when your changes only deal with the testing environment. If you fix a bug and implement the test for it, use BUG.
 - minor changes that doesn't change the codes behaviour (for example rewrite file in a cleaner or slightly efficienter way) belong to the tag MAINT
+- if you change documentation files without changing the code, use DOC; if you also change code in the same commit, use another shortcut
