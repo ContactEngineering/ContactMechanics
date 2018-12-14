@@ -27,6 +27,6 @@ Prepend you commits with a shortcut indicating the type of changes they contain:
 The changelog will be based on the content of the commits with tag BUG, API and ENH.
 
 Examples: 
-- If your are working on a new feature, uase ENH on the commit making the feature ready. Befoere use the WI tag.
+- If your are working on a new feature, uase ENH on the commit making the feature ready. Befoere use the WIP tag.
 - use TST when your changes only deal with the testing environment. If you fix a bug and implement the test for it, use BUG.
 - minor changes that doesn't change the codes behaviour (for example rewrite file in a cleaner or slightly efficienter way) belong to the tag MAINT
