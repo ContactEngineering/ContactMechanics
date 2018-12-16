@@ -191,7 +191,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.mean(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
 
-class detectFormatTest(unittest.TestCase):
+class DetectFormatTest(unittest.TestCase):
     def setUp(self):
         pass
     def test_detection(self):
@@ -356,3 +356,32 @@ class PipelineTests(unittest.TestCase):
         for fac in [1.0, 2.0, np.pi]:
             surf2 = ScaledTopography(surf, fac)
             self.assertAlmostEqual(fac*surf.rms_height(kind='Rq'), surf2.rms_height(kind='Rq'))
+
+class IOTest(unittest.TestCase):
+    def setUp(self):
+        self.binary_example_file_list = [
+            'tests/file_format_examples/example1.di',
+            'tests/file_format_examples/example.ibw',
+            'tests/file_format_examples/example1.mat',
+            'tests/file_format_examples/example.opd',
+            'tests/file_format_examples/example.x3p',
+            'tests/file_format_examples/example2.x3p',
+        ]
+        self.text_example_file_list = [
+            'tests/file_format_examples/example.asc',
+            'tests/file_format_examples/example1.txt',
+            'tests/file_format_examples/example2.txt',
+            'tests/file_format_examples/example3.txt',
+            'tests/file_format_examples/example4.txt',
+        ]
+
+    def test_keep_file_open(self):
+        for fn in self.text_example_file_list:
+            with open(fn, 'r') as f:
+                s = read(f)
+                self.assertFalse(f.closed, msg=fn)
+        for fn in self.binary_example_file_list:
+            print(fn)
+            with open(fn, 'rb') as f:
+                s = read(f)
+                self.assertFalse(f.closed, msg=fn)
