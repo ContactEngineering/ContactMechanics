@@ -37,6 +37,7 @@ import unittest
 import numpy as np
 
 from PyCo.Topography import UniformNumpyTopography, NonuniformNumpyTopography
+from PyCo.Topography.Nonuniform.PowerSpectrum import dsinc
 
 from tests.PyCoTest import PyCoTestCase
 
@@ -46,7 +47,6 @@ class PowerSpectrumTest(PyCoTestCase):
             for L in [1.3, 10.6]:
                 for k in [2, 4]:
                     for n in [16, 128]:
-                        n = 16
                         x = np.arange(n)*L/n
                         h = np.sin(2*np.pi*k*x/L)
                         t = UniformNumpyTopography(h, size=(L,), periodic=periodic)
@@ -65,3 +65,31 @@ class PowerSpectrumTest(PyCoTestCase):
                             r = np.zeros_like(C)
                             r[k] = 1/4
                             self.assertArrayAlmostEqual(C, r)
+
+
+    def test_nonuniform_on_uniform_grid(self):
+        for L in [1.3, 10.6]:
+            for k in [2, 4]:
+                for n in [1024]:
+                    x = np.arange(n+1)*L/n
+                    h = np.sin(2*np.pi*k*x/L)
+                    t = NonuniformNumpyTopography(x, h)
+                    q, C = t.power_spectrum_1D()
+
+                    # The ms height of the sine is 1/2. The sum over the PSD (from -q to +q) is the ms height.
+                    # Our PSD only contains *half* of the full PSD (on the +q branch, the -q branch is identical),
+                    # therefore the sum over it is 1/4.
+                    self.assertAlmostEqual(C.sum()/L, 1/4, places=2)
+
+
+    def test_dsinc(self):
+        self.assertAlmostEqual(dsinc(0), 0)
+        self.assertAlmostEqual(dsinc(1), -1)
+        self.assertAlmostEqual(dsinc(2), 1/2)
+        self.assertAlmostEqual(dsinc(3), -1/3)
+
+        dx = 1e-9
+        for x in [0, 0.5e-6, 1e-6, 0.5, 1]:
+            v1 = np.sinc(x+dx)
+            v2 = np.sinc(x-dx)
+            self.assertAlmostEqual(dsinc(x), (v1-v2)/(2*dx), places=5, msg='x = {}'.format(x))
