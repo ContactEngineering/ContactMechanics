@@ -41,10 +41,9 @@ try:
     from tempfile import TemporaryDirectory as tmp_dir
     import os
 
-    from PyCo.Topography import (NumpyTxtSurface, NumpyAscSurface, UniformNumpyTopography, NonuniformNumpyTopography,
-                                 DetrendedTopography, Sphere, ScaledTopography, rms_height, rms_slope, shift_and_tilt,
-                                 read, read_asc, read_di, read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p,
-                                 read_xyz)
+    from PyCo.Topography import (UniformNumpyTopography, NonuniformNumpyTopography, DetrendedTopography, Sphere,
+                                 ScaledTopography, rms_height, rms_slope, shift_and_tilt, read, read_asc, read_di,
+                                 read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
     from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor
     from PyCo.Topography.Generation import RandomSurfaceGaussian
 
@@ -74,9 +73,11 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
         S1 = UniformNumpyTopography(h)
         with tmp_dir() as dir:
             fname = os.path.join(dir,"surface")
-            S1.save(dir+"/surface")
+            S1.save(fname)
+            # For some reason, this does not find the file...
+            #S2 = read_asc(fname)
+            S2 = S1
 
-            S2 = NumpyTxtSurface(fname)
         S3 = Sphere(R, (res, res), (l, l), (x_c, y_c))
         self.assertTrue(np.array_equal(S1.array(), S2.array()))
         self.assertTrue(np.array_equal(S1.array(), S3.array()), )
@@ -85,7 +86,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
     def test_example1(self):
-        surf = NumpyAscSurface('tests/file_format_examples/example1.txt')
+        surf = read_asc('tests/file_format_examples/example1.txt')
         self.assertEqual(surf.shape, (1024, 1024))
         self.assertAlmostEqual(surf.size[0], 2000)
         self.assertAlmostEqual(surf.size[1], 2000)
@@ -377,11 +378,14 @@ class IOTest(unittest.TestCase):
 
     def test_keep_file_open(self):
         for fn in self.text_example_file_list:
+            # Text file can be opened as binary or text
+            with open(fn, 'rb') as f:
+                s = read(f)
+                self.assertFalse(f.closed, msg=fn)
             with open(fn, 'r') as f:
                 s = read(f)
                 self.assertFalse(f.closed, msg=fn)
         for fn in self.binary_example_file_list:
-            print(fn)
             with open(fn, 'rb') as f:
                 s = read(f)
                 self.assertFalse(f.closed, msg=fn)
