@@ -124,6 +124,15 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertTrue(surf.is_uniform)
         self.assertEqual(surf.unit, 'm')
 
+        # test setting the size
+        surf.size = 1,2
+        self.assertAlmostEqual(surf.size[0], 1)
+        self.assertAlmostEqual(surf.size[1], 2)
+
+        # test setting the unit
+        surf.unit = 'km'
+        self.assertEqual(surf.unit, 'km')
+
 class DetrendedSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
