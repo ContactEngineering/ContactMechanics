@@ -40,11 +40,12 @@ try:
     import tempfile, os
     from tempfile import TemporaryDirectory as tmp_dir
     import os
+    import io
 
     from PyCo.Topography import (UniformNumpyTopography, NonuniformNumpyTopography, DetrendedTopography, Sphere,
                                  ScaledTopography, rms_height, rms_slope, shift_and_tilt, read, read_asc, read_di,
                                  read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
-    from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor
+    from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
     from PyCo.Topography.Generation import RandomSurfaceGaussian
 
 except ImportError as err:
@@ -375,17 +376,46 @@ class IOTest(unittest.TestCase):
             'tests/file_format_examples/example3.txt',
             'tests/file_format_examples/example4.txt',
         ]
+        self.text_example_memory_list = [
+            """
+            0 0
+            1 2
+            2 4
+            3 6
+            """
+        ]
 
     def test_keep_file_open(self):
         for fn in self.text_example_file_list:
             # Text file can be opened as binary or text
             with open(fn, 'rb') as f:
-                s = read(f)
+                read(f)
                 self.assertFalse(f.closed, msg=fn)
             with open(fn, 'r') as f:
-                s = read(f)
+                read(f)
                 self.assertFalse(f.closed, msg=fn)
         for fn in self.binary_example_file_list:
             with open(fn, 'rb') as f:
-                s = read(f)
+                read(f)
                 self.assertFalse(f.closed, msg=fn)
+        for datastr in self.text_example_memory_list:
+            with io.StringIO(datastr) as f:
+                read(f)
+                self.assertFalse(f.closed, msg="text memory stream for '{}' was closed".format(datastr))
+
+            # Doing the same when but only giving a binary stream
+            with io.BytesIO(datastr.encode(encoding='utf-8')) as f:
+                read(f)
+                self.assertFalse(f.closed, msg="binary memory stream for '{}' was closed".format(datastr))
+
+    def test_is_binary_stream(self):
+
+        # just grep a random existing file here
+        fn = self.text_example_file_list[0]
+
+        self.assertTrue(is_binary_stream(open(fn, mode='rb')))
+        self.assertFalse(is_binary_stream(open(fn, mode='r'))) # opened as text file
+
+        # should also work with streams in memory
+        self.assertTrue(is_binary_stream(io.BytesIO(b"11111")))  # some bytes in memory
+        self.assertFalse(is_binary_stream(io.StringIO("11111")))  # some bytes in memory
