@@ -111,8 +111,6 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
     # Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays
 
-
-
     nb_surface_pts = np.prod(topography.resolution)
     if pentol is None:
         # Heuristics for the possible tolerance on penetration.
@@ -127,10 +125,6 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # If we are still zero use an arbitrary value
         if pentol == 0:
             pentol = 1e-3
-
-    #TODO: parallelized surface
-    # Now I only need the surface that belongs to the processor
-
 
     surf_mask = np.ma.getmask(surface)  #TODO: Test behaviour with masked arrays.
     if surf_mask is np.ma.nomask:
@@ -338,6 +332,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         new_u_r = substrate.evaluate_disp(p_r)
         maxdu = pnp.max(abs(new_u_r - u_r))
         u_r = new_u_r
+
         result.nfev += 1
 
         # Store G for next step
