@@ -361,6 +361,21 @@ class xyzSurfaceTest(unittest.TestCase):
         self.assertFalse(surface.is_uniform)
         self.assertEqual(surface.dim, 1)
 
+class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def test_detect_format_then_read(self):
+        self.assertEqual(detect_format('tests/file_format_examples/line_scan_1_minimal_spaces.asc'), 'xyz')
+    def test_read(self):
+        surface = read_xyz('tests/file_format_examples/line_scan_1_minimal_spaces.asc')
+
+        self.assertFalse(surface.is_uniform)
+        self.assertEqual(surface.dim, 1)
+
+        x, y = surface.points()
+        self.assertGreater(len(x), 0)
+        self.assertEqual(len(x), len(y))
+
 class PipelineTests(unittest.TestCase):
     def test_scaled_topography(self):
         surf = read_xyz('tests/file_format_examples/example.asc')
@@ -384,6 +399,7 @@ class IOTest(unittest.TestCase):
             'tests/file_format_examples/example2.txt',
             'tests/file_format_examples/example3.txt',
             'tests/file_format_examples/example4.txt',
+            'tests/file_format_examples/line_scan_1_minimal_spaces.asc',
         ]
         self.text_example_memory_list = [
             """
