@@ -47,6 +47,8 @@ try:
     from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor
     from PyCo.Topography.Generation import RandomSurfaceGaussian
 
+    from tests.PyCoTest import PyCoTestCase
+
 except ImportError as err:
     import sys
     print(err)
@@ -389,3 +391,60 @@ class IOTest(unittest.TestCase):
             with open(fn, 'rb') as f:
                 s = read(f)
                 self.assertFalse(f.closed, msg=fn)
+
+class DerivativeTest(PyCoTestCase):
+    def test_uniform_linear(self):
+        n = 10
+        slope = 0.123
+        fac = 2.31
+        h = np.arange(n)*slope
+        t = UniformNumpyTopography(h, size=n/fac)
+        d_num = t.derivative(1)
+        d2_num = t.derivative(2)
+        self.assertAlmostEqual(d_num[2], fac*slope)
+        self.assertAlmostEqual(d2_num[2], 0)
+
+    def test_uniform_quadratic(self):
+        a = 1.2
+        b = -2.31
+        f = lambda x: 1.2 + a * x + b * x ** 2 / 2
+        df = lambda x: a + b * x
+        n = 10
+        fac = 2.57
+        x = np.arange(n)/fac
+        h = f(x)
+        t = UniformNumpyTopography(h, size=n/fac)
+        d_num = t.derivative(1)
+        d2_num = t.derivative(2)
+        self.assertArrayAlmostEqual(d_num, df((x[1:]+x[:-1])/2))
+        self.assertArrayAlmostEqual(d2_num, [b]*(n-2))
+
+    def test_nonuniform_quadratic_on_uniform_grid(self):
+        a = 1.2
+        b = -2.31
+        f = lambda x: 1.2 + a * x + b * x ** 2 / 2
+        df = lambda x: a + b * x
+        n = 10
+        fac = 2.57
+        x = np.arange(n)/fac
+        h = f(x)
+        t = NonuniformNumpyTopography(x, h)
+        d_num = t.derivative(1)
+        d2_num = t.derivative(2)
+        self.assertArrayAlmostEqual(d_num, df((x[1:]+x[:-1])/2))
+        self.assertArrayAlmostEqual(d2_num, [b]*(n-2))
+
+    def test_nonuniform_quadratic_on_nonuniform_grid(self):
+        a = 1.2
+        b = -2.31
+        f = lambda x: 1.2 + a * x + b * x ** 2 / 2
+        df = lambda x: a + b * x
+        n = 100
+        fac = 2.57
+        x = np.sqrt(np.arange(n))*np.sqrt(n)/fac
+        h = f(x)
+        t = NonuniformNumpyTopography(x, h)
+        d_num = t.derivative(1)
+        d2_num = t.derivative(2)
+        self.assertArrayAlmostEqual(d_num, df((x[1:]+x[:-1])/2))
+        self.assertArrayAlmostEqual(d2_num, [b]*(n-2))
