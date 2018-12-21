@@ -103,22 +103,6 @@ class PowerSpectrumTest(PyCoTestCase):
                     # therefore the sum over it is 1/4.
                     #self.assertAlmostEqual(C.sum() / L, 1 / 4, places=2)
 
-    def test_sum_triangles_gives_square(self):
-        for a, b in [#(2.3, 1.2, 1.7),
-                        #(1.5, 3.1, 3.1),
-                        (0.5, 1.0),
-                        (0.5, 0.5)]:
-            q = np.linspace(0, 2 * np.pi / a, 1001)
-            x = np.array([-a, a])
-            h = np.array([b, b])
-            _, C1 = power_spectrum(x, h, q=q, window='None')
-
-            x = np.array([-a, a])
-            h = np.array([0, b])
-            _, C1 = power_spectrum(x, h, q=q, window='None')
-
-
-
     def test_invariance(self):
         for a, b, c in [#(2.3, 1.2, 1.7),
                         #(1.5, 3.1, 3.1),
@@ -129,43 +113,36 @@ class PowerSpectrumTest(PyCoTestCase):
             x = np.array([-a, a])
             h = np.array([b, c])
             print(x, h)
-            t = NonuniformNumpyTopography(x, h)
-            _, C1 = power_spectrum(*t.points(), q=q, window='None')
+            _, C1 = power_spectrum(x, h, q=q, window='None')
 
             x = np.array([-a, 0, a])
             h = np.array([b, (b+c)/2, c])
             print(x, h)
-            t = NonuniformNumpyTopography(x, h)
-            _, C2 = power_spectrum(*t.points(), q=q, window='None')
+            _, C2 = power_spectrum(x, h, q=q, window='None')
 
             x = np.array([-a, 0, a/2, a])
             h = np.array([b, (b+c)/2, (3*c+b)/4, c])
             print(x, h)
-            t = NonuniformNumpyTopography(x, h)
-            _, C3 = power_spectrum(*t.points(), q=q, window='None')
+            _, C3 = power_spectrum(x, h, q=q, window='None')
 
             import matplotlib.pyplot as plt
-            plt.plot(q[1:], C1[1:], 'k-')
-            plt.plot(q[1:], C2[1:], 'r-')
+            plt.plot(q[1:], C1[1:], 'k-', lw=3)
+            plt.plot(q[1:], C2[1:], 'r-', lw=2)
             plt.plot(q[1:], C3[1:], 'b-')
             plt.show()
 
-    @unittest.skip
     def test_triangle(self):
-        a = 2.3
-        b = 1.2
-        x = np.array([-a, a])
-        h = np.array([-b, b])
-        t = NonuniformNumpyTopography(x, h)
-        i = InterpolatedTopography(t, np.linspace(x.min(), x.max(), 1024))
+        for a, b in [(2.3, 1.45), (10.2, 0.1)]:
+            x = np.array([-a, a])
+            h = np.array([-b, b])
 
-        qi, Ci = i.power_spectrum_1D(window='None')
-        q, C = power_spectrum(*t.points(), q=qi, window='None')
+            q = np.linspace(0.01, 8 * np.pi / a, 101)
 
-        import matplotlib.pyplot as plt
-        plt.loglog(qi[1:], Ci[1:], 'k-')
-        plt.loglog(q[1:], C[1:], 'r-')
-        plt.show()
+            q, C = power_spectrum(x, h, q=q, window='None')
+
+            C_ana = (2 * b * (a * q * np.cos(a * q) - np.sin(a * q)) / (a * q ** 2)) ** 2
+
+            self.assertArrayAlmostEqual(C, C_ana)
 
     def test_dsinc(self):
         self.assertAlmostEqual(dsinc(0), 0)
