@@ -36,8 +36,8 @@ SOFTWARE.
 import unittest
 import numpy as np
 
-from PyCo.Topography import UniformNumpyTopography, NonuniformNumpyTopography
-from PyCo.Topography.Nonuniform.PowerSpectrum import dsinc
+from PyCo.Topography import UniformNumpyTopography, NonuniformNumpyTopography, InterpolatedTopography
+from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc, power_spectrum
 
 from tests.PyCoTest import PyCoTestCase
 
@@ -67,28 +67,114 @@ class PowerSpectrumTest(PyCoTestCase):
                             r[k] = 1 / 4
                             self.assertArrayAlmostEqual(C, r)
 
+    @unittest.skip
     def test_nonuniform_on_uniform_grid(self):
         for L in [1.3, 10.6]:
-            for k in [2, 4]:
-                for n in [1024]:
+            for k in [4, 8]:
+                for n in [64]:
                     x = np.arange(n + 1) * L / n
                     h = np.sin(2 * np.pi * k * x / L)
                     t = NonuniformNumpyTopography(x, h)
                     q, C = t.power_spectrum_1D()
 
+                    print('nu', C.sum() / L)
+
+                    pad = 16
+                    i = InterpolatedTopography(t, np.linspace(0, pad*x.max(), 4096))
+                    qi, Ci = i.power_spectrum_1D(window='None')
+
+                    q, C = power_spectrum(*t.points(), q=qi, window='None')
+
+                    import matplotlib.pyplot as plt
+                    #plt.loglog(qi[1:], pad*Ci[1:], 'k-')
+                    plt.loglog(q[1:len(q)//8], abs(C[1:len(q)//8]-pad*Ci[1:len(q)//8]), 'r-')
+                    plt.show()
+
+                    #import matplotlib.pyplot as plt
+                    #plt.plot(*i.points(), 'kx-')
+                    #plt.show()
+
+                    print('interp', Ci.sum() / L)
+
+                    self.assertArrayAlmostEqual(C[1:len(q)//16], pad*Ci[1:len(q)//16])
+
                     # The ms height of the sine is 1/2. The sum over the PSD (from -q to +q) is the ms height.
                     # Our PSD only contains *half* of the full PSD (on the +q branch, the -q branch is identical),
                     # therefore the sum over it is 1/4.
-                    self.assertAlmostEqual(C.sum() / L, 1 / 4, places=2)
+                    #self.assertAlmostEqual(C.sum() / L, 1 / 4, places=2)
+
+    def test_sum_triangles_gives_square(self):
+        for a, b in [#(2.3, 1.2, 1.7),
+                        #(1.5, 3.1, 3.1),
+                        (0.5, 1.0),
+                        (0.5, 0.5)]:
+            q = np.linspace(0, 2 * np.pi / a, 1001)
+            x = np.array([-a, a])
+            h = np.array([b, b])
+            _, C1 = power_spectrum(x, h, q=q, window='None')
+
+            x = np.array([-a, a])
+            h = np.array([0, b])
+            _, C1 = power_spectrum(x, h, q=q, window='None')
+
+
+
+    def test_invariance(self):
+        for a, b, c in [#(2.3, 1.2, 1.7),
+                        #(1.5, 3.1, 3.1),
+                        (0.5, 1.0, 1.0),
+                        (0.5, -0.5, 0.5)]:
+            q = np.linspace(0, 2*np.pi/a, 1001)
+
+            x = np.array([-a, a])
+            h = np.array([b, c])
+            print(x, h)
+            t = NonuniformNumpyTopography(x, h)
+            _, C1 = power_spectrum(*t.points(), q=q, window='None')
+
+            x = np.array([-a, 0, a])
+            h = np.array([b, (b+c)/2, c])
+            print(x, h)
+            t = NonuniformNumpyTopography(x, h)
+            _, C2 = power_spectrum(*t.points(), q=q, window='None')
+
+            x = np.array([-a, 0, a/2, a])
+            h = np.array([b, (b+c)/2, (3*c+b)/4, c])
+            print(x, h)
+            t = NonuniformNumpyTopography(x, h)
+            _, C3 = power_spectrum(*t.points(), q=q, window='None')
+
+            import matplotlib.pyplot as plt
+            plt.plot(q[1:], C1[1:], 'k-')
+            plt.plot(q[1:], C2[1:], 'r-')
+            plt.plot(q[1:], C3[1:], 'b-')
+            plt.show()
+
+    @unittest.skip
+    def test_triangle(self):
+        a = 2.3
+        b = 1.2
+        x = np.array([-a, a])
+        h = np.array([-b, b])
+        t = NonuniformNumpyTopography(x, h)
+        i = InterpolatedTopography(t, np.linspace(x.min(), x.max(), 1024))
+
+        qi, Ci = i.power_spectrum_1D(window='None')
+        q, C = power_spectrum(*t.points(), q=qi, window='None')
+
+        import matplotlib.pyplot as plt
+        plt.loglog(qi[1:], Ci[1:], 'k-')
+        plt.loglog(q[1:], C[1:], 'r-')
+        plt.show()
 
     def test_dsinc(self):
         self.assertAlmostEqual(dsinc(0), 0)
-        self.assertAlmostEqual(dsinc(1), -1)
-        self.assertAlmostEqual(dsinc(2), 1 / 2)
-        self.assertAlmostEqual(dsinc(3), -1 / 3)
+        self.assertAlmostEqual(dsinc(np.pi)*np.pi, -1)
+        self.assertAlmostEqual(dsinc(2*np.pi)*np.pi, 1 / 2)
+        self.assertAlmostEqual(dsinc(3*np.pi)*np.pi, -1 / 3)
 
         dx = 1e-9
         for x in [0, 0.5e-6, 1e-6, 0.5, 1]:
-            v1 = np.sinc(x + dx)
-            v2 = np.sinc(x - dx)
+            v1 = sinc(x + dx)
+            v2 = sinc(x - dx)
             self.assertAlmostEqual(dsinc(x), (v1 - v2) / (2 * dx), places=5, msg='x = {}'.format(x))
