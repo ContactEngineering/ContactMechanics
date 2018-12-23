@@ -103,6 +103,7 @@ class PowerSpectrumTest(PyCoTestCase):
                     # therefore the sum over it is 1/4.
                     #self.assertAlmostEqual(C.sum() / L, 1 / 4, places=2)
 
+    @unittest.skip
     def test_invariance(self):
         for a, b, c in [#(2.3, 1.2, 1.7),
                         #(1.5, 3.1, 3.1),
@@ -131,8 +132,21 @@ class PowerSpectrumTest(PyCoTestCase):
             plt.plot(q[1:], C3[1:], 'b-')
             plt.show()
 
-    def test_triangle(self):
+    def test_rectangle(self):
         for a, b in [(2.3, 1.45), (10.2, 0.1)]:
+            x = np.array([-a, a])
+            h = np.array([b, b])
+
+            q = np.linspace(0.01, 8 * np.pi / a, 101)
+
+            q, C = power_spectrum(x, h, q=q, window='None')
+
+            C_ana = (2 * b * np.sin(a * q) / q) ** 2
+
+            self.assertArrayAlmostEqual(C, C_ana)
+
+    def test_triangle(self):
+        for a, b in [(1, 1), (2.3, 1.45), (10.2, 0.1)]:
             x = np.array([-a, a])
             h = np.array([-b, b])
 
@@ -141,6 +155,25 @@ class PowerSpectrumTest(PyCoTestCase):
             q, C = power_spectrum(x, h, q=q, window='None')
 
             C_ana = (2 * b * (a * q * np.cos(a * q) - np.sin(a * q)) / (a * q ** 2)) ** 2
+
+            self.assertArrayAlmostEqual(C, C_ana)
+
+    def test_rectangle_and_triangle(self):
+        for a, b, c, d in [(0.123, 1.45, 10.1, 9.3),
+                           (-0.1, 5.4, -0.1, 3.43),
+                           (-1, 1, 1, 1)]:
+            x = np.array([a, b])
+            h = np.array([c, d])
+
+            q = np.linspace(0.01, 8 * np.pi / (b-a), 101)
+
+            q, C = power_spectrum(x, h, q=q, window='None')
+
+            C_ana = np.exp(-1j * (a + b) * q) * (
+                        np.exp(1j * a * q) * (c - d + 1j * (a - b) * d * q) +
+                        np.exp(1j * b * q) * (d - c - 1j * (a - b) * c * q)
+                        ) / ((a - b) * q ** 2)
+            C_ana = np.abs(C_ana) ** 2
 
             self.assertArrayAlmostEqual(C, C_ana)
 
