@@ -67,41 +67,37 @@ class PowerSpectrumTest(PyCoTestCase):
                             r[k] = 1 / 4
                             self.assertArrayAlmostEqual(C, r)
 
-    @unittest.skip
     def test_nonuniform_on_uniform_grid(self):
         for L in [1.3, 10.6]:
-            for k in [4, 8]:
+            for k in [2, 8]:
                 for n in [64]:
                     x = np.arange(n + 1) * L / n
                     h = np.sin(2 * np.pi * k * x / L)
                     t = NonuniformNumpyTopography(x, h)
-                    q, C = t.power_spectrum_1D()
 
-                    print('nu', C.sum() / L)
-
-                    pad = 16
+                    pad = 64
                     i = InterpolatedTopography(t, np.linspace(0, pad*x.max(), 4096))
                     qi, Ci = i.power_spectrum_1D(window='None')
+                    Ci *= pad
 
                     q, C = power_spectrum(*t.points(), q=qi, window='None')
 
-                    import matplotlib.pyplot as plt
-                    #plt.loglog(qi[1:], pad*Ci[1:], 'k-')
-                    plt.loglog(q[1:len(q)//8], abs(C[1:len(q)//8]-pad*Ci[1:len(q)//8]), 'r-')
-                    plt.show()
+                    # Throw out the high frequency data points
+                    maxi = len(q)//8
+                    qi = qi[:maxi]
+                    Ci = Ci[:maxi]
+                    q = q[:maxi]
+                    C = C[:maxi]
 
-                    #import matplotlib.pyplot as plt
-                    #plt.plot(*i.points(), 'kx-')
-                    #plt.show()
+                    # Throw out data points below a certain numerical threshold
+                    m = C > 1e-5
+                    qi = qi[m]
+                    Ci = Ci[m]
+                    q = q[m]
+                    C = C[m]
 
-                    print('interp', Ci.sum() / L)
-
-                    self.assertArrayAlmostEqual(C[1:len(q)//16], pad*Ci[1:len(q)//16])
-
-                    # The ms height of the sine is 1/2. The sum over the PSD (from -q to +q) is the ms height.
-                    # Our PSD only contains *half* of the full PSD (on the +q branch, the -q branch is identical),
-                    # therefore the sum over it is 1/4.
-                    #self.assertAlmostEqual(C.sum() / L, 1 / 4, places=2)
+                    self.assertArrayAlmostEqual(C, Ci, tol=0.1)
+                    self.assertAlmostEqual(C.sum()/Ci.sum()-1, 0, places=1)
 
     def test_invariance(self):
         for a, b, c in [(2.3, 1.2, 1.7),
@@ -135,6 +131,7 @@ class PowerSpectrumTest(PyCoTestCase):
             q, C = power_spectrum(x, h, q=q, window='None')
 
             C_ana = (2 * b * np.sin(a * q) / q) ** 2
+            C_ana /= 2 * a
 
             self.assertArrayAlmostEqual(C, C_ana)
 
@@ -148,6 +145,7 @@ class PowerSpectrumTest(PyCoTestCase):
             _, C = power_spectrum(x, h, q=q, window='None')
 
             C_ana = (2 * b * (a * q * np.cos(a * q) - np.sin(a * q)) / (a * q ** 2)) ** 2
+            C_ana /= 2 * a
 
             self.assertArrayAlmostEqual(C, C_ana)
 
@@ -166,7 +164,7 @@ class PowerSpectrumTest(PyCoTestCase):
                         np.exp(1j * a * q) * (c - d + 1j * (a - b) * d * q) +
                         np.exp(1j * b * q) * (d - c - 1j * (a - b) * c * q)
                         ) / ((a - b) * q ** 2)
-            C_ana = np.abs(C_ana) ** 2
+            C_ana = np.abs(C_ana) ** 2 / (b - a)
 
             self.assertArrayAlmostEqual(C, C_ana)
 
