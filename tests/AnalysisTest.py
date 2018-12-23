@@ -103,34 +103,27 @@ class PowerSpectrumTest(PyCoTestCase):
                     # therefore the sum over it is 1/4.
                     #self.assertAlmostEqual(C.sum() / L, 1 / 4, places=2)
 
-    @unittest.skip
     def test_invariance(self):
-        for a, b, c in [#(2.3, 1.2, 1.7),
-                        #(1.5, 3.1, 3.1),
+        for a, b, c in [(2.3, 1.2, 1.7),
+                        (1.5, 3.1, 3.1),
                         (0.5, 1.0, 1.0),
                         (0.5, -0.5, 0.5)]:
-            q = np.linspace(0, 2*np.pi/a, 1001)
+            q = np.linspace(0.0, 2*np.pi/a, 101)
 
             x = np.array([-a, a])
             h = np.array([b, c])
-            print(x, h)
             _, C1 = power_spectrum(x, h, q=q, window='None')
 
             x = np.array([-a, 0, a])
             h = np.array([b, (b+c)/2, c])
-            print(x, h)
             _, C2 = power_spectrum(x, h, q=q, window='None')
 
             x = np.array([-a, 0, a/2, a])
             h = np.array([b, (b+c)/2, (3*c+b)/4, c])
-            print(x, h)
             _, C3 = power_spectrum(x, h, q=q, window='None')
 
-            import matplotlib.pyplot as plt
-            plt.plot(q[1:], C1[1:], 'k-', lw=3)
-            plt.plot(q[1:], C2[1:], 'r-', lw=2)
-            plt.plot(q[1:], C3[1:], 'b-')
-            plt.show()
+            self.assertArrayAlmostEqual(C1, C2)
+            self.assertArrayAlmostEqual(C2, C3)
 
     def test_rectangle(self):
         for a, b in [(2.3, 1.45), (10.2, 0.1)]:
@@ -146,13 +139,13 @@ class PowerSpectrumTest(PyCoTestCase):
             self.assertArrayAlmostEqual(C, C_ana)
 
     def test_triangle(self):
-        for a, b in [(1, 1), (2.3, 1.45), (10.2, 0.1)]:
+        for a, b in [(0.5, -0.5), (1, 1), (2.3, 1.45), (10.2, 0.1)]:
             x = np.array([-a, a])
             h = np.array([-b, b])
 
             q = np.linspace(0.01, 8 * np.pi / a, 101)
 
-            q, C = power_spectrum(x, h, q=q, window='None')
+            _, C = power_spectrum(x, h, q=q, window='None')
 
             C_ana = (2 * b * (a * q * np.cos(a * q) - np.sin(a * q)) / (a * q ** 2)) ** 2
 
@@ -182,6 +175,9 @@ class PowerSpectrumTest(PyCoTestCase):
         self.assertAlmostEqual(dsinc(np.pi)*np.pi, -1)
         self.assertAlmostEqual(dsinc(2*np.pi)*np.pi, 1 / 2)
         self.assertAlmostEqual(dsinc(3*np.pi)*np.pi, -1 / 3)
+        self.assertArrayAlmostEqual(dsinc([0, np.pi])*np.pi, [0, -1])
+        self.assertArrayAlmostEqual(dsinc([0, 2*np.pi])*np.pi, [0, 1 / 2])
+        self.assertArrayAlmostEqual(dsinc([0, 3*np.pi])*np.pi, [0, -1 / 3])
 
         dx = 1e-9
         for x in [0, 0.5e-6, 1e-6, 0.5, 1]:
