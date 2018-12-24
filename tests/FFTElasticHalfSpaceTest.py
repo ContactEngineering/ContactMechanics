@@ -429,8 +429,8 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         print(disp.shape)
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.size)
 
-        nx,ny = self.res
-        disp[slice(0,nx),slice(0,ny)] = np.random.random((nx,ny))
+        nx, ny = self.res
+        disp[slice(0, nx), slice(0, ny)] = np.random.random((nx,ny))
 
         np.testing.assert_allclose(hs.evaluate(disp,pot=True,forces=True)[0], hs.evaluate(disp,pot=True, forces = False)[0])
 

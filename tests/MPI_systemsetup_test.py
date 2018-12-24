@@ -44,9 +44,9 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
                 fftengine = PFFTEngine(domain_resolution = fileReader.resolution, comm = comm)
                 Es = 1
                 if fileReader.size is not None:
-                    substrate = HS(resolution=fileReader.resolution,size = fileReader.size,young = Es, fftengine=fftengine )
+                    substrate = HS(resolution=fileReader.resolution, size=fileReader.size, young=Es, fftengine=fftengine )
                 else:
-                    substrate = HS(resolution=fileReader.resolution,young = Es, fftengine=fftengine )
+                    substrate = HS(resolution=fileReader.resolution, young = Es, fftengine=fftengine )
 
                 top = fileReader.getTopography(substrate)
 
