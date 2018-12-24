@@ -1,6 +1,4 @@
 
-import traceback
-import unittest
 import subprocess
 import sys
 
@@ -10,10 +8,10 @@ try:
 except ImportError:
     _withMPI = False
 import numpy as np
-import importlib
 
 MPI_tests= [
-    "MPITests",
+    "MPI_PeriodicFFTElasticHalfspaceTest",
+    "MPI_FreeFFTElasticHalfspaceTest",
     "test_unittestFail",
     "MPI_Hertztest",
 #    "MPI_Smoothcontact_tests",
@@ -25,7 +23,6 @@ MPI_tests= [
 
 # MPI Tests using the unittest framework
 MPI_unittests = [
-"MPITests",
 "test_unittestFail",
 "MPI_Topography_Test",
 "MPI_Hertztest",
