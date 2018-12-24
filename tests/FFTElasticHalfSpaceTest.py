@@ -196,6 +196,15 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
                 "theoretical E = {}, computed e = {}, diff(tol) = {}({})".format(
                     E, e, E-e, tol))
 
+
+    def test_same_energy(self):
+        """
+        Asserts that the energies computed in the real space and in the fourier space are the same
+        """
+        disp = np.random.normal(size=self.res)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size)
+        np.testing.assert_allclose(hs.evaluate(disp, pot=True, forces=True)[0], hs.evaluate(disp, pot=True, forces=False)[0])
+
     def test_unit_neutrality(self):
         tol = 1e-7
         # runs the same problem in two unit sets and checks whether results are
