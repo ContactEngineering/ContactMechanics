@@ -276,7 +276,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             qy = np.arange(ny, dtype=np.float64)
             qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
             q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
-            q[0,0] = np.NaN; #q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
+            q[0, 0] = np.NaN; #q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
             facts = np.pi*self.contact_modulus*q
             if self.thickness is not None: #TODO: parallel test for this case
                 # Compute correction for finite thickness
@@ -371,42 +371,113 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
     def evaluate_elastic_energy_k_space(self, kforces, kdisp):
         """
-        computes and returns the elastic energy due to forces and displacement
-        in Fourier space
-        Arguments:
-        forces -- array of forces
-        disp   -- array of displacements
+        Computes the Energy due to forces and displacements using their Fourier representation.
+
+        This uses Parseval's Theorem:
+
+        ..math::  \frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{A}\sum_{\vec q_i}|H(\vec q_i)|^2
+
+        when using following definition of the FFT:
+
+        ..math::  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},
+
+        ..math::  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s
+
+        When fitting the definition to numpy's norming convention
+        (https://docs.scipy.org/doc/numpy/reference/routines.fft.html#module-numpy.fft)
+        Parseval's Theorem takes following form:
+
+        ..math::  \sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec q_i}|H(\vec q_i)|^2
+
+        In a parallelized code kforces and kdisp contain only the slice attributed to this processor
+
+        Parameters
+        ----------
+        kforces: array of complex type and of size substrate.fourier_resolution
+        Fourier representation (output of a 2D rfftn) of the forces acting on the grid points
+        kdisp: array of complex type and of size substrate.fourier_resolution
+        Fourier representation (output of a 2D rfftn) of the displacements of the grid points
+
+
+        Returns
+        -------
+        The elastic energy due to the forces and displacements (already summed over all subdomains).
+
+
+
         """
         # pylint: disable=no-self-use
         # using vdot instead of dot because of conjugate
-        # The 2nd term at the end comes from the fact that we use a reduced
-        # rfft transform
 
-        # This will not work in parallel, because not all Processors pocess the line of data that should not be symetrized
-        #return .5*(np.vdot(kdisp, -kforces).real +
-        #           np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real)/self.nb_pts
-
-        # Now compatible with parallel code
+        # kdisp and kforces are the output of the 2D rfftn, that means the a part of the transform is omitted because of
+        # the symetry along the last dimension
+        #
+        # That's why the components whose symetrics have been omitted are weighted with a factor of 2.
+        #
+        # The first column (indexes [...,0], wavevector 0 along the last dimension) has no symetric
+        #
+        # When the number of points in the last dimension is even, the last column (Nyquist Frequency) has also no symetric.
+        #
+        # The serial code implementation would look like this
+        # if (self.domain_resolution[-1] % 2 == 0)
+        #   return .5*(np.vdot(kdisp, -kforces).real +
+        #           np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real # adding the data that has been omitted by rfftn
+        #           # because of symetry
+        #           )/self.nb_pts
+        # else :
+        #   return .5 * (np.vdot(kdisp, -kforces).real +
+        #      #           np.vdot(kdisp[..., 1:], -kforces[..., 1:]).real # adding the data that has been omitted by rfftn
+        #      #           # because of symetry
+        #      #           )/self.nb_pts
+        #
+        # Parallelized Version
         # The inner part of the fourier data should always be symetrized (i.e. multiplied by 2)
-        # When the fourier subdomain contains boundary values (wavevector 0 and ny//2) these values should only be added once
+        # When the fourier subdomain contains boundary values (wavevector 0 (even and odd) and ny//2 (only for odd))
+        # these values should only be added once
 
-        # TODO: also handle the case with odd number of points
         #FIXME: why this test was done in earlier versions
         # if kdisp.shape[-1] > 0:
         if kdisp.size > 0:
-            locsum = .5 * (2 * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
-                  +
-                  np.vdot(kdisp[..., -1], -kforces[..., -1]).real *
-                  (2 if self.fourier_location[-1] + self.fourier_resolution[-1]
-                        != self.domain_resolution[-1] // 2 + 1
-                   else 1)
-                  +
-                  np.vdot(kdisp[..., 0], -kforces[..., 0]).real *
-                  (2 if self.fourier_location[-1] != 0
-                   else 1)
-                  ) / np.prod(self.domain_resolution)
+            if self.fourier_location[-1] == 0: # First column of this fourier data is first of global data
+                #print("First column of this fourier data is first of global data")
+                fact0 = 1
+            elif self.fourier_resolution[-1] > 1:
+                # local first row is in the
+                fact0 = 2
+            else:
+                fact0 = 0
+
+            if self.fourier_location[-1] == 0 and self.fourier_resolution[-1] ==1 :
+                factend = 0
+            elif (self.domain_resolution[-1] % 2 == 1):
+                # odd number of points, last column have always to be symetrized
+                factend = 2
+            elif self.fourier_location[-1] + self.fourier_resolution[-1] - 1 == self.domain_resolution[-1] // 2:
+                # last column of the global rfftn already contains it's symetric
+                factend = 1
+                # print("last Element of the even data has to be accounted only once")
+            else:
+                factend = 2
+                # print("last element of this local slice is not last element of the total global data")
+            # print("fact0={}".format(fact0))
+            # print("factend={}".format(factend))
+
+            if self.fourier_resolution[-1] > 2:
+                factmiddle = 2
+            else:
+                factmiddle = 0
+
+            locsum = 0.5 * (
+               factmiddle * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
+             + fact0 *   np.vdot(kdisp[...,  0], -kforces[...,  0]).real
+             + factend * np.vdot(kdisp[..., -1], -kforces[..., -1]).real
+               ) / np.prod(self.domain_resolution) #nopep8
+            # We divide by the total number of points to get the appropriate normalisation of the Fourier transform
+            # (in numpy the division by # happens only at the inverse transform)
         else:
-            locsum = np.array([], dtype = kdisp.real.dtype)
+            # This handles the case where the processor hods an empty subdomain
+            locsum = np.array([], dtype=kdisp.real.dtype)
+        #print(locsum)
         return self.pnp.sum(locsum)
         #else:
         #    return 0
