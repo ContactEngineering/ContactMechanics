@@ -276,19 +276,19 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         This uses Parseval's Theorem:
 
-        ..math::  \frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{A}\sum_{\vec q_i}|H(\vec q_i)|^2
+        .. math::  \frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{A}\sum_{\vec q_i}|H(\vec q_i)|^2
 
         when using following definition of the FFT:
 
-        ..math::  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},
+        .. math::  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},
 
-        ..math::  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s
+        .. math::  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s
 
         When fitting the definition to numpy's norming convention
         (https://docs.scipy.org/doc/numpy/reference/routines.fft.html#module-numpy.fft)
         Parseval's Theorem takes following form:
 
-        ..math::  \sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec q_i}|H(\vec q_i)|^2
+        .. math::  \sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec q_i}|H(\vec q_i)|^2
 
 
         Parameters
