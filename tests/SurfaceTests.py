@@ -37,6 +37,7 @@ try:
     import numpy as np
     import numpy.matlib as mp
     from numpy.random import rand, random
+    from numpy.testing import assert_array_equal
     import tempfile, os
     from tempfile import TemporaryDirectory as tmp_dir
     import os
@@ -452,4 +453,21 @@ class IOTest(unittest.TestCase):
 
         for fn in file_list:
             t = read(fn)
-            pickle.dumps(t)
+            s = pickle.dumps(t)
+            pickled_t = pickle.loads(s)
+
+            #
+            # Compare some attributes after unpickling
+            #
+            # sometimes the result is a list of topographies
+            multiple = isinstance(t, list)
+            if not multiple:
+                t = [t]
+                pickled_t = [pickled_t]
+
+            for x,y in zip(t,pickled_t):
+                for attr in ['unit', 'dim', 'size']:
+                    assert getattr(x, attr) == getattr(y, attr)
+                assert_array_equal(x.points(), y.points())
+
+
