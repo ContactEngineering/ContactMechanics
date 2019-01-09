@@ -41,6 +41,7 @@ try:
     from tempfile import TemporaryDirectory as tmp_dir
     import os
     import io
+    import pickle
 
     from PyCo.Topography import (UniformNumpyTopography, NonuniformNumpyTopography, DetrendedTopography, Sphere,
                                  ScaledTopography, rms_height, rms_slope, shift_and_tilt, read, read_asc, read_di,
@@ -445,3 +446,10 @@ class IOTest(unittest.TestCase):
         # should also work with streams in memory
         self.assertTrue(is_binary_stream(io.BytesIO(b"11111")))  # some bytes in memory
         self.assertFalse(is_binary_stream(io.StringIO("11111")))  # some bytes in memory
+
+    def test_can_be_pickled(self):
+        file_list = self.text_example_file_list+self.binary_example_file_list
+
+        for fn in file_list:
+            t = read(fn)
+            pickle.dumps(t)
