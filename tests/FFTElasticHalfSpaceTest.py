@@ -438,7 +438,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         np_pts = np.prod(self.res)
         area_per_pt = np.prod(self.size)/np_pts
         energy = .5*(np.vdot(-kforce, kdisp)+
-                     np.vdot(-kforce[..., :-1], kdisp[..., :-1]))/np_pts
+                     np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1]))/np_pts
         error = abs(energy.imag)
         tol = 1e-10
         self.assertTrue(error < tol,
