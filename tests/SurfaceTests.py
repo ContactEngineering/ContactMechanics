@@ -135,6 +135,25 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         surf.unit = 'km'
         self.assertEqual(surf.unit, 'km')
 
+    def test_example5(self):
+        surf = read_asc('tests/file_format_examples/example5.txt')
+        self.assertEqual(surf.shape, (10, 10))
+        self.assertIsNone(surf.size)
+        self.assertAlmostEqual(surf.rms_height(), 1.0)
+        self.assertAlmostEqual(rms_slope(surf), 0.666666666666666666) # TODO Does this result make sense without size?
+        self.assertTrue(surf.is_uniform)
+        self.assertIsNone(surf.unit)
+
+        # test setting the size
+        surf.size = 1, 2
+        self.assertAlmostEqual(surf.size[0], 1)
+        self.assertAlmostEqual(surf.size[1], 2)
+
+        # test setting the unit
+        surf.unit = 'km'
+        self.assertEqual(surf.unit, 'km')
+
+
 class DetrendedSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
@@ -144,23 +163,31 @@ class DetrendedSurfaceTest(unittest.TestCase):
         d = .2
         arr = np.arange(5)*a+d
         arr = arr + np.arange(6).reshape((-1, 1))*b
-        surf = DetrendedTopography(UniformNumpyTopography(arr), detrend_mode='slope')
+
+        surf = DetrendedTopography(UniformNumpyTopography(arr, size=(1,1)), detrend_mode='slope')
+        # WORKAROUND: added size to surface here, because otherwise slope makes no sense
         self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(rms_slope(surf), 0)
+
         surf = DetrendedTopography(UniformNumpyTopography(arr), detrend_mode='height')
         self.assertTrue(surf.is_uniform)
-        self.assertAlmostEqual(surf[...].mean(), 0)
+        self.assertAlmostEqual(surf[...].mean(), 0) # TODO fails -> implement detrending without using size
         self.assertAlmostEqual(rms_slope(surf), 0)
         self.assertTrue(rms_height(surf) < rms_height(arr))
+
         surf2 = DetrendedTopography(UniformNumpyTopography(arr, size=(1, 1)), detrend_mode='height')
         self.assertTrue(surf2.is_uniform)
         self.assertAlmostEqual(rms_slope(surf2), 0)
         self.assertTrue(rms_height(surf2) < rms_height(arr))
+
         self.assertAlmostEqual(rms_height(surf), rms_height(surf2))
+
         x, y, z = surf2.points()
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0]/surf2.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1]/surf2.resolution[1])
+
+
     def test_smooth_curved(self):
         a = 1.2
         b = 2.5
@@ -468,6 +495,7 @@ class IOTest(unittest.TestCase):
             for x,y in zip(t,pickled_t):
                 for attr in ['unit', 'dim', 'size']:
                     assert getattr(x, attr) == getattr(y, attr)
-                assert_array_equal(x.points(), y.points())
+                if x.size is not None:
+                    assert_array_equal(x.points(), y.points())
 
 
