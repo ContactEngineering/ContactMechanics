@@ -34,6 +34,7 @@ SOFTWARE.
 from .Interactions import Interaction, HardWall, SoftWall
 from .Potentials import Potential, SmoothPotential, MinimisationPotential
 from .Potentials import SimpleSmoothPotential
+from .Potentials import LinearCorePotential
 
 from .Adhesion import ExpPotential
 from .Harmonic import HarmonicPotential

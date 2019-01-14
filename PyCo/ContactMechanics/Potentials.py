@@ -776,6 +776,91 @@ class MinimisationPotential(SmoothPotential):
         """
         raise NotImplementedError()
 
+class LinearCorePotential:
+    """
+    Replaces the singular repulsive part of potentials by a linear part. This
+    makes potentials maximally robust for the use with very bad initial
+    parameters. Consider using this instead of loosing time guessing initial
+    states for optimization.
+    """
+    def __init__(self, parent_potential, r_ti=None):
+        """
+        Keyword Arguments:
+        r_ti    -- (default r_min/2) transition point between linear function
+                   and lj, defaults to r_min
+        """
+        # pylint: disable=super-init-not-called
+        # not calling the superclass's __init__ because this is used in diamond
+        # inheritance and I do not want to have to worry about python's method
+        # resolution order
+        self.parent_potential = parent_potential
+        self.r_ti = r_ti if r_ti is not None else parent_potential.r_min/2
+        self.lin_part = self.compute_linear_part()
+
+    def compute_linear_part(self):
+        " evaluates the two coefficients of the linear part of the potential"
+        f_val, f_prime, dummy = self.parent_potential.evaluate(self.r_ti, True, True)
+        return np.poly1d((float(-f_prime), f_val + f_prime*self.r_ti))
+
+    def __repr__(self):
+        return "LinearCorePotential, linear below r_ti = {0.r_ti}. Otherwise: \n {}".format(self,self.parent_potential)
+
+    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
+        """Evaluates the potential and its derivatives
+        Keyword Arguments:
+        r          -- array of distances
+        pot        -- (default True) if true, returns potential energy
+        forces     -- (default False) if true, returns forces
+        curb       -- (default False) if true, returns second derivative
+        area_scale -- (default 1.) scale by this. (Interaction quantities are
+                      supposed to be expressed per unit area, so systems need
+                      to be able to scale their response for their resolution))
+        """
+        # pylint: disable=bad-whitespace
+        # pylint: disable=invalid-name
+        if np.isscalar(r):
+            r = np.asarray(r)
+        nb_dim = len(r.shape)
+        if nb_dim == 0:
+            r.shape = (1,)
+        V = np.zeros_like(r) if pot else self.SliceableNone()
+        dV = np.zeros_like(r) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r) if curb else self.SliceableNone()
+
+        sl_core = np.ma.filled(r < self.r_ti, fill_value=False)
+        sl_rest = np.logical_not(sl_core)
+        # little hack to work around numpy bug
+        if np.array_equal(sl_core, np.array([True])):
+            V, dV, ddV = self.lin_pot(r, pot, forces, curb)
+        else:
+            V[sl_core], dV[sl_core], ddV[sl_core] = \
+                self.lin_pot(r[sl_core], pot, forces, curb)
+            V[sl_rest], dV[sl_rest], ddV[sl_rest] = \
+                self.parent_potential.evaluate(r[sl_rest], pot, forces, curb, area_scale=1.)
+
+        return (area_scale * V if pot else None,
+                area_scale * dV if forces else None,
+                area_scale * ddV if curb else None)
+
+
+    def lin_pot(self, r, pot=True, forces=False, curb=False):
+        """ Evaluates the linear part and its derivatives of the potential.
+        Keyword Arguments:
+        r      -- array of distances
+        pot    -- (default True) if true, returns potential energy
+        forces -- (default False) if true, returns forces
+        curb   -- (default False) if true, returns second derivative
+        """
+        V = None if pot is False else self.lin_part(r)
+        dV = None if forces is False else -self.lin_part[1]
+        ddV = None if curb is False else 0.
+        return V, dV, ddV
+
+    def r_min(self):
+        """
+        convenience function returning the location of the enery minimum
+        """
+        return None
 
 class SimpleSmoothPotential(Potential):
     """
