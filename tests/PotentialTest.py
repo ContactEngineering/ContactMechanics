@@ -45,6 +45,8 @@ try:
     from PyCo.ContactMechanics import VDW82smooth
     from PyCo.ContactMechanics import VDW82smoothMin
     from PyCo.ContactMechanics import VDW82SimpleSmooth
+    from PyCo.ContactMechanics import LinearCorePotential
+
 
     from PyCo.ContactMechanics import ExpPotential
 
