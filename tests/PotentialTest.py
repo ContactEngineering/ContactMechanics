@@ -323,6 +323,60 @@ class PotentialTest(unittest.TestCase):
         #     plt.legend(loc='best')
         # plt.show()
 
+    def test_VDW82SimpleSmoothMin(self):
+        hamaker = 68.1e-21
+        c_sr = 2.1e-78 * 1e-6
+        r_c = 10e-10
+        potref = VDW82SimpleSmooth(c_sr, hamaker, 10e-10)
+        pot = VDW82SimpleSmoothMin(c_sr, hamaker, r_ti = potref.r_min / 2, r_c= 10e-10)
+
+        # import matplotlib.pyplot as plt
+        # r = np.linspace(pot.r_min*.7, pot.r_c*1.1, 1000)
+        # ps = pot.evaluate(r, pot=True, forces=True)
+        #
+        # for i, name in enumerate(('potential', 'force')):
+        #     plt.figure()
+        #     p = ps[i]
+        #     plt.plot(r, p, label=name)
+        #
+        #     pois = [pot.r_c, pot.r_min]
+        #     plt.scatter(pois, pot.evaluate(pois, pot=True, forces=True)[i])
+        #     plt.ylim(bottom=1.1*p.min(), top=-.3*p.min())
+        #     plt.grid(True)
+        #     plt.legend(loc='best')
+        # plt.show()
+
+    def test_LinearCorePotential(self):
+        w = 3
+        z0 = 0.5
+        r_ti=  0.4 * z0
+
+        refpot = VDW82(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2)
+
+
+        pot = LinearCorePotential(refpot, r_ti =r_ti)
+        z = [0.8*r_ti,r_ti,1.5*r_ti]
+        for zi in z:
+            np.testing.assert_allclose(
+                pot.naive_pot(zi, True, True, True),
+                np.array(refpot.evaluate(zi, True, True, True, area_scale=1.)).reshape(-1))
+            if zi >= r_ti:
+                np.testing.assert_allclose(pot.evaluate(zi, True, True,True, area_scale=4.),
+                                           refpot.evaluate(zi, True, True,True, area_scale=4.))
+
+        "".format(LinearCorePotential)
+        if False:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(3)
+
+            z =np.linspace(0.8*r_ti,2*z0)
+            for poti in [refpot, pot]:
+                p,f,c = poti.evaluate(z, True, True, True)
+                ax[0].plot(z,p)
+                ax[1].plot(z,f)
+                ax[2].plot(z,c)
+            fig.savefig("test_LinearCorePotential.png")
+
     def test_ExpPotential(self):
         r = np.linspace(-10, 10, 1001)
         pot = ExpPotential(1.0, 1.0)
