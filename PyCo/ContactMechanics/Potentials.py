@@ -884,7 +884,9 @@ class LinearCorePotential(ChildPotential):
         convenience function returning the location of the potential's
         inflection point (if applicable)
         """
+
         return self.parent_potential.r_infl
+
 
 class SimpleSmoothPotential(Potential):
     """

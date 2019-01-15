@@ -323,6 +323,7 @@ class PotentialTest(unittest.TestCase):
         #     plt.legend(loc='best')
         # plt.show()
 
+
 #    @unittest.expectedFailure
 #    def test_VDW82SimpleSmoothMin(self):
 #        hamaker = 68.1e-21
