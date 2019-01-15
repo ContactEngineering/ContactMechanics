@@ -776,7 +776,23 @@ class MinimisationPotential(SmoothPotential):
         """
         raise NotImplementedError()
 
-class LinearCorePotential:
+class ChildPotential(Potential):
+    def __init__(self, parent_potential):
+        self.parent_potential = parent_potential
+
+    def naive_pot(self, r, pot=True, forces=False, curb=False):
+        """ Evaluates the potential and its derivatives without cutoffs or
+            offsets.
+            Keyword Arguments:
+            r      -- array of distances
+            pot    -- (default True) if true, returns potential energy
+            forces -- (default False) if true, returns forces
+            curb   -- (default False) if true, returns second derivative
+
+        """
+        return self.parent_potential.naive_pot(r, pot, forces, curb)
+
+class LinearCorePotential(ChildPotential):
     """
     Replaces the singular repulsive part of potentials by a linear part. This
     makes potentials maximally robust for the use with very bad initial
@@ -856,11 +872,19 @@ class LinearCorePotential:
         ddV = None if curb is False else 0.
         return V, dV, ddV
 
+    @property
     def r_min(self):
         """
         convenience function returning the location of the enery minimum
         """
-        return None
+        return self.parent_potential.r_min
+    @property
+    def r_infl(self):
+        """
+        convenience function returning the location of the potential's
+        inflection point (if applicable)
+        """
+        return self.parent_potential.r_infl
 
 class SimpleSmoothPotential(Potential):
     """
