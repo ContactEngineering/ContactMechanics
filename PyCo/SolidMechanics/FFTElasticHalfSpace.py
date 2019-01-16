@@ -272,18 +272,58 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
     def evaluate_elastic_energy_k_space(self, kforces, kdisp):
         """
-        computes and returns the elastic energy due to forces and displacement
-        in Fourier space
-        Arguments:
-        forces -- array of forces
-        disp   -- array of displacements
+        Computes the Energy due to forces and displacements using their Fourier representation.
+
+        This uses Parseval's Theorem:
+
+        .. math::  \frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{A}\sum_{\vec q_i}|H(\vec q_i)|^2
+
+        when using following definition of the FFT:
+
+        .. math::  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},
+
+        .. math::  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s
+
+        When fitting the definition to numpy's norming convention
+        (https://docs.scipy.org/doc/numpy/reference/routines.fft.html#module-numpy.fft)
+        Parseval's Theorem takes following form:
+
+        .. math::  \sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec q_i}|H(\vec q_i)|^2
+
+
+        Parameters
+        ----------
+        kforces: array of complex type and of size substrate.computational_resolution
+        Fourier representation (output of a 2D rfftn) of the forces acting on the grid points
+        kdisp: array of complex type and of size substrate.computational_resolution
+        Fourier representation (output of a 2D rfftn) of the displacements of the grid points
+
+
+        Returns
+        -------
+        The elastic energy due to the forces and displacements
         """
         # pylint: disable=no-self-use
         # using vdot instead of dot because of conjugate
-        # The 2nd term at the end comes from the fact that we use a reduced
-        # rfft transform
-        return .5*(np.vdot(kdisp, -kforces).real +
-                   np.vdot(kdisp[..., :-1], -kforces[..., :-1]).real)/self.nb_pts
+        # kdisp and kforces are the output of the 2D rfftn, that means the a part of the transform is omitted because of
+        # the symetry along the last dimension
+        #
+        # That's why the components whose symetrics have been omitted are weighted with a factor of 2.
+        #
+        # The first column (indexes [...,0], wavevector 0 along the last dimension) has no symetric
+        #
+        # When the number of points in the last dimension is even, the last column (Nyquist Frequency) has also no symetric.
+
+
+        if self.computational_resolution[-1] % 2 == 0 : # even number of points: highest frequency has no symetric
+            factend = 1
+        else:
+            factend=2
+        return 0.5 * np.real((2 * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1])
+                              + np.vdot(kdisp[..., 0], -kforces[..., 0])
+                              + factend * np.vdot(kdisp[..., -1], -kforces[..., -1]))) /self.nb_pts
+        # We divide by the total number of points to get the appropriate normalisation of the Fourier transform
+        # (in numpy the division by # happens only at the inverse transform)
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces

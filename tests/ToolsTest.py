@@ -41,7 +41,7 @@ try:
     import PyCo.Topography.Uniform as Uniform
     from PyCo.Tools import evaluate_gradient, mean_err
     from PyCo.Topography import (autocorrelation_1D, autocorrelation_2D, tilt_from_height,
-                                 shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope,
+                                 shift_and_tilt, shift_and_tilt_approx,
                                  NonuniformNumpyTopography, UniformNumpyTopography)
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
     from PyCo.Topography.Nonuniform.Detrending import polyfit
@@ -100,12 +100,6 @@ class ToolTest(PyCoTestCase):
         self.assertTrue(error < tol, "error = {}, tol = {}, arr_out = {}".format(
             error, tol, arr_approx))
 
-        mean_slope = [np.diff(arr, axis=d).mean() for d in range(len(arr.shape))]
-        arr_out = shift_and_tilt_from_slope(arr)
-        mean_slope = [np.diff(arr_out, axis=d).mean() for d in range(len(arr_out.shape))]
-        self.assertAlmostEqual(mean_slope[0], 0)
-        self.assertAlmostEqual(mean_slope[1], 0)
-
         mean_slope = tilt_from_height(arr)
         self.assertAlmostEqual(mean_slope[0], b)
         self.assertAlmostEqual(mean_slope[1], a)
@@ -114,11 +108,6 @@ class ToolTest(PyCoTestCase):
         mean_slope = tilt_from_height(UniformNumpyTopography(arr))
         self.assertAlmostEqual(mean_slope[0], b)
         self.assertAlmostEqual(mean_slope[1], a)
-        self.assertAlmostEqual(mean_slope[2], d)
-
-        mean_slope = tilt_from_height(UniformNumpyTopography(arr, size=(3, 2.5)))
-        self.assertAlmostEqual(mean_slope[0], 2*b)
-        self.assertAlmostEqual(mean_slope[1], 2*a)
         self.assertAlmostEqual(mean_slope[2], d)
 
 
