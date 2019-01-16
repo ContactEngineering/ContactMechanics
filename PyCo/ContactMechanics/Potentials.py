@@ -886,7 +886,7 @@ class LinearCorePotential(ChildPotential):
         """
 
         return self.parent_potential.r_infl
-
+    # TODO: getattr for further properties of the parent potential like r_c ?
 
 class SimpleSmoothPotential(Potential):
     """
