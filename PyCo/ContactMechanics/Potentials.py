@@ -655,127 +655,6 @@ class SmoothPotential(Potential):
                        " check whether the inputs make sense").format(self)
             raise self.PotentialError(err_str)
 
-
-class MinimisationPotential(SmoothPotential):
-    """
-    Replaces the singular repulsive part of potentials by a linear part. This
-    makes potentials maximally robust for the use with very bad initial
-    parameters. Consider using this instead of loosing time guessing initial
-    states for optimization.
-    """
-    def __init__(self, r_ti=None):
-        """
-        Keyword Arguments:
-        r_ti    -- (default r_min/2) transition point between linear function
-                   and lj, defaults to r_min
-        """
-        # pylint: disable=super-init-not-called
-        # not calling the superclass's __init__ because this is used in diamond
-        # inheritance and I do not want to have to worry about python's method
-        # resolution order
-        self.r_ti = r_ti if r_ti is not None else self.r_min/2
-        self.lin_part = self.compute_linear_part()
-
-    def compute_linear_part(self):
-        " evaluates the two coefficients of the linear part of the potential"
-        f_val, f_prime, dummy = super().evaluate(self.r_ti, True, True)
-        return np.poly1d((float(-f_prime), f_val + f_prime*self.r_ti))
-
-    @abc.abstractmethod
-    def __repr__(self):
-        raise NotImplementedError
-
-    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
-        """Evaluates the potential and its derivatives
-        Keyword Arguments:
-        r          -- array of distances
-        pot        -- (default True) if true, returns potential energy
-        forces     -- (default False) if true, returns forces
-        curb       -- (default False) if true, returns second derivative
-        area_scale -- (default 1.) scale by this. (Interaction quantities are
-                      supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
-        """
-        # pylint: disable=bad-whitespace
-        # pylint: disable=invalid-name
-        if np.isscalar(r):
-            r = np.asarray(r)
-        nb_dim = len(r.shape)
-        if nb_dim == 0:
-            r.shape = (1,)
-        V = np.zeros_like(r) if pot else self.SliceableNone()
-        dV = np.zeros_like(r) if forces else self.SliceableNone()
-        ddV = np.zeros_like(r) if curb else self.SliceableNone()
-
-        sl_core = np.ma.filled(r < self.r_ti, fill_value=False)
-        sl_rest = np.logical_not(sl_core)
-        # little hack to work around numpy bug
-        if np.array_equal(sl_core, np.array([True])):
-            return self.lin_pot(r, pot, forces, curb)
-        else:
-            V[sl_core], dV[sl_core], ddV[sl_core] = self.lin_pot(
-                r[sl_core], pot, forces, curb)
-
-        sl_inner = np.logical_and(np.ma.filled(r < self.r_t, fill_value=False),
-                                  sl_rest)
-        sl_rest *= np.logical_not(sl_inner)
-        # little hack to work around numpy bug
-        if np.array_equal(sl_inner, np.array([True])):
-            V, dV, ddV = self.naive_pot(r, pot, forces, curb)
-            V -= self.offset
-            return V, dV, ddV
-        else:
-            V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_pot(
-                r[sl_inner], pot, forces, curb)
-        if pot:
-            V[sl_inner] -= self.offset
-
-        sl_outer = np.logical_and(np.ma.filled(r < self.r_c, fill_value=False),
-                                  sl_rest)
-        # little hack to work around numpy bug
-        if np.array_equal(sl_outer, np.array([True])):
-            V, dV, ddV = self.spline_pot(r, pot, forces, curb)
-        else:
-            V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_pot(
-                r[sl_outer], pot, forces, curb)
-
-        return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
-
-    @abc.abstractmethod
-    def naive_pot(self, r, pot=True, forces=False, curb=False):
-        """ Evaluates the potential and its derivatives without cutoffs or
-            offsets.
-            Keyword Arguments:
-            r      -- array of distances
-            pot    -- (default True) if true, returns potential energy
-            forces -- (default False) if true, returns forces
-            curb   -- (default False) if true, returns second derivative
-
-        """
-        raise NotImplementedError()
-
-    def lin_pot(self, r, pot=True, forces=False, curb=False):
-        """ Evaluates the linear part and its derivatives of the potential.
-        Keyword Arguments:
-        r      -- array of distances
-        pot    -- (default True) if true, returns potential energy
-        forces -- (default False) if true, returns forces
-        curb   -- (default False) if true, returns second derivative
-        """
-        V = None if pot is False else self.lin_part(r)
-        dV = None if forces is False else -self.lin_part[1]
-        ddV = None if curb is False else 0.
-        return V, dV, ddV
-
-    @abc.abstractproperty
-    def r_min(self):
-        """
-        convenience function returning the location of the enery minimum
-        """
-        raise NotImplementedError()
-
 class ChildPotential(Potential):
     def __init__(self, parent_potential):
         self.parent_potential = parent_potential
@@ -822,7 +701,7 @@ class LinearCorePotential(ChildPotential):
         return np.poly1d((float(-f_prime), f_val + f_prime*self.r_ti))
 
     def __repr__(self):
-        return "LinearCorePotential, linear below r_ti = {0.r_ti}. Otherwise: \n {}".format(self,self.parent_potential)
+        return "{0} -> LinearCorePotential: r_ti = {1.r_ti}".format(self.parent_potential.__repr__(),self)
 
     def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
         """Evaluates the potential and its derivatives
@@ -889,30 +768,30 @@ class LinearCorePotential(ChildPotential):
         """
 
         return self.parent_potential.r_infl
-    # TODO: getattr for further properties of the parent potential like r_c ?
 
-class SimpleSmoothPotential(Potential):
+class ParabolicCutoffPotential(ChildPotential):
     """
-    Implements a very simple smoothing of a potential, by complementing the
-    functional form of the potential with a parabola that brings to zero the
-    potential's zeroth, first and second derivative at an imposed (and freely
-    chosen) cut_off radius r_c
+        Implements a very simple smoothing of a potential, by complementing the
+        functional form of the potential with a parabola that brings to zero the
+        potential's zeroth, first and second derivative at an imposed (and freely
+        chosen) cut_off radius r_c
     """
-    # pylint: disable=abstract-method
-    # pylint: disable=super-init-not-called
-    # this class is itself abstract
-    def __init__(self, r_c):
+
+    def __init__(self, parent_potential, r_c):
         """
         Keyword Arguments:
         r_c -- user-defined cut-off radius
         """
-
+        self.parent_potential = parent_potential
         self.r_c = r_c
 
         self.poly = None
         self.compute_poly()
         self._r_min = self.precompute_min()
         self._r_infl = self.precompute_infl()
+
+    def __repr__(self):
+        return "{0} -> ParabolaCutoffPotential: r_c = {1.r_c}".format(self.parent_potential.__repr__(),self)
 
     def precompute_min(self):
         """
@@ -948,6 +827,20 @@ class SimpleSmoothPotential(Potential):
                 ("Couldn't find minimumm of derivative, something went wrong. "
                  "This was the full minimisation result: {}").format(result))
         return float(result[0])
+
+    @property
+    def r_min(self):
+        """
+        convenience function returning the location of the energy minimum
+        """
+        return self._r_min
+
+    @property
+    def r_infl(self):
+        """
+        convenience function returning the location of the inflection point
+        """
+        return self._r_infl
 
     def compute_poly(self):
         """
@@ -1011,3 +904,4 @@ class SimpleSmoothPotential(Potential):
         return (area_scale*V if pot else None,
                 area_scale*dV if forces else None,
                 area_scale*ddV if curb else None)
+
