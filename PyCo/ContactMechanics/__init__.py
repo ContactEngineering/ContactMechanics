@@ -32,9 +32,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from .Interactions import Interaction, HardWall, SoftWall
-from .Potentials import Potential, SmoothPotential, MinimisationPotential
-from .Potentials import SimpleSmoothPotential
-from .Potentials import LinearCorePotential
+from .Potentials import Potential, SmoothPotential
+from .Potentials import LinearCorePotential, ParabolicCutoffPotential
 
 from .Adhesion import ExpPotential
 from .Harmonic import HarmonicPotential

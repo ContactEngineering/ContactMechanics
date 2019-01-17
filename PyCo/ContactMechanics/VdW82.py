@@ -34,8 +34,9 @@ SOFTWARE.
 """
 import numpy as np
 
-from . import Potential, SmoothPotential, MinimisationPotential
-from . import SimpleSmoothPotential
+from . import Potential, SmoothPotential
+from . import ParabolicCutoffPotential
+from . import LinearCorePotential
 
 
 class VDW82(Potential):
@@ -176,65 +177,34 @@ class VDW82smooth(VDW82, SmoothPotential):
             return super().r_infl
             # This is the old property implementation in the VDW82 Potential
 
-class VDW82smoothMin(VDW82smooth, MinimisationPotential):
+def VDW82smoothMin(c_sr, hamaker, gamma=None, r_ti=None, r_t_ls=None):
     """
     When starting from a bad guess, or with a bad optimizer, sometimes
     optimisations that include potentials with a singularity at the origin
     fail, because the optimizer chooses a bad step direction and length and
     falls into non-physical territory. This class tries to remedy this by
     replacing the singular repulsive part around zero by a linear function.
+
+    Keyword Arguments:
+    c_sr    -- coefficient for repulsive part
+    hamaker -- Hamaker constant for substrate
+    gamma   -- (default ε) Work of adhesion, defaults to ε
+    r_ti    -- (default r_min/2) transition point between linear function
+               and lj, defaults to r_min
+    r_t_ls  -- (default r_min) transition point between lj and spline,
+                defaults to r_min
     """
-    name = 'vdW8-2smooth-min'
+    return LinearCorePotential(VDW82smooth(c_sr, hamaker, gamma, r_t_ls), r_ti)
 
-    def __init__(self, c_sr, hamaker, gamma=None, r_ti=None, r_t_ls=None):
-        """
-        Keyword Arguments:
-        c_sr    -- coefficient for repulsive part
-        hamaker -- Hamaker constant for substrate
-        gamma   -- (default ε) Work of adhesion, defaults to ε
-        r_ti    -- (default r_min/2) transition point between linear function
-                   and lj, defaults to r_min
-        r_t_ls  -- (default r_min) transition point between lj and spline,
-                    defaults to r_min
-        """
-        VDW82smooth.__init__(self, c_sr, hamaker, gamma, r_t_ls)
-        MinimisationPotential.__init__(self, r_ti)
+def VDW82SimpleSmooth(c_sr, hamaker, r_c):
+    """Uses the ParabolaCutoffPotential smoothing in combination with VDW82
 
-    def __repr__(self):
-        return super().__repr__()
-
-
-class VDW82SimpleSmooth(VDW82, SimpleSmoothPotential):
-    """
-    Uses the SimpleSmoothPotential smoothing in combination with VDW82
-    """
-    name = 'vdW8-2simple-smooth'
-
-    def __init__(self, c_sr, hamaker, r_c):
-        """
         Keyword Arguments:
         c_sr    -- coefficient for repulsive part
         hamaker -- Hamaker constant for substrate
         r_c     -- emposed cutoff radius
-        """
-        VDW82.__init__(self, c_sr, hamaker, r_c)
-        SimpleSmoothPotential.__init__(self, r_c)
+    """
+    return ParabolicCutoffPotential(VDW82(c_sr, hamaker), r_c)
 
-    @property
-    def r_min(self):
-        """
-        convenience function returning the location of the energy minimum
-        """
-        return self._r_min
-
-    @property
-    def r_infl(self):
-        """
-        convenience function returning the location of the inflection point
-        """
-        return self._r_infl
-
-    def __repr__(self, ):
-        return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
-                "r_c = {1}").format(
-                    self, self.r_c if self.has_cutoff else '∞')  # nopep8
+def VDW82SimpleSmoothMin(c_sr, hamaker, r_c, r_ti):
+    return LinearCorePotential(VDW82SimpleSmooth(c_sr, hamaker, r_c), r_ti=r_ti)

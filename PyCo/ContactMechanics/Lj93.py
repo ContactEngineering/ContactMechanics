@@ -32,9 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import Potential, SmoothPotential, MinimisationPotential
-from . import SimpleSmoothPotential
-
+from . import Potential, SmoothPotential
+from . import ParabolicCutoffPotential
+from . import LinearCorePotential
 
 class LJ93(Potential):
     """ 9-3 Lennard-Jones potential with optional cutoff radius.
@@ -211,20 +211,15 @@ class LJ93smooth(LJ93, SmoothPotential):
             return super().r_infl  
             # This is the old property implementation in the LJ93 Potential
 
-
-class LJ93smoothMin(LJ93smooth, MinimisationPotential):
+def LJ93smoothMin(epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None):
     """
     When starting from a bad guess, or with a bad optimizer, sometimes
     optimisations that include potentials with a singularity at the origin
     fail, because the optimizer chooses a bad step direction and length and
     falls into non-physical territory. This class tries to remedy this by
     replacing the singular repulsive part around zero by a linear function.
-    """
-    name = 'lj9-3smooth-min'
 
-    def __init__(self, epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None):
-        """
-        Keyword Arguments:
+    Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
                    adhesion in this formulation)
         sigma   -- Lennard-Jones distance parameter σ
@@ -233,48 +228,19 @@ class LJ93smoothMin(LJ93smooth, MinimisationPotential):
                    and lj, defaults to r_min
         r_t_ls  -- (default r_min) transition point between lj and spline,
                     defaults to r_min
-        """
-        LJ93smooth.__init__(self, epsilon, sigma, gamma, r_t_ls)
-        MinimisationPotential.__init__(self, r_ti)
-
-    def __repr__(self):
-        has_gamma = -self.gamma != self.naive_min
-        has_r_t = self.r_t != self.r_min
-        return ("Potential '{0.name}', ε = {0.eps}, σ = "
-                "{0.sig}{1}{2}, r_ti = {0.r_ti}").format(
-                    self,
-                    ", γ = {.gamma}".format(self) if has_gamma else "",
-                    ", r_t = {}".format(
-                        self.r_t if has_r_t else "r_min"))  # nopep8
-
-
-class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
     """
-    Uses the SimpleSmoothPotential smoothing in combination with LJ93
-    """
-    name = 'lj9-3simple-smooth'
+    return LinearCorePotential(LJ93smooth(epsilon, sigma, gamma, r_t_ls), r_ti)
 
-    def __init__(self, epsilon, sigma, r_c):
-        """
+def LJ93SimpleSmooth(epsilon, sigma, r_c):
+    """Uses the ParabolicCutoffPotential smoothing in combination with LJ93
+
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
                    adhesion in this formulation)
         sigma   -- Lennard-Jones distance parameter σ
         r_c     -- emposed cutoff radius
-        """
-        LJ93.__init__(self, epsilon, sigma, r_c)
-        SimpleSmoothPotential.__init__(self, r_c)
+    """
+    return ParabolicCutoffPotential(LJ93(epsilon, sigma), r_c)
 
-    @property
-    def r_min(self):
-        """
-        convenience function returning the location of the energy minimum
-        """
-        return self._r_min
-
-    @property
-    def r_infl(self):
-        """
-        convenience function returning the location of the inflection point
-        """
-        return self._r_infl
+def LJ93SimpleSmoothMin(epsilon, sigma, r_c, r_ti):
+    return LinearCorePotential(LJ93SimpleSmooth(epsilon, sigma, r_c), r_ti=r_ti)
