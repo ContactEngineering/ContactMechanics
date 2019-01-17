@@ -780,6 +780,9 @@ class ChildPotential(Potential):
     def __init__(self, parent_potential):
         self.parent_potential = parent_potential
 
+    def __getattr__(self, item):
+        return getattr(self.parent_potential, item)
+
     def naive_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the potential and its derivatives without cutoffs or
             offsets.

@@ -379,6 +379,43 @@ class PotentialTest(unittest.TestCase):
                 ax[2].plot(z,c)
             fig.savefig("test_LinearCorePotential.png")
 
+    def test_LinearCoreSimpleSmoothPotential(self):
+        w = 3
+        z0 = 0.5
+        r_ti = 0.4 * z0
+        r_c = 10 * z0
+
+        refpot = VDW82(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2)
+
+        smoothpot=VDW82SimpleSmooth(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, r_c= r_c)
+
+        pot = LinearCorePotential(smoothpot, r_ti=r_ti)
+
+        assert pot.r_c==smoothpot.r_c, "{0.r_c}{1.r_c}"
+        assert pot.r_infl==smoothpot.r_infl
+        assert pot.r_min==smoothpot.r_min
+
+        z = [0.8 * r_ti, r_ti, 1.5 * r_ti, r_c, 1.1 * r_c]
+        for zi in z:
+            if zi >= r_ti :
+                np.testing.assert_allclose(
+                    pot.evaluate(zi, True, True, True, area_scale=4.),
+                    smoothpot.evaluate(zi, True, True, True, area_scale=4.))
+            if zi >= r_c:
+                assert pot.evaluate(zi, True, True, True, area_scale=4.) == (0, 0, 0), "Potential nonzero outside of cutoff"
+
+        if True:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(3)
+
+            z = np.linspace(0.8 * r_ti, 2 * z0)
+            for poti in [refpot, pot]:
+                p, f, c = poti.evaluate(z, True, True, True)
+                ax[0].plot(z, p)
+                ax[1].plot(z, f)
+                ax[2].plot(z, c)
+            fig.savefig("test_LinearCoreSimpleSmoothPotential.png")
+
     def test_ExpPotential(self):
         r = np.linspace(-10, 10, 1001)
         pot = ExpPotential(1.0, 1.0)
