@@ -404,7 +404,7 @@ class PotentialTest(unittest.TestCase):
             if zi >= r_c:
                 assert pot.evaluate(zi, True, True, True, area_scale=4.) == (0, 0, 0), "Potential nonzero outside of cutoff"
 
-        if True:
+        if False:
             import matplotlib.pyplot as plt
             fig, ax = plt.subplots(3)
 
