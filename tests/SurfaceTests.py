@@ -143,11 +143,31 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(rms_slope(surf), 0.666666666666666666) # TODO Does this result make sense without size?
         self.assertTrue(surf.is_uniform)
         self.assertIsNone(surf.unit)
+        self.assertIsNone(surf.bandwidth())
 
         # test setting the size
         surf.size = 1, 2
         self.assertAlmostEqual(surf.size[0], 1)
         self.assertAlmostEqual(surf.size[1], 2)
+        bw = surf.bandwidth()
+        self.assertAlmostEqual(bw[0], 1.5/10)
+        self.assertAlmostEqual(bw[1], 1.5)
+
+        # test setting the unit
+        surf.unit = 'km'
+        self.assertEqual(surf.unit, 'km')
+
+    def test_simple_nonuniform_line_scan(self):
+        surf = read_xyz('tests/file_format_examples/line_scan_1_minimal_spaces.asc')
+
+        self.assertAlmostEqual(surf.size, 9.0)
+
+        self.assertFalse(surf.is_uniform)
+        self.assertIsNone(surf.unit)
+
+        bw = surf.bandwidth()
+        self.assertAlmostEqual(bw[0], (8*1.+2*0.5/10)/9)
+        self.assertAlmostEqual(bw[1], 9)
 
         # test setting the unit
         surf.unit = 'km'
@@ -186,6 +206,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
         x, y, z = surf2.points()
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0]/surf2.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1]/surf2.resolution[1])
+
+
 
 
     def test_smooth_curved(self):
