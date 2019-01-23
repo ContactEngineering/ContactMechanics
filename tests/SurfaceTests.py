@@ -162,7 +162,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         surf.unit = 'km'
         self.assertEqual(surf.unit, 'km')
 
-    def test_simple_nonuniform_line_scan(self):
+    def test_simple_Cform_line_scan(self):
         surf = read_xyz('tests/file_format_examples/line_scan_1_minimal_spaces.asc')
 
         self.assertAlmostEqual(surf.size, (9.0,))
@@ -249,6 +249,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.coeffs[5], -f)
         self.assertAlmostEqual(surf.rms_height(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
+
     def test_randomly_rough(self):
         surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
         self.assertTrue(surface.is_uniform)
@@ -260,11 +261,22 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertTrue(untilt2.is_uniform)
         self.assertTrue(untilt1.rms_height() < untilt2.rms_height())
         self.assertTrue(untilt1.rms_slope() > untilt2.rms_slope())
+
     def test_nonuniform(self):
         surf = read_xyz('tests/file_format_examples/example.asc')
         self.assertFalse(surf.is_uniform)
         surf = DetrendedTopography(surf, detrend_mode='height')
         self.assertFalse(surf.is_uniform)
+
+    def test_nonuniform2(self):
+        surf = NonuniformNumpyTopography(x=np.array((1,2,3)), y=np.array((2,4,6)))
+        self.assertFalse(surf.is_uniform)
+        surf = DetrendedTopography(surf, detrend_mode='height')
+        self.assertFalse(surf.is_uniform)
+
+        assert_array_equal(surf.array(), [0.,0.,0.])
+
+
     def test_uniform_linear(self):
         x = np.linspace(0, 10, 11)**2
         y = 1.8*x+1.2
