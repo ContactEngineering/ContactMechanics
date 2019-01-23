@@ -196,14 +196,17 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
                 "theoretical E = {}, computed e = {}, diff(tol) = {}({})".format(
                     E, e, E-e, tol))
 
-
     def test_same_energy(self):
         """
         Asserts that the energies computed in the real space and in the fourier space are the same
         """
-        disp = np.random.normal(size=self.res)
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size)
-        np.testing.assert_allclose(hs.evaluate(disp, pot=True, forces=True)[0], hs.evaluate(disp, pot=True, forces=False)[0])
+        for res in [(16, 16), (16, 15), (15, 16), (15, 9)]:
+            with self.subTest(res=res):
+                disp = np.random.normal(size=res)
+                hs = PeriodicFFTElasticHalfSpace(res, self.young, self.size)
+                np.testing.assert_allclose(
+                    hs.evaluate(disp, pot=True, forces=True)[0],
+                    hs.evaluate(disp, pot=True, forces=False)[0])
 
     def test_unit_neutrality(self):
         tol = 1e-7
@@ -350,18 +353,17 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             error = Tools.mean_err(w2, w3)
             self.assertTrue(error == 0)
 
-    @unittest.expectedFailure # TODO: here the test is wrong and the implementation is right I think, need to be discussed
-    def test_realnessEnergy(self): # TODO: correct this test also
+    def test_realnessEnergy(self):
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.size)
-        force = np.zeros(hs.domain_resolution)
+        force = np.zeros(hs.computational_resolution)
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
         kdisp = hs.evaluate_k_disp(force)
         kforce = rfftn(force)
         np_pts = np.prod(self.res)
         area_per_pt = np.prod(self.size)/np_pts
-        energy = .5*(np.vdot(-kforce, kdisp)+
-                     np.vdot(-kforce[..., :-1], kdisp[..., :-1]))/np_pts
+        energy = .5 * (np.vdot(-kforce, kdisp) +
+                       np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
         error = abs(energy.imag)
         tol = 1e-10
         self.assertTrue(error < tol,
