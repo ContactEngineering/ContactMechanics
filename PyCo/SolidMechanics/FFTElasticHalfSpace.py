@@ -625,17 +625,21 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
            concern
         """
         # pylint: disable=invalid-name
-        facts = np.zeros(tuple((res*2 for res in self.subdomain_resolution)))
+        facts = np.zeros(self.subdomain_resolution)
         a = self.steps[0]*.5
         if self.dim == 1:
             pass
         else:
             b = self.steps[1]*.5
-            x_s = np.arange(self.subdomain_location[0],self.subdomain_location[0] + self.subdomain_resolution[0])
+            x_s = np.arange(self.subdomain_location[0],
+                            self.subdomain_location[0] +
+                            self.subdomain_resolution[0])
             x_s = np.where(x_s <= self.resolution[0], x_s,
                            x_s-self.resolution[0] * 2) * self.steps[0]
             x_s.shape = (-1, 1)
-            y_s = np.arange(self.subdomain_location[1],self.subdomain_location[1] + self.subdomain_resolution[1])
+            y_s = np.arange(self.subdomain_location[1],
+                            self.subdomain_location[1] +
+                            self.subdomain_resolution[1])
             y_s = np.where(y_s <= self.resolution[1], y_s,
                            y_s-self.resolution[1]*2) * self.steps[1]
             y_s.shape = (1, -1)
