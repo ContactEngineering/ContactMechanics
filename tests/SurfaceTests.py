@@ -98,6 +98,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(rms_slope(surf), 0.45604053876290829)
         self.assertTrue(surf.is_uniform)
         self.assertEqual(surf.unit, 'nm')
+
     def test_example2(self):
         surf = read_asc('tests/file_format_examples/example2.txt')
         self.assertEqual(surf.shape, (650, 650))
@@ -108,6 +109,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(rms_slope(surf), 0.35157901772258338)
         self.assertTrue(surf.is_uniform)
         self.assertEqual(surf.unit, 'm')
+
     def test_example3(self):
         surf = read_asc('tests/file_format_examples/example3.txt')
         self.assertEqual(surf.shape, (256, 256))
@@ -118,6 +120,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(rms_slope(surf), 0.19231536279425226)
         self.assertTrue(surf.is_uniform)
         self.assertEqual(surf.unit, 'm')
+
     def test_example4(self):
         surf = read_asc('tests/file_format_examples/example4.txt')
         self.assertEqual(surf.shape, (305, 75))
@@ -196,6 +199,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 class DetrendedSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_smooth_flat(self):
         a = 1.2
         b = 2.5
@@ -225,9 +229,6 @@ class DetrendedSurfaceTest(unittest.TestCase):
         x, y, z = surf2.points()
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0]/surf2.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1]/surf2.resolution[1])
-
-
-
 
     def test_smooth_curved(self):
         a = 1.2
@@ -269,13 +270,19 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertFalse(surf.is_uniform)
 
     def test_nonuniform2(self):
-        surf = NonuniformNumpyTopography(x=np.array((1,2,3)), y=np.array((2,4,6)))
+
+        x = np.array((1,2,3))
+        y = 2*x
+
+        surf = NonuniformNumpyTopography(x=x, y=y)
         self.assertFalse(surf.is_uniform)
         surf = DetrendedTopography(surf, detrend_mode='height')
         self.assertFalse(surf.is_uniform)
 
-        assert_array_equal(surf.array(), [0.,0.,0.])
-
+        assert_array_equal(surf.array(), np.zeros(y.shape))
+        p = surf.points()
+        assert_array_equal(p[0], x)
+        assert_array_equal(p[1], np.zeros(y.shape))
 
     def test_uniform_linear(self):
         x = np.linspace(0, 10, 11)**2
@@ -287,6 +294,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
 class DetectFormatTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_detection(self):
         self.assertEqual(detect_format('tests/file_format_examples/example1.di'), 'di')
         self.assertEqual(detect_format('tests/file_format_examples/example2.di'), 'di')
@@ -311,6 +319,7 @@ class matSurfaceTest(unittest.TestCase):
 class x3pSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_read(self):
         surface = read_x3p('tests/file_format_examples/example.x3p')
         nx, ny = surface.shape
@@ -338,6 +347,7 @@ class x3pSurfaceTest(unittest.TestCase):
 class opdSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_read(self):
         surface = read_opd('tests/file_format_examples/example.opd')
         nx, ny = surface.shape
@@ -353,6 +363,7 @@ class opdSurfaceTest(unittest.TestCase):
 class diSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_read(self):
         # All units are nm
         for (fn, n, s, rmslist) in [
@@ -394,6 +405,7 @@ class diSurfaceTest(unittest.TestCase):
 class ibwSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_read(self):
         surface = read_ibw('tests/file_format_examples/example.ibw')
         nx, ny = surface.shape
@@ -416,6 +428,7 @@ class ibwSurfaceTest(unittest.TestCase):
 class hgtSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_read(self):
         surface = read_hgt('tests/file_format_examples/N46E013.hgt')
         nx, ny = surface.shape
@@ -427,8 +440,10 @@ class hgtSurfaceTest(unittest.TestCase):
 class h5SurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_detect_format_then_read(self):
         self.assertEqual(detect_format('tests/file_format_examples/surface.2048x2048.h5'), 'h5')
+
     def test_read(self):
         surface = read_h5('tests/file_format_examples/surface.2048x2048.h5')
         nx, ny = surface.shape
@@ -440,8 +455,10 @@ class h5SurfaceTest(unittest.TestCase):
 class xyzSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_detect_format_then_read(self):
         self.assertEqual(detect_format('tests/file_format_examples/example.asc'), 'xyz')
+
     def test_read(self):
         surface = read_xyz('tests/file_format_examples/example.asc')
         self.assertFalse(surface.is_uniform)
@@ -454,8 +471,10 @@ class xyzSurfaceTest(unittest.TestCase):
 class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_detect_format_then_read(self):
         self.assertEqual(detect_format('tests/file_format_examples/line_scan_1_minimal_spaces.asc'), 'xyz')
+
     def test_read(self):
         surface = read_xyz('tests/file_format_examples/line_scan_1_minimal_spaces.asc')
 
