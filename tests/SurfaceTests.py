@@ -198,26 +198,21 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
 class DetrendedSurfaceTest(unittest.TestCase):
     def setUp(self):
-        pass
-
-    def test_smooth_flat(self):
         a = 1.2
         b = 2.5
         d = .2
-        arr = np.arange(5)*a+d
-        arr = arr + np.arange(6).reshape((-1, 1))*b
+        arr = np.arange(5) * a + d
+        arr = arr + np.arange(6).reshape((-1, 1)) * b
 
+        self._flat_arr = arr
+
+    def test_smooth_flat_with_size(self):
+        arr = self._flat_arr
         surf = DetrendedTopography(UniformNumpyTopography(arr, size=(1,1)), detrend_mode='slope')
         # WORKAROUND: added size to surface here, because otherwise slope makes no sense TODO remove again?
         self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf[...].mean(), 0)
         self.assertAlmostEqual(rms_slope(surf), 0)
-
-        surf = DetrendedTopography(UniformNumpyTopography(arr), detrend_mode='height')
-        self.assertTrue(surf.is_uniform)
-        self.assertAlmostEqual(surf[...].mean(), 0) # TODO fails -> implement detrending without using size
-        self.assertAlmostEqual(rms_slope(surf), 0)
-        self.assertTrue(rms_height(surf) < rms_height(arr))
 
         surf2 = DetrendedTopography(UniformNumpyTopography(arr, size=(1, 1)), detrend_mode='height')
         self.assertTrue(surf2.is_uniform)
@@ -229,6 +224,14 @@ class DetrendedSurfaceTest(unittest.TestCase):
         x, y, z = surf2.points()
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0]/surf2.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1]/surf2.resolution[1])
+
+    def test_smooth_without_size(self):
+        arr = self._flat_arr
+        surf = DetrendedTopography(UniformNumpyTopography(arr), detrend_mode='height')
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf[...].mean(), 0)  # TODO fails -> implement detrending without using size
+        self.assertAlmostEqual(rms_slope(surf), 0)
+        self.assertTrue(rms_height(surf) < rms_height(arr))
 
     def test_smooth_curved(self):
         a = 1.2

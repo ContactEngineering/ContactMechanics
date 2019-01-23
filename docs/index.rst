@@ -14,6 +14,7 @@ Contact mechanics with Python. This code implements computation of contact geome
 
    installation
    usage
+   topographies
    development
    testing
    contributing
