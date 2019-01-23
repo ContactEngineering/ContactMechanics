@@ -279,13 +279,19 @@ class DetrendedSurfaceTest(unittest.TestCase):
 
         surf = NonuniformNumpyTopography(x=x, y=y)
         self.assertFalse(surf.is_uniform)
+        der = surf.derivative(n=1)
+        assert_array_equal(der, [2, 2])
+
         surf = DetrendedTopography(surf, detrend_mode='height')
         self.assertFalse(surf.is_uniform)
+        der = surf.derivative(n=1)
+        assert_array_equal(der, [0, 0])
 
         assert_array_equal(surf.array(), np.zeros(y.shape))
         p = surf.points()
         assert_array_equal(p[0], x)
         assert_array_equal(p[1], np.zeros(y.shape))
+
 
     def test_uniform_linear(self):
         x = np.linspace(0, 10, 11)**2
