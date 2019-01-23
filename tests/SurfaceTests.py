@@ -292,6 +292,35 @@ class DetrendedSurfaceTest(unittest.TestCase):
         assert_array_equal(p[0], x)
         assert_array_equal(p[1], np.zeros(y.shape))
 
+    def test_nonuniform3(self):
+
+        x = np.array((1,2,3,4))
+        y = -2*x
+
+        surf = NonuniformNumpyTopography(x=x, y=y)
+        self.assertFalse(surf.is_uniform)
+        der = surf.derivative(n=1)
+        assert_array_equal(der, [-2, -2, -2])
+
+        #
+        # Similar with detrend which substracts mean value
+        #
+        surf2 = DetrendedTopography(surf, detrend_mode='center')
+        self.assertFalse(surf2.is_uniform)
+        der = surf2.derivative(n=1)
+        assert_array_equal(der, [-2, -2, -2])
+
+        #
+        # Similar with detrend which eliminates slope
+        #
+        surf3 = DetrendedTopography(surf, detrend_mode='height')
+        self.assertFalse(surf3.is_uniform)
+        der = surf3.derivative(n=1)
+        assert_array_equal(der, [0, 0, 0])
+        assert_array_equal(surf3.array(), np.zeros(y.shape))
+        p = surf3.points()
+        assert_array_equal(p[0], x)
+        assert_array_equal(p[1], np.zeros(y.shape))
 
     def test_uniform_linear(self):
         x = np.linspace(0, 10, 11)**2
@@ -299,6 +328,73 @@ class DetrendedSurfaceTest(unittest.TestCase):
         surf = DetrendedTopography(NonuniformNumpyTopography(x, y), detrend_mode='height')
         self.assertAlmostEqual(surf.mean(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
+
+    def test_simple_uniform_flat_with_size(self):
+        x = np.arange(10).reshape((1, -1))
+        y = np.arange(5).reshape((-1, 1))
+        arr = -2 * x + 0 * y
+        surf = UniformNumpyTopography(arr, size=(10, 5), unit='nm')
+
+        #
+        # compare points
+        #
+        exp_points = [
+            np.array([
+                [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+                [2., 2., 2., 2., 2., 2., 2., 2., 2., 2.],
+                [4., 4., 4., 4., 4., 4., 4., 4., 4., 4.],
+                [6., 6., 6., 6., 6., 6., 6., 6., 6., 6.],
+                [8., 8., 8., 8., 8., 8., 8., 8., 8., 8.]]),
+            np.array([
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5],
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5],
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5],
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5],
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5]]),
+            np.array([
+                [0, -2, -4, -6, -8, -10, -12, -14, -16, -18],
+                [0, -2, -4, -6, -8, -10, -12, -14, -16, -18],
+                [0, -2, -4, -6, -8, -10, -12, -14, -16, -18],
+                [0, -2, -4, -6, -8, -10, -12, -14, -16, -18],
+                [0, -2, -4, -6, -8, -10, -12, -14, -16, -18]])
+        ]
+
+        p = surf.points()
+
+        for k in range(len(p)):
+            assert_array_equal(exp_points[k], p[k])
+
+        #
+        # Checks for detrended surface when substracting the mean height
+        #
+        surf2 = DetrendedTopography(surf, detrend_mode='center')
+
+        exp_points = [
+            np.array([
+                [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+                [2., 2., 2., 2., 2., 2., 2., 2., 2., 2.],
+                [4., 4., 4., 4., 4., 4., 4., 4., 4., 4.],
+                [6., 6., 6., 6., 6., 6., 6., 6., 6., 6.],
+                [8., 8., 8., 8., 8., 8., 8., 8., 8., 8.]]),
+            np.array([
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5],
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5],
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5],
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5],
+                [0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5]]),
+            np.array([
+                [9, 7, 5, 3, 1, -1, -3, -5, -7, -9],
+                [9, 7, 5, 3, 1, -1, -3, -5, -7, -9],
+                [9, 7, 5, 3, 1, -1, -3, -5, -7, -9],
+                [9, 7, 5, 3, 1, -1, -3, -5, -7, -9],
+                [9, 7, 5, 3, 1, -1, -3, -5, -7, -9]]),
+        ]
+
+        p = surf2.points()
+
+        for k in range(len(p)):
+            assert_array_equal(exp_points[k], p[k])
+
 
 class DetectFormatTest(unittest.TestCase):
     def setUp(self):
