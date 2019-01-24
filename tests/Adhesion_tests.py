@@ -44,7 +44,7 @@ try:
     from PyCo.ContactMechanics import ExpPotential
     from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                      PeriodicFFTElasticHalfSpace)
-    from PyCo.Topography import Sphere
+    from PyCo.Topography import make_sphere
     from PyCo.System import SystemFactory, SmoothContactSystem
 except ImportError as err:
     import sys
@@ -76,8 +76,8 @@ class AdhesionTest(unittest.TestCase):
         for ran in [0.05, 0.3]:
             substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sx))
             interaction = ExpPotential(self.w, ran)#, 0.1)
-            surface = Sphere(self.r_s, (nx, ny), (sx, sx))
-            ext_surface = Sphere(self.r_s, (2*nx, 2*ny), (2*sx, 2*sx),
+            surface = make_sphere(self.r_s, (nx, ny), (sx, sx))
+            ext_surface = make_sphere(self.r_s, (2*nx, 2*ny), (2*sx, 2*sx),
                                  centre=(sx/2, sx/2))
             system = SmoothContactSystem(substrate, interaction, surface)
 
@@ -86,10 +86,10 @@ class AdhesionTest(unittest.TestCase):
             area = []
             for _disp0 in disp0:
                 result = system.minimize_proxy(_disp0,
-                                               lbounds=ext_surface.array() + _disp0,
+                                               lbounds=ext_surface.heights() + _disp0,
                                                tol=self.tol)
                 u = result.x
-                u.shape = ext_surface.shape
+                u.shape = ext_surface.resolution
                 f = substrate.evaluate_force(u)
                 converged = result.success
                 self.assertTrue(converged)

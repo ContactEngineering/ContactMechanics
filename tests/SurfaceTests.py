@@ -44,9 +44,8 @@ try:
     import io
     import pickle
 
-    from PyCo.Topography import (UniformNumpyTopography, NonuniformNumpyTopography, DetrendedTopography, Sphere,
-                                 ScaledTopography, rms_height, rms_slope, shift_and_tilt, read, read_asc, read_di,
-                                 read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
+    from PyCo.Topography import (Topography, make_sphere, NonuniformLineScan, read, read_asc, read_di, read_h5,
+                                 read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
     from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
     from PyCo.Topography.Generation import RandomSurfaceGaussian
 
@@ -54,6 +53,20 @@ except ImportError as err:
     import sys
     print(err)
     sys.exit(-1)
+
+
+class TopographyTest(unittest.TestCase):
+    def test_positions(self):
+        shape = (12, 11)
+        nx, ny = shape
+        surf = Topography(np.zeros(shape), (1, 1))
+        x, y = surf.positions()
+        self.assertEqual(x.shape, shape)
+        self.assertEqual(y.shape, shape)
+        self.assertAlmostEqual(x.min(), 0.0)
+        self.assertAlmostEqual(x.max(), 1 - 1/nx)
+        self.assertAlmostEqual(y.min(), 0.0)
+        self.assertAlmostEqual(y.max(), 1 - 1/ny)
 
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
@@ -73,7 +86,7 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
                 r2[i,j] = x[i]**2 + y[j]**2
         h = np.sqrt(R**2-r2)-R # profile of sphere
 
-        S1 = UniformNumpyTopography(h)
+        S1 = Topography(h, h.shape)
         with tmp_dir() as dir:
             fname = os.path.join(dir,"surface")
             S1.save(fname)
@@ -81,68 +94,65 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
             #S2 = read_asc(fname)
             S2 = S1
 
-        S3 = Sphere(R, (res, res), (l, l), (x_c, y_c))
-        self.assertTrue(np.array_equal(S1.array(), S2.array()))
-        self.assertTrue(np.array_equal(S1.array(), S3.array()), )
+        S3 = make_sphere(R, (res, res), (l, l), (x_c, y_c))
+        self.assertTrue(np.array_equal(S1.heights(), S2.heights()))
+        self.assertTrue(np.array_equal(S1.heights(), S3.heights()), )
+
 
 class NumpyAscSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
     def test_example1(self):
         surf = read_asc('tests/file_format_examples/example1.txt')
-        self.assertEqual(surf.shape, (1024, 1024))
+        self.assertEqual(surf.resolution, (1024, 1024))
         self.assertAlmostEqual(surf.size[0], 2000)
         self.assertAlmostEqual(surf.size[1], 2000)
         self.assertAlmostEqual(surf.rms_height(), 17.22950485567042)
-        self.assertAlmostEqual(rms_slope(surf), 0.45604053876290829)
+        self.assertAlmostEqual(surf.rms_slope(), 0.45604053876290829)
         self.assertTrue(surf.is_uniform)
-        self.assertEqual(surf.unit, 'nm')
+        self.assertEqual(surf.info['unit'], 'nm')
     def test_example2(self):
         surf = read_asc('tests/file_format_examples/example2.txt')
-        self.assertEqual(surf.shape, (650, 650))
+        self.assertEqual(surf.resolution, (650, 650))
         self.assertAlmostEqual(surf.size[0], 0.0002404103)
         self.assertAlmostEqual(surf.size[1], 0.0002404103)
         self.assertAlmostEqual(surf.rms_height(), 2.7722350402740072e-07)
-        self.assertAlmostEqual(rms_slope(surf), 0.35157901772258338)
+        self.assertAlmostEqual(surf.rms_slope(), 0.35157901772258338)
         self.assertTrue(surf.is_uniform)
-        self.assertEqual(surf.unit, 'm')
+        self.assertEqual(surf.info['unit'], 'm')
     def test_example3(self):
         surf = read_asc('tests/file_format_examples/example3.txt')
-        self.assertEqual(surf.shape, (256, 256))
+        self.assertEqual(surf.resolution, (256, 256))
         self.assertAlmostEqual(surf.size[0], 10e-6)
         self.assertAlmostEqual(surf.size[1], 10e-6)
         self.assertAlmostEqual(surf.rms_height(), 3.5222918750198742e-08)
-        self.assertAlmostEqual(rms_slope(surf), 0.19231536279425226)
+        self.assertAlmostEqual(surf.rms_slope(), 0.19231536279425226)
         self.assertTrue(surf.is_uniform)
-        self.assertEqual(surf.unit, 'm')
+        self.assertEqual(surf.info['unit'], 'm')
     def test_example4(self):
         surf = read_asc('tests/file_format_examples/example4.txt')
-        self.assertEqual(surf.shape, (305, 75))
+        self.assertEqual(surf.resolution, (305, 75))
         self.assertAlmostEqual(surf.size[0], 0.00011280791)
         self.assertAlmostEqual(surf.size[1], 2.773965e-05)
         self.assertAlmostEqual(surf.rms_height(), 1.1745891510991089e-07)
         self.assertAlmostEqual(surf.rms_height(kind='Rq'), 1.1745891510991089e-07)
-        self.assertAlmostEqual(rms_slope(surf), 0.067915823359553706)
+        self.assertAlmostEqual(surf.rms_slope(), 0.067915823359553706)
         self.assertTrue(surf.is_uniform)
-        self.assertEqual(surf.unit, 'm')
+        self.assertEqual(surf.info['unit'], 'm')
 
         # test setting the size
-        surf.size = 1,2
+        surf.size = 1, 2
         self.assertAlmostEqual(surf.size[0], 1)
         self.assertAlmostEqual(surf.size[1], 2)
 
-        # test setting the unit
-        surf.unit = 'km'
-        self.assertEqual(surf.unit, 'km')
-
     def test_example5(self):
         surf = read_asc('tests/file_format_examples/example5.txt')
-        self.assertEqual(surf.shape, (10, 10))
+        self.assertEqual(surf.resolution, (10, 10))
         self.assertIsNone(surf.size)
         self.assertAlmostEqual(surf.rms_height(), 1.0)
-        self.assertAlmostEqual(rms_slope(surf), 0.666666666666666666) # TODO Does this result make sense without size?
+        self.assertAlmostEqual(surf.rms_slope(), 0.666666666666666666) # TODO Does this result make sense without size?
         self.assertTrue(surf.is_uniform)
-        self.assertIsNone(surf.unit)
+        self.assertIsNone(surf.info['unit'])
 
         # test setting the size
         surf.size = 1, 2
@@ -150,8 +160,8 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[1], 2)
 
         # test setting the unit
-        surf.unit = 'km'
-        self.assertEqual(surf.unit, 'km')
+        surf.info['unit'] = 'km'
+        self.assertEqual(surf.info['unit'], 'km')
 
 
 class DetrendedSurfaceTest(unittest.TestCase):
@@ -164,26 +174,29 @@ class DetrendedSurfaceTest(unittest.TestCase):
         arr = np.arange(5)*a+d
         arr = arr + np.arange(6).reshape((-1, 1))*b
 
-        surf = DetrendedTopography(UniformNumpyTopography(arr, size=(1,1)), detrend_mode='slope')
-        # WORKAROUND: added size to surface here, because otherwise slope makes no sense
+        surf = Topography(arr, (1, 1)).detrend(detrend_mode='center')
         self.assertTrue(surf.is_uniform)
-        self.assertAlmostEqual(surf[...].mean(), 0)
-        self.assertAlmostEqual(rms_slope(surf), 0)
+        self.assertAlmostEqual(surf.mean(), 0)
 
-        surf = DetrendedTopography(UniformNumpyTopography(arr), detrend_mode='height')
+        surf = Topography(arr, (1.5, 3.2)).detrend(detrend_mode='slope')
         self.assertTrue(surf.is_uniform)
-        self.assertAlmostEqual(surf[...].mean(), 0) # TODO fails -> implement detrending without using size
-        self.assertAlmostEqual(rms_slope(surf), 0)
-        self.assertTrue(rms_height(surf) < rms_height(arr))
+        self.assertAlmostEqual(surf.mean(), 0)
+        self.assertAlmostEqual(surf.rms_slope(), 0)
 
-        surf2 = DetrendedTopography(UniformNumpyTopography(arr, size=(1, 1)), detrend_mode='height')
+        surf = Topography(arr, arr.shape).detrend(detrend_mode='height')
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf.mean(), 0) # TODO fails -> implement detrending without using size
+        self.assertAlmostEqual(surf.rms_slope(), 0)
+        self.assertTrue(surf.rms_height() < Topography(arr, arr.shape).rms_height())
+
+        surf2 = Topography(arr, (1, 1)).detrend(detrend_mode='height')
         self.assertTrue(surf2.is_uniform)
-        self.assertAlmostEqual(rms_slope(surf2), 0)
-        self.assertTrue(rms_height(surf2) < rms_height(arr))
+        self.assertAlmostEqual(surf2.rms_slope(), 0)
+        self.assertTrue(surf2.rms_height() < Topography(arr, arr.shape).rms_height())
 
-        self.assertAlmostEqual(rms_height(surf), rms_height(surf2))
+        self.assertAlmostEqual(surf.rms_height(), surf2.rms_height())
 
-        x, y, z = surf2.points()
+        x, y, z = surf2.positions_and_heights()
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0]/surf2.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1]/surf2.resolution[1])
 
@@ -198,23 +211,25 @@ class DetrendedSurfaceTest(unittest.TestCase):
         x = np.arange(5).reshape((1, -1))
         y = np.arange(6).reshape((-1, 1))
         arr = f+x*a+y*b+x*x*c+y*y*d+x*y*e
-        surf = DetrendedTopography(UniformNumpyTopography(arr, size=(3., 2.5)), detrend_mode='curvature')
+        sx, sy = 3, 2.5
+        nx, ny = arr.shape
+        surf = Topography(arr, size=(sx, sy)).detrend(detrend_mode='curvature')
         self.assertTrue(surf.is_uniform)
-        self.assertAlmostEqual(surf.coeffs[0], -b)
-        self.assertAlmostEqual(surf.coeffs[1], -a)
-        self.assertAlmostEqual(surf.coeffs[2], -d)
-        self.assertAlmostEqual(surf.coeffs[3], -c)
-        self.assertAlmostEqual(surf.coeffs[4], -e)
-        self.assertAlmostEqual(surf.coeffs[5], -f)
+        self.assertAlmostEqual(surf.coeffs[0], b*nx)
+        self.assertAlmostEqual(surf.coeffs[1], a*ny)
+        self.assertAlmostEqual(surf.coeffs[2], d*(nx*nx))
+        self.assertAlmostEqual(surf.coeffs[3], c*(ny*ny))
+        self.assertAlmostEqual(surf.coeffs[4], e*(nx*ny))
+        self.assertAlmostEqual(surf.coeffs[5], f)
         self.assertAlmostEqual(surf.rms_height(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
     def test_randomly_rough(self):
         surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
         self.assertTrue(surface.is_uniform)
-        cut = UniformNumpyTopography(surface[:64, :64], size=(64., 64.))
+        cut = Topography(surface[:64, :64], size=(64., 64.))
         self.assertTrue(cut.is_uniform)
-        untilt1 = DetrendedTopography(cut, detrend_mode='height')
-        untilt2 = DetrendedTopography(cut, detrend_mode='slope')
+        untilt1 = cut.detrend(detrend_mode='height')
+        untilt2 = cut.detrend(detrend_mode='slope')
         self.assertTrue(untilt1.is_uniform)
         self.assertTrue(untilt2.is_uniform)
         self.assertTrue(untilt1.rms_height() < untilt2.rms_height())
@@ -222,12 +237,12 @@ class DetrendedSurfaceTest(unittest.TestCase):
     def test_nonuniform(self):
         surf = read_xyz('tests/file_format_examples/example.asc')
         self.assertFalse(surf.is_uniform)
-        surf = DetrendedTopography(surf, detrend_mode='height')
+        surf = surf.detrend(detrend_mode='height')
         self.assertFalse(surf.is_uniform)
-    def test_uniform_linear(self):
+    def test_nonuniform_linear(self):
         x = np.linspace(0, 10, 11)**2
         y = 1.8*x+1.2
-        surf = DetrendedTopography(NonuniformNumpyTopography(x, y), detrend_mode='height')
+        surf = NonuniformLineScan(x, y).detrend(detrend_mode='height')
         self.assertAlmostEqual(surf.mean(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
 
@@ -249,7 +264,7 @@ class matSurfaceTest(unittest.TestCase):
         pass
     def test_read(self):
         surface = read_mat('tests/file_format_examples/example1.mat')
-        nx, ny = surface.shape
+        nx, ny = surface.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
         self.assertAlmostEqual(surface.rms_height(), 1.234061e-07)
@@ -276,7 +291,7 @@ class x3pSurfaceTest(unittest.TestCase):
         self.assertTrue(surface.is_uniform)
     def test_points_for_uniform_topography(self):
         surface = read_x3p('tests/file_format_examples/example.x3p')
-        x, y, z = surface.points()
+        x, y, z = surface.positions_and_heights()
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surface.size[0]/surface.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surface.size[1]/surface.resolution[1])
 
@@ -285,7 +300,7 @@ class opdSurfaceTest(unittest.TestCase):
         pass
     def test_read(self):
         surface = read_opd('tests/file_format_examples/example.opd')
-        nx, ny = surface.shape
+        nx, ny = surface.resolution
         self.assertEqual(nx, 640)
         self.assertEqual(ny, 480)
         sx, sy = surface.size
@@ -318,14 +333,14 @@ class diSurfaceTest(unittest.TestCase):
             if type(surfaces) is not list:
                 surfaces = [surfaces]
             for surface, rms in zip(surfaces, rmslist):
-                nx, ny = surface.shape
+                nx, ny = surface.resolution
                 self.assertEqual(nx, n)
                 self.assertEqual(ny, n)
                 sx, sy = surface.size
-                if type(surface.unit) is tuple:
-                    unit, dummy = surface.unit
+                if type(surface.info['unit']) is tuple:
+                    unit, dummy = surface.info['unit']
                 else:
-                    unit = surface.unit
+                    unit = surface.info['unit']
                 self.assertAlmostEqual(sx*get_unit_conversion_factor(unit, 'nm'), s)
                 self.assertAlmostEqual(sy*get_unit_conversion_factor(unit, 'nm'), s)
                 if rms is not None:
@@ -338,13 +353,13 @@ class ibwSurfaceTest(unittest.TestCase):
         pass
     def test_read(self):
         surface = read_ibw('tests/file_format_examples/example.ibw')
-        nx, ny = surface.shape
+        nx, ny = surface.resolution
         self.assertEqual(nx, 512)
         self.assertEqual(ny, 512)
         sx, sy = surface.size
         self.assertAlmostEqual(sx, 5.00978e-8)
         self.assertAlmostEqual(sy, 5.00978e-8)
-        self.assertEqual(surface.unit, 'm')
+        self.assertEqual(surface.info['unit'], 'm')
         self.assertTrue(surface.is_uniform)
 
     def test_detect_format_then_read(self):
@@ -359,7 +374,7 @@ class hgtSurfaceTest(unittest.TestCase):
         pass
     def test_read(self):
         surface = read_hgt('tests/file_format_examples/N46E013.hgt')
-        nx, ny = surface.shape
+        nx, ny = surface.resolution
         self.assertEqual(nx, 3601)
         self.assertEqual(ny, 3601)
         self.assertTrue(surface.is_uniform)
@@ -371,7 +386,7 @@ class h5SurfaceTest(unittest.TestCase):
         self.assertEqual(detect_format('tests/file_format_examples/surface.2048x2048.h5'), 'h5')
     def test_read(self):
         surface = read_h5('tests/file_format_examples/surface.2048x2048.h5')
-        nx, ny = surface.shape
+        nx, ny = surface.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
         self.assertTrue(surface.is_uniform)
@@ -385,7 +400,7 @@ class xyzSurfaceTest(unittest.TestCase):
     def test_read(self):
         surface = read_xyz('tests/file_format_examples/example.asc')
         self.assertFalse(surface.is_uniform)
-        x, y = surface.points()
+        x, y = surface.positions_and_heights()
         self.assertGreater(len(x), 0)
         self.assertEqual(len(x), len(y))
         self.assertFalse(surface.is_uniform)
@@ -402,7 +417,7 @@ class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
         self.assertFalse(surface.is_uniform)
         self.assertEqual(surface.dim, 1)
 
-        x, y = surface.points()
+        x, y = surface.positions_and_heights()
         self.assertGreater(len(x), 0)
         self.assertEqual(len(x), len(y))
 
@@ -410,7 +425,7 @@ class PipelineTests(unittest.TestCase):
     def test_scaled_topography(self):
         surf = read_xyz('tests/file_format_examples/example.asc')
         for fac in [1.0, 2.0, np.pi]:
-            surf2 = ScaledTopography(surf, fac)
+            surf2 = surf.scale(fac)
             self.assertAlmostEqual(fac*surf.rms_height(kind='Rq'), surf2.rms_height(kind='Rq'))
 
 class IOTest(unittest.TestCase):
@@ -493,9 +508,10 @@ class IOTest(unittest.TestCase):
                 pickled_t = [pickled_t]
 
             for x,y in zip(t,pickled_t):
-                for attr in ['unit', 'dim', 'size']:
+                for attr in ['dim', 'size']:
                     assert getattr(x, attr) == getattr(y, attr)
                 if x.size is not None:
-                    assert_array_equal(x.points(), y.points())
+                    assert_array_equal(x.positions(), y.positions())
+                    assert_array_equal(x.heights(), y.heights())
 
 

@@ -24,7 +24,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+IMPLIED, BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -123,10 +123,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         """
         if self.dim == 1:
             return (disp[:self.resolution[0]] -
-                    (self.surface.array(*profile_args, **profile_kwargs) +
+                    (self.surface.heights(*profile_args, **profile_kwargs) +
                      offset))
         return (disp[:self.resolution[0], :self.resolution[1]] -
-                (self.surface.array(*profile_args, **profile_kwargs) +
+                (self.surface.heights(*profile_args, **profile_kwargs) +
                  offset))
 
     @abc.abstractmethod
@@ -663,7 +663,7 @@ class NonSmoothContactSystem(SystemBase):
         self.contact_zone = None
         result = solver(
             self.substrate,
-            self.surface[:, :],
+            self.surface.heights(),
             **kwargs)
         if result.success:
             self.disp = result.x

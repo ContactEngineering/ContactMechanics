@@ -33,8 +33,7 @@ SOFTWARE.
 
 import numpy as np
 
-from PyCo.Topography import UniformNumpyTopography
-from PyCo.Topography.Uniform.common import _get_size
+from PyCo.Topography import Topography
 
 ###
 
@@ -57,8 +56,7 @@ cpdef scan_surface(surface, tip_radius):
     Scan surface with a power-law shaped tip.
     """
 
-    profile = surface.array()
+    profile = surface.heights()
     nx, ny = surface.shape
-    sx, sy = _get_size(surface)
-    return UniformNumpyTopography(_scan_topography(nx, ny, profile, tip_radius*nx/sx),
-                                  size=(sx, sy))
+    sx, sy = surface.size
+    return Topography(_scan_topography(nx, ny, profile, tip_radius*nx/sx), size=(sx, sy))

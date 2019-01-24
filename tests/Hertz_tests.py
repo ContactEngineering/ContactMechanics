@@ -40,7 +40,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import Sphere
+    from PyCo.Topography import make_sphere
     from PyCo.System import SystemFactory
     #from PyCo.Tools.Logger import screen
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
@@ -77,7 +77,7 @@ class HertzTest(unittest.TestCase):
                     substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
                                                         (sx, sx))
                     interaction = HardWall()
-                    surface = Sphere(self.r_s, (nx, ny), (sx, sx))
+                    surface = make_sphere(self.r_s, (nx, ny), (sx, sx))
                     system = SystemFactory(substrate, interaction, surface)
 
                     result = system.minimize_proxy(offset=disp0,

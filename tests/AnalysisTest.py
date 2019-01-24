@@ -34,10 +34,11 @@ SOFTWARE.
 """
 
 import unittest
+
 import numpy as np
 
-from PyCo.Topography import UniformNumpyTopography, NonuniformNumpyTopography, InterpolatedTopography
-from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc, power_spectrum
+from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
+from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc, power_spectrum_1D
 
 from tests.PyCoTest import PyCoTestCase
 
@@ -50,7 +51,7 @@ class PowerSpectrumTest(PyCoTestCase):
                     for n in [16, 128]:
                         x = np.arange(n) * L / n
                         h = np.sin(2 * np.pi * k * x / L)
-                        t = UniformNumpyTopography(h, size=(L,), periodic=periodic)
+                        t = UniformLineScan(h, size=L, periodic=periodic)
                         q, C = t.power_spectrum_1D()
 
                         # The ms height of the sine is 1/2. The sum over the PSD (from -q to +q) is the ms height.
@@ -67,20 +68,33 @@ class PowerSpectrumTest(PyCoTestCase):
                             r[k] = 1 / 4
                             self.assertArrayAlmostEqual(C, r)
 
+    @unittest.skip
     def test_nonuniform_on_uniform_grid(self):
         for L in [1.3, 10.6]:
             for k in [2, 8]:
                 for n in [64]:
                     x = np.arange(n + 1) * L / n
                     h = np.sin(2 * np.pi * k * x / L)
-                    t = NonuniformNumpyTopography(x, h)
+                    t = NonuniformLineScan(x, h)
 
                     pad = 64
-                    i = InterpolatedTopography(t, np.linspace(0, pad*x.max(), 4096))
+                    i = t.interpolate(512, padding=4096)
                     qi, Ci = i.power_spectrum_1D(window='None')
                     Ci *= pad
 
-                    q, C = power_spectrum(*t.points(), q=qi, window='None')
+                    q, C = t.power_spectrum_1D(q=qi, window='None')
+
+                    import matplotlib.pyplot as plt
+                    plt.plot(*t.positions_and_heights(), lw=4)
+                    plt.plot(*i.positions_and_heights())
+                    plt.show()
+
+                    plt.plot(q[100:], C[100:], label='true')
+                    plt.plot(qi[100:], Ci[100:], label='interpolated')
+                    plt.xscale('log')
+                    plt.yscale('log')
+                    plt.legend(loc='best')
+                    plt.show()
 
                     # Throw out the high frequency data points
                     maxi = len(q)//8
@@ -108,15 +122,15 @@ class PowerSpectrumTest(PyCoTestCase):
 
             x = np.array([-a, a])
             h = np.array([b, c])
-            _, C1 = power_spectrum(x, h, q=q, window='None')
+            _, C1 = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
 
             x = np.array([-a, 0, a])
             h = np.array([b, (b+c)/2, c])
-            _, C2 = power_spectrum(x, h, q=q, window='None')
+            _, C2 = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
 
             x = np.array([-a, 0, a/2, a])
             h = np.array([b, (b+c)/2, (3*c+b)/4, c])
-            _, C3 = power_spectrum(x, h, q=q, window='None')
+            _, C3 = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
 
             self.assertArrayAlmostEqual(C1, C2)
             self.assertArrayAlmostEqual(C2, C3)
@@ -128,7 +142,7 @@ class PowerSpectrumTest(PyCoTestCase):
 
             q = np.linspace(0.01, 8 * np.pi / a, 101)
 
-            q, C = power_spectrum(x, h, q=q, window='None')
+            q, C = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
 
             C_ana = (2 * b * np.sin(a * q) / q) ** 2
             C_ana /= 2 * a
@@ -142,7 +156,7 @@ class PowerSpectrumTest(PyCoTestCase):
 
             q = np.linspace(0.01, 8 * np.pi / a, 101)
 
-            _, C = power_spectrum(x, h, q=q, window='None')
+            _, C = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
 
             C_ana = (2 * b * (a * q * np.cos(a * q) - np.sin(a * q)) / (a * q ** 2)) ** 2
             C_ana /= 2 * a
@@ -158,7 +172,7 @@ class PowerSpectrumTest(PyCoTestCase):
 
             q = np.linspace(0.01, 8 * np.pi / (b-a), 101)
 
-            q, C = power_spectrum(x, h, q=q, window='None')
+            q, C = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
 
             C_ana = np.exp(-1j * (a + b) * q) * (
                         np.exp(1j * a * q) * (c - d + 1j * (a - b) * d * q) +

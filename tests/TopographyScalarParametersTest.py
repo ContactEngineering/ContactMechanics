@@ -4,7 +4,7 @@ try:
     import time
     import math
 
-    from PyCo.Topography import UniformNumpyTopography, NonuniformNumpyTopography
+    from PyCo.Topography import Topography, NonuniformLineScan
     import PyCo.Topography.Uniform.ScalarParameters as Uniform
     import PyCo.Topography.Nonuniform.ScalarParameters as Nonuniform
 
@@ -24,7 +24,7 @@ class SinewaveTestUniform(unittest.TestCase):
         self.sinsurf = np.sin(2 * np.pi / self.L * X) * np.sin(2 * np.pi / self.L * Y) * self.hm
         self.size= (self.L,self.L)
 
-        self.surf = UniformNumpyTopography(self.sinsurf, size=self.size)
+        self.surf = Topography(self.sinsurf, size=self.size)
 
         self.precision = 5
 
@@ -65,13 +65,13 @@ class SinewaveTestNonuniform(unittest.TestCase):
 #        self.assertAlmostEqual(numerical,analytical,self.precision)
 
     def test_rms_slope(self):
-        numerical = Nonuniform.rms_slope(self.X, self.sinsurf)
+        numerical = NonuniformLineScan(self.X, self.sinsurf).rms_slope()
         analytical = np.sqrt(2*np.pi ** 2 * self.hm**2 / self.L**2)
         # print(numerical-analytical)
         self.assertAlmostEqual(numerical, analytical, self.precision)
 
     def test_rms_height(self):
-        numerical = Nonuniform.rms_height(self.X, self.sinsurf)
+        numerical = NonuniformLineScan(self.X, self.sinsurf).rms_height()
         analytical = np.sqrt(self.hm**2 / 2)
         #numerical = np.sqrt(np.trapz(self.sinsurf**2, self.X))
 

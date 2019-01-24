@@ -40,11 +40,11 @@ try:
     import PyCo.Topography.Nonuniform as Nonuniform
     import PyCo.Topography.Uniform as Uniform
     from PyCo.Tools import evaluate_gradient, mean_err
-    from PyCo.Topography import (autocorrelation_1D, autocorrelation_2D, tilt_from_height,
-                                 shift_and_tilt, shift_and_tilt_approx,
-                                 NonuniformNumpyTopography, UniformNumpyTopography)
+    from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
     from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
     from PyCo.Topography.Nonuniform.Detrending import polyfit
+    from PyCo.Topography.Uniform.Autocorrelation import autocorrelation_1D, autocorrelation_2D
+    from PyCo.Topography.Uniform.Detrending import tilt_from_height, shift_and_tilt
 
     from .PyCoTest import PyCoTestCase
 except ImportError as err:
@@ -81,12 +81,12 @@ class ToolTest(PyCoTestCase):
         d = .2
         # 1D
         arr = np.arange(5)*a+d
-        arr_out = shift_and_tilt(arr)
+        arr_out = shift_and_tilt(UniformLineScan(arr, arr.shape))
         self.assertTrue(arr_out.sum() <tol, "{}".format(arr_out))
 
         # 2D
         arr = arr + np.arange(6).reshape((-1, 1))*b
-        arr_out = shift_and_tilt(arr)
+        arr_out = shift_and_tilt(Topography(arr, arr.shape))
         error = arr_out.sum()
         self.assertTrue(error <tol, "error = {}, tol = {}, arr_out = {}".format(
             error, tol, arr_out))
@@ -95,19 +95,10 @@ class ToolTest(PyCoTestCase):
                     "arr.shape = {}, arr_out.shape = {}".format(
                         arr.shape, arr_out.shape))
 
-        arr_approx, x = shift_and_tilt_approx(arr, full_output=True)
-        error  =arr_approx.sum()
-        self.assertTrue(error < tol, "error = {}, tol = {}, arr_out = {}".format(
-            error, tol, arr_approx))
-
-        mean_slope = tilt_from_height(arr)
-        self.assertAlmostEqual(mean_slope[0], b)
-        self.assertAlmostEqual(mean_slope[1], a)
-        self.assertAlmostEqual(mean_slope[2], d)
-
-        mean_slope = tilt_from_height(UniformNumpyTopography(arr))
-        self.assertAlmostEqual(mean_slope[0], b)
-        self.assertAlmostEqual(mean_slope[1], a)
+        nx, ny = arr.shape
+        mean_slope = tilt_from_height(Topography(arr, arr.shape))
+        self.assertAlmostEqual(mean_slope[0], b*nx)
+        self.assertAlmostEqual(mean_slope[1], a*ny)
         self.assertAlmostEqual(mean_slope[2], d)
 
 
@@ -115,9 +106,9 @@ class ToolTest(PyCoTestCase):
         nx = 16
         for x, w, h, p in [(nx//2, 3, 1, True), (nx//3, 2, 2, True),
                            (nx//2, 5, 1, False), (nx//3, 6, 2.5, False)]:
-            y = np.zeros([nx, 1])
+            y = np.zeros(nx)
             y[x-w//2:x+(w+1)//2] = h
-            r, A = autocorrelation_1D(y, periodic=True)
+            r, A = autocorrelation_1D(UniformLineScan(y, nx, periodic=True))
 
             A_ana = np.zeros_like(A)
             A_ana[:w] = h**2*np.linspace(w/nx, 1/nx, w)
@@ -127,16 +118,16 @@ class ToolTest(PyCoTestCase):
 
     def test_brute_force_autocorrelation_1D(self):
         n = 10
-        for surf in [UniformNumpyTopography(np.ones(n).reshape(n, 1)),
-                     UniformNumpyTopography(np.arange(n).reshape(n, 1)),
-                     UniformNumpyTopography(np.random.random(n).reshape(n, 1))]:
-            r, A = autocorrelation_1D(surf, periodic=False)
+        for surf in [UniformLineScan(np.ones(n), n, periodic=False),
+                     UniformLineScan(np.arange(n), n, periodic=False),
+                     Topography(np.random.random(n).reshape(n, 1), (n, 1), periodic=False)]:
+            r, A = autocorrelation_1D(surf)
 
             n = len(A)
             dir_A = np.zeros(n)
             for d in range(n):
                 for i in range(n-d):
-                    dir_A[d] += (surf[i] - surf[i+d])**2/2
+                    dir_A[d] += (surf.heights()[i] - surf.heights()[i+d])**2/2
                 dir_A[d] /= (n-d)
             self.assertArrayAlmostEqual(A, dir_A)
 
@@ -144,11 +135,11 @@ class ToolTest(PyCoTestCase):
     def test_brute_force_autocorrelation_2D(self):
         n = 10
         m = 11
-        for surf in [UniformNumpyTopography(np.ones([n, m])),
-                     UniformNumpyTopography(np.random.random([n, m]))]:
-            r, A, A_xy = autocorrelation_2D(surf, periodic=False, return_map=True)
+        for surf in [Topography(np.ones([n, m]), (n, m), periodic=False),
+                     Topography(np.random.random([n, m]), (n, m), periodic=False)]:
+            r, A, A_xy = autocorrelation_2D(surf, return_map=True)
 
-            nx, ny = surf.shape
+            nx, ny = surf.resolution
             dir_A_xy = np.zeros([n, m])
             dir_A = np.zeros_like(A)
             dir_n = np.zeros_like(A)
@@ -156,7 +147,7 @@ class ToolTest(PyCoTestCase):
                 for dy in range(m):
                     for i in range(nx-dx):
                         for j in range(ny-dy):
-                            dir_A_xy[dx, dy] += (surf[i, j] - surf[i+dx, j+dy])**2/2
+                            dir_A_xy[dx, dy] += (surf.heights()[i, j] - surf.heights()[i+dx, j+dy])**2/2
                     dir_A_xy[dx, dy] /= (nx-dx)*(ny-dy)
                     d = np.sqrt(dx**2 + dy**2)
                     i = np.argmin(np.abs(r-d))
@@ -173,9 +164,9 @@ class ToolTest(PyCoTestCase):
         dx = 0.12
         # make a function that is smooth on short scales
         h = np.fft.irfft(np.exp(1j*np.random.random(n//2+1))*(np.arange(n//2+1) < (n//64)))
-        h1 = Uniform.rms_height(h)
+        h1 = UniformLineScan(h, h.shape).rms_height()
         x = np.arange(n)*dx
-        h2 = Nonuniform.rms_height(x, h)
+        h2 = NonuniformLineScan(x, h).rms_height()
         self.assertAlmostEqual(h1, h2, places=3)
 
 
