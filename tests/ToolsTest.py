@@ -40,6 +40,7 @@ try:
     import PyCo.Topography.Nonuniform as Nonuniform
     import PyCo.Topography.Uniform as Uniform
     from PyCo.Tools import evaluate_gradient, mean_err
+    from PyCo.Tools.ContactAreaAnalysis import distance_map
     from PyCo.Topography import (autocorrelation_1D, autocorrelation_2D, tilt_from_height,
                                  shift_and_tilt, shift_and_tilt_approx, shift_and_tilt_from_slope,
                                  NonuniformNumpyTopography, UniformNumpyTopography)
@@ -213,3 +214,16 @@ class ToolTest(PyCoTestCase):
         self.assertAlmostEqual(m, 1.8)
         self.assertAlmostEqual(m2, 2.3)
 
+
+    def test_distance_map(self):
+        cmap = np.zeros((10,10),dtype=bool)
+        ind1 = np.random.randint(0,10)
+        ind2 = np.random.randint(0,10)
+        cmap[ind1,ind2] = True
+        dmap = distance_map(cmap)
+        self.assertAlmostEqual(np.max(dmap),10/np.sqrt(2))
+
+        dx = np.abs(dmap-np.roll(dmap,1))
+        dy = np.abs(dmap-np.roll(dmap,1,axis=1))
+        self.assertLessEqual(np.max(dx),np.sqrt(2))
+        self.assertLessEqual(np.max(dy),np.sqrt(2))
