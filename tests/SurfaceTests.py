@@ -32,30 +32,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-try:
-    import unittest
-    import numpy as np
-    import numpy.matlib as mp
-    from numpy.random import rand, random
-    from numpy.testing import assert_array_equal
-    import tempfile, os
-    from tempfile import TemporaryDirectory as tmp_dir
-    import os
-    import io
-    import pickle
+import unittest
+import numpy as np
+import numpy.matlib as mp
+from numpy.random import rand, random
+from numpy.testing import assert_array_equal
+import tempfile, os
+from tempfile import TemporaryDirectory as tmp_dir
+import os
+import io
+import pickle
 
-    from PyCo.Topography import (Topography, make_sphere, NonuniformLineScan, read, read_asc, read_di, read_h5,
-                                 read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
-    from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
-    from PyCo.Topography.Generation import RandomSurfaceGaussian
+from PyCo.Topography import (Topography, make_sphere, NonuniformLineScan, read, read_asc, read_di, read_h5,
+                             read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
+from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
+from PyCo.Topography.Generation import RandomSurfaceGaussian
 
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+from .PyCoTest import PyCoTestCase
 
 
-class TopographyTest(unittest.TestCase):
+class TopographyTest(PyCoTestCase):
     def test_positions(self):
         shape = (12, 11)
         nx, ny = shape
@@ -67,7 +63,26 @@ class TopographyTest(unittest.TestCase):
         self.assertAlmostEqual(x.max(), 1 - 1/nx)
         self.assertAlmostEqual(y.min(), 0.0)
         self.assertAlmostEqual(y.max(), 1 - 1/ny)
-
+    def test_clone_uniform_line_scan(self):
+        x = np.linspace(0, 4*np.pi, 101)
+        h = np.sin(x)
+        surface = UniformLineScan(h, 4*np.pi).scale(2.0)
+        surface2 = surface.clone()
+        self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
+    def test_clone_nonuniform_line_scan(self):
+        x = np.linspace(0, 4*np.pi, 101)**(1.3)
+        h = np.sin(x)
+        surface = NonuniformLineScan(x, h).scale(2.0)
+        surface2 = surface.clone()
+        self.assertArrayAlmostEqual(surface.positions(), surface2.positions())
+        self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
+    def test_clone_topography(self):
+        x = np.linspace(0, 4*np.pi, 101)
+        y = np.linspace(0, 8*np.pi, 103)
+        h = np.sin(x.reshape(-1, 1)) + np.cos(y.reshape(1, -1))
+        surface = Topography(h, (1.2, 3.2)).scale(2.0)
+        surface2 = surface.clone()
+        self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
