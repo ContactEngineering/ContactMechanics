@@ -172,9 +172,9 @@ class NumpyAscSurfaceTest(unittest.TestCase):
     def test_example5(self):
         surf = read_asc('tests/file_format_examples/example5.txt')
         self.assertEqual(surf.resolution, (10, 10))
-        self.assertIsNone(surf.size)
+        self.assertEqual(surf.size, (10, 10))
         self.assertAlmostEqual(surf.rms_height(), 1.0)
-        self.assertAlmostEqual(surf.rms_slope(), 0.666666666666666666)  # TODO Does this result make sense without size?
+        self.assertAlmostEqual(surf.rms_slope(), 0.666666666666666666)
         self.assertTrue(surf.is_uniform)
         self.assertIsNone(surf.info['unit'])
 
@@ -182,10 +182,6 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         surf.size = 1, 2
         self.assertAlmostEqual(surf.size[0], 1)
         self.assertAlmostEqual(surf.size[1], 2)
-
-        # test setting the unit
-        surf.info['unit'] = 'km'
-        self.assertEqual(surf.info['unit'], 'km')
 
 
 class DetrendedSurfaceTest(unittest.TestCase):
