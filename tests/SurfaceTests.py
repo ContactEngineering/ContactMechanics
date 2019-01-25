@@ -229,7 +229,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         arr = self._flat_arr
         surf = Topography(arr, (1, 1)).detrend(detrend_mode='height')
         self.assertTrue(surf.is_uniform)
-        self.assertAlmostEqual(surf.mean(), 0)  # TODO fails -> implement detrending without using size
+        self.assertAlmostEqual(surf.mean(), 0)
         self.assertAlmostEqual(surf.rms_slope(), 0)
         self.assertTrue(surf.rms_height() < Topography(arr, (1, 1)).rms_height())
 
@@ -246,7 +246,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
         arr = f+x*a+y*b+x*x*c+y*y*d+x*y*e
         sx, sy = 3, 2.5
         nx, ny = arr.shape
-        surf = Topography(arr, size=(sx, sy)).detrend(detrend_mode='curvature')
+        surf = Topography(arr, size=(sx, sy))
+        surf = surf.detrend(detrend_mode='curvature')
         self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf.coeffs[0], b*nx)
         self.assertAlmostEqual(surf.coeffs[1], a*ny)
@@ -256,6 +257,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.coeffs[5], f)
         self.assertAlmostEqual(surf.rms_height(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
+        self.assertAlmostEqual(surf.rms_curvature(), 0.0)
     def test_randomly_rough(self):
         surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
         self.assertTrue(surface.is_uniform)
@@ -280,6 +282,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertFalse(surf.is_uniform)
         der = surf.derivative(n=1)
         assert_array_equal(der, [2, 2])
+        der = surf.derivative(n=2)
+        assert_array_equal(der, [0])
 
         surf = surf.detrend(detrend_mode='height')
         self.assertFalse(surf.is_uniform)
@@ -300,6 +304,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertFalse(surf.is_uniform)
         der = surf.derivative(n=1)
         assert_array_equal(der, [-2, -2, -2])
+        der = surf.derivative(n=2)
+        assert_array_equal(der, [0, 0])
 
         #
         # Similar with detrend which substracts mean value
@@ -327,6 +333,23 @@ class DetrendedSurfaceTest(unittest.TestCase):
         surf = NonuniformLineScan(x, y).detrend(detrend_mode='height')
         self.assertAlmostEqual(surf.mean(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
+
+    def test_nonuniform_quadratic(self):
+        x = np.linspace(0, 10, 11)**1.3
+        a = 1.2
+        b = 1.8
+        c = 0.3
+        y = a+b*x+c*x*x/2
+        surf = NonuniformLineScan(x, y)
+        self.assertAlmostEqual(surf.rms_curvature(), c)
+
+        surf = surf.detrend(detrend_mode='height')
+        self.assertAlmostEqual(surf.mean(), 0.0)
+
+        surf.detrend_mode = 'curvature'
+        self.assertAlmostEqual(surf.mean(), 0.0)
+        self.assertAlmostEqual(surf.rms_slope(), 0.0)
+        self.assertAlmostEqual(surf.rms_curvature(), 0.0)
 
 class DetectFormatTest(unittest.TestCase):
     def setUp(self):
