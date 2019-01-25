@@ -302,7 +302,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         """
         returns a list of tuples that contain the equivalent slices in the
         small and the large array. It differentiates between resolution and
-        computational_resolution.
+        domain_resolution.
         Parameters:
         babushka_resolution -- resolution of smaller scale
         """
@@ -329,14 +329,14 @@ class FastSmoothContactSystem(SmoothContactSystem):
     def _get_babushka_array(self, full_array, babushka_array=None):
         """
         returns the equivalent small-scale array representation of a given
-        large-scale array. In the case of computational_resolution arrays, this
+        large-scale array. In the case of domain_resolution arrays, this
         is a copy. Else a view.
         Parameters:
         full_array     -- large-scale input array
         babushka_array -- optional small-scale output array to overwrite
         """
         # pylint: disable=unused-argument
-        def computational_resolution():
+        def domain_resolution():
             "used when arrays correspond to the substrate"
             nonlocal babushka_array
             if babushka_array is None:
@@ -357,7 +357,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         if full_array.shape == self.resolution:
             return normal_resolution()
         else:
-            return computational_resolution()
+            return domain_resolution()
 
     def _get_full_array(self, babushka_array, full_array=None):
         """
@@ -368,7 +368,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         babushka_array -- small-scale input array
         """
         # pylint: disable=unused-argument
-        def computational_resolution():
+        def domain_resolution():
             "used when arrays correspond to the substrate"
             nonlocal full_array
             if full_array is None:
@@ -389,7 +389,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         if babushka_array.shape == self.babushka.resolution:
             return normal_resolution()
         else:
-            return computational_resolution()
+            return domain_resolution()
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
                        options=None, gradient=True, lbounds=None, ubounds=None,

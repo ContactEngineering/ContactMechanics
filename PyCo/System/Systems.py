@@ -657,7 +657,7 @@ class NonSmoothContactSystem(SystemBase):
         offset     -- determines indentation depth
         disp0      -- initial guess for surface displacement. If not set, zero
                       displacement of shape
-                      self.substrate.computational_resolution is used
+                      self.substrate.domain_resolution is used
         pentol     -- maximum penetration of contacting regions required for
                       convergence
         prestol    -- maximum pressure outside the contact region allowed for
