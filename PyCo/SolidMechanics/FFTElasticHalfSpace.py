@@ -267,16 +267,21 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                  facts[index - 1] = \
                     self.size[0]/(self.contact_modulus*index*np.pi)
             self.weights= facts
-        elif self.dim == 2:  # TODO: compute facts only on the fourier slice
+        elif self.dim == 2:
             nx, ny = self.resolution
             sx, sy = self.size
             # Note: q-values from 0 to 1, not from 0 to 2*pi
-            qx = np.arange(nx, dtype=np.float64)
+            qx = np.arange(self.fourier_location[0],
+                           self.fourier_location[0] +
+                           self.fourier_resolution[0], dtype=np.float64)
             qx = np.where(qx <= nx//2, qx/sx, (nx-qx)/sx)
-            qy = np.arange(ny, dtype=np.float64)
+            qy = np.arange(self.fourier_location[1],
+                           self.fourier_location[1] +
+                           self.fourier_resolution[1], dtype=np.float64)
             qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
             q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
-            q[0, 0] = np.NaN; #q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
+            if self.fourier_location == (0, 0):
+                q[0, 0] = np.NaN;  # q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
             facts = np.pi*self.contact_modulus*q
             if self.thickness is not None: #TODO: parallel test for this case
                 # Compute correction for finite thickness
@@ -290,20 +295,24 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 # q-values that are converged to the infinite system expression.
                 corr[np.isnan(corr)] = 1.0
                 facts *= corr
-                facts[0, 0] = self.young/self.thickness * \
-                    (1 - self.poisson)/((1 - 2*self.poisson)*(1 + self.poisson))
+                if self.fourier_location == (0, 0):
+                    facts[0, 0] = self.young / self.thickness * \
+                                  (1 - self.poisson) / (
+                                              (1 - 2 * self.poisson) * (
+                                                  1 + self.poisson))
             else:
-                if self.stiffness_q0 is None:
-                    facts[0, 0] = (facts[1, 0].real + facts[0, 1].real)/2
-                elif self.stiffness_q0 == 0.0:
-                    facts[0, 0] = 1.0
-                else:
-                    facts[0, 0] = self.stiffness_q0
+                if self.fourier_location == (0, 0):
+                    if self.stiffness_q0 is None:
+                        facts[0, 0] = (facts[1, 0].real + facts[0, 1].real) / 2
+                    elif self.stiffness_q0 == 0.0:
+                        facts[0, 0] = 1.0
+                    else:
+                        facts[0, 0] = self.stiffness_q0
 
-            self.weights = 1/facts[self.fourier_slice]
-
-            if self.stiffness_q0 == 0.0:
-                self.weights[0, 0] = 0.0
+            self.weights = 1 / facts
+            if self.fourier_location == (0, 0):
+                if self.stiffness_q0 == 0.0:
+                    self.weights[0, 0] = 0.0
 
     def _compute_i_fourier_coeffs(self):
         """Invert the weights w relating fft(displacement) to fft(pressure):
@@ -680,7 +689,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             if forces.shape == self.resolution:
                 # Automatically pad forces if force array is half of subdomain
                 # resolution
-                padded_forces = np.zeros(self.computational_resolution)
+                padded_forces = np.zeros(self.domain_resolution)
                 s = [slice(0, forces.shape[i])
                      for i in range(len(forces.shape))]
                 padded_forces[s] = forces
