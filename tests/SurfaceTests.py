@@ -43,8 +43,8 @@ import os
 import io
 import pickle
 
-from PyCo.Topography import (Topography, make_sphere, NonuniformLineScan, read, read_asc, read_di, read_h5,
-                             read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
+from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, read, read_asc, read_di,
+                             read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
 from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
 from PyCo.Topography.Generation import RandomSurfaceGaussian
 
@@ -181,8 +181,17 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
 class DetrendedSurfaceTest(unittest.TestCase):
     def setUp(self):
-        pass
-    def test_smooth_flat(self):
+        a = 1.2
+        b = 2.5
+        d = .2
+        arr = np.arange(5) * a + d
+        arr = arr + np.arange(6).reshape((-1, 1)) * b
+
+        self._flat_arr = arr
+
+    def test_smooth_flat_with_size(self):
+        arr = self._flat_arr
+
         a = 1.2
         b = 2.5
         d = .2
@@ -214,6 +223,15 @@ class DetrendedSurfaceTest(unittest.TestCase):
         x, y, z = surf2.positions_and_heights()
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0]/surf2.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1]/surf2.resolution[1])
+
+
+    def test_smooth_without_size(self):
+        arr = self._flat_arr
+        surf = Topography(arr, (1, 1)).detrend(detrend_mode='height')
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf.mean(), 0)  # TODO fails -> implement detrending without using size
+        self.assertAlmostEqual(surf.rms_slope(), 0)
+        self.assertTrue(surf.rms_height() < Topography(arr, (1, 1)).rms_height())
 
 
     def test_smooth_curved(self):
@@ -254,6 +272,55 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertFalse(surf.is_uniform)
         surf = surf.detrend(detrend_mode='height')
         self.assertFalse(surf.is_uniform)
+    def test_nonuniform2(self):
+        x = np.array((1,2,3))
+        y = 2*x
+
+        surf = NonuniformLineScan(x, y)
+        self.assertFalse(surf.is_uniform)
+        der = surf.derivative(n=1)
+        assert_array_equal(der, [2, 2])
+
+        surf = surf.detrend(detrend_mode='height')
+        self.assertFalse(surf.is_uniform)
+        der = surf.derivative(n=1)
+        assert_array_equal(der, [0, 0])
+
+        assert_array_equal(surf.heights(), np.zeros(y.shape))
+        p = surf.positions_and_heights()
+        assert_array_equal(p[0], x)
+        assert_array_equal(p[1], np.zeros(y.shape))
+
+    def test_nonuniform3(self):
+
+        x = np.array((1,2,3,4))
+        y = -2*x
+
+        surf = NonuniformLineScan(x, y)
+        self.assertFalse(surf.is_uniform)
+        der = surf.derivative(n=1)
+        assert_array_equal(der, [-2, -2, -2])
+
+        #
+        # Similar with detrend which substracts mean value
+        #
+        surf2 = surf.detrend(detrend_mode='center')
+        self.assertFalse(surf2.is_uniform)
+        der = surf2.derivative(n=1)
+        assert_array_equal(der, [-2, -2, -2])
+
+        #
+        # Similar with detrend which eliminates slope
+        #
+        surf3 = surf.detrend(detrend_mode='height')
+        self.assertFalse(surf3.is_uniform)
+        der = surf3.derivative(n=1)
+        assert_array_equal(der, [0, 0, 0])
+        assert_array_equal(surf3.heights(), np.zeros(y.shape))
+        p = surf3.positions_and_heights()
+        assert_array_equal(p[0], x)
+        assert_array_equal(p[1], np.zeros(y.shape))
+
     def test_nonuniform_linear(self):
         x = np.linspace(0, 10, 11)**2
         y = 1.8*x+1.2
@@ -290,14 +357,14 @@ class x3pSurfaceTest(unittest.TestCase):
         pass
     def test_read(self):
         surface = read_x3p('tests/file_format_examples/example.x3p')
-        nx, ny = surface.shape
+        nx, ny = surface.resolution
         self.assertEqual(nx, 777)
         self.assertEqual(ny, 1035)
         sx, sy = surface.size
         self.assertAlmostEqual(sx, 0.00068724)
         self.assertAlmostEqual(sy, 0.00051593)
         surface = read_x3p('tests/file_format_examples/example2.x3p')
-        nx, ny = surface.shape
+        nx, ny = surface.resolution
         self.assertEqual(nx, 650)
         self.assertEqual(ny, 650)
         sx, sy = surface.size
