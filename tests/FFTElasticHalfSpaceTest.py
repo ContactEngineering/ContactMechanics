@@ -355,12 +355,12 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
     def test_realnessEnergy(self):
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.size)
-        force = np.zeros(hs.computational_resolution)
+        force = np.zeros(hs.domain_resolution)
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
         kdisp = hs.evaluate_k_disp(force)
         kforce = rfftn(force)
-        np_pts = np.prod(self.res)
+        np_pts = np.prod(hs.domain_resolution)
         area_per_pt = np.prod(self.size)/np_pts
         energy = .5 * (np.vdot(-kforce, kdisp) +
                        np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
