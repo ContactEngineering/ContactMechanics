@@ -71,8 +71,7 @@ class FastSystemTest(unittest.TestCase):
         self.interaction = Contact.LJ93smooth(self.eps, self.sig, self.gam)
         self.min_pot = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.surface = Topography.Sphere(self.radius, self.res, self.size,
-                                         standoff=float('inf'))
+        self.surface = Topography.make_sphere(self.radius, self.res, self.size, standoff=float('inf'))
 
     def test_FastSmoothContactSystem(self):
         S = FastSmoothContactSystem(self.substrate,
@@ -252,8 +251,7 @@ class FastSystemTest(unittest.TestCase):
                 res, young[i], size[i])
             interaction = Contact.LJ93smoothMin(
                 eps[i], sig[i], gam[i])
-            surface = Topography.Sphere(
-                radius[i], res, size[i], standoff=float(sig[i]*1000))
+            surface = Topography.make_sphere(radius[i], res, size[i], standoff=float(sig[i]*1000))
             systems.append(SystemFactory(substrate, interaction, surface))
             offsets.append(.8*systems[i].interaction.r_c)
 
@@ -340,13 +338,12 @@ class FastSystemTest(unittest.TestCase):
             young = 1
             gam = 0.05
 
-            surface = Topography.Sphere(radius, res, size)
-            ext_surface = Topography.Sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s),
-                                         centre=(s / 2, s / 2))
+            surface = Topography.make_sphere(radius, res, size)
+            ext_surface = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=(s / 2, s / 2))
 
             interaction = Contact.LJ93smoothMin(young/18*np.sqrt(2/5),2.5**(1/6),gamma=gam)
 
-            substrate = Solid.FreeFFTElasticHalfSpace(surface.shape, young, surface.size)
+            substrate = Solid.FreeFFTElasticHalfSpace(surface.resolution, young, surface.size)
             system = FastSmoothContactSystem(substrate, interaction, surface, margin=4)
 
             start_disp = - interaction.r_c + 1e-10
@@ -362,7 +359,7 @@ class FastSystemTest(unittest.TestCase):
                                             u,
                                             method='L-BFGS-B',
                                             options=dict(ftol=1e-18, gtol=1e-10),
-                                            lbounds=ext_surface.array() + offset)
+                                            lbounds=ext_surface.heights() + offset)
 
                 u = system.disp
 

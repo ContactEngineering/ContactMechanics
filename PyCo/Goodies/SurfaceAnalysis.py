@@ -38,7 +38,7 @@ import numpy as np
 import scipy
 
 from ..Tools.common import compute_wavevectors, fftn, get_q_from_lambda
-from ..Topography import UniformNumpyTopography
+from ..Topography import Topography
 
 
 class CharacterisePeriodicSurface(object):
@@ -82,7 +82,7 @@ class CharacterisePeriodicSurface(object):
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
         area = np.prod(size)
-        h_a = fftn(self.surface.array() * self.window, area)
+        h_a = fftn(self.surface.heights() * self.window, area)
         C_q = 1/area*(np.conj(h_a)*h_a).real
 
         q_vecs = compute_wavevectors(res, size, self.surface.dim)
@@ -99,7 +99,7 @@ class CharacterisePeriodicSurface(object):
         res, size = self.surface.resolution, self.surface.size
         # equivalent lattice constant**2
 
-        tmp = np.fft.fft(self.surface.array() * self.window, axis=0)
+        tmp = np.fft.fft(self.surface.heights() * self.window, axis=0)
         D_q_x = np.conj(tmp)*tmp
         D_q = np.mean(D_q_x, axis=1).real
 
@@ -284,13 +284,13 @@ class CharacterisePeriodicSurface(object):
         return self.surface.rms_slope()
 
     def compute_rms_height_q_space(self):  # pylint: disable=missing-docstring
-        tmp_surf = UniformNumpyTopography(self.surface.array * self.window,
-                                          size=self.surface.size)
+        tmp_surf = Topography(self.surface.heights * self.window,
+                              size=self.surface.size)
         return tmp_surf.rms_height_q_space()
 
     def compute_rms_slope_q_space(self):  # pylint: disable=missing-docstring
-        tmp_surf = UniformNumpyTopography(self.surface.array() * self.window,
-                                          size=self.surface.size)
+        tmp_surf = Topography(self.surface.heights() * self.window,
+                              size=self.surface.size)
         return tmp_surf.rms_slope_q_space()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):
