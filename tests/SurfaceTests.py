@@ -183,6 +183,24 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[0], 1)
         self.assertAlmostEqual(surf.size[1], 2)
 
+        bw = surf.bandwidth()
+        self.assertAlmostEqual(bw[0], 1.5/10)
+        self.assertAlmostEqual(bw[1], 1.5)
+
+
+    def test_simple_nonuniform_line_scan(self):
+        surf = read_xyz('tests/file_format_examples/line_scan_1_minimal_spaces.asc')
+
+        self.assertAlmostEqual(surf.size, (9.0,))
+
+        self.assertFalse(surf.is_uniform)
+        self.assertIsNone(surf.info['unit'])
+
+        bw = surf.bandwidth()
+        print(bw)
+        self.assertAlmostEqual(bw[0], (8*1.+2*0.5/10)/9)
+        self.assertAlmostEqual(bw[1], 9)
+
 
 class DetrendedSurfaceTest(unittest.TestCase):
     def setUp(self):
