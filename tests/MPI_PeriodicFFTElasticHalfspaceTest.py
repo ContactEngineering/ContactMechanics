@@ -273,26 +273,27 @@ def test_multipleSineWaves_evaluate(fftengineclass,nx=64, ny=32):
 
 
 if __name__ in ['__main__', 'builtins']:
+    basenpoints = comm.Get_size() * 4 # Base number of points in order to avoid empty subdomains when using a lot of processors 
     for fftengineclass in fftengineList:
         print("Testing rotational invartiance of energy")
-        test_sineWave_disp_rotation_invariance(fftengineclass, 8, 8)
-        test_sineWave_disp_rotation_invariance(fftengineclass, 17, 128)
-        test_sineWave_disp_rotation_invariance(fftengineclass, 16, 128)
+        test_sineWave_disp_rotation_invariance(fftengineclass, basenpoints+8, basenpoints+8)
+        test_sineWave_disp_rotation_invariance(fftengineclass, basenpoints+17, basenpoints+128)
+        test_sineWave_disp_rotation_invariance(fftengineclass, basenpoints+16, basenpoints+128)
         print("rotation invariance ok")
 
-        test_sineWave_disp(fftengineclass, nx=8, ny=15)
-        test_sineWave_disp(fftengineclass, nx=8, ny=4)
-        test_sineWave_disp(fftengineclass, nx=9, ny=4)
-        test_sineWave_disp(fftengineclass, nx=113, ny=765)
+        test_sineWave_disp(fftengineclass, nx=basenpoints+8, ny=basenpoints+15)
+        test_sineWave_disp(fftengineclass, nx=basenpoints+8, ny=basenpoints+4)
+        test_sineWave_disp(fftengineclass, nx=basenpoints+9, ny=basenpoints+4)
+        test_sineWave_disp(fftengineclass, nx=basenpoints+113, ny=basenpoints+765)
 
         print("Testing Periodic FFTElastic Halfspace weights")
-        test_weights_gather(fftengineclass, nx=64, ny=33)
-        test_weights(fftengineclass, nx=64, ny=33)
-        test_weights(fftengineclass, nx=65, ny=33)
-        test_weights(fftengineclass, nx=64, ny=32)
+        test_weights_gather(fftengineclass, nx=basenpoints+64, ny=basenpoints+33)
+        test_weights(fftengineclass, nx=basenpoints+64, ny=basenpoints+33)
+        test_weights(fftengineclass, nx=basenpoints+65, ny=basenpoints+33)
+        test_weights(fftengineclass, nx=basenpoints+64, ny=basenpoints+32)
 
         print("Testing Free FFTElastic Halfspace computation")
-        for res in [(64, 32), (65, 33)]:
+        for res in [(basenpoints+64, basenpoints+32), (basenpoints+65, basenpoints+33)]:
             print("testing resolution {}".format(res))
             test_sineWave_disp(fftengineclass, *res)
             test_sineWave_force(fftengineclass, *res)
