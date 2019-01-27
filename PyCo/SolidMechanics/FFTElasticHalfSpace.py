@@ -268,51 +268,54 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     self.size[0]/(self.contact_modulus*index*np.pi)
             self.weights= facts
         elif self.dim == 2:
-            nx, ny = self.resolution
-            sx, sy = self.size
-            # Note: q-values from 0 to 1, not from 0 to 2*pi
-            qx = np.arange(self.fourier_location[0],
-                           self.fourier_location[0] +
-                           self.fourier_resolution[0], dtype=np.float64)
-            qx = np.where(qx <= nx//2, qx/sx, (nx-qx)/sx)
-            qy = np.arange(self.fourier_location[1],
-                           self.fourier_location[1] +
-                           self.fourier_resolution[1], dtype=np.float64)
-            qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
-            q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
-            if self.fourier_location == (0, 0):
-                q[0, 0] = np.NaN;  # q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
-            facts = np.pi*self.contact_modulus*q
-            if self.thickness is not None: #TODO: parallel test for this case
-                # Compute correction for finite thickness
-                q *= 2*np.pi*self.thickness
-                fac = 3 - 4*self.poisson
-                off = 4*self.poisson*(2*self.poisson - 3) + 5
-                with np.errstate(over="ignore",invalid="ignore",divide="ignore"):
-                    corr = (fac*np.cosh(2*q) + 2*q**2 + off)/ \
-                        (fac*np.sinh(2*q) - 2*q)
-                # The expression easily overflows numerically. These are then
-                # q-values that are converged to the infinite system expression.
-                corr[np.isnan(corr)] = 1.0
-                facts *= corr
-                if self.fourier_location == (0, 0):
-                    facts[0, 0] = self.young / self.thickness * \
-                                  (1 - self.poisson) / (
-                                              (1 - 2 * self.poisson) * (
-                                                  1 + self.poisson))
+            if np.prod(self.fourier_resolution )== 0:
+                self.weights = np.zeros(self.fourier_resolution)
             else:
+                nx, ny = self.resolution
+                sx, sy = self.size
+                # Note: q-values from 0 to 1, not from 0 to 2*pi
+                qx = np.arange(self.fourier_location[0],
+                               self.fourier_location[0] +
+                               self.fourier_resolution[0], dtype=np.float64)
+                qx = np.where(qx <= nx//2, qx/sx, (nx-qx)/sx)
+                qy = np.arange(self.fourier_location[1],
+                               self.fourier_location[1] +
+                               self.fourier_resolution[1], dtype=np.float64)
+                qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
+                q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
                 if self.fourier_location == (0, 0):
-                    if self.stiffness_q0 is None:
-                        facts[0, 0] = (facts[1, 0].real + facts[0, 1].real) / 2
-                    elif self.stiffness_q0 == 0.0:
-                        facts[0, 0] = 1.0
-                    else:
-                        facts[0, 0] = self.stiffness_q0
+                    q[0, 0] = np.NaN;  # q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
+                facts = np.pi*self.contact_modulus*q
+                if self.thickness is not None: #TODO: parallel test for this case
+                    # Compute correction for finite thickness
+                    q *= 2*np.pi*self.thickness
+                    fac = 3 - 4*self.poisson
+                    off = 4*self.poisson*(2*self.poisson - 3) + 5
+                    with np.errstate(over="ignore",invalid="ignore",divide="ignore"):
+                        corr = (fac*np.cosh(2*q) + 2*q**2 + off)/ \
+                            (fac*np.sinh(2*q) - 2*q)
+                    # The expression easily overflows numerically. These are then
+                    # q-values that are converged to the infinite system expression.
+                    corr[np.isnan(corr)] = 1.0
+                    facts *= corr
+                    if self.fourier_location == (0, 0):
+                        facts[0, 0] = self.young / self.thickness * \
+                                      (1 - self.poisson) / (
+                                                  (1 - 2 * self.poisson) * (
+                                                      1 + self.poisson))
+                else:
+                    if self.fourier_location == (0, 0):
+                        if self.stiffness_q0 is None:
+                            facts[0, 0] = (facts[1, 0].real + facts[0, 1].real) / 2
+                        elif self.stiffness_q0 == 0.0:
+                            facts[0, 0] = 1.0
+                        else:
+                            facts[0, 0] = self.stiffness_q0
 
-            self.weights = 1 / facts
-            if self.fourier_location == (0, 0):
-                if self.stiffness_q0 == 0.0:
-                    self.weights[0, 0] = 0.0
+                self.weights = 1 / facts
+                if self.fourier_location == (0, 0):
+                    if self.stiffness_q0 == 0.0:
+                        self.weights[0, 0] = 0.0
 
     def _compute_i_fourier_coeffs(self):
         """Invert the weights w relating fft(displacement) to fft(pressure):
@@ -633,45 +636,42 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
            This version is less is copied from matscipy, use if memory is a
            concern
         """
-        if np.prod(self.fourier_resolution )== 0: 
-            return np.zeros((0,0)),np.zeros((0,0))
+        # pylint: disable=invalid-name
+        facts = np.zeros(self.subdomain_resolution)
+        a = self.steps[0]*.5
+        if self.dim == 1:
+            pass
         else:
-            # pylint: disable=invalid-name
-            facts = np.zeros(self.subdomain_resolution)
-            a = self.steps[0]*.5
-            if self.dim == 1:
-                pass
-            else:
-                b = self.steps[1]*.5
-                x_s = np.arange(self.subdomain_location[0],
-                                self.subdomain_location[0] +
-                                self.subdomain_resolution[0])
-                x_s = np.where(x_s <= self.resolution[0], x_s,
-                               x_s-self.resolution[0] * 2) * self.steps[0]
-                x_s.shape = (-1, 1)
-                y_s = np.arange(self.subdomain_location[1],
-                                self.subdomain_location[1] +
-                                self.subdomain_resolution[1])
-                y_s = np.where(y_s <= self.resolution[1], y_s,
-                               y_s-self.resolution[1]*2) * self.steps[1]
-                y_s.shape = (1, -1)
-                facts = 1/(np.pi*self.young) * (
-                    (x_s+a)*np.log(((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
-                                                    (x_s+a)*(x_s+a))) /
-                                   ((y_s-b)+np.sqrt((y_s-b)*(y_s-b) +
-                                                    (x_s+a)*(x_s+a)))) +
-                    (y_s+b)*np.log(((x_s+a)+np.sqrt((y_s+b)*(y_s+b) +
-                                                    (x_s+a)*(x_s+a))) /
-                                   ((x_s-a)+np.sqrt((y_s+b)*(y_s+b) +
-                                                    (x_s-a)*(x_s-a)))) +
-                    (x_s-a)*np.log(((y_s-b)+np.sqrt((y_s-b)*(y_s-b) +
-                                                    (x_s-a)*(x_s-a))) /
-                                   ((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
-                                                    (x_s-a)*(x_s-a)))) +
-                    (y_s-b)*np.log(((x_s-a)+np.sqrt((y_s-b)*(y_s-b) +
-                                                    (x_s-a)*(x_s-a))) /
-                                   ((x_s+a)+np.sqrt((y_s-b)*(y_s-b) +
-                                                    (x_s+a)*(x_s+a)))))
+            b = self.steps[1]*.5
+            x_s = np.arange(self.subdomain_location[0],
+                              self.subdomain_location[0] +
+                              self.subdomain_resolution[0])
+            x_s = np.where(x_s <= self.resolution[0], x_s,
+                             x_s-self.resolution[0] * 2) * self.steps[0]
+            x_s.shape = (-1, 1)
+            y_s = np.arange(self.subdomain_location[1],
+                              self.subdomain_location[1] +
+                              self.subdomain_resolution[1])
+            y_s = np.where(y_s <= self.resolution[1], y_s,
+                             y_s-self.resolution[1]*2) * self.steps[1]
+            y_s.shape = (1, -1)
+            facts = 1/(np.pi*self.young) * (
+                  (x_s+a)*np.log(((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
+                                                  (x_s+a)*(x_s+a))) /
+                                 ((y_s-b)+np.sqrt((y_s-b)*(y_s-b) +
+                                                  (x_s+a)*(x_s+a)))) +
+                  (y_s+b)*np.log(((x_s+a)+np.sqrt((y_s+b)*(y_s+b) +
+                                                  (x_s+a)*(x_s+a))) /
+                                 ((x_s-a)+np.sqrt((y_s+b)*(y_s+b) +
+                                                  (x_s-a)*(x_s-a)))) +
+                  (x_s-a)*np.log(((y_s-b)+np.sqrt((y_s-b)*(y_s-b) +
+                                                  (x_s-a)*(x_s-a))) /
+                                 ((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
+                                                  (x_s-a)*(x_s-a)))) +
+                  (y_s-b)*np.log(((x_s-a)+np.sqrt((y_s-b)*(y_s-b) +
+                                                  (x_s-a)*(x_s-a))) /
+                                 ((x_s+a)+np.sqrt((y_s-b)*(y_s-b) +
+                                                  (x_s+a)*(x_s+a)))))
             self.weights = self.fftengine.rfftn(facts)
             return self.weights, facts
 
