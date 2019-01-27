@@ -633,44 +633,47 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
            This version is less is copied from matscipy, use if memory is a
            concern
         """
-        # pylint: disable=invalid-name
-        facts = np.zeros(self.subdomain_resolution)
-        a = self.steps[0]*.5
-        if self.dim == 1:
-            pass
+        if np.prod(self.fourier_resolution )== 0: 
+            return np.zeros((0,0)),np.zeros((0,0))
         else:
-            b = self.steps[1]*.5
-            x_s = np.arange(self.subdomain_location[0],
-                            self.subdomain_location[0] +
-                            self.subdomain_resolution[0])
-            x_s = np.where(x_s <= self.resolution[0], x_s,
-                           x_s-self.resolution[0] * 2) * self.steps[0]
-            x_s.shape = (-1, 1)
-            y_s = np.arange(self.subdomain_location[1],
-                            self.subdomain_location[1] +
-                            self.subdomain_resolution[1])
-            y_s = np.where(y_s <= self.resolution[1], y_s,
-                           y_s-self.resolution[1]*2) * self.steps[1]
-            y_s.shape = (1, -1)
-            facts = 1/(np.pi*self.young) * (
-                (x_s+a)*np.log(((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
-                                                (x_s+a)*(x_s+a))) /
-                               ((y_s-b)+np.sqrt((y_s-b)*(y_s-b) +
-                                                (x_s+a)*(x_s+a)))) +
-                (y_s+b)*np.log(((x_s+a)+np.sqrt((y_s+b)*(y_s+b) +
-                                                (x_s+a)*(x_s+a))) /
-                               ((x_s-a)+np.sqrt((y_s+b)*(y_s+b) +
-                                                (x_s-a)*(x_s-a)))) +
-                (x_s-a)*np.log(((y_s-b)+np.sqrt((y_s-b)*(y_s-b) +
-                                                (x_s-a)*(x_s-a))) /
-                               ((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
-                                                (x_s-a)*(x_s-a)))) +
-                (y_s-b)*np.log(((x_s-a)+np.sqrt((y_s-b)*(y_s-b) +
-                                                (x_s-a)*(x_s-a))) /
-                               ((x_s+a)+np.sqrt((y_s-b)*(y_s-b) +
-                                                (x_s+a)*(x_s+a)))))
-        self.weights = self.fftengine.rfftn(facts)
-        return self.weights, facts
+            # pylint: disable=invalid-name
+            facts = np.zeros(self.subdomain_resolution)
+            a = self.steps[0]*.5
+            if self.dim == 1:
+                pass
+            else:
+                b = self.steps[1]*.5
+                x_s = np.arange(self.subdomain_location[0],
+                                self.subdomain_location[0] +
+                                self.subdomain_resolution[0])
+                x_s = np.where(x_s <= self.resolution[0], x_s,
+                               x_s-self.resolution[0] * 2) * self.steps[0]
+                x_s.shape = (-1, 1)
+                y_s = np.arange(self.subdomain_location[1],
+                                self.subdomain_location[1] +
+                                self.subdomain_resolution[1])
+                y_s = np.where(y_s <= self.resolution[1], y_s,
+                               y_s-self.resolution[1]*2) * self.steps[1]
+                y_s.shape = (1, -1)
+                facts = 1/(np.pi*self.young) * (
+                    (x_s+a)*np.log(((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
+                                                    (x_s+a)*(x_s+a))) /
+                                   ((y_s-b)+np.sqrt((y_s-b)*(y_s-b) +
+                                                    (x_s+a)*(x_s+a)))) +
+                    (y_s+b)*np.log(((x_s+a)+np.sqrt((y_s+b)*(y_s+b) +
+                                                    (x_s+a)*(x_s+a))) /
+                                   ((x_s-a)+np.sqrt((y_s+b)*(y_s+b) +
+                                                    (x_s-a)*(x_s-a)))) +
+                    (x_s-a)*np.log(((y_s-b)+np.sqrt((y_s-b)*(y_s-b) +
+                                                    (x_s-a)*(x_s-a))) /
+                                   ((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
+                                                    (x_s-a)*(x_s-a)))) +
+                    (y_s-b)*np.log(((x_s-a)+np.sqrt((y_s-b)*(y_s-b) +
+                                                    (x_s-a)*(x_s-a))) /
+                                   ((x_s+a)+np.sqrt((y_s-b)*(y_s-b) +
+                                                    (x_s+a)*(x_s+a)))))
+            self.weights = self.fftengine.rfftn(facts)
+            return self.weights, facts
 
     def evaluate_disp(self, forces):
         """ Computes the displacement due to a given force array
