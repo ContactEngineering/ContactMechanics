@@ -151,5 +151,7 @@ if __name__ in ['__main__', 'builtins']:
         for res in [(64, 32), (65, 33)]:
             print("Testing Resolution {}".format(res))
             test_resolutions(fftengineclass, *res)
+            print("test weights")
             test_weights(fftengineclass, *res)
+            print("test evaluate_distest evaluate_disp")
             test_evaluate_disp_uniform_pressure(fftengineclass, *res)
