@@ -119,6 +119,29 @@ class TopographyTest(PyCoTestCase):
         surface2 = surface.clone()
         self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
+class NonuniformLineScanTest(PyCoTestCase):
+
+    def test_properties(self):
+
+        x = np.array((0, 1, 1.5, 2, 3))
+        h = 2 * x
+        t = NonuniformLineScan(x, h)
+        self.assertEqual(t.dim, 1)
+
+    def test_positions_and_heights(self):
+
+        x = np.array((0,1,1.5,2,3))
+        h = 2*x
+
+        t = NonuniformLineScan(x, h)
+
+        assert_array_equal(t.heights(), h)
+        assert_array_equal(t.positions(), x)
+
+        x2, h2 = t.positions_and_heights()
+        assert_array_equal(x2, x)
+        assert_array_equal(h2, h)
+
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -258,17 +281,20 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.mean(), 0)
 
         surf = Topography(arr, (1.5, 3.2)).detrend(detrend_mode='slope')
+        self.assertEqual(surf.dim, 2)
         self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf.mean(), 0)
         self.assertAlmostEqual(surf.rms_slope(), 0)
 
         surf = Topography(arr, arr.shape).detrend(detrend_mode='height')
+        self.assertEqual(surf.dim, 2)
         self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf.mean(), 0)  # TODO fails -> implement detrending without using size
         self.assertAlmostEqual(surf.rms_slope(), 0)
         self.assertTrue(surf.rms_height() < Topography(arr, arr.shape).rms_height())
 
         surf2 = Topography(arr, (1, 1)).detrend(detrend_mode='height')
+        self.assertEqual(surf.dim, 2)
         self.assertTrue(surf2.is_uniform)
         self.assertAlmostEqual(surf2.rms_slope(), 0)
         self.assertTrue(surf2.rms_height() < Topography(arr, arr.shape).rms_height())
@@ -282,6 +308,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
     def test_smooth_without_size(self):
         arr = self._flat_arr
         surf = Topography(arr, (1, 1)).detrend(detrend_mode='height')
+        self.assertEqual(surf.dim, 2)
         self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf.mean(), 0)
         self.assertAlmostEqual(surf.rms_slope(), 0)
@@ -327,8 +354,11 @@ class DetrendedSurfaceTest(unittest.TestCase):
     def test_nonuniform(self):
         surf = read_xyz('tests/file_format_examples/example.asc')
         self.assertFalse(surf.is_uniform)
+        self.assertEqual(surf.dim, 1)
+
         surf = surf.detrend(detrend_mode='height')
         self.assertFalse(surf.is_uniform)
+        self.assertEqual(surf.dim, 1)
 
     def test_nonuniform2(self):
         x = np.array((1, 2, 3))
@@ -336,6 +366,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
 
         surf = NonuniformLineScan(x, y)
         self.assertFalse(surf.is_uniform)
+        self.assertEqual(surf.dim, 1)
         der = surf.derivative(n=1)
         assert_array_equal(der, [2, 2])
         der = surf.derivative(n=2)
@@ -343,6 +374,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
 
         surf = surf.detrend(detrend_mode='height')
         self.assertFalse(surf.is_uniform)
+        self.assertEqual(surf.dim, 1)
+
         der = surf.derivative(n=1)
         assert_array_equal(der, [0, 0])
 
@@ -357,6 +390,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
 
         surf = NonuniformLineScan(x, y)
         self.assertFalse(surf.is_uniform)
+        self.assertEqual(surf.dim, 1)
+
         der = surf.derivative(n=1)
         assert_array_equal(der, [-2, -2, -2])
         der = surf.derivative(n=2)
@@ -367,6 +402,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
         #
         surf2 = surf.detrend(detrend_mode='center')
         self.assertFalse(surf2.is_uniform)
+        self.assertEqual(surf.dim, 1)
+
         der = surf2.derivative(n=1)
         assert_array_equal(der, [-2, -2, -2])
 
@@ -375,6 +412,8 @@ class DetrendedSurfaceTest(unittest.TestCase):
         #
         surf3 = surf.detrend(detrend_mode='height')
         self.assertFalse(surf3.is_uniform)
+        self.assertEqual(surf.dim, 1)
+
         der = surf3.derivative(n=1)
         assert_array_equal(der, [0, 0, 0])
         assert_array_equal(surf3.heights(), np.zeros(y.shape))
