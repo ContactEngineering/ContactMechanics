@@ -52,6 +52,7 @@ from .PyCoTest import PyCoTestCase
 
 
 class TopographyTest(PyCoTestCase):
+
     def test_positions(self):
         shape = (12, 11)
         nx, ny = shape
@@ -63,6 +64,37 @@ class TopographyTest(PyCoTestCase):
         self.assertAlmostEqual(x.max(), 1 - 1 / nx)
         self.assertAlmostEqual(y.min(), 0.0)
         self.assertAlmostEqual(y.max(), 1 - 1 / ny)
+
+    def test_positions_and_heights(self):
+
+        X = np.arange(3).reshape(1, 3)
+        Y = np.arange(4).reshape(4, 1)
+        h = X*Y
+
+        t = Topography(h, (8,6))
+
+        self.assertEqual(t.resolution, (4,3))
+
+        assert_array_equal(t.heights(), h)
+        X2, Y2, h2 = t.positions_and_heights()
+        assert_array_equal(X2, [
+            (0, 0, 0),
+            (2, 2, 2),
+            (4, 4, 4),
+            (6, 6, 6),
+        ])
+        assert_array_equal(Y2, [
+            (0, 2, 4),
+            (0, 2, 4),
+            (0, 2, 4),
+            (0, 2, 4),
+        ])
+        assert_array_equal(h2, [
+            (0, 0, 0),
+            (0, 1, 2),
+            (0, 2, 4),
+            (0, 3, 6)])
+
 
     def test_clone_uniform_line_scan(self):
         x = np.linspace(0, 4 * np.pi, 101)
