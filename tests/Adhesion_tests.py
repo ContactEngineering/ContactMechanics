@@ -45,7 +45,7 @@ try:
     from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                      PeriodicFFTElasticHalfSpace)
     from PyCo.Topography import make_sphere
-    from PyCo.System import SystemFactory, SmoothContactSystem
+    from PyCo.System import make_system, SmoothContactSystem
 except ImportError as err:
     import sys
     print(err)

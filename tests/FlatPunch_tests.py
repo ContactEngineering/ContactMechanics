@@ -38,7 +38,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
     from PyCo.Topography import Topography
-    from PyCo.System import SystemFactory
+    from PyCo.System import make_system
 except ImportError as err:
     import sys
     print(err)
@@ -68,7 +68,7 @@ class FlatPunchTest(unittest.TestCase):
                                            np.zeros([nx, ny])),
                         (nx, ny)
                         )
-                    system = SystemFactory(substrate, interaction, surface)
+                    system = make_system(substrate, interaction, surface)
 
                     result = system.minimize_proxy(offset=disp0,
                                                    external_force=normal_force,

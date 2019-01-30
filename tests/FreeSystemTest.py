@@ -42,7 +42,7 @@ try:
 
     from PyCo.System.Systems import SmoothContactSystem
     from PyCo.System.SmoothSystemSpecialisations import FastSmoothContactSystem
-    from PyCo.System import SystemFactory
+    from PyCo.System import make_system
     import PyCo.SolidMechanics as Solid
     import PyCo.ContactMechanics as Contact
     import PyCo.Topography as Topography
@@ -81,9 +81,9 @@ class FastSystemTest(unittest.TestCase):
         print(fun(np.zeros(S.babushka.substrate.computational_resolution)))
 
     def test_SystemFactory(self):
-        S = SystemFactory(self.substrate,
-                          self.interaction,
-                          self.surface)
+        S = make_system(self.substrate,
+                        self.interaction,
+                        self.surface)
         print("Mofo is periodic ?: ", self.substrate.is_periodic())
         print("substrate: ", self.substrate)
         self.assertIsInstance(S, FastSmoothContactSystem)
@@ -98,7 +98,7 @@ class FastSystemTest(unittest.TestCase):
 
     def test_equivalence(self):
         tol = 1e-6
-        # here, i deliberately avoid using the SystemFactory, because I want to
+        # here, i deliberately avoid using the make_system, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a
         # free, non-periodic  boundary. A user who invokes a system constructor
         # directliy like this is almost certainly mistaken
@@ -150,7 +150,7 @@ class FastSystemTest(unittest.TestCase):
 
     def test_minimize_proxy(self):
         tol = 1e-6
-        # here, i deliberately avoid using the SystemFactory, because I want to
+        # here, i deliberately avoid using the make_system, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a
         # free, non-periodic  boundary. A user who invokes a system constructor
         # directliy like this is almost certainly mistaken
@@ -191,7 +191,7 @@ class FastSystemTest(unittest.TestCase):
 
     def test_babuschka_eval(self):
         tol = 1e-6
-        # here, i deliberately avoid using the SystemFactory, because I want to
+        # here, i deliberately avoid using the make_system, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a
         # free, non-periodic  boundary. A user who invokes a system constructor
         # directliy like this is almost certainly mistaken
@@ -252,7 +252,7 @@ class FastSystemTest(unittest.TestCase):
             interaction = Contact.LJ93smoothMin(
                 eps[i], sig[i], gam[i])
             surface = Topography.make_sphere(radius[i], res, size[i], standoff=float(sig[i]*1000))
-            systems.append(SystemFactory(substrate, interaction, surface))
+            systems.append(make_system(substrate, interaction, surface))
             offsets.append(.8*systems[i].interaction.r_c)
 
         gaps = list()

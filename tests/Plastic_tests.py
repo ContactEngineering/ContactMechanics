@@ -39,7 +39,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.Topography import read, PlasticTopography
-    from PyCo.System import SystemFactory
+    from PyCo.System import make_system
 except ImportError as err:
     import sys
     print(err)
@@ -51,8 +51,8 @@ class PlasticTest(unittest.TestCase):
         # Test that at very low hardness we converge to (almost) the bearing
         # area geometry
         surface = read('examples/surface1.out')
-        system = SystemFactory(PeriodicFFTElasticHalfSpace(surface.resolution, 1.0),
-                               HardWall(), PlasticTopography(surface, 0.0000000001))
+        system = make_system(PeriodicFFTElasticHalfSpace(surface.resolution, 1.0),
+                             HardWall(), PlasticTopography(surface, 0.0000000001))
         offset = -0.002
         result = system.minimize_proxy(offset=offset)
         c = result.jac > 0.0

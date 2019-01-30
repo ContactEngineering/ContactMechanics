@@ -41,7 +41,7 @@ try:
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
     from PyCo.Topography import make_sphere
-    from PyCo.System import SystemFactory
+    from PyCo.System import make_system
     #from PyCo.Tools.Logger import screen
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
                                                surface_displacements,
@@ -78,7 +78,7 @@ class HertzTest(unittest.TestCase):
                                                         (sx, sx))
                     interaction = HardWall()
                     surface = make_sphere(self.r_s, (nx, ny), (sx, sx))
-                    system = SystemFactory(substrate, interaction, surface)
+                    system = make_system(substrate, interaction, surface)
 
                     result = system.minimize_proxy(offset=disp0,
                                                    external_force=normal_force,

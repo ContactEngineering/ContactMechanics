@@ -37,4 +37,4 @@ from .Systems import IncompatibleResolutionError
 from .Systems import SmoothContactSystem
 from .SmoothSystemSpecialisations import FastSmoothContactSystem
 from .PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
-from .Factory import SystemFactory
+from .Factory import make_system

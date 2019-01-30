@@ -9,7 +9,7 @@ import numpy as np
 from PyCo.ContactMechanics import ExpPotential, LJ93smoothMin
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.Topography import read_matrix
-from PyCo.System import SystemFactory
+from PyCo.System import make_system
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
 
@@ -47,7 +47,7 @@ interaction = ExpPotential(gamma, rho)
 # Piece the full system together. In particular the PyCo.System.SystemBase
 # object knows how to optimize the problem. For the hard wall interaction it
 # will always use Polonsky & Keer's constrained conjugate gradient method.
-system = SystemFactory(substrate, interaction, surface)
+system = make_system(substrate, interaction, surface)
 
 ###
 
