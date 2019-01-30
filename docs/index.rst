@@ -9,7 +9,7 @@ Contact mechanics with Python. This code implements computation of contact geome
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Notes
 
    installation

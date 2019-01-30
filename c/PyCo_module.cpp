@@ -40,6 +40,7 @@ static PyMethodDef PyCo_methods[] = {
   {"assign_patch_numbers", assign_patch_numbers, METH_VARARGS},
   {"assign_segment_numbers", assign_segment_numbers, METH_VARARGS},
   {"correlation_function", correlation_function, METH_VARARGS},
+  {"closest_patch_map", closest_patch_map, METH_VARARGS},
   {"distance_map", distance_map, METH_VARARGS},
   {"perimeter_length", perimeter_length, METH_VARARGS},
   {"shortest_distance", shortest_distance, METH_VARARGS},

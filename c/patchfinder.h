@@ -40,6 +40,7 @@ extern "C" {
 PyObject *assign_patch_numbers(PyObject *self, PyObject *args);
 PyObject *assign_segment_numbers(PyObject *self, PyObject *args);
 PyObject *shortest_distance(PyObject *self, PyObject *args);
+PyObject *closest_patch_map(PyObject *self, PyObject *args);
 PyObject *distance_map(PyObject *self, PyObject *args);
 PyObject *correlation_function(PyObject *self, PyObject *args);
 PyObject *perimeter_length(PyObject *self, PyObject *args);

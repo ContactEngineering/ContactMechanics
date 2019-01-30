@@ -39,7 +39,7 @@ try:
     import math
 
     from PyCo.System import SystemFactory
-    from PyCo.Topography import Sphere
+    from PyCo.Topography import make_sphere
     from PyCo.ContactMechanics import LJ93smoothMin as LJ_pot
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
 
@@ -60,7 +60,7 @@ class PulloffTest(unittest.TestCase):
         self.substrate = Substrate(res, young, size)
 
         radius = size[0]/10
-        self.surface = Sphere(radius, res, size, standoff=float('inf'))
+        self.surface = make_sphere(radius, res, size, standoff=float('inf'))
 
         sigma = radius/10
         epsilon = sigma * young/100
