@@ -48,7 +48,7 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
                 else:
                     substrate = HS(resolution=fileReader.resolution, young = Es, fftengine=fftengine )
 
-                top = fileReader.getTopography(substrate)
+                top = fileReader.topography(substrate)
 
                 assert top.resolution == substrate.resolution
                 assert top.subdomain_resolution == substrate.subdomain_resolution \
