@@ -255,6 +255,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         self.evaluate(self.disp, offset, forces=gradient)
         result.x = self.shape_minimisation_output(result.x)
         result.jac = self.shape_minimisation_output(result.jac)
+        self.substrate.check()
         return result
 
     @abc.abstractmethod
@@ -669,4 +670,6 @@ class NonSmoothContactSystem(SystemBase):
             self.disp = result.x
             self.force = self.substrate.force = result.jac
             self.contact_zone = result.jac > 0
+
+            self.substrate.check()
         return result

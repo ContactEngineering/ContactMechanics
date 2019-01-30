@@ -40,7 +40,7 @@ try:
     from scipy.optimize import minimize
     import time
 
-    from PyCo.System.Systems import SmoothContactSystem
+    from PyCo.System.Systems import SmoothContactSystem, NonSmoothContactSystem
     from PyCo.System.SmoothSystemSpecialisations import FastSmoothContactSystem
     from PyCo.System import make_system
     import PyCo.SolidMechanics as Solid
@@ -367,3 +367,47 @@ class FastSystemTest(unittest.TestCase):
             X, Y = np.meshgrid((np.arange(0, int(n / 2))) * dx, (np.arange(0, int(n / 2))) * dx)
             fig, ax = plt.subplots()
             plt.colorbar(ax.pcolormesh(X, Y, substrate.interact_forces[-1, int(n / 2):, int(n / 2):]))
+
+
+    def test_FreeBoundaryError(self):
+        """
+        Maybe it makes sense to do this test only at the end of the minimisation (it's not a drama if the deformation isi false during minimization)
+        Returns
+        -------
+
+        """
+
+
+        radius = 100
+        young = 1
+
+        s = 128.
+        n = 64
+        dx = s/n
+        res = (n, n)
+        size = (s, s)
+
+        centre = (0.75*s, 0.5* s)
+
+        topography = Topography.make_sphere(radius, res, size,centre=centre)
+        ext_topography = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=centre)
+
+        substrate = Solid.FreeFFTElasticHalfSpace(topography.resolution, young,
+                                                  topography.size)
+
+        for system in [NonSmoothContactSystem(substrate, Contact.HardWall(), topography),
+                       SmoothContactSystem(substrate, Contact.LJ93SimpleSmooth(0.01,0.01,10), topography)]:
+            with self.subTest(system=system):
+                offset = 15
+                with self.assertRaises(Solid.FreeFFTElasticHalfSpace.FreeBoundaryError):
+                    opt = system.minimize_proxy(offset=offset)
+                if False:
+                    import matplotlib.pyplot as plt
+                    X, Y = np.meshgrid((np.arange(0, n)) * dx,
+                                       (np.arange(0, n)) * dx)
+                    fig, ax = plt.subplots()
+                    plt.colorbar(
+                        ax.pcolormesh(X, Y, substrate.force)
+                    )
+                    plt.show(block=True)
+

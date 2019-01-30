@@ -58,6 +58,19 @@ class Substrate(object):
             ("periodicity of Substrate type '{}' ('{}') is not defined"
              "").format(cls.name, cls.__name__))
 
+    def check(self, force=None):
+        """
+        Checks wether force is still in the value range handled correctly.
+        In this case all forces are ok.
+        Parameters
+        ----------
+        force
+
+        Returns
+        -------
+
+        """
+        pass
 
 class ElasticSubstrate(Substrate):
     """ Generic baseclass for elastic substrates
