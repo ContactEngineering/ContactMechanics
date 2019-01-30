@@ -74,7 +74,7 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
         # make some tests on the system
 
     @unittest.expectedFailure
-    def test_SystemFactoryFromFile(self):
+    def test_make_system_from_file(self):
         """
         longtermgoal for confortable and secure use
         Returns
