@@ -46,7 +46,7 @@ def test_weights_gather(fftengineclass, nx=64, ny=33):
                                    err_msg="iweights are different after gather")
 
 
-def test_weights(fftengineclass, nx=64, ny=33):
+def test_weights(fftengineclass, nx=64, ny=33): # TODO: merge the serial test of the weights into this
     sx = 30.0
     sy = 1.0
     # equivalent Young's modulus
