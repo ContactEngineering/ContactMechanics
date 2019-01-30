@@ -533,32 +533,3 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         self.assertTrue(error < tol,
                         "error = {} ≥ tol = {}".format(error, tol))
 
-    def test_FreeBoundaries(self):
-        nx = 8
-        ny = 15
-
-        hs = FreeFFTElasticHalfSpace((nx, ny), 1, (nx, ny))
-
-        def testForce(force):
-            with self.assertRaises(Exception):
-                hs.evaluate_disp(force)
-
-        force = np.zeros((nx, ny))
-        force[0, 2] = 1
-        testForce(force)
-
-        force = np.zeros((nx, ny))
-        force[-1, 2] = 1
-        testForce(force)
-
-        force = np.zeros((nx, ny))
-        force[-1, 2] = 1
-        testForce(force)
-
-        force = np.zeros((nx, ny))
-        force[3, 0] = 1
-        testForce(force)
-
-        force = np.zeros((nx, ny))
-        force[3, -1] = 1
-        testForce(force)
