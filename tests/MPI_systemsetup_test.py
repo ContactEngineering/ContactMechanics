@@ -6,7 +6,7 @@ from mpi4py import MPI
 from PyCo.Topography.ParallelFromFile import read_npy
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from FFTEngine import PFFTEngine
-from PyCo.System.Factory import SystemFactory
+from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics.Interactions import HardWall
 from PyCo.Topography import MPITopographyLoader
 
@@ -69,7 +69,7 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
                 #Rq
                 assert top.rms_height(kind="Rq") == np.sqrt(np.mean((self.data - np.mean(self.data,axis = 0))**2))
 
-                system = SystemFactory(substrate,interaction,top)
+                system = make_system(substrate, interaction, top)
 
         # make some tests on the system
 
@@ -86,7 +86,7 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
         substrate =  PeriodicFFTElasticHalfSpace
         interaction = HardWall
 
-        system = SystemFactory(substrate,interaction,self.fn)
+        system = make_system(substrate, interaction, self.fn)
 
 
 suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(MPI_TopographyLoading_Test)])

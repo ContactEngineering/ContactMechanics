@@ -7,7 +7,7 @@ try:
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
     from PyCo.Topography import Sphere
-    from PyCo.System import SystemFactory
+    from PyCo.System import make_system
     #from PyCo.Tools.Logger import screen
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
                                                surface_displacements,

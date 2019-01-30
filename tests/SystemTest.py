@@ -50,7 +50,7 @@ try:
     import os
     from netCDF4 import Dataset
 
-    from PyCo.System import SystemFactory, IncompatibleFormulationError
+    from PyCo.System import make_system, IncompatibleFormulationError
     from PyCo.System import IncompatibleResolutionError
     from PyCo.System.Systems import SmoothContactSystem
     import PyCo.SolidMechanics as Solid
@@ -83,13 +83,13 @@ class SystemTest(unittest.TestCase):
 
     def test_RejectInconsistentInputTypes(self):
         with self.assertRaises(IncompatibleFormulationError):
-            SystemFactory(12, 13, 24)
+            make_system(12, 13, 24)
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
         incompat_sphere = Topography.Sphere(self.radius, incompat_res, self.size)
         with self.assertRaises(IncompatibleResolutionError):
-            SystemFactory(self.substrate, self.smooth, incompat_sphere)
+            make_system(self.substrate, self.smooth, incompat_sphere)
 
     def test_SmoothContact(self):
         S = SmoothContactSystem(self.substrate, self.smooth, self.sphere)
@@ -332,7 +332,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, self.size[0])
         sphere = Topography.Sphere(self.radius, res, size)
-        # here, i deliberately avoid using the SystemFactory, because I want to
+        # here, i deliberately avoid using the make_system, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a
         # free, non-periodic  boundary. A user who invokes a system constructor
         # directliy like this is almost certainly mistaken

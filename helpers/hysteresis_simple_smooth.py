@@ -35,7 +35,7 @@ SOFTWARE.
 import numpy as np
 import matplotlib.pyplot as plt
 
-from PyCo.System import SystemFactory
+from PyCo.System import make_system
 from PyCo.Topography import Sphere
 from PyCo.ContactMechanics import VDW82SimpleSmooth as VdwPot
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
@@ -67,7 +67,7 @@ for base_res in (32, 64, 128, 256, 512):
     substrate = Substrate(res, young, size)
 
     surface = Sphere(radius, res, size, standoff=float('inf'))
-    system = SystemFactory(substrate, pot, surface)
+    system = make_system(substrate, pot, surface)
     offset = pot.r_c*.4
     step = pot.r_min*.01
     pullof_forces = list()

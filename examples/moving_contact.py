@@ -10,7 +10,7 @@ import numpy as np
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.Topography import read_matrix, TranslatedTopography, CompoundTopography
-from PyCo.System import SystemFactory
+from PyCo.System import make_system
 #from PyCo.Tools import compute_rms_height
 from PyCo.Tools.Logger import screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -53,7 +53,7 @@ interaction = HardWall()
 
 # This creates a "System" object that knows about substrate, interaction and
 # surface.
-system = SystemFactory(substrate, interaction, compound_surface)
+system = make_system(substrate, interaction, compound_surface)
 
 # Initial displacement field.
 disp = np.zeros(surface1.shape)

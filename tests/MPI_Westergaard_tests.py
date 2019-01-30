@@ -55,7 +55,7 @@ try:
     from PyCo.ReferenceSolutions.Westergaard import _pressure
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
     from PyCo.Topography import UniformNumpyTopography
-    from PyCo.System import SystemFactory
+    from PyCo.System import make_system
     from PyCo.Tools.Logger import screen
     from .PyCoTest import PyCoTestCase
 
@@ -94,7 +94,7 @@ class WestergaardTest(PyCoTestCase):
                                                     subdomain_location = substrate.topography_subdomain_location,
                                                     subdomain_resolution = substrate.topography_subdomain_resolution,
                                                     pnp=substrate.pnp)
-                    system = SystemFactory(substrate, interaction, surface)
+                    system = make_system(substrate, interaction, surface)
 
                     result = system.minimize_proxy(offset=disp0,
                                                    external_force=normal_force,
