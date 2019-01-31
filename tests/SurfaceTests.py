@@ -69,7 +69,7 @@ class TopographyTest(PyCoTestCase):
 
         X = np.arange(3).reshape(1, 3)
         Y = np.arange(4).reshape(4, 1)
-        h = X*Y
+        h = X+Y
 
         t = Topography(h, (8,6))
 
@@ -90,11 +90,41 @@ class TopographyTest(PyCoTestCase):
             (0, 2, 4),
         ])
         assert_array_equal(h2, [
-            (0, 0, 0),
             (0, 1, 2),
-            (0, 2, 4),
-            (0, 3, 6)])
+            (1, 2, 3),
+            (2, 3, 4),
+            (3, 4, 5)])
 
+        #
+        # After detrending, the position and heights should have again
+        # just 3 arrays and the third array should be the same as .heights()
+        #
+        dt = t.detrend(detrend_mode='slope')
+
+        self.assertArrayAlmostEqual(dt.heights(), [
+            (0, 0, 0),
+            (0, 0, 0),
+            (0, 0, 0),
+            (0, 0, 0)])
+
+        X2, Y2, h2 = dt.positions_and_heights()
+        assert_array_equal(X2, [
+            (0, 0, 0),
+            (2, 2, 2),
+            (4, 4, 4),
+            (6, 6, 6),
+        ])
+        assert_array_equal(Y2, [
+            (0, 2, 4),
+            (0, 2, 4),
+            (0, 2, 4),
+            (0, 2, 4),
+        ])
+        self.assertArrayAlmostEqual(h2, [
+            (0, 0, 0),
+            (0, 0, 0),
+            (0, 0, 0),
+            (0, 0, 0)])
 
     def test_clone_uniform_line_scan(self):
         x = np.linspace(0, 4 * np.pi, 101)
