@@ -149,6 +149,33 @@ class TopographyTest(PyCoTestCase):
         surface2 = surface.clone()
         self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
+    def test_attribute_error(self):
+        X = np.arange(3).reshape(1, 3)
+        Y = np.arange(4).reshape(4, 1)
+        h = X+Y
+        t = Topography(h, (8,6))
+
+        #
+        # only scaled topographies have coeff
+        #
+        with self.assertRaises(AttributeError):
+            t.coeff
+
+        t.scale(1).coeff
+
+        #
+        # only detrended topographies have detrend_mode
+        #
+        with self.assertRaises(AttributeError):
+            t.detrend_mode
+
+        t.detrend().detrend_mode
+
+        with self.assertRaises(AttributeError):
+            t.ababababababababa
+
+
+
 class NonuniformLineScanTest(PyCoTestCase):
 
     def test_properties(self):
@@ -172,6 +199,13 @@ class NonuniformLineScanTest(PyCoTestCase):
         assert_array_equal(x2, x)
         assert_array_equal(h2, h)
 
+    def test_attribute_error(self):
+
+        t = NonuniformLineScan([1,2,4], [2,4,8])
+        with self.assertRaises(AttributeError):
+            t.coeff
+        # a scaled line scan has a coeff
+        t.scale(1).coeff
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
