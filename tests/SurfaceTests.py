@@ -178,6 +178,36 @@ class TopographyTest(PyCoTestCase):
         dm = st.detrend(detrend_mode='height').detrend_mode
         self.assertEqual(dm, 'height')
 
+        #
+        # this all should also work after pickling
+        #
+        t2 = pickle.loads(pickle.dumps(t))
+
+        with self.assertRaises(AttributeError):
+            t2.coeff
+
+        st2 = t2.scale(1)
+
+        self.assertEqual(st2.coeff, 1)
+
+        with self.assertRaises(AttributeError):
+            st2.detrend_mode
+
+        dm2 = st2.detrend(detrend_mode='height').detrend_mode
+        self.assertEqual(dm2, 'height')
+
+        #
+        # this all should also work after scaled+pickled
+        #
+        t3 = pickle.loads(pickle.dumps(st))
+
+        with self.assertRaises(AttributeError):
+            t3.detrend_mode
+
+        dm3 = t3.detrend(detrend_mode='height').detrend_mode
+        self.assertEqual(dm3, 'height')
+
+
 
 class NonuniformLineScanTest(PyCoTestCase):
 
@@ -208,7 +238,19 @@ class NonuniformLineScanTest(PyCoTestCase):
         with self.assertRaises(AttributeError):
             t.coeff
         # a scaled line scan has a coeff
-        t.scale(1).coeff
+        self.assertEqual(t.scale(1).coeff, 1)
+
+        #
+        # This should also work after the topography has been pickled
+        #
+        pt = pickle.dumps(t)
+        t2 = pickle.loads(pt)
+
+        with self.assertRaises(AttributeError):
+            t2.coeff
+        # a scaled line scan has a coeff
+        self.assertEqual(t2.scale(1).coeff, 1)
+
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
