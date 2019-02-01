@@ -155,25 +155,28 @@ class TopographyTest(PyCoTestCase):
         h = X+Y
         t = Topography(h, (8,6))
 
+        # nonsense attributes return attribute error
+        with self.assertRaises(AttributeError):
+            t.ababababababababa
+
         #
         # only scaled topographies have coeff
         #
         with self.assertRaises(AttributeError):
             t.coeff
 
-        t.scale(1).coeff
+        st = t.scale(1)
+
+        self.assertEqual(st.coeff, 1)
 
         #
         # only detrended topographies have detrend_mode
         #
         with self.assertRaises(AttributeError):
-            t.detrend_mode
+            st.detrend_mode
 
-        t.detrend().detrend_mode
-
-        with self.assertRaises(AttributeError):
-            t.ababababababababa
-
+        dm = st.detrend(detrend_mode='height').detrend_mode
+        self.assertEqual(dm, 'height')
 
 
 class NonuniformLineScanTest(PyCoTestCase):
