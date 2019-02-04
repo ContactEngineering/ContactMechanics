@@ -251,6 +251,42 @@ class NonuniformLineScanTest(PyCoTestCase):
         # a scaled line scan has a coeff
         self.assertEqual(t2.scale(1).coeff, 1)
 
+    def test_setting_info_dict(self):
+
+        x = np.array((0,1,1.5,2,3))
+        h = 2*x
+
+        t = NonuniformLineScan(x, h)
+
+        assert t.info == {}
+
+        t.info['unit'] = 'A'
+        assert t.info['unit'] == 'A'
+
+        #
+        # This info should be inherited in the pipeline
+        #
+        st = t.scale(2)
+        assert st.info['unit'] == 'A'
+
+        #
+        # It should still be possible to set the info
+        #
+        st.info['unit'] = 'B'
+        assert st.info['unit'] == 'B'
+
+        #
+        # Again inherit
+        #
+        dt = st.detrend(detrend_mode='center')
+        assert dt.info['unit'] == 'B'
+
+        #
+        # And set again
+        #
+        dt.info['unit'] = 'C'
+        assert dt.info['unit'] == 'C'
+
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
