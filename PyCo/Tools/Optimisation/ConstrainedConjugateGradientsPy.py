@@ -261,7 +261,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         if hardness and mask_flowing.sum() > 0:
             max_pres = max(max_pres, -(p_r[mask_flowing]+hardness).min())
 
-        # Set all compressive stresses to zero
+        # Set all tensile stresses to zero
         p_r[mask_tensile] = 0.0
 
         # Adjust pressure
@@ -280,9 +280,10 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
         if delta_str != 'mix':
             if np.sum(nc_r) > 0:
-                # nc_r contains area that penetrate but have zero (or tensile)
-                # pressure. They violate the contact constraint.
-                # Update their forces.
+                # The contact area has changed! nc_r contains area that
+                # penetrate but have zero (or tensile) pressure. They hence
+                # violate the contact constraint. Update their forces and
+                # reset the CG iteration.
                 p_r[comp_mask] += tau*nc_r*g_r
                 delta = 0
                 delta_str = 'sd'
