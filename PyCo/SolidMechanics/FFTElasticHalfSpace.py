@@ -536,14 +536,21 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
 
         """
 
-        if force==None:
-            force=self.force
+        if force is None:
+            force = self.force
         is_ok = True
         if self.dim == 2:
-            is_ok &= (force[:, 0] == 0.).all()
-            is_ok &= (force[:, self.resolution[1] - 1] == 0.).all()
-            is_ok &= (force[0, :] == 0.).all()
-            is_ok &= (force[self.resolution[0] - 1, :] == 0.).all()
+            if np.ma.is_masked(force):
+                def check_vals(vals):
+                    return (vals == 0.).all() or vals.mask.all()
+            else:
+                def check_vals(vals):
+                    return (vals == 0.).all()
+
+            is_ok &= check_vals(force[:,0])
+            is_ok &= check_vals(force[:, self.resolution[1] - 1])
+            is_ok &= check_vals(force[0, :])
+            is_ok &= check_vals(force[self.resolution[0] - 1, :])
 
         if not is_ok:
             raise self.FreeBoundaryError("forces not zero at the boundary of the "
