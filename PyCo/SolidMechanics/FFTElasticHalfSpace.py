@@ -271,7 +271,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return .5*np.dot(np.ravel(disp), np.ravel(-forces))
 
     def evaluate_elastic_energy_k_space(self, kforces, kdisp):
-        """
+        r"""
         Computes the Energy due to forces and displacements using their Fourier representation.
 
         This uses Parseval's Theorem:
