@@ -299,14 +299,14 @@ def constrained_conjugate_gradients(substrate, topography,
         if logger is not None and it < maxiter:
             logger.st(log_headers, log_values)
         if callback is not None:
-            d = dict(area=np.asscalar(np.int64(A_cg)),
-                     fractional_area=np.asscalar(np.float64(A_cg/surf_mask.sum())),
-                     rms_penetration=np.asscalar(np.float64(rms_pen)),
-                     max_penetration=np.asscalar(np.float64(max_pen)),
-                     max_pressure=np.asscalar(np.float64(max_pres)),
-                     pad_pressure=np.asscalar(np.float64(pad_pres)),
-                     penetration_tol=np.asscalar(np.float64(pentol)),
-                     pressure_tol=np.asscalar(np.float64(prestol)))
+            d = dict(area=np.int64(A_cg).item(),
+                     fractional_area=np.float64(A_cg/surf_mask.sum()).item(),
+                     rms_penetration=np.float64(rms_pen).item(),
+                     max_penetration=np.float64(max_pen).item(),
+                     max_pressure=np.float64(max_pres).item(),
+                     pad_pressure=np.float64(pad_pres).item(),
+                     penetration_tol=np.float64(pentol).item(),
+                     pressure_tol=np.float64(prestol)).item()
             callback(it, p_r, d)
 
         if np.isnan(G) or np.isnan(rms_pen):
