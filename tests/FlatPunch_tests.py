@@ -66,14 +66,30 @@ class FlatPunchTest(unittest.TestCase):
                     surface = Topography(
                         np.ma.masked_where(r_sq > self.r_s**2,
                                            np.zeros([nx, ny])),
-                        (nx, ny)
+                        (sx, sy)
                         )
                     system = make_system(substrate, interaction, surface)
+                    try:
+                        result = system.minimize_proxy(offset=disp0,
+                                                       external_force=normal_force,
+                                                       kind=kind,
+                                                       pentol=1e-4)
+                    except substrate.FreeBoundaryError as err:
+                        if True:
+                            import matplotlib.pyplot as plt
+                            fig,ax = plt.subplots()
 
-                    result = system.minimize_proxy(offset=disp0,
-                                                   external_force=normal_force,
-                                                   kind=kind,
-                                                   pentol=1e-4)
+                            #ax.pcolormesh(substrate.force / surface.area_per_pt,rasterized=True)
+                            ax.pcolormesh(surface.heights(), rasterized=True)
+                            ax.set_xlabel("")
+                            ax.set_ylabel("")
+
+                            ax.legend()
+
+                            fig.tight_layout()
+                            plt.show(block=True)
+
+                        raise err
                     offset = result.offset
                     forces = -result.jac
                     converged = result.success

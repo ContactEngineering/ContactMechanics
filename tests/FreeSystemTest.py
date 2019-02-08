@@ -162,6 +162,7 @@ class FastSystemTest(unittest.TestCase):
                        self.surface)
             offset = .8 * S.interaction.r_c
             options = dict(ftol = 1e-18, gtol = 1e-10)
+
             result = S.minimize_proxy(offset, options=options)
 
             gap = S.compute_gap(S.disp, offset)
