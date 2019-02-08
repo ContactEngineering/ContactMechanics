@@ -126,27 +126,30 @@ class TopographyTest(PyCoTestCase):
             (0, 0, 0),
             (0, 0, 0)])
 
-    def test_clone_uniform_line_scan(self):
+    def test_squeeze_uniform_line_scan(self):
         x = np.linspace(0, 4 * np.pi, 101)
         h = np.sin(x)
         surface = UniformLineScan(h, 4 * np.pi).scale(2.0)
-        surface2 = surface.clone()
+        surface2 = surface.squeeze()
+        self.assertTrue(isinstance(surface2, UniformLineScan))
         self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
-    def test_clone_nonuniform_line_scan(self):
+    def test_squeeze_nonuniform_line_scan(self):
         x = np.linspace(0, 4 * np.pi, 101) ** (1.3)
         h = np.sin(x)
         surface = NonuniformLineScan(x, h).scale(2.0)
-        surface2 = surface.clone()
+        surface2 = surface.squeeze()
+        self.assertTrue(isinstance(surface2, NonuniformLineScan))
         self.assertArrayAlmostEqual(surface.positions(), surface2.positions())
         self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
-    def test_clone_topography(self):
+    def test_squeeze_topography(self):
         x = np.linspace(0, 4 * np.pi, 101)
         y = np.linspace(0, 8 * np.pi, 103)
         h = np.sin(x.reshape(-1, 1)) + np.cos(y.reshape(1, -1))
         surface = Topography(h, (1.2, 3.2)).scale(2.0)
-        surface2 = surface.clone()
+        surface2 = surface.squeeze()
+        self.assertTrue(isinstance(surface2, Topography))
         self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
     def test_attribute_error(self):
