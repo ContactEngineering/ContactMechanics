@@ -75,7 +75,7 @@ class FlatPunchTest(unittest.TestCase):
                                                        kind=kind,
                                                        pentol=1e-4)
                     except substrate.FreeBoundaryError as err:
-                        if True:
+                        if False:
                             import matplotlib.pyplot as plt
                             fig,ax = plt.subplots()
 
