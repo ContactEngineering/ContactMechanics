@@ -1,55 +1,43 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#! /usr/bin/env python3
+
 """
-@file   ConstrainedConjugateGradientsPy.py
-
-@author Lars Pastewka <lars.pastewka@kit.edu>
-
-@date   08 Dec 2015
-
-@brief  Pure Python reference implementation of the constrained conjugate
-        gradient algorithm as described in
-        I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Example of a simple implementation of Polonsky & Keer, illustrating how to use
+PyCo without the System helper classes.
 """
-
-from math import isnan, pi, sqrt
 
 import numpy as np
 
 import scipy.optimize as optim
 
+from PyCo.Tools.Logger import screen
+from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.Topography import read_matrix
+
 ###
 
-def constrained_conjugate_gradients(substrate, surface, hardness=None,
-                                    external_force=None, offset=None,
+import matplotlib.pyplot as plt
+
+###
+
+# This is the elastic contact modulus, E*.
+E_s = 2
+
+# This is the physical size of the surfaces.
+sx, sy = 1, 1
+
+###
+
+# Minimal implementation of Polonsky & Keer, without plasticity
+def constrained_conjugate_gradients(substrate, topography,
+                                    external_force=None,
+                                    offset=None,
                                     disp0=None,
-                                    pentol=None, prestol=1e-5,
-                                    mixfac=0.1,
+                                    pentol=None,
+                                    prestol=1e-5,
                                     maxiter=100000,
                                     logger=None,
-                                    callback=None, verbose=False):
+                                    callback=None,
+                                    verbose=False):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium
     configuration deflection of an elastic manifold. The conjugate gradient
@@ -61,15 +49,12 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     ----------
     substrate : elastic manifold
         Elastic manifold.
-    surface : array_like
+    topography : array_like
         Height profile of the rigid counterbody.
-    hardness : array_like
-        Hardness of the substrate. Pressure cannot exceed this value. Can be
-        scalar or array (i.e. per pixel) value.
     external_force : float
         External force. Don't optimize force if None.
     offset : float
-        Offset of rigid surface. Ignore if external_force is specified.
+        Offset of rigid topography. Ignore if external_force is specified.
     disp0 : array_like
         Displacement field for initializing the solver. Guess an initial
         value if set to None.
@@ -96,12 +81,12 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = np.sqrt(np.sum(surface**2)) / (10 * np.mean(surface.shape))
-        # If pentol is zero, then this is a flat surface. This only makes
+        pentol = np.sqrt(np.sum(topography**2)) / (10 * np.mean(topography.shape))
+        # If pentol is zero, then this is a flat topography. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
         if pentol == 0:
-            pentol = (offset+np.mean(surface[...]))/1000
+            pentol = (offset+np.mean(topography))/1000
         # If we are still zero use an arbitrary value
         if pentol == 0:
             pentol = 1e-3
@@ -120,25 +105,15 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
     comp_slice = [slice(0, substrate.resolution[i])
                   for i in range(substrate.dim)]
-    if substrate.dim not in (1, 2):
-        raise Exception(
-            ("Constrained conjugate gradient currently only implemented for 1 "
-             "or 2 dimensions (Your substrate has {}.).").format(
-                 substrate.dim))
 
     comp_mask = np.zeros(substrate.computational_resolution, dtype=bool)
     comp_mask[tuple(comp_slice)] = True
 
-    surf_mask = np.ma.getmask(surface)
-    if surf_mask is np.ma.nomask:
-        surf_mask = np.ones(substrate.resolution, dtype=bool)
-    else:
-        comp_mask[tuple(comp_slice)][surf_mask] = False
-        surf_mask = np.logical_not(surf_mask)
+    surf_mask = np.ones(substrate.resolution, dtype=bool)
     pad_mask = np.logical_not(comp_mask)
     N_pad = pad_mask.sum()
-    u_r[comp_mask] = np.where(u_r[comp_mask] < surface[surf_mask]+offset,
-                              surface[surf_mask]+offset,
+    u_r[comp_mask] = np.where(u_r[comp_mask] < topography[surf_mask]+offset,
+                              topography[surf_mask]+offset,
                               u_r[comp_mask])
 
     result = optim.OptimizeResult()
@@ -148,7 +123,6 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     result.message = "Not Converged (yet)"
 
     # Compute forces
-    #p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real
     p_r = substrate.evaluate_force(u_r)
     result.nfev += 1
     # Pressure outside the computational region must be zero
@@ -167,21 +141,12 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Reset contact area (area that feels compressive stress)
         c_r = p_r < 0.0
 
-        # Compute total contact area (area with compressive pressure)
-        A_contact = np.sum(c_r)
-
-        # If a hardness is specified, exclude values that exceed the hardness
-        # from the "contact area". Note: "contact area" here is the region that
-        # is optimized by the CG iteration.
-        if hardness is not None:
-            c_r = np.logical_and(c_r, p_r > -hardness)
-
-        # Compute total are treated by the CG optimizer (which exclude flowing)
-        # portions.
+        # Compute total contact area (area with compressive pressure). This is
+        # the area treated by the CG optimizer.
         A_cg = np.sum(c_r)
 
         # Compute gap
-        g_r = u_r[comp_mask] - surface[surf_mask]
+        g_r = u_r[comp_mask] - topography[surf_mask]
         if external_force is not None:
             offset = 0
             if A_cg > 0:
@@ -191,61 +156,34 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Compute G = sum(g*g) (over contact area only)
         G = np.sum(c_r[comp_mask]*g_r*g_r)
 
-        if delta_str != 'mix' and not (hardness is not None and A_cg == 0):
-            # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
-            if delta > 0 and G_old > 0:
-                t_r[comp_mask] = c_r[comp_mask]*(g_r + delta*(G/G_old)*t_r[comp_mask])
-            else:
-                t_r[comp_mask] = c_r[comp_mask]*g_r
-
-            # Compute elastic displacement that belong to t_r
-            #substrate (Nelastic manifold: r_r is negative of Polonsky, Kerr's r)
-            #r_r = -np.fft.ifft2(gf_q*np.fft.fft2(t_r)).real
-            r_r = substrate.evaluate_disp(t_r)
-            result.nfev += 1
-            # Note: Sign reversed from Polonsky, Keer because this r_r is negative
-            # of theirs.
-            tau = 0.0
-            if A_cg > 0:
-                # tau = -sum(g*t)/sum(r*t) where sum is only over contact region
-                x = -np.sum(c_r*r_r*t_r)
-                if x > 0.0:
-                    tau = np.sum(c_r[comp_mask]*g_r*t_r[comp_mask])/x
-                else:
-                    G = 0.0
-
-            p_r += tau*c_r*t_r
+        # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
+        if delta > 0 and G_old > 0:
+            t_r[comp_mask] = c_r[comp_mask] * (g_r + delta * (G / G_old) * t_r[comp_mask])
         else:
-            # The CG area can vanish if this is a plastic calculation. In that case
-            # we need to use the gap to decide which regions contact. All contact
-            # area should then be the hardness value. We use simple relaxation
-            # algorithm to converge the contact area in that case.
+            t_r[comp_mask] = c_r[comp_mask] * g_r
 
-            if delta_str != 'mixconv':
-                delta_str = 'mix'
+        # Compute elastic displacement that belong to t_r
+        # substrate (Nelastic manifold: r_r is negative of Polonsky, Kerr's r)
+        # r_r = -np.fft.ifft2(gf_q*np.fft.fft2(t_r)).real
+        r_r = substrate.evaluate_disp(t_r)
+        result.nfev += 1
+        # Note: Sign reversed from Polonsky, Keer because this r_r is negative
+        # of theirs.
+        tau = 0.0
+        if A_cg > 0:
+            # tau = -sum(g*t)/sum(r*t) where sum is only over contact region
+            x = -np.sum(c_r * r_r * t_r)
+            if x > 0.0:
+                tau = np.sum(c_r[comp_mask] * g_r * t_r[comp_mask]) / x
+            else:
+                G = 0.0
 
-            # Mix pressure
-            #p_r[comp_mask] = (1-mixfac)*p_r[comp_mask] + \
-            #                 mixfac*np.where(g_r < 0.0,
-            #                                 -hardness*np.ones_like(g_r),
-            #                                 np.zeros_like(g_r))
-            # Evolve pressure in direction of energy gradient
-            #p_r[comp_mask] += mixfac*(u_r[comp_mask] + g_r)
-            p_r[comp_mask] = (1-mixfac)*p_r[comp_mask]-mixfac*hardness*(g_r<0.0)
-            mixfac *= 0.5
-            #p_r[comp_mask] = -hardness*(g_r < 0.0)
-
+        p_r += tau * c_r * t_r
 
         # Find area with tensile stress and negative gap
-        # (i.e. penetration of the two surfaces)
+        # (i.e. penetration of the two topographies)
         mask_tensile = p_r >= 0.0
         nc_r = np.logical_and(mask_tensile[comp_mask], g_r < 0.0)
-        # If hardness is specified, find area where pressure exceeds hardness
-        # but gap is positive
-        if hardness is not None:
-            mask_flowing = p_r <= -hardness
-            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing[comp_mask],
-                                                          g_r > 0.0))
 
         # For nonperiodic calculations: Find maximum pressure in pad region.
         # This must be zero.
@@ -258,8 +196,6 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         max_pres = 0
         if mask_tensile.sum() > 0:
             max_pres = p_r[mask_tensile].max()
-        if hardness and mask_flowing.sum() > 0:
-            max_pres = max(max_pres, -(p_r[mask_flowing]+hardness).min())
 
         # Set all tensile stresses to zero
         p_r[mask_tensile] = 0.0
@@ -270,13 +206,8 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
             if psum != 0:
                 p_r *= external_force/psum
             else:
-                p_r = -external_force/np.prod(surface.shape)*np.ones_like(p_r)
+                p_r = -external_force/np.prod(topography.shape)*np.ones_like(p_r)
                 p_r[pad_mask] = 0.0
-
-        # If hardness is specified, set all stress larger than hardness to the
-        # hardness value (i.e. truncate pressure)
-        if hardness is not None:
-            p_r[mask_flowing] = -hardness
 
         if delta_str != 'mix':
             if np.sum(nc_r) > 0:
@@ -310,10 +241,10 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         # Compute root-mean square penetration, max penetration and max force
         # difference between the steps
         if A_cg > 0:
-            rms_pen = sqrt(G/A_cg)
+            rms_pen = np.sqrt(G/A_cg)
         else:
-            rms_pen = sqrt(G)
-        max_pen = max(0.0, np.max(c_r[comp_mask]*(surface[surf_mask]+offset-
+            rms_pen = np.sqrt(G)
+        max_pen = max(0.0, np.max(c_r[comp_mask]*(topography[surf_mask]+offset-
                                                   u_r[comp_mask])))
         result.maxcv = {"max_pen": max_pen,
                         "max_pres": max_pres}
@@ -328,7 +259,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
                        'offset']
-        log_values = [delta_str, it, A_contact, A_contact/surf_mask.sum(), psum,
+        log_values = [delta_str, it, A_cg, A_cg/surf_mask.sum(), psum,
                       offset]
 
         if verbose:
@@ -368,8 +299,8 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
         if logger is not None and it < maxiter:
             logger.st(log_headers, log_values)
         if callback is not None:
-            d = dict(area=np.int64(A_contact).item(),
-                     fractional_area=np.float64(A_contact/surf_mask.sum()).item(),
+            d = dict(area=np.int64(A_cg).item(),
+                     fractional_area=np.float64(A_cg/surf_mask.sum()).item(),
                      rms_penetration=np.float64(rms_pen).item(),
                      max_penetration=np.float64(max_pen).item(),
                      max_pressure=np.float64(max_pres).item(),
@@ -378,7 +309,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
                      pressure_tol=np.float64(prestol)).item()
             callback(it, p_r, d)
 
-        if isnan(G) or isnan(rms_pen):
+        if np.isnan(G) or np.isnan(rms_pen):
             raise RuntimeError('nan encountered.')
 
     if logger is not None:
@@ -387,7 +318,7 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
 
     # Return full u_r because this is required to reproduce pressure
     # from evalualte_force
-    result.x = u_r#[comp_mask]
+    result.x = u_r
     # Return partial p_r because pressure outside computational region
     # is zero anyway
     result.jac = -p_r[tuple(comp_slice)]
@@ -396,3 +327,29 @@ def constrained_conjugate_gradients(substrate, surface, hardness=None,
     result.offset = offset
     result.message = "Reached maxiter = {}".format(maxiter)
     return result
+
+
+###
+
+# Read the topography from file.
+topography = read_matrix('surface1.out', size=(sx, sy))
+
+print('RMS height of topography = {}'.format(topography.rms_height()))
+print('RMS slope of topography = {}'.format(topography.rms_slope()))
+
+# This is the grid resolution of the topography.
+nx, ny = topography.resolution
+
+# Periodic substrate, i.e. the elastic half-space.
+substrate = PeriodicFFTElasticHalfSpace((nx, ny), # resolution
+                                        E_s, # contact modulus
+                                        (sx, sx)) # physical size
+
+# Contact pressure: 0.05 h_rms' E_s / kappa with kappa = 2, which means ~ 5% contact area
+res = constrained_conjugate_gradients(substrate, topography.heights(),
+                                      external_force=0.05*topography.rms_slope()*E_s*sx*sy/2,
+                                      logger=screen)
+
+# Show contact area
+plt.pcolormesh(res.jac>0)
+plt.show()
