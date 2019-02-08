@@ -263,7 +263,7 @@ class NonuniformLineScanTest(PyCoTestCase):
 
         assert t.info == {}
 
-        t.info['unit'] = 'A'
+        t = NonuniformLineScan(x, h, info=dict(unit='A'))
         assert t.info['unit'] == 'A'
 
         #
@@ -273,21 +273,21 @@ class NonuniformLineScanTest(PyCoTestCase):
         assert st.info['unit'] == 'A'
 
         #
-        # It should still be possible to set the info
+        # It should be also possible to set the info
         #
-        st.info['unit'] = 'B'
+        st = t.scale(2, info=dict(unit='B'))
         assert st.info['unit'] == 'B'
 
         #
-        # Again inherit
+        # Again the info should be passed
         #
         dt = st.detrend(detrend_mode='center')
         assert dt.info['unit'] == 'B'
 
         #
-        # And set again
+        # Alternatively, it can be changed
         #
-        dt.info['unit'] = 'C'
+        dt = st.detrend(detrend_mode='center', info=dict(unit='C'))
         assert dt.info['unit'] == 'C'
 
 
