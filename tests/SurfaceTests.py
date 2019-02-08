@@ -126,27 +126,30 @@ class TopographyTest(PyCoTestCase):
             (0, 0, 0),
             (0, 0, 0)])
 
-    def test_clone_uniform_line_scan(self):
+    def test_squeeze_uniform_line_scan(self):
         x = np.linspace(0, 4 * np.pi, 101)
         h = np.sin(x)
         surface = UniformLineScan(h, 4 * np.pi).scale(2.0)
-        surface2 = surface.clone()
+        surface2 = surface.squeeze()
+        self.assertTrue(isinstance(surface2, UniformLineScan))
         self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
-    def test_clone_nonuniform_line_scan(self):
+    def test_squeeze_nonuniform_line_scan(self):
         x = np.linspace(0, 4 * np.pi, 101) ** (1.3)
         h = np.sin(x)
         surface = NonuniformLineScan(x, h).scale(2.0)
-        surface2 = surface.clone()
+        surface2 = surface.squeeze()
+        self.assertTrue(isinstance(surface2, NonuniformLineScan))
         self.assertArrayAlmostEqual(surface.positions(), surface2.positions())
         self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
-    def test_clone_topography(self):
+    def test_squeeze_topography(self):
         x = np.linspace(0, 4 * np.pi, 101)
         y = np.linspace(0, 8 * np.pi, 103)
         h = np.sin(x.reshape(-1, 1)) + np.cos(y.reshape(1, -1))
         surface = Topography(h, (1.2, 3.2)).scale(2.0)
-        surface2 = surface.clone()
+        surface2 = surface.squeeze()
+        self.assertTrue(isinstance(surface2, Topography))
         self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
     def test_attribute_error(self):
@@ -207,6 +210,103 @@ class TopographyTest(PyCoTestCase):
         dm3 = t3.detrend(detrend_mode='height').detrend_mode
         self.assertEqual(dm3, 'height')
 
+    def test_init_with_lists_calling_scale_and_detrend(self):
+
+        t = Topography([[1,1,1,1],
+                        [1,1,1,1],
+                        [1,1,1,1]], size=(1,1))
+
+        # the following commands should be possible without errors
+        st = t.scale(1)
+        dt = st.detrend(detrend_mode='center')
+
+
+class UniformLineScanTest(PyCoTestCase):
+
+    def test_properties(self):
+
+        x = np.array((0, 1, 2, 3, 4))
+        h = 2 * x
+        t = UniformLineScan(x, h)
+        self.assertEqual(t.dim, 1)
+
+    def test_positions_and_heights(self):
+
+        h = np.array((0, 1, 2, 3, 4))
+
+        t = UniformLineScan(h, 4)
+
+        assert_array_equal(t.heights(), h)
+
+        expected_x = np.array((0., 0.8, 1.6, 2.4, 3.2))
+        self.assertArrayAlmostEqual(t.positions(), expected_x)
+
+        x2, h2 = t.positions_and_heights()
+        self.assertArrayAlmostEqual(x2, expected_x)
+        assert_array_equal(h2, h)
+
+    def test_attribute_error(self):
+
+        h = np.array((0, 1, 2, 3, 4))
+        t = UniformLineScan(h, 4)
+
+        with self.assertRaises(AttributeError):
+            t.coeff
+        # a scaled line scan has a coeff
+        self.assertEqual(t.scale(1).coeff, 1)
+
+        #
+        # This should also work after the topography has been pickled
+        #
+        pt = pickle.dumps(t)
+        t2 = pickle.loads(pt)
+
+        with self.assertRaises(AttributeError):
+            t2.coeff
+        # a scaled line scan has a coeff
+        self.assertEqual(t2.scale(1).coeff, 1)
+
+    def test_setting_info_dict(self):
+
+        h = np.array((0, 1, 2, 3, 4))
+        t = UniformLineScan(h, 4)
+
+        assert t.info == {}
+
+        t = UniformLineScan(h, 4, info=dict(unit='A'))
+        assert t.info['unit'] == 'A'
+
+        #
+        # This info should be inherited in the pipeline
+        #
+        st = t.scale(2)
+        assert st.info['unit'] == 'A'
+
+        #
+        # It should be also possible to set the info
+        #
+        st = t.scale(2, info=dict(unit='B'))
+        assert st.info['unit'] == 'B'
+
+        #
+        # Again the info should be passed
+        #
+        dt = st.detrend(detrend_mode='center')
+        assert dt.info['unit'] == 'B'
+
+        #
+        # Alternatively, it can be changed
+        #
+        dt = st.detrend(detrend_mode='center', info=dict(unit='C'))
+        assert dt.info['unit'] == 'C'
+
+    def test_init_with_lists_calling_scale_and_detrend(self):
+
+        t = UniformLineScan([2,4,6,8], 4) # initialize with list instead of arrays
+
+        # the following commands should be possible without errors
+        st = t.scale(1)
+        dt = st.detrend(detrend_mode='center')
 
 
 class NonuniformLineScanTest(PyCoTestCase):
@@ -250,6 +350,51 @@ class NonuniformLineScanTest(PyCoTestCase):
             t2.coeff
         # a scaled line scan has a coeff
         self.assertEqual(t2.scale(1).coeff, 1)
+
+    def test_setting_info_dict(self):
+
+        x = np.array((0,1,1.5,2,3))
+        h = 2*x
+
+        t = NonuniformLineScan(x, h)
+
+        assert t.info == {}
+
+        t = NonuniformLineScan(x, h, info=dict(unit='A'))
+        assert t.info['unit'] == 'A'
+
+        #
+        # This info should be inherited in the pipeline
+        #
+        st = t.scale(2)
+        assert st.info['unit'] == 'A'
+
+        #
+        # It should be also possible to set the info
+        #
+        st = t.scale(2, info=dict(unit='B'))
+        assert st.info['unit'] == 'B'
+
+        #
+        # Again the info should be passed
+        #
+        dt = st.detrend(detrend_mode='center')
+        assert dt.info['unit'] == 'B'
+
+        #
+        # Alternatively, it can be changed
+        #
+        dt = st.detrend(detrend_mode='center', info=dict(unit='C'))
+        assert dt.info['unit'] == 'C'
+
+    def test_init_with_lists_calling_scale_and_detrend(self):
+
+        t = NonuniformLineScan(x=[1,2,3,4], y=[2,4,6,8]) # initialize with lists instead of arrays
+
+        # the following commands should be possible without errors
+        st = t.scale(1)
+        dt = st.detrend(detrend_mode='center')
+
 
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
