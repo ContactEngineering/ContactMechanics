@@ -71,14 +71,14 @@ class AdhesionTest(unittest.TestCase):
 
     def test_hard_wall_LBFGS(self):
         nx, ny = 128, 128
-        sx = 10.0
+        sx = 21.0
 
         for ran in [0.05, 0.3]:
             substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sx))
-            interaction = ExpPotential(self.w, ran)#, 0.1)
-            surface = make_sphere(self.r_s, (nx, ny), (sx, sx))
+            interaction = ExpPotential(self.w, ran)# , 0.13)
+            surface = make_sphere(self.r_s, (nx, ny), (sx, sx), standoff=float('inf'))
             ext_surface = make_sphere(self.r_s, (2*nx, 2*ny), (2*sx, 2*sx),
-                                 centre=(sx/2, sx/2))
+                                 centre=(sx/2, sx/2), standoff=float('inf'))
             system = SmoothContactSystem(substrate, interaction, surface)
 
             disp0 = np.linspace(-self.r_s/100, self.r_s/50, 11)
@@ -107,7 +107,24 @@ class AdhesionTest(unittest.TestCase):
             cohesive_stress = opt.x
 
             residual = np.sqrt(((MD.load_and_displacement(np.sqrt(area/np.pi), self.r_s, self.E_s, self.w, cohesive_stress)[0]-normal_force)**2).mean())
-            self.assertTrue(residual < 0.9)
+            self.assertTrue(residual < 1, msg = "residual = {} >=01".format(residual))
+
+            if False:
+                import matplotlib.pyplot as plt
+
+                fig,ax = plt.subplots()
+
+                ax.plot(area, MD.load_and_displacement(np.sqrt(area/np.pi), self.r_s, self.E_s, self.w, cohesive_stress)[0], label="analytical")
+                ax.plot(area, normal_force, label="numerical")
+
+
+                ax.set_xlabel("area")
+                ax.set_ylabel("normal_force")
+                ax.grid(True)
+                ax.legend()
+
+                fig.tight_layout()
+                plt.show(block=True)
 
 if __name__ == '__main__':
     unittest.main()
