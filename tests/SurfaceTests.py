@@ -45,6 +45,7 @@ try:
                                  rms_height, rms_slope, compute_derivative, shift_and_tilt, read,
                                  read_asc, read_di, read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
     from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor
+    from PyCo.Topography.ParallelFromFile import TopographyLoaderNPY, TopographyLoaderH5
     from PyCo.Topography.Generation import RandomSurfaceGaussian
 
 except ImportError as err:
@@ -188,6 +189,33 @@ class matSurfaceTest(unittest.TestCase):
         self.assertEqual(ny, 2048)
         self.assertAlmostEqual(surface.rms_height(), 1.234061e-07)
 
+class npySurfaceTest(unittest.TestCase):
+    def setUp(self):
+        self.fn = "example.npy"
+        self.res = (128,64)
+        np.random.seed(1)
+        self.data = np.random.random(self.res)
+        self.data -= np.mean(self.data)
+
+        np.save(self.fn, self.data)
+
+    def test_read(self):
+        loader = TopographyLoaderNPY(self.fn)
+        loader.size = (2, 4)
+        loader.unit = "m"
+
+        topo = loader.topography()
+
+        np.testing.assert_array_almost_equal(topo.array(), self.data)
+
+        self.assertEqual(topo.unit, loader.unit)
+        self.assertEqual(topo.size, loader.size)
+
+
+    def tearDown(self):
+        os.remove(self.fn)
+
+
 class x3pSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
@@ -286,15 +314,19 @@ class hgtSurfaceTest(unittest.TestCase):
         self.assertEqual(nx, 3601)
         self.assertEqual(ny, 3601)
 
-@unittest.expectedFailure # I think this is a compatibility problem between Versions
 class h5SurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
-    def test_detect_format_then_read(self):
-        self.assertEqual(detect_format('tests/file_format_examples/surface.2048x2048.h5'), 'h5')
+
+    def test_detect_format(self):
+        import PyCo.Topography.ParallelFromFile
+        self.assertEqual(PyCo.Topography.ParallelFromFile.detect_format( # TODO: this will be the standart detect format method in the future
+            'tests/file_format_examples/surface.2048x2048.h5'), 'h5')
 
     def test_read(self):
-        surface = read_h5('tests/file_format_examples/surface.2048x2048.h5')
-        nx, ny = surface.shape
+        loader = TopographyLoaderH5('tests/file_format_examples/surface.2048x2048.h5')
+
+        topography = loader.topography()
+        nx, ny = topography.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)

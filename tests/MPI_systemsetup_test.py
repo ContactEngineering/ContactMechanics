@@ -3,13 +3,12 @@
 import unittest
 
 from mpi4py import MPI
-from PyCo.Topography.ParallelFromFile import read_npy
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from FFTEngine import PFFTEngine
 from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics.Interactions import HardWall
 from PyCo.Topography import MPITopographyLoader
-
+from PyCo.Topography.ParallelFromFile import TopographyLoaderNPY
 import numpy as np
 
 class MPI_TopographyLoading_Test(unittest.TestCase):
@@ -32,44 +31,46 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
 
         for HS in [PeriodicFFTElasticHalfSpace,FreeFFTElasticHalfSpace]:
             with self.subTest(HS=HS):
-                interaction = HardWall()
+                for loader in [MPITopographyLoader, TopographyLoaderNPY]: #TODO: these implementations are redundant, only one of them will persist
+                    with self.subTest(loader=loader):
+                        interaction = HardWall()
 
-                # Read metadata from the file and returns a UniformTopgraphy Object
-                fileReader = MPITopographyLoader(self.fn, comm=comm)
+                        # Read metadata from the file and returns a UniformTopgraphy Object
+                        fileReader = MPITopographyLoader(self.fn, comm=comm)
 
-                assert fileReader.resolution == self.res
+                        assert fileReader.resolution == self.res
 
-                # create a substrate according to the topography
+                        # create a substrate according to the topography
 
-                fftengine = PFFTEngine(domain_resolution = fileReader.resolution, comm = comm)
-                Es = 1
-                if fileReader.size is not None:
-                    substrate = HS(resolution=fileReader.resolution, size=fileReader.size, young=Es, fftengine=fftengine )
-                else:
-                    substrate = HS(resolution=fileReader.resolution, young = Es, fftengine=fftengine )
+                        fftengine = PFFTEngine(domain_resolution = fileReader.resolution, comm = comm)
+                        Es = 1
+                        if fileReader.size is not None:
+                            substrate = HS(resolution=fileReader.resolution, size=fileReader.size, young=Es, fftengine=fftengine )
+                        else:
+                            substrate = HS(resolution=fileReader.resolution, young = Es, fftengine=fftengine )
 
-                top = fileReader.topography(substrate)
+                        top = fileReader.topography(substrate)
 
-                assert top.resolution == substrate.resolution
-                assert top.subdomain_resolution == substrate.subdomain_resolution \
-                       or top.subdomain_resolution == (0,0) # for FreeFFTElHS
-                assert top.subdomain_location == substrate.subdomain_location
+                        assert top.resolution == substrate.resolution
+                        assert top.subdomain_resolution == substrate.subdomain_resolution \
+                               or top.subdomain_resolution == (0,0) # for FreeFFTElHS
+                        assert top.subdomain_location == substrate.subdomain_location
 
-                np.testing.assert_array_equal(top.array(),self.data[top.subdomain_slice])
+                        np.testing.assert_array_equal(top.array(),self.data[top.subdomain_slice])
 
-                # test that the slicing is what is expected
+                        # test that the slicing is what is expected
 
-                fulldomain_field = np.arange(np.prod(substrate.domain_resolution)).reshape(substrate.domain_resolution)
+                        fulldomain_field = np.arange(np.prod(substrate.domain_resolution)).reshape(substrate.domain_resolution)
 
-                np.testing.assert_array_equal(fulldomain_field[top.subdomain_slice],fulldomain_field[tuple([slice(substrate.subdomain_location[i],substrate.subdomain_location[i]+max(0,min(substrate.resolution[i] - substrate.subdomain_location[i],substrate.subdomain_resolution[i]))) for i in range(substrate.dim)])])
+                        np.testing.assert_array_equal(fulldomain_field[top.subdomain_slice],fulldomain_field[tuple([slice(substrate.subdomain_location[i],substrate.subdomain_location[i]+max(0,min(substrate.resolution[i] - substrate.subdomain_location[i],substrate.subdomain_resolution[i]))) for i in range(substrate.dim)])])
 
-                # Test Computation of the rms_height
-                # Sq
-                assert top.rms_height(kind="Sq") == np.sqrt(np.mean((self.data - np.mean(self.data))**2))
-                #Rq
-                assert top.rms_height(kind="Rq") == np.sqrt(np.mean((self.data - np.mean(self.data,axis = 0))**2))
+                        # Test Computation of the rms_height
+                        # Sq
+                        assert top.rms_height(kind="Sq") == np.sqrt(np.mean((self.data - np.mean(self.data))**2))
+                        #Rq
+                        assert top.rms_height(kind="Rq") == np.sqrt(np.mean((self.data - np.mean(self.data,axis = 0))**2))
 
-                system = make_system(substrate, interaction, top)
+                        system = make_system(substrate, interaction, top)
 
         # make some tests on the system
 
