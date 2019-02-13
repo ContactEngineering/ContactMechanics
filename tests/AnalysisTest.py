@@ -39,8 +39,28 @@ import numpy as np
 
 from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
 from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc, power_spectrum_1D
+from PyCo.Topography.Generation import fourier_synthesis
 
 from tests.PyCoTest import PyCoTestCase
+
+
+class ScalarParametersTest(PyCoTestCase):
+    @unittest.skip
+    def test_rms_slope_1d(self):
+        r = 4096
+        res = (r, )
+        for H in [0.3, 0.8]:
+            for s in [(1, ), (1.4, )]:
+                t = fourier_synthesis(res, s, H, short_cutoff=4 / r * np.mean(s), rms_slope=0.1)
+                self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
+
+    def test_rms_slope_2d(self):
+        r = 1024
+        res = [r, r]
+        for H in [0.3, 0.8]:
+            for s in [(1, 1), (1.4, 3.3)]:
+                t = fourier_synthesis(res, s, H, short_cutoff=4 / r * np.mean(s), rms_slope=0.1)
+                self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
 
 
 class PowerSpectrumTest(PyCoTestCase):
@@ -196,3 +216,12 @@ class PowerSpectrumTest(PyCoTestCase):
             v1 = sinc(x + dx)
             v2 = sinc(x - dx)
             self.assertAlmostEqual(dsinc(x), (v1 - v2) / (2 * dx), places=5, msg='x = {}'.format(x))
+
+
+class VariableBandwidthTest(PyCoTestCase):
+    def test_self_affine_topography(self):
+        r = 2048
+        res = [r, r]
+        for H in [0.3, 0.8]:
+            t = fourier_synthesis(res, (1, 1), H, short_cutoff=16/r, rms_slope=0.1)
+            print(t.rms_height(), t.rms_slope())
