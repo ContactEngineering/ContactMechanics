@@ -221,7 +221,7 @@ class TopographyTest(PyCoTestCase):
         st = t.scale(1)
         dt = st.detrend(detrend_mode='center')
 
-    def test_power_spectrum(self):
+    def test_power_spectrum_1D(self):
 
         X = np.arange(3).reshape(1, 3)
         Y = np.arange(4).reshape(4, 1)
