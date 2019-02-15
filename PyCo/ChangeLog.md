@@ -1,13 +1,22 @@
 Change log for PyCo
 ===================
 
-v0.19.0 (14Feb19)
+v0.30.0 (15Feb19)
 -----------------
 
-News:
+Overview:
 
-- Added handling for line scans.
+- Added non-uniform line scans, which can be loaded from text files or constructed from arrays.
 - New class structure for topographies and line scans (for easier maintenance).
+- Major API changes and several bug fixes (see below).
+- Added Hardwall simulation tutorial.
+- Added calculation for second derivative and RMS curvature for nonuniform topographies.
+- Added coordination counting for contact patches. 
+- Simplified computation of perimeter using coordination counting.
+- Started Sphinx documentation with notes how to use the package.
+
+API Changes:
+
 - New API for generating topographies and line scans (height containers) from data, 
   please use "from PyCo Topography import Topography, NonlinearLineScan, UniformLineScan" now.
 - New API for building pipelines using methods on height containers, e.g. "topography.scale(2).detrend()".
@@ -19,16 +28,16 @@ News:
 - Removed 'shape' alias to 'resolution' property for height containers.
 - Size + shape are now always tuples, size is also always set as tuple.
 - Topographies can now be pickled and unpickled.  
-- Added Hardwall simulation tutorial.
 - Replaced class 'Sphere' with generator function 'make_sphere'.
-- Added second derivative for nonuniform topographies
-- Added rms_curvature for nonuniform line scans
-- Added coordination counting for contact patches. 
-- Simplified computation of perimeter using coordination counting.
-- Started Sphinx documentation with notes how to use the package.
-
+- Contact with "FreeFFTElasticHalfSpace": 
+  Now an error is raised when points at the outer ring of the surface are interacting. 
+  See notebook "examples/Hardwall_Simulation.ipynb".
+  
 Bug fixes:
    
+- periodicity was ignored in calculation of the distance between contact patches in `distance_map`
+- computation of energy in fourier space didn't match the computation of energy in real space 
+  (however it is not used in actual simulation)   
 - Removed keyword "full_output" from shift_and_tilt().
 - Text files without spaces at beginning of line can be read now.
 - Enable reading topography data from memory buffers and from binary streams.
