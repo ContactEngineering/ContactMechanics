@@ -1,6 +1,50 @@
 Change log for PyCo
 ===================
 
+v0.30.0 (15Feb19)
+-----------------
+
+Overview:
+
+- Added non-uniform line scans, which can be loaded from text files or constructed from arrays.
+- New class structure for topographies and line scans (for easier maintenance).
+- Major API changes and several bug fixes (see below).
+- Added Hardwall simulation tutorial.
+- Added calculation for second derivative and RMS curvature for nonuniform topographies.
+- Added coordination counting for contact patches. 
+- Simplified computation of perimeter using coordination counting.
+- Started Sphinx documentation with notes how to use the package.
+
+API Changes:
+
+- New API for generating topographies and line scans (height containers) from data, 
+  please use "from PyCo Topography import Topography, NonlinearLineScan, UniformLineScan" now.
+- New API for building pipelines using methods on height containers, e.g. "topography.scale(2).detrend()".
+- Uniform topographies and line scans can be periodic.
+- Removed unit property from height containers. Units are now stored in the info dictionary,
+  which has to be set on generation of the height container.
+- All topographies must have a size. Readers use the resolution as the default size 
+  if the files contain no size information. 
+- Removed 'shape' alias to 'resolution' property for height containers.
+- Size + shape are now always tuples, size is also always set as tuple.
+- Topographies can now be pickled and unpickled.  
+- Replaced class 'Sphere' with generator function 'make_sphere'.
+- Contact with "FreeFFTElasticHalfSpace": 
+  Now an error is raised when points at the outer ring of the surface are interacting. 
+  See notebook "examples/Hardwall_Simulation.ipynb".
+  
+Bug fixes:
+   
+- periodicity was ignored in calculation of the distance between contact patches in `distance_map`
+- computation of energy in fourier space didn't match the computation of energy in real space 
+  (however it is not used in actual simulation)   
+- Removed keyword "full_output" from shift_and_tilt().
+- Text files without spaces at beginning of line can be read now.
+- Enable reading topography data from memory buffers and from binary streams.
+- Calculation of 2D autocorrelation function was broken, e.g. radial average.
+- 1D autocorrelation was broken for nonperiodic calculations.
+
+
 v0.18.0 (31Oct18)
 -----------------
 
@@ -8,7 +52,7 @@ v0.18.0 (31Oct18)
 - Bug fix: Corrected computation of attractive contact area in Smooth contact system.
 - Bug fix: Corrected computation of inflexion point in LJ93 and VW82 smoothed potentials.
 
-v0.17.0 (06Jul17)
+v0.17.0 (06Jul18)
 -----------------
 
 - Height-difference autocorrelation function.
@@ -32,7 +76,7 @@ v0.14.1 (16Jun17)
 - Automatic conversion from hardness value (given in units of pressure)
   into internal units in constrained CG solver.
 
-v0.14.0 (14MAr17)
+v0.14.0 (14Mar17)
 -----------------
 
 - Added penetration hardness model for simple plastic calculations.

@@ -54,6 +54,7 @@ from .PyCoTest import PyCoTestCase
 class TopographyTest(PyCoTestCase):
 
     def test_positions(self):
+
         shape = (12, 11)
         nx, ny = shape
         surf = Topography(np.zeros(shape), (1, 1))
@@ -220,6 +221,18 @@ class TopographyTest(PyCoTestCase):
         st = t.scale(1)
         dt = st.detrend(detrend_mode='center')
 
+    def test_power_spectrum_1D(self):
+
+        X = np.arange(3).reshape(1, 3)
+        Y = np.arange(4).reshape(4, 1)
+        h = X+Y
+
+        t = Topography(h, (8,6))
+
+        q1, C1 = t.power_spectrum_1D(window='hann')
+
+        # TODO add check for values
+
 
 class UniformLineScanTest(PyCoTestCase):
 
@@ -308,6 +321,14 @@ class UniformLineScanTest(PyCoTestCase):
         st = t.scale(1)
         dt = st.detrend(detrend_mode='center')
 
+    def test_power_spectrum_1D(self):
+        #
+        # this test was added, because there were issues calling
+        # power spectrum 1D with a window given
+        #
+        t = UniformLineScan([2, 4, 6, 8], 4)
+        t.power_spectrum_1D(window='hann')
+        # TODO add check for values
 
 class NonuniformLineScanTest(PyCoTestCase):
 
@@ -395,6 +416,15 @@ class NonuniformLineScanTest(PyCoTestCase):
         st = t.scale(1)
         dt = st.detrend(detrend_mode='center')
 
+    def test_power_spectrum_1D(self):
+        #
+        # this test was added, because there were issues calling
+        # power spectrum 1D with a window given
+        #
+        t = NonuniformLineScan(x=[1, 2, 3, 4], y=[2, 4, 6, 8])
+        q1, C1 = t.power_spectrum_1D(window='hann')
+        # ok can be called without errors
+        # TODO add check for values
 
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
