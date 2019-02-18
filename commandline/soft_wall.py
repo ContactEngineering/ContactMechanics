@@ -9,7 +9,7 @@ import numpy as np
 from PyCo.ContactMechanics import ExpPotential, LJ93smoothMin
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.Topography import read_matrix
-from PyCo.System import SystemFactory
+from PyCo.System import make_system
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
 
@@ -47,7 +47,7 @@ interaction = ExpPotential(gamma, rho)
 # Piece the full system together. In particular the PyCo.System.SystemBase
 # object knows how to optimize the problem. For the hard wall interaction it
 # will always use Polonsky & Keer's constrained conjugate gradient method.
-system = SystemFactory(substrate, interaction, surface)
+system = make_system(substrate, interaction, surface)
 
 ###
 
@@ -58,7 +58,7 @@ container.set_shape(surface.shape)
 u = None
 tol = 1e-9
 for disp0 in np.linspace(-10, 10, 11):
-    opt = system.minimize_proxy(disp0, u, lbounds=surface.array() + disp0,
+    opt = system.minimize_proxy(disp0, u, lbounds=surface.heights() + disp0,
                                 method='L-BFGS-B', tol=0.0001)
     #opt = system.minimize_proxy(disp0, x0, method='L-BFGS-B', tol=0.0001)
     u = opt.x
@@ -68,7 +68,7 @@ for disp0 in np.linspace(-10, 10, 11):
     # a jacobian is NOT the force.
     f = substrate.evaluate_force(u)
 
-    gap = u - surface.array() - disp0
+    gap = u - surface.heights() - disp0
     mean_gap = np.mean(gap)
     load = -f.sum()/np.prod(surface.size)
     #area = (f>0).sum()/np.prod(surface.shape)

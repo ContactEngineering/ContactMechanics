@@ -33,7 +33,7 @@ SOFTWARE.
 
 import numpy as np
 
-from _PyCo import assign_patch_numbers, assign_segment_numbers, distance_map
+from _PyCo import assign_patch_numbers, assign_segment_numbers, distance_map, closest_patch_map
 
 ###
 
@@ -90,3 +90,17 @@ def patch_areas(patch_ids):
     """
 
     return np.bincount(patch_ids.reshape((-1,)))[1:]
+
+def patch_forces(patch_ids, forces):
+    """
+    Return a list containing patch forces
+    """
+
+    return np.bincount(patch_ids.reshape((-1,)),weights=forces.reshape((-1,)))[1:]
+
+def patch_perimeters(patch_ids, perim):
+    """
+    Return a list containing patch perimeters
+    """
+
+    return np.bincount(patch_ids.reshape((-1,)),weights=perim.reshape((-1,)))[1:]

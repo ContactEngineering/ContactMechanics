@@ -24,7 +24,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+IMPLIED, BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -123,10 +123,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         """
         if self.dim == 1:
             return (disp[:self.resolution[0]] -
-                    (self.surface.array(*profile_args, **profile_kwargs) +
+                    (self.surface.heights(*profile_args, **profile_kwargs) +
                      offset))
         return (disp[:self.resolution[0], :self.resolution[1]] -
-                (self.surface.array(*profile_args, **profile_kwargs) +
+                (self.surface.heights(*profile_args, **profile_kwargs) +
                  offset))
 
     @abc.abstractmethod
@@ -255,6 +255,16 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         self.evaluate(self.disp, offset, forces=gradient)
         result.x = self.shape_minimisation_output(result.x)
         result.jac = self.shape_minimisation_output(result.jac)
+        self.substrate.check(force=self.interaction.force)
+        # the variable (= imposed by the minimzer) is here the displacement,
+        # in contrast to Polonsky and Keer where it is the pressure.
+        # Grad(objective) = substrate.force + interaction.force
+        # norm(Grad(objective))< numerical tolerance
+        # We can ensure that interaction.force is zero at the boundary by
+        # adapting the geometry and the potential (cutoff)
+        # interaction.force will still be nonzero within the numerical tolerance
+        # given by the convergence criterion.
+
         return result
 
     @abc.abstractmethod
@@ -663,10 +673,12 @@ class NonSmoothContactSystem(SystemBase):
         self.contact_zone = None
         result = solver(
             self.substrate,
-            self.surface[:, :],
+            self.surface.heights(),
             **kwargs)
         if result.success:
             self.disp = result.x
             self.force = self.substrate.force = result.jac
             self.contact_zone = result.jac > 0
+
+            self.substrate.check()
         return result

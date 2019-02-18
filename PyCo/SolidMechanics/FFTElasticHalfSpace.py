@@ -271,7 +271,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return .5*np.dot(np.ravel(disp), np.ravel(-forces))
 
     def evaluate_elastic_energy_k_space(self, kforces, kdisp):
-        """
+        r"""
         Computes the Energy due to forces and displacements using their Fourier representation.
 
         This uses Parseval's Theorem:
@@ -512,6 +512,63 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             return super().evaluate_disp(padded_forces)[s]
         else:
             return super().evaluate_disp(forces)
+
+    class FreeBoundaryError(Exception):
+        """
+        called when the forces overlap into the padding region
+        (i.e. the outer ring of the force array equals zero),
+        needing an increase of the resolution
+        """
+        def __init__(self, message):
+            super().__init__(message)
+
+    def check_boundaries(self, force=None):
+        """
+        Raises an error if the forces are not zero at the boundary of the
+        active domain
+
+        Parameters
+        ----------
+        force
+
+        Returns
+        -------
+
+        """
+
+        if force is None:
+            force = self.force
+        is_ok = True
+        if self.dim == 2:
+            if np.ma.is_masked(force):
+                def check_vals(vals):
+                    return (vals == 0.).all() or vals.mask.all()
+            else:
+                def check_vals(vals):
+                    return (vals == 0.).all()
+
+            is_ok &= check_vals(force[:,0])
+            is_ok &= check_vals(force[:, self.resolution[1] - 1])
+            is_ok &= check_vals(force[0, :])
+            is_ok &= check_vals(force[self.resolution[0] - 1, :])
+
+        if not is_ok:
+            raise self.FreeBoundaryError("forces not zero at the boundary of the "
+                                         "active domain, "
+                                         "increase the size of your domain")
+
+    def check(self, force=None):
+        """
+        Checks wether force is still in the value range handled correctly
+        Parameters
+        ----------
+        force
+
+        Returns
+        -------
+
+        """
+        self.check_boundaries(force)
 
 # convenient container for storing correspondences betwees small and large
 # system

@@ -38,8 +38,8 @@ try:
     import time
     import math
 
-    from PyCo.System import SystemFactory
-    from PyCo.Topography import Sphere
+    from PyCo.System import make_system
+    from PyCo.Topography import make_sphere
     from PyCo.ContactMechanics import LJ93smoothMin as LJ_pot
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
 
@@ -60,7 +60,7 @@ class PulloffTest(unittest.TestCase):
         self.substrate = Substrate(res, young, size)
 
         radius = size[0]/10
-        self.surface = Sphere(radius, res, size, standoff=float('inf'))
+        self.surface = make_sphere(radius, res, size, standoff=float('inf'))
 
         sigma = radius/10
         epsilon = sigma * young/100
@@ -68,7 +68,7 @@ class PulloffTest(unittest.TestCase):
 
 
     def tst_FirstContactThenOffset(self):
-        system = SystemFactory(self.substrate, self.pot, self.surface)
+        system = make_system(self.substrate, self.pot, self.surface)
         offset0 = .5*self.pot.r_min + .5*self.pot.r_c
         disp0 = np.zeros(self.substrate.computational_resolution)
 
@@ -110,7 +110,7 @@ class PulloffTest(unittest.TestCase):
         raise Exception(msg)
 
     def tst_FirstOffsetThenContact(self):
-        system = SystemFactory(self.substrate, self.pot, self.surface)
+        system = make_system(self.substrate, self.pot, self.surface)
         offset0 = .5*self.pot.r_min + .5*self.pot.r_c
         disp0 = np.zeros(self.substrate.computational_resolution)
 

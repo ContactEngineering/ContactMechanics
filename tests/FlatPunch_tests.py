@@ -37,8 +37,8 @@ try:
     import numpy as np
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import UniformNumpyTopography
-    from PyCo.System import SystemFactory
+    from PyCo.Topography import Topography
+    from PyCo.System import make_system
 except ImportError as err:
     import sys
     print(err)
@@ -63,16 +63,33 @@ class FlatPunchTest(unittest.TestCase):
                     interaction = HardWall()
                     r_sq = (sx/nx*(np.arange(nx)-nx//2)).reshape(-1,1)**2 + \
                            (sy/ny*(np.arange(ny)-ny//2)).reshape(1,-1)**2
-                    surface = UniformNumpyTopography(
+                    surface = Topography(
                         np.ma.masked_where(r_sq > self.r_s**2,
-                                           np.zeros([nx, ny]))
+                                           np.zeros([nx, ny])),
+                        (sx, sy)
                         )
-                    system = SystemFactory(substrate, interaction, surface)
+                    system = make_system(substrate, interaction, surface)
+                    try:
+                        result = system.minimize_proxy(offset=disp0,
+                                                       external_force=normal_force,
+                                                       kind=kind,
+                                                       pentol=1e-4)
+                    except substrate.FreeBoundaryError as err:
+                        if False:
+                            import matplotlib.pyplot as plt
+                            fig,ax = plt.subplots()
 
-                    result = system.minimize_proxy(offset=disp0,
-                                                   external_force=normal_force,
-                                                   kind=kind,
-                                                   pentol=1e-4)
+                            #ax.pcolormesh(substrate.force / surface.area_per_pt,rasterized=True)
+                            ax.pcolormesh(surface.heights(), rasterized=True)
+                            ax.set_xlabel("")
+                            ax.set_ylabel("")
+
+                            ax.legend()
+
+                            fig.tight_layout()
+                            plt.show(block=True)
+
+                        raise err
                     offset = result.offset
                     forces = -result.jac
                     converged = result.success

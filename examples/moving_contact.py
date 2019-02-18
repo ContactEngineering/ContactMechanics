@@ -10,7 +10,7 @@ import numpy as np
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.Topography import read_matrix, TranslatedTopography, CompoundTopography
-from PyCo.System import SystemFactory
+from PyCo.System import make_system
 #from PyCo.Tools import compute_rms_height
 from PyCo.Tools.Logger import screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -53,7 +53,7 @@ interaction = HardWall()
 
 # This creates a "System" object that knows about substrate, interaction and
 # surface.
-system = SystemFactory(substrate, interaction, compound_surface)
+system = make_system(substrate, interaction, compound_surface)
 
 # Initial displacement field.
 disp = np.zeros(surface1.shape)
@@ -64,7 +64,7 @@ container = NetCDFContainer('traj.nc', mode='w', double=True)
 # NetCDF needs to know the resolution/shape
 container.set_shape(surface2)
 # This creates a field called 'surface2' inside the NetCDF file.
-container.surface2 = surface2.array()
+container.surface2 = surface2.heights()
 
 # Loop over nd displacement steps.
 nd = 3
@@ -90,7 +90,7 @@ for i, c in zip(range(0, step_size*nd, step_size), ['r', 'g', 'b', 'y']):
 
     # Dump the information to the NetCDF file.
     frame = container.get_next_frame()
-    frame.translated_surface1 = translated_surface1.array()
+    frame.translated_surface1 = translated_surface1.heights()
     frame.displacements = disp
     frame.forces = disp
 
