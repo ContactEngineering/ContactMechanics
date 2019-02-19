@@ -47,6 +47,7 @@ try:
     from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor
     from PyCo.Topography.ParallelFromFile import TopographyLoaderNPY, TopographyLoaderH5
     from PyCo.Topography.Generation import RandomSurfaceGaussian
+    import PyCo.Topography.ParallelFromFile
 
 except ImportError as err:
     import sys
@@ -319,7 +320,7 @@ class h5SurfaceTest(unittest.TestCase):
         pass
 
     def test_detect_format(self):
-        import PyCo.Topography.ParallelFromFile
+
         self.assertEqual(PyCo.Topography.ParallelFromFile.detect_format( # TODO: this will be the standart detect format method in the future
             'tests/file_format_examples/surface.2048x2048.h5'), 'h5')
 
@@ -330,3 +331,19 @@ class h5SurfaceTest(unittest.TestCase):
         nx, ny = topography.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
+
+class UnknownFileFormatGivenTest(unittest.TestCase):
+
+    def test_read(self):
+        with self.assertRaises(PyCo.Topography.ParallelFromFile.UnknownFileFormatGiven):
+            PyCo.Topography.ParallelFromFile.read("filename", format="Nonexistentfileformat")
+
+    def test_detect_format(self):
+        with self.assertRaises(PyCo.Topography.ParallelFromFile.UnknownFileFormatGiven):
+            PyCo.Topography.ParallelFromFile.read("filename", format="Nonexistentfileformat")
+
+class FileFormatMismatchTest(unittest.TestCase):
+
+    def test_read(self):
+        with self.assertRaises(PyCo.Topography.ParallelFromFile.CannotDetectFileFormat):
+            PyCo.Topography.ParallelFromFile.read('tests/file_format_examples/surface.2048x2048.h5', format="npy")
