@@ -36,24 +36,48 @@ import unittest
 import numpy as np
 
 from PyCo.Topography import Topography
-from PyCo.Topography.Uniform.VariableBandwidth import checkerboard_tilt_correction
+from PyCo.Topography.Generation import fourier_synthesis
 from .PyCoTest import PyCoTestCase
 
 ###
 
-class TestAnalysis(PyCoTestCase):
+class TestVariableBandwidth(PyCoTestCase):
 
-    def test_checkerboard_tilt_correction_2d(self):
+    def test_checkerboard_detrend_2d(self):
         arr = np.zeros([4, 4])
         arr[:2, :2] = 1.0
-        outarr = checkerboard_tilt_correction(Topography(arr, arr.shape), (4, 4, 4), (1, 1, 1))
+        outarr = Topography(arr, arr.shape).checkerboard_detrend((2, 2))
         self.assertArrayAlmostEqual(outarr, np.zeros([4, 4]))
 
         arr = np.zeros([4, 4])
         arr[:2, :2] = 1.0
         arr[:2, 1] = 2.0
-        outarr = checkerboard_tilt_correction(Topography(arr, arr.shape), (4, 4, 4), (1, 1, 1))
+        outarr = Topography(arr, arr.shape).checkerboard_detrend((2, 2))
         self.assertArrayAlmostEqual(outarr, np.zeros([4, 4]))
+
+    def test_checkerboard_detrend_with_no_subdivisions(self):
+        r = 32
+        x, y = np.mgrid[:r, :r]
+        h = 1.3*x - 0.3*y + 0.02*x*x + 0.03*y*y - 0.013*x*y
+        t = Topography(h, (1, 1), periodic=False)
+        # This should be the same as a detrend with detrend_mode='height'
+        ut1 = t.checkerboard_detrend((1, 1))
+        ut2 = t.detrend().heights()
+        self.assertArrayAlmostEqual(ut1, ut2)
+
+    def test_self_affine_topography(self):
+        r = 2048
+        res = [r, r]
+        for H in [0.3, 0.8]:
+            t = fourier_synthesis(res, (1, 1), H, short_cutoff=16/r, rms_slope=0.1)
+            mag, rms = t.variable_bandwidth(resolution_cutoff=r//32)
+            self.assertAlmostEqual(rms[0], t.detrend().rms_height())
+            print(mag, rms)
+            # Since this is a self-affine surface, rms(mag) ~ mag^-H
+            b, a = np.polyfit(np.log(mag), np.log(rms), 1)
+            # The error is huge...
+            self.assertTrue(abs(H+b) < 0.1)
+
 
 ###
 

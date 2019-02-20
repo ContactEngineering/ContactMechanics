@@ -217,11 +217,3 @@ class PowerSpectrumTest(PyCoTestCase):
             v2 = sinc(x - dx)
             self.assertAlmostEqual(dsinc(x), (v1 - v2) / (2 * dx), places=5, msg='x = {}'.format(x))
 
-
-class VariableBandwidthTest(PyCoTestCase):
-    def test_self_affine_topography(self):
-        r = 2048
-        res = [r, r]
-        for H in [0.3, 0.8]:
-            t = fourier_synthesis(res, (1, 1), H, short_cutoff=16/r, rms_slope=0.1)
-            print(t.rms_height(), t.rms_slope())
