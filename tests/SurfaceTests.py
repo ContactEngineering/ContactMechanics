@@ -46,7 +46,7 @@ import pickle
 from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, read, read_asc, read_di,
                              read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
 from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
-from PyCo.Topography.Generation import RandomSurfaceGaussian
+from PyCo.Topography.Generation import fourier_synthesis
 
 from .PyCoTest import PyCoTestCase
 
@@ -240,7 +240,7 @@ class UniformLineScanTest(PyCoTestCase):
 
         x = np.array((0, 1, 2, 3, 4))
         h = 2 * x
-        t = UniformLineScan(x, h)
+        t = UniformLineScan(h, 5)
         self.assertEqual(t.dim, 1)
 
     def test_positions_and_heights(self):
@@ -551,7 +551,42 @@ class DetrendedSurfaceTest(unittest.TestCase):
 
         self._flat_arr = arr
 
-    def test_smooth_flat_with_size(self):
+    def test_smooth_flat_1d(self):
+        arr = self._flat_arr
+
+        a = 1.2
+        d = .2
+        arr = np.arange(5) * a + d
+
+        surf = UniformLineScan(arr, (1, )).detrend(detrend_mode='center')
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf.mean(), 0)
+
+        surf = UniformLineScan(arr, (1.5, )).detrend(detrend_mode='slope')
+        self.assertEqual(surf.dim, 1)
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf.mean(), 0)
+        self.assertAlmostEqual(surf.rms_slope(), 0)
+
+        surf = UniformLineScan(arr, arr.shape).detrend(detrend_mode='height')
+        self.assertEqual(surf.dim, 1)
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf.mean(), 0)  # TODO fails -> implement detrending without using size
+        self.assertAlmostEqual(surf.rms_slope(), 0)
+        self.assertTrue(surf.rms_height() < UniformLineScan(arr, arr.shape).rms_height())
+
+        surf2 = UniformLineScan(arr, (1, )).detrend(detrend_mode='height')
+        self.assertEqual(surf.dim, 1)
+        self.assertTrue(surf2.is_uniform)
+        self.assertAlmostEqual(surf2.rms_slope(), 0)
+        self.assertTrue(surf2.rms_height() < UniformLineScan(arr, arr.shape).rms_height())
+
+        self.assertAlmostEqual(surf.rms_height(), surf2.rms_height())
+
+        x, z = surf2.positions_and_heights()
+        self.assertAlmostEqual(np.mean(np.diff(x)), surf2.size[0] / surf2.resolution[0])
+
+    def test_smooth_flat_2d(self):
         arr = self._flat_arr
 
         a = 1.2
@@ -624,7 +659,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.rms_curvature(), 0.0)
 
     def test_randomly_rough(self):
-        surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
+        surface = fourier_synthesis((512, 512), (1., 1.), 0.8, rms_height=1)
         self.assertTrue(surface.is_uniform)
         cut = Topography(surface[:64, :64], size=(64., 64.))
         self.assertTrue(cut.is_uniform)
