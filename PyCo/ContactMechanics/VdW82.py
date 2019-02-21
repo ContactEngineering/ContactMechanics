@@ -59,6 +59,14 @@ class VDW82(Potential):
         self.hamaker = hamaker
         Potential.__init__(self, r_cut)
 
+    def __getstate__(self):
+        state = super().__getstate__(), self.c_sr, self.hamaker
+        return state
+
+    def __setstate__(self, state):
+        superstate, self.c_sr, self.hamaker = state
+        super().__setstate__(superstate)
+
     def __repr__(self, ):
         return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
                 "r_c = {1}").format(

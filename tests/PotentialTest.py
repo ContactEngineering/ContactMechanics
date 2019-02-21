@@ -40,6 +40,7 @@ try:
     from PyCo.ContactMechanics import LJ93smooth
     from PyCo.ContactMechanics import LJ93smoothMin
     from PyCo.ContactMechanics import LJ93SimpleSmooth
+    from PyCo.ContactMechanics.Lj93 import LJ93smoothMin_old
 
     from PyCo.ContactMechanics import VDW82
     from PyCo.ContactMechanics import VDW82smooth
@@ -416,6 +417,76 @@ class PotentialTest(unittest.TestCase):
                 ax[2].plot(z, c)
             fig.savefig("test_LinearCoreSimpleSmoothPotential.png")
 
+    def test_deepcopy(self):
+        import copy
+        w = 3
+        z0 = 0.5
+        r_ti = 0.4 * z0
+        r_c = 10 * z0
+        import copy
+
+        eps = 1.7294663266397667
+        sig = 3.253732668164946
+
+        c_sr = 2.1e-78
+        hamaker = 68.1e-21
+
+        all_ok = True
+        msg = []
+        for pot in [
+            LJ93(eps, sig),
+            LJ93SimpleSmooth(eps, sig, 3*sig),
+            LJ93smooth(eps, sig),
+            LJ93smoothMin(eps, sig),
+            LJ93smooth(eps,  sig, r_t="inflection"),
+            LJ93smoothMin(eps, sig, r_t_ls="inflection"),
+            LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05),
+            LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05),
+            VDW82(c_sr, hamaker),
+            VDW82smooth(c_sr,  hamaker),
+            VDW82smoothMin(c_sr,  hamaker),
+            VDW82smooth(c_sr,  hamaker, r_t="inflection"),
+            VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection"),
+            VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05),
+            VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05),
+            VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)
+                    ]:
+            copied_potential = copy.deepcopy(pot)
+
+            z = np.array([
+                pot.r_min * 1e-4,
+                pot.r_min * (1-1e-4),
+                pot.r_min * (1 + 1e-4),
+                pot.r_infl * (1 - 1e-4),
+                pot.r_infl * (1 + 1e-4),
+                pot.r_infl * 1e3,
+                pot.r_infl * 1e3,
+                pot.r_infl * 1e3
+            ])
+            mask=np.zeros_like(z)
+            mask[-2:]=True
+            z = np.ma.masked_array(z, mask=mask)
+
+            print("testing {}".format(pot))
+            pot.evaluate(z, True, True, True)
+            copied_potential.evaluate(z, True, True, True)
+
+            np.testing.assert_allclose(copied_potential.evaluate(z, True, True, True), pot.evaluate(z, True, True, True))
+
+            # assert the cached values (energy, force and curvature were also deepcopied)
+            # and so computing with the new instance of the potential does'nt influence the original one
+            refvals = pot.evaluate(z, True, True, True)
+            pot.compute(z, True, True, True)
+            copied_potential.compute(np.random.random((1, 4)))
+            np.testing.assert_allclose(pot.energy, np.sum(refvals[0]))
+            np.testing.assert_allclose(pot.force, refvals[1])
+            np.testing.assert_allclose(pot.curb, refvals[2])
+
+            if hasattr(pot, "parent_potential"): # assert parent potential has also been copied
+                assert pot.parent_potential is not copied_potential.parent_potential
+
+
+
     def test_ExpPotential(self):
         r = np.linspace(-10, 10, 1001)
         pot = ExpPotential(1.0, 1.0)
@@ -468,4 +539,108 @@ class PotentialTest(unittest.TestCase):
 
         self.assertTrue(all_ok, "\n"+"\n\n".join(msg))
 
+    def test_lj93smoothmin_regression(self):
 
+        import copy
+
+        print("########################################################################")
+
+        eps = 1.7294663266397667
+        sig = 3.253732668164946
+
+        z = np.random.random((200)) *10 -1
+        z[0] = float("inf")
+
+        mask = np.zeros_like(z)
+        mask[-2:] = True
+        mask[0]=True
+        z = np.ma.masked_array(z, mask=mask)
+        z[1] = sig
+        z[2] = 0
+        z[3] = 0.5
+        z[4] = 3.
+
+        print(np.max(z))
+        print(np.min(z))
+
+        for params in [dict(epsilon=1.7294663266397667, sigma=3.253732668164946, gamma = 2, r_ti=0.5, r_t_ls = 3),
+                       dict(epsilon=1, sigma=2, gamma=5)]:
+            new = LJ93smoothMin(**params)
+            old = LJ93smoothMin_old(**params)
+
+            if True:
+                import matplotlib.pyplot as plt
+                fig, (ax, axdiff) = plt.subplots(1,2)
+                ax.plot(z, new.evaluate(z, True, True, True, area_scale=10.5)[1], ".")
+                ax.plot(z, old.evaluate(z, True, True, True, area_scale=10.5)[1], "+")
+
+                z_linpart=np.array([-0.1, 0.1,0.2,0.3])
+                ax.plot(z_linpart,
+                        new.evaluate(z_linpart, True, True, True, area_scale=10.5)[1],
+                        ".")
+                ax.plot(z_linpart,
+                        old.evaluate(z_linpart, True, True, True, area_scale=10.5)[1],
+                        "+")
+
+                axdiff.plot(z, np.abs(new.evaluate(z, True, True, True)[1] - old.evaluate(z, True, True, True)[1]),".")
+                axdiff.set_title(np.sum(np.abs(new.evaluate(z, True, True, True)[1] - old.evaluate(z, True, True, True)[1])))
+                axdiff.set_xscale("log")
+                axdiff.set_yscale("log")
+
+                plt.show(block = True)
+
+            Vnew, dVnew, ddVnew = new.evaluate(z, True, True, True, area_scale=1.5)
+            Vold, dVold, ddVold = old.evaluate(z, True, True, True, area_scale=1.5)
+
+            np.testing.assert_allclose(Vnew, Vold)
+            np.testing.assert_allclose(dVnew, dVold)
+            np.testing.assert_allclose(ddVnew, ddVold)
+
+            new.compute(z, True, True, True, area_scale=1.5)
+            old.compute(z, True, True, True, area_scale=1.5)
+
+            copied_new = copy.deepcopy(new)
+
+            print(old.lin_part)
+            print(new.lin_part)
+
+            for key in old.__dict__.keys():
+                print(key)
+
+                def allarraycomp(a, b, msg):
+                    if a.dtype == object:
+                        for i, j in zip(a, b):
+                            allarraycomp(i, j, msg=msg)
+                    else:
+                        np.testing.assert_allclose(a, b, err_msg=msg)
+
+                def asserteverything(a, b, msg):
+                    if hasattr(a, "dtype"):
+                        allarraycomp(a,b,msg)
+                    else:
+                        self.assertEqual(a,b, msg = msg)
+
+                asserteverything(getattr(new, key), getattr(old, key), msg="problem for {} : newval: {}, oldval: {}".format(key, getattr(new, key), getattr(old, key)))
+                asserteverything(getattr(copied_new, key), getattr(old, key), msg="problem for {} : newval: {}, oldval: {}".format(key, getattr(new, key), getattr(old, key)))
+
+
+import pytest
+@pytest.mark.parametrize("pot_class",[LJ93smoothMin_old, LJ93smooth, LJ93smoothMin])
+def test_lj93_masked(pot_class):
+    eps = 1
+    sig = 2
+    gam = 5
+    pot = pot_class(eps, sig, gam)
+
+    z = np.array([0.5,1,2,3,4])
+    pot.compute(z, True, True)
+    en1 = pot.energy
+    print(en1)
+
+    z = np.ma.masked_array([0.5,0.7, 1, 2, 3, 4],mask=[0,1,0,0,0,0])
+    pot.compute(z, True, True)
+    en2=pot.energy
+    print("{}".format(en1))
+    print("{}".format(en2))
+
+    assert en1 == en2

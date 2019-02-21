@@ -62,6 +62,12 @@ class SoftWall(Interaction):
         self.energy = None
         self.force = None
 
+    def __getstate__(self):
+        return self.energy, self.force
+
+    def __setstate__(self, state):
+        self.energy, self.force = state
+
     def compute(self, gap, pot=True, forces=False, area_scale=1.):
         """
         computes and stores the interaction energy and/or forces based on the

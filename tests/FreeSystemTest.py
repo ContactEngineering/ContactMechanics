@@ -52,6 +52,232 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+#class SmoothSystemTest(unittest.TestCase):
+import pytest
+
+@pytest.mark.parametrize("young",[3.,10.,100.])
+def test_minimization_simplesmooth(young):
+
+
+    eps=1.
+    sig=4.#2
+    gam=1.#5
+
+
+    radius=4.
+
+    base_res = 32
+    res = (base_res, base_res)
+
+    size= (15.,15.)
+    surface = Topography.make_sphere(radius, res, size,
+                                     standoff=float("inf"))
+    ext_surface = Topography.make_sphere(radius, [2 * r for r in res], [2 * s for s in size],
+                                 centre=[ s/2 for s in size], standoff=float('inf'))
+
+    substrate = Solid.FreeFFTElasticHalfSpace(
+        res, young, size)
+
+    pot = Contact.LJ93SimpleSmoothMin(eps, sig, 2, r_ti=0.5)
+
+    if True:
+        import matplotlib.pyplot as plt
+        fig,(axp, axf) = plt.subplots(1,2)
+
+        z = np.linspace(0.5,10,50)
+
+        v,dv, ddv = pot.evaluate(z, True, True)
+        axp.plot(z,v)
+        axf.plot(z,dv)
+
+    S = SmoothContactSystem(substrate,
+                            pot,
+                            surface)
+
+    #print("testing: {}, rc = {}, offset= {}".format(pot.__class__, S.interaction.r_c, S.interaction.offset))
+    offset = .99 * S.interaction.r_c
+    fun = S.objective(offset, gradient=True)
+
+    options = dict(ftol=1e-18, gtol=1e-10)
+    disp = S.shape_minimisation_input(
+        np.zeros(substrate.computational_resolution))
+
+    lbounds  =S.shape_minimisation_input(ext_surface.heights() + offset)
+    bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
+    result = minimize(fun, disp, jac=True,
+                      method='L-BFGS-B', options=options)#, bounds=bnds)
+    if True:
+        import matplotlib.pyplot as plt
+        fig,ax = plt.subplots()
+
+        #ax.pcolormesh(result.x.reshape(substrate.computational_resolution))
+        ax.pcolormesh(S.interaction.force)
+    #    np.savetxt("{}_forces.txt".format(pot_class.__name__), S.interaction.force)
+        ax.set_xlabel("x")
+        ax.set_ylabel("")
+        ax.grid(True)
+        ax.legend()
+
+        fig.tight_layout()
+        plt.show(block=True)
+    assert result.success, "{}".format(result)
+
+@pytest.mark.parametrize("young", [3., 100.]) # mit young = 100 geht auch LJ93smoothMin durch
+@pytest.mark.parametrize("pot_class",[Contact.Lj93.LJ93smoothMin_old, Contact.LJ93smooth, Contact.LJ93smoothMin])
+def test_minimization(pot_class, young):
+
+    eps=1
+    sig=2
+    gam=5
+
+    radius=4.
+
+    base_res = 128
+    res = (base_res, base_res)
+
+    size= (15.,15.)
+    surface = Topography.make_sphere(radius, res, size,
+                                     standoff=float("inf"))
+    ext_surface = Topography.make_sphere(radius, [2 * r for r in res], [2 * s for s in size],
+                                 centre=[ s/2 for s in size], standoff=float('inf'))
+
+    substrate = Solid.FreeFFTElasticHalfSpace(
+        res, young, size)
+
+    pot = pot_class(eps, sig, gam)
+    if hasattr(pot, "r_ti"):
+        assert pot.r_ti < pot.r_t
+
+    if True:
+        import matplotlib.pyplot as plt
+        fig,(axp, axf) = plt.subplots(1,2)
+
+        z = np.linspace(0.5,10,50)
+
+        v,dv, ddv = pot.evaluate(z, True, True)
+        axp.plot(z,v)
+        axf.plot(z,dv)
+
+    S = SmoothContactSystem(substrate,
+                            pot,
+                            surface)
+
+    print("testing: {}, rc = {}, offset= {}".format(pot.__class__, S.interaction.r_c, S.interaction.offset))
+    offset = .8 * S.interaction.r_c
+    fun = S.objective(offset, gradient=True)
+
+    options = dict(ftol=1e-18, gtol=1e-10)
+    disp = S.shape_minimisation_input(
+        np.zeros(substrate.computational_resolution))
+
+    lbounds  =S.shape_minimisation_input(ext_surface.heights() + offset)
+    bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
+    result = minimize(fun, disp, jac=True,
+                      method='L-BFGS-B', options=options)#, bounds=bnds)
+    if True:
+        import matplotlib.pyplot as plt
+        fig,ax = plt.subplots()
+
+        #ax.pcolormesh(result.x.reshape(substrate.computational_resolution))
+        ax.pcolormesh(S.interaction.force)
+        np.savetxt("{}_forces.txt".format(pot_class.__name__), S.interaction.force)
+        ax.set_xlabel("x")
+        ax.set_ylabel("")
+        ax.grid(True)
+        ax.legend()
+
+        fig.tight_layout()
+        plt.show(block=True)
+    assert result.success, "{}".format(result)
+
+def test_compare():
+    import matplotlib.pyplot as plt
+    fig,(axn,axo, axnm) = plt.subplots(1,3)
+
+    LJ93smoothMin_forces = np.loadtxt("LJ93smoothMin_forces.txt")
+    LJ93smoothMin_old_forces = np.loadtxt("LJ93smoothMin_old_forces.txt")
+    LJ93smooth_forces = np.loadtxt("LJ93smooth_forces.txt")
+
+    plt.colorbar(axn.pcolormesh(LJ93smoothMin_forces),ax=axn)
+    plt.colorbar(axo.pcolormesh(LJ93smoothMin_old_forces),ax=axo)
+    plt.colorbar(axnm.pcolormesh(LJ93smooth_forces), ax=axnm)
+
+    plt.show(block=True)
+
+
+
+@pytest.mark.parametrize("comppotclass, testedpotclass",
+                         [(Contact.Lj93.LJ93smoothMin_old,Contact.LJ93smoothMin),
+                          (Contact.LJ93smoothMin, Contact.Lj93.LJ93smoothMin_old)
+                         ])
+def test_compare_values(comppotclass, testedpotclass):
+    young = 3.
+
+    eps = 1.
+    sig = 2.
+    gam = 5.
+
+    r_ti =None
+    r_ti=0.1
+
+    radius = 4.
+
+    base_res = 32
+    res = (base_res, base_res)
+
+    size = (15., 15.)
+    surface = Topography.make_sphere(radius, res, size,
+                                     standoff=float("inf"))
+
+    substrate = Solid.FreeFFTElasticHalfSpace(
+        res, young, size)
+
+
+    comppot = comppotclass(eps, sig, gam, r_ti=r_ti)
+    testedpot=testedpotclass(eps, sig, gam, r_ti=r_ti)
+
+    print("testing: {}".format(comppot.__class__))
+    S = SmoothContactSystem(substrate,
+                            comppot,
+                            surface)
+
+
+    offset = .8 * S.interaction.r_c
+    fun = S.objective(offset, gradient=True)
+
+    options = dict(ftol=1e-6, gtol=1e-5)
+    disp = S.shape_minimisation_input(
+        np.zeros(substrate.computational_resolution))
+
+    def compare(disp):
+        gap = S.compute_gap(disp.reshape(substrate.computational_resolution), offset)
+
+        Vnew, dVnew, ddVnew = testedpot.evaluate(gap, True, True, True, area_scale=S.area_per_pt)
+        Vold, dVold, ddVold = comppot.evaluate(gap, True, True, True, area_scale=S.area_per_pt)
+
+        np.testing.assert_allclose(Vnew, Vold)
+        np.testing.assert_allclose(dVnew, dVold)
+        np.testing.assert_allclose(ddVnew, ddVold)
+
+        testedpot.compute(gap, True, True, True, area_scale=S.area_per_pt)
+
+        np.testing.assert_allclose(testedpot.energy, comppot.energy)
+        np.testing.assert_allclose(testedpot.force, comppot.force)
+        #np.testing.assert_allclose(newpot.curb, pot.curb)
+
+    result = minimize(fun, disp, jac=True,
+                      method='L-BFGS-B', options=options, callback=compare)
+    assert result.success, "{}".format(result)
+
+def test_compute():
+    pot = Contact.LJ93smoothMin(1,2,3)
+    oldpot = Contact.Lj93.LJ93smoothMin_old(1,2,3)
+    print(pot.evaluate(np.array([0.1,0.2,0.3]), True, True, False))
+    print(oldpot.evaluate(np.array([0.1, 0.2, 0.3]), True, True, False))
+    pot.compute(np.array([0.1,0.2,0.3]), True, True, False)
+
+    print((pot.energy, pot.force, pot.curb))
+
 
 class FastSystemTest(unittest.TestCase):
     def setUp(self):
@@ -69,9 +295,33 @@ class FastSystemTest(unittest.TestCase):
         self.gam = 5# +np.random.rand()
         self.rcut = 2.5*self.sig# +np.random.rand()
         self.interaction = Contact.LJ93smooth(self.eps, self.sig, self.gam)
+        #self.min_pot = Contact.LJ93smooth(self.eps, self.sig, self.gam)
         self.min_pot = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
+        #self.interaction = Contact.LJ93(self.eps, self.sig)
+        #self.min_pot = Contact.LJ93SimpleSmooth(self.eps, self.sig, self.rcut)
+
+        #self.interaction =Contact.ExpPotential(self.gam, 0.05, self.rcut)
+        #self.min_pot = Contact.ExpPotential(self.gam, 0.05, self.rcut)
 
         self.surface = Topography.make_sphere(self.radius, self.res, self.size, standoff=float('inf'))
+
+        if False:
+            import matplotlib.pyplot as plt
+            fig, (axE, axF, axC) = plt.subplots(3, 1)
+            z = np.linspace(0.8, 2, 100)
+            V, dV, ddV = self.min_pot.evaluate(z, True, True, True)
+            axE.plot(z, V)
+            axF.plot(z, dV)
+            axC.plot(z, ddV)
+
+            V, dV, ddV = self.interaction.evaluate(z, True, True, True)
+            axE.plot(z, V)
+            axF.plot(z, dV)
+            axC.plot(z, ddV)
+
+            plt.show(block=True)
+
+
 
     def test_FastSmoothContactSystem(self):
         S = FastSmoothContactSystem(self.substrate,
@@ -117,6 +367,7 @@ class FastSystemTest(unittest.TestCase):
             bla = fun(disp)
             result = minimize(fun, disp, jac=True,
                               method = 'L-BFGS-B', options=options)
+            assert result.success, "{}".format(result)
             if system.is_proxy():
                 dummy, force, disp = S.deproxified()
 
@@ -372,13 +623,9 @@ class FastSystemTest(unittest.TestCase):
 
     def test_FreeBoundaryError(self):
         """
-        Maybe it makes sense to do this test only at the end of the minimisation (it's not a drama if the deformation isi false during minimization)
         Returns
         -------
-
         """
-
-
         radius = 100
         young = 1
 

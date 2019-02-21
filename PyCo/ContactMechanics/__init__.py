@@ -33,7 +33,7 @@ SOFTWARE.
 """
 from .Interactions import Interaction, HardWall, SoftWall
 from .Potentials import Potential, SmoothPotential
-from .Potentials import LinearCorePotential, ParabolicCutoffPotential
+from .Potentials import LinearCorePotential, ParabolicCutoffPotential, MinimisationPotential
 
 from .Adhesion import ExpPotential
 from .Harmonic import HarmonicPotential

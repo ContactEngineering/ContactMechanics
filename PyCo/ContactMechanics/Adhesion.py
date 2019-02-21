@@ -57,6 +57,14 @@ class ExpPotential(Potential):
                 "r_c = {1}").format(
                     self, self.r_c if self.has_cutoff else 'None')
 
+    def __getstate__(self):
+        state = super().__getstate__(), self.rho, self.gam
+        return state
+
+    def __setstate__(self, state):
+        superstate, self.rho, self.gam = state
+        super().__setstate__(superstate)
+
     @property
     def r_min(self):
         return None
