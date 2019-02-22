@@ -39,7 +39,7 @@ import numpy as np
 import scipy.optimize
 
 from .Interactions import SoftWall
-
+#from helpers.debug_tools import dump_in_out
 
 class Potential(SoftWall, metaclass=abc.ABCMeta):
     """ Describes the minimum interface to interaction potentials for
@@ -751,6 +751,7 @@ class MinimisationPotential(SmoothPotential):
     def __repr__(self):
         raise NotImplementedError
 
+    #@dump_in_out(open("Minimization.txt", "w"))
     def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
         """Evaluates the potential and its derivatives
         Keyword Arguments:
@@ -886,7 +887,7 @@ class LinearCorePotential(ChildPotential):
 
     def __repr__(self):
         return "{0} -> LinearCorePotential: r_ti = {1.r_ti}".format(self.parent_potential.__repr__(),self)
-
+    #@dump_in_out(open("LinearCore.txt", "w"))
     def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
         """Evaluates the potential and its derivatives
         Keyword Arguments:
@@ -905,12 +906,20 @@ class LinearCorePotential(ChildPotential):
         nb_dim = len(r.shape)
         if nb_dim == 0:
             r.shape = (1,)
-        V = np.zeros_like(r) if pot else self.SliceableNone()
-        dV = np.zeros_like(r) if forces else self.SliceableNone()
-        ddV = np.zeros_like(r) if curb else self.SliceableNone()
+        # we use subok = False to ensure V will not be a masked array
+        V = np.zeros_like(r, subok=False) if pot else self.SliceableNone()
+        dV = np.zeros_like(r, subok=False) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r, subok=False) if curb else self.SliceableNone()
+
 
         sl_core = np.ma.filled(r < self.r_ti, fill_value=False)
         sl_rest = np.logical_not(sl_core)
+
+        if np.ma.getmask(r) is not np.ma.nomask:
+            sl_rest = np.logical_and(sl_rest, np.logical_not(np.ma.getmask(r)))
+            sl_core = np.logical_and(sl_core, np.logical_not(np.ma.getmask(r)))
+
+
         # little hack to work around numpy bug
         if np.array_equal(sl_core, np.array([True])):
             V, dV, ddV = self.lin_pot(r, pot, forces, curb)
