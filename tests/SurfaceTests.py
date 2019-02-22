@@ -321,6 +321,21 @@ class UniformLineScanTest(PyCoTestCase):
         st = t.scale(1)
         dt = st.detrend(detrend_mode='center')
 
+    def test_detrend_curvature(self):
+        n = 10
+        dx = 0.5
+        x = np.arange(n ) * dx
+
+        R = 4.
+        h = x**2 / R
+
+        t = UniformLineScan(h, dx * n)
+
+        detrended = t.detrend(detrend_mode="curvature")
+
+        assert abs(detrended.coeffs[-1] / detrended.size[0]**2 - 1/R) < 1e-12
+
+
     def test_power_spectrum_1D(self):
         #
         # this test was added, because there were issues calling
