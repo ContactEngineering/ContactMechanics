@@ -109,6 +109,8 @@ class TopographyTest(PyCoTestCase):
             (0, 0, 0)])
 
         X2, Y2, h2 = dt.positions_and_heights()
+
+        assert h2.shape == (4, 3)
         assert_array_equal(X2, [
             (0, 0, 0),
             (2, 2, 2),
@@ -334,6 +336,73 @@ class UniformLineScanTest(PyCoTestCase):
         detrended = t.detrend(detrend_mode="curvature")
 
         assert abs(detrended.coeffs[-1] / detrended.size[0]**2 - 1/R) < 1e-12
+
+    def test_detrend_same_positions(self):
+        """asserts that the detrended topography has the same x
+        """
+        n = 10
+        dx = 0.5
+        x = np.arange(n) * dx
+        h = np.random.normal(size=n)
+
+        t = UniformLineScan(h, dx * n)
+
+        for mode in ["curvature", "slope", "height"]:
+            detrended = t.detrend(detrend_mode=mode)
+            np.testing.assert_allclose(detrended.positions(), t.positions())
+            np.testing.assert_allclose(detrended.positions_and_heights()[0], t.positions_and_heights()[0])
+
+    def test_detrend_heights_call(self):
+        """ tests if the call of heights make no mistake
+        """
+        n = 10
+        dx = 0.5
+        x = np.arange(n) * dx
+        h = np.random.normal(size=n)
+
+        t = UniformLineScan(h, dx * n)
+        for mode in ["height", "curvature", "slope"]:
+            detrended = t.detrend(detrend_mode=mode)
+            detrended.heights()
+
+    def test_detrend_reduces(self):
+        """ tests if detrending really reduces the heights (or slope) as claimed
+        """
+        n = 10
+        dx = 0.5
+        x = np.arange(n) * dx
+        #h = np.random.normal(size=n)
+        h = [ 0.82355941, -1.32205074,  0.77084813,  0.49928252,  0.57872149 , 2.80200331,
+               0.09551251, -1.11616977,  2.07630937, -0.65408072]
+        t = UniformLineScan(h, dx * n)
+        for mode in ["height", "curvature"]:
+            detrended = t.detrend(detrend_mode=mode)
+            detrended.heights()
+            import pdb
+            #pdb.set_trace()
+            if False:
+                import matplotlib.pyplot as plt
+
+                fig, ax = plt.subplots()
+
+                ax.plot(*t.positions_and_heights(), label="original")
+                ax.plot(*detrended.positions_and_heights(), label="detrended")
+
+                ax.set_xlabel("x")
+                ax.set_ylabel("h")
+                ax.grid(True)
+                ax.legend()
+
+                fig.tight_layout()
+
+                plt.show(block=True)
+
+            assert detrended.rms_height() <= t.rms_height(), "{}".format(h)
+
+        mode = "slope"
+        detrended = t.detrend(detrend_mode=mode)
+        detrended.heights()
+        assert detrended.rms_slope() <= t.rms_slope()
 
 
     def test_power_spectrum_1D(self):
