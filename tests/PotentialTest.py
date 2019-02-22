@@ -544,21 +544,14 @@ class PotentialTest(unittest.TestCase):
         import copy
 
         print("########################################################################")
-
-        eps = 1.7294663266397667
-        sig = 3.253732668164946
-
         z = np.random.random((200)) *10 -1
-        z[0] = float("inf")
+
 
         mask = np.zeros_like(z)
         mask[-2:] = True
         mask[0]=True
         z = np.ma.masked_array(z, mask=mask)
-        z[1] = sig
-        z[2] = 0
-        z[3] = 0.5
-        z[4] = 3.
+
 
         print(np.max(z))
         print(np.min(z))
@@ -568,33 +561,26 @@ class PotentialTest(unittest.TestCase):
             new = LJ93smoothMin(**params)
             old = LJ93smoothMin_old(**params)
 
-            if True:
-                import matplotlib.pyplot as plt
-                fig, (ax, axdiff) = plt.subplots(1,2)
-                ax.plot(z, new.evaluate(z, True, True, True, area_scale=10.5)[1], ".")
-                ax.plot(z, old.evaluate(z, True, True, True, area_scale=10.5)[1], "+")
 
-                z_linpart=np.array([-0.1, 0.1,0.2,0.3])
-                ax.plot(z_linpart,
-                        new.evaluate(z_linpart, True, True, True, area_scale=10.5)[1],
-                        ".")
-                ax.plot(z_linpart,
-                        old.evaluate(z_linpart, True, True, True, area_scale=10.5)[1],
-                        "+")
+            z[1] = params["sigma"]
+            z[2] = 0
+            z[3] = 0.5
+            z[4] = 3.
+            z[5] = float("inf")
+            z[10] = LJ93(params["epsilon"], params["sigma"]).r_min
+            z[11] = old.r_infl
+            z[12] = old.r_t
+            z[13] = old.r_ti
+            z[14] = old.r_c
 
-                axdiff.plot(z, np.abs(new.evaluate(z, True, True, True)[1] - old.evaluate(z, True, True, True)[1]),".")
-                axdiff.set_title(np.sum(np.abs(new.evaluate(z, True, True, True)[1] - old.evaluate(z, True, True, True)[1])))
-                axdiff.set_xscale("log")
-                axdiff.set_yscale("log")
 
-                plt.show(block = True)
 
             Vnew, dVnew, ddVnew = new.evaluate(z, True, True, True, area_scale=1.5)
             Vold, dVold, ddVold = old.evaluate(z, True, True, True, area_scale=1.5)
 
-            np.testing.assert_allclose(Vnew, Vold)
-            np.testing.assert_allclose(dVnew, dVold)
-            np.testing.assert_allclose(ddVnew, ddVold)
+            np.testing.assert_allclose(Vnew, Vold, rtol=1e-17)
+            np.testing.assert_allclose(dVnew, dVold, rtol=1e-17)
+            np.testing.assert_allclose(ddVnew, ddVold, rtol=1e-17)
 
             new.compute(z, True, True, True, area_scale=1.5)
             old.compute(z, True, True, True, area_scale=1.5)
@@ -625,6 +611,48 @@ class PotentialTest(unittest.TestCase):
 
 
 import pytest
+
+
+
+@pytest.mark.parametrize("fill_value", [float("inf"), 1e20])
+@pytest.mark.parametrize("pot_creation", [
+                        'LJ93(eps, sig)',
+                        'LJ93SimpleSmooth(eps, sig, 3*sig)',
+                        'LJ93smooth(eps, sig)',
+                        'LJ93smoothMin(eps, sig)',
+                        'LJ93smooth(eps,  sig, r_t="inflection")',
+                        'LJ93smoothMin(eps, sig, r_t_ls="inflection")',
+                        'LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93smoothMin_old(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
+                        'VDW82(c_sr, hamaker)',
+                        'VDW82smooth(c_sr,  hamaker)',
+                        'VDW82smoothMin(c_sr,  hamaker)',
+                        'VDW82smooth(c_sr,  hamaker, r_t="inflection")',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
+                        'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)'
+                         ])
+def test_masked_arrays(pot_creation, fill_value):
+    eps = 1.7294663266397667
+    sig = 3.253732668164946
+
+    c_sr = 2.1e-78
+    hamaker = 68.1e-21
+    pot=eval(pot_creation)
+
+    shape= (2,3)
+    h = np.random.random(shape)*10
+    mask= [[True, False, True], [False, True, False]]
+    hma = np.ma.masked_array(h, mask, fill_value=fill_value)
+
+    V, dV, ddV = pot.evaluate(hma, True, True, True)
+    print(V)
+    print(np.asarray(V))
+    assert (np.asarray(V[hma.mask])== 0.).all()
+
+
 @pytest.mark.parametrize("pot_class",[LJ93smoothMin_old, LJ93smooth, LJ93smoothMin])
 def test_lj93_masked(pot_class):
     eps = 1
