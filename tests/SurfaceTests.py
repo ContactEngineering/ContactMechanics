@@ -624,6 +624,19 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0] / surf2.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1] / surf2.resolution[1])
 
+    def test_detrend_reduces(self):
+         """ tests if detrending really reduces the heights (or slope) as claimed
+         """
+         n = 10
+         dx = 0.5
+         x = np.arange(n) * dx
+         h = [0.82355941, -1.32205074, 0.77084813, 0.49928252, 0.57872149, 2.80200331, 0.09551251, -1.11616977,
+              2.07630937, -0.65408072]
+         t = UniformLineScan(h, dx * n)
+         for mode in ['height', 'curvature']:
+             print(mode, t.rms_height(), t.detrend(detrend_mode=mode).rms_height())
+             self.assertGreater(t.rms_height(), t.detrend(detrend_mode=mode).rms_height(), msg=mode)
+
     def test_smooth_without_size(self):
         arr = self._flat_arr
         surf = Topography(arr, (1, 1)).detrend(detrend_mode='height')
