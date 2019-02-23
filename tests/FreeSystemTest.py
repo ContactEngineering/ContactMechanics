@@ -80,7 +80,7 @@ def test_minimization_simplesmooth(young):
 
     pot = Contact.LJ93SimpleSmoothMin(eps, sig, 2, r_ti=0.5)
 
-    if True:
+    if False:
         import matplotlib.pyplot as plt
         fig,(axp, axf) = plt.subplots(1,2)
 
@@ -106,7 +106,7 @@ def test_minimization_simplesmooth(young):
     bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
     result = minimize(fun, disp, jac=True,
                       method='L-BFGS-B', options=options)#, bounds=bnds)
-    if True:
+    if False:
         import matplotlib.pyplot as plt
         fig,ax = plt.subplots()
 
@@ -148,7 +148,7 @@ def test_minimization(pot_class, young):
     if hasattr(pot, "r_ti"):
         assert pot.r_ti < pot.r_t
 
-    if True:
+    if False:
         import matplotlib.pyplot as plt
         fig,(axp, axf) = plt.subplots(1,2)
 
