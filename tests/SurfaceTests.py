@@ -1070,3 +1070,22 @@ class IOTest(unittest.TestCase):
                 if x.size is not None:
                     assert_array_equal(x.positions(), y.positions())
                     assert_array_equal(x.heights(), y.heights())
+
+
+class ScalarParametersTest(PyCoTestCase):
+    @unittest.skip
+    def test_rms_slope_1d(self):
+        r = 4096
+        res = (r, )
+        for H in [0.3, 0.8]:
+            for s in [(1, ), (1.4, )]:
+                t = fourier_synthesis(res, s, H, short_cutoff=4 / r * np.mean(s), rms_slope=0.1)
+                self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
+
+    def test_rms_slope_2d(self):
+        r = 2048
+        res = [r, r]
+        for H in [0.3, 0.8]:
+            for s in [(1, 1), (1.4, 3.3)]:
+                t = fourier_synthesis(res, s, H, short_cutoff=8 / r * np.mean(s), rms_slope=0.1)
+                self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
