@@ -74,13 +74,15 @@ class TestVariableBandwidth(PyCoTestCase):
     def test_self_affine_topography_1d(self):
         r = 16384
         for H in [0.3, 0.8]:
-            t = fourier_synthesis((r, ), (1, ), H, rms_slope=0.1)
-            mag, rms = t.variable_bandwidth(resolution_cutoff=r//32)
-            self.assertAlmostEqual(rms[0], t.detrend().rms_height())
-            # Since this is a self-affine surface, rms(mag) ~ mag^-H
-            b, a = np.polyfit(np.log(mag[1:]), np.log(rms[1:]), 1)
-            # The error is huge...
-            self.assertTrue(abs(H+b) < 0.15)
+            t0 = fourier_synthesis((r, ), (1, ), H, rms_slope=0.1)
+
+            for t in [t0, t0.to_nonuniform()]:
+                mag, rms = t.variable_bandwidth(resolution_cutoff=r//32)
+                self.assertAlmostEqual(rms[0], t.detrend().rms_height())
+                # Since this is a self-affine surface, rms(mag) ~ mag^-H
+                b, a = np.polyfit(np.log(mag[1:]), np.log(rms[1:]), 1)
+                # The error is huge...
+                self.assertTrue(abs(H+b) < 0.15)
 
     def test_self_affine_topography_2d(self):
         r = 2048
