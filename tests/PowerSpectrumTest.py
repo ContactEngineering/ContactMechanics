@@ -36,9 +36,8 @@ import unittest
 
 import numpy as np
 
-from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
+from PyCo.Topography import UniformLineScan, NonuniformLineScan
 from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc
-from PyCo.Topography.Generation import fourier_synthesis
 
 from tests.PyCoTest import PyCoTestCase
 
