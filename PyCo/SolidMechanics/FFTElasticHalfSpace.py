@@ -31,9 +31,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import sys
-sys.path.append("/Users/antoines/MPITools")
-sys.path.append("/Users/antoines/FFTEngine")
+
 from collections import namedtuple
 import numpy as np
 import sys
@@ -384,41 +382,38 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return .5*self.pnp.dot(np.ravel(disp), np.ravel(-forces))
 
     def evaluate_elastic_energy_k_space(self, kforces, kdisp):
-        """
+        r"""
         Computes the Energy due to forces and displacements using their Fourier representation.
 
         This uses Parseval's Theorem:
 
-        ..math::  \frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{A}\sum_{\vec q_i}|H(\vec q_i)|^2
+        .. math::  \frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{A}\sum_{\vec q_i}|H(\vec q_i)|^2
 
         when using following definition of the FFT:
 
-        ..math::  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},
+        .. math::  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},
 
-        ..math::  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s
+        .. math::  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s
 
         When fitting the definition to numpy's norming convention
         (https://docs.scipy.org/doc/numpy/reference/routines.fft.html#module-numpy.fft)
         Parseval's Theorem takes following form:
 
-        ..math::  \sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec q_i}|H(\vec q_i)|^2
+        .. math::  \sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec q_i}|H(\vec q_i)|^2
+
 
         In a parallelized code kforces and kdisp contain only the slice attributed to this processor
-
         Parameters
         ----------
-        kforces: array of complex type and of size substrate.fourier_resolution
+        kforces: array of complex type and of size substrate.computational_resolution
         Fourier representation (output of a 2D rfftn) of the forces acting on the grid points
-        kdisp: array of complex type and of size substrate.fourier_resolution
+        kdisp: array of complex type and of size substrate.computational_resolution
         Fourier representation (output of a 2D rfftn) of the displacements of the grid points
 
 
         Returns
         -------
-        The elastic energy due to the forces and displacements (already summed over all subdomains).
-
-
-
+        The elastic energy due to the forces and displacements
         """
         # pylint: disable=no-self-use
         # using vdot instead of dot because of conjugate
@@ -507,7 +502,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         force = potential = None
         if forces:
             force = self.evaluate_force(disp)
-
             if pot:
                 potential = self.evaluate_elastic_energy(force, disp)
         elif pot:
@@ -714,6 +708,63 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         #padded_forces[s] = forces
         #return super().evaluate_disp(padded_forces)[s]
 
+
+    class FreeBoundaryError(Exception):
+        """
+        called when the forces overlap into the padding region
+        (i.e. the outer ring of the force array equals zero),
+        needing an increase of the resolution
+        """
+        def __init__(self, message):
+            super().__init__(message)
+
+    def check_boundaries(self, force=None):
+        """
+        Raises an error if the forces are not zero at the boundary of the
+        active domain
+
+        Parameters
+        ----------
+        force
+
+        Returns
+        -------
+
+        """
+
+        if force is None:
+            force = self.force
+        is_ok = True
+        if self.dim == 2:
+            if np.ma.is_masked(force):
+                def check_vals(vals):
+                    return (vals == 0.).all() or vals.mask.all()
+            else:
+                def check_vals(vals):
+                    return (vals == 0.).all()
+
+            is_ok &= check_vals(force[:,0])
+            is_ok &= check_vals(force[:, self.resolution[1] - 1])
+            is_ok &= check_vals(force[0, :])
+            is_ok &= check_vals(force[self.resolution[0] - 1, :])
+
+        if not is_ok:
+            raise self.FreeBoundaryError("forces not zero at the boundary of the "
+                                         "active domain, "
+                                         "increase the size of your domain")
+
+    def check(self, force=None):
+        """
+        Checks wether force is still in the value range handled correctly
+        Parameters
+        ----------
+        force
+
+        Returns
+        -------
+
+        """
+        self.check_boundaries(force)
 
 # convenient container for storing correspondences betwees small and large
 # system

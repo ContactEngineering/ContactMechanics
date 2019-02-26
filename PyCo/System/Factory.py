@@ -51,7 +51,7 @@ def make_system(substrate, interaction, surface):
     surface     -- An instance of Topography, defines the profile.
     """
     # pylint: disable=invalid-name
-    # pylint: disable=no-membe
+    # pylint: disable=no-member
     args = substrate, interaction, surface
     subclasses = list()
 

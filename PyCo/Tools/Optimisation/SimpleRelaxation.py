@@ -43,8 +43,6 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Topography import rms_height
-
 ###
 
 def total_force(f_r, hardness=None):
@@ -112,7 +110,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = rms_height(surface) / (10 * np.mean(surface.shape))
+        pentol = np.sqrt(np.sum(surface**2)) / (10 * np.mean(surface.shape))
         # If pentol is zero, then this is a flat surface. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
@@ -327,14 +325,14 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         if logger is not None:
             logger.st(log_headers, log_values)
         if callback is not None:
-            d = dict(area=np.asscalar(np.int64(A)),
-                     fractional_area=np.asscalar(np.float64(A/surf_mask.sum())),
-                     rms_penetration=np.asscalar(np.float64(rms_pen)),
-                     max_penetration=np.asscalar(np.float64(max_pen)),
-                     max_pressure=np.asscalar(np.float64(max_pres)),
-                     pad_pressure=np.asscalar(np.float64(pad_pres)),
-                     penetration_tol=np.asscalar(np.float64(pentol)),
-                     pressure_tol=np.asscalar(np.float64(forcetol)))
+            d = dict(area=np.int64(A).item(),
+                     fractional_area=np.float64(A/surf_mask.sum()).item(),
+                     rms_penetration=np.float64(rms_pen).item(),
+                     max_penetration=np.float64(max_pen).item(),
+                     max_pressure=np.float64(max_pres).item(),
+                     pad_pressure=np.float64(pad_pres).item(),
+                     penetration_tol=np.float64(pentol).item(),
+                     pressure_tol=np.float64(forcetol)).item()
             callback(it, f_r, d)
 
     # Return full u_r because this is required to reproduce pressure

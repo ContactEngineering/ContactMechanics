@@ -58,7 +58,7 @@ container.set_shape(surface.shape)
 u = None
 tol = 1e-9
 for disp0 in np.linspace(-10, 10, 11):
-    opt = system.minimize_proxy(disp0, u, lbounds=surface.array() + disp0,
+    opt = system.minimize_proxy(disp0, u, lbounds=surface.heights() + disp0,
                                 method='L-BFGS-B', tol=0.0001)
     #opt = system.minimize_proxy(disp0, x0, method='L-BFGS-B', tol=0.0001)
     u = opt.x
@@ -68,7 +68,7 @@ for disp0 in np.linspace(-10, 10, 11):
     # a jacobian is NOT the force.
     f = substrate.evaluate_force(u)
 
-    gap = u - surface.array() - disp0
+    gap = u - surface.heights() - disp0
     mean_gap = np.mean(gap)
     load = -f.sum()/np.prod(surface.size)
     #area = (f>0).sum()/np.prod(surface.shape)

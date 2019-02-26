@@ -40,7 +40,7 @@ try:
     from scipy.optimize import minimize
     import time
 
-    from PyCo.System.Systems import SmoothContactSystem
+    from PyCo.System.Systems import SmoothContactSystem, NonSmoothContactSystem
     from PyCo.System.SmoothSystemSpecialisations import FastSmoothContactSystem
     from PyCo.System import make_system
     import PyCo.SolidMechanics as Solid
@@ -71,17 +71,16 @@ class FastSystemTest(unittest.TestCase):
         self.interaction = Contact.LJ93smooth(self.eps, self.sig, self.gam)
         self.min_pot = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.surface = Topography.Sphere(self.radius, self.res, self.size,
-                                         standoff=float('inf'))
+        self.surface = Topography.make_sphere(self.radius, self.res, self.size, standoff=float('inf'))
 
     def test_FastSmoothContactSystem(self):
         S = FastSmoothContactSystem(self.substrate,
                                     self.interaction,
                                     self.surface)
         fun = S.objective(.95*self.interaction.r_c)
-        print(fun(np.zeros(S.babushka.substrate.domain_resolution)))
+        print(fun(np.zeros(S.babushka.substrate.computational_resolution)))
 
-    def test_make_system(self):
+    def test_SystemFactory(self):
         S = make_system(self.substrate,
                         self.interaction,
                         self.surface)
@@ -252,8 +251,7 @@ class FastSystemTest(unittest.TestCase):
                 res, young[i], size[i])
             interaction = Contact.LJ93smoothMin(
                 eps[i], sig[i], gam[i])
-            surface = Topography.Sphere(
-                radius[i], res, size[i], standoff=float(sig[i]*1000))
+            surface = Topography.make_sphere(radius[i], res, size[i], standoff=float(sig[i]*1000))
             systems.append(make_system(substrate, interaction, surface))
             offsets.append(.8*systems[i].interaction.r_c)
 
@@ -340,13 +338,12 @@ class FastSystemTest(unittest.TestCase):
             young = 1
             gam = 0.05
 
-            surface = Topography.Sphere(radius, res, size)
-            ext_surface = Topography.Sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s),
-                                         centre=(s / 2, s / 2))
+            surface = Topography.make_sphere(radius, res, size)
+            ext_surface = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=(s / 2, s / 2))
 
             interaction = Contact.LJ93smoothMin(young/18*np.sqrt(2/5),2.5**(1/6),gamma=gam)
 
-            substrate = Solid.FreeFFTElasticHalfSpace(surface.shape, young, surface.size)
+            substrate = Solid.FreeFFTElasticHalfSpace(surface.resolution, young, surface.size)
             system = FastSmoothContactSystem(substrate, interaction, surface, margin=4)
 
             start_disp = - interaction.r_c + 1e-10
@@ -362,7 +359,7 @@ class FastSystemTest(unittest.TestCase):
                                             u,
                                             method='L-BFGS-B',
                                             options=dict(ftol=1e-18, gtol=1e-10),
-                                            lbounds=ext_surface.array() + offset)
+                                            lbounds=ext_surface.heights() + offset)
 
                 u = system.disp
 
@@ -370,3 +367,47 @@ class FastSystemTest(unittest.TestCase):
             X, Y = np.meshgrid((np.arange(0, int(n / 2))) * dx, (np.arange(0, int(n / 2))) * dx)
             fig, ax = plt.subplots()
             plt.colorbar(ax.pcolormesh(X, Y, substrate.interact_forces[-1, int(n / 2):, int(n / 2):]))
+
+
+    def test_FreeBoundaryError(self):
+        """
+        Maybe it makes sense to do this test only at the end of the minimisation (it's not a drama if the deformation isi false during minimization)
+        Returns
+        -------
+
+        """
+
+
+        radius = 100
+        young = 1
+
+        s = 128.
+        n = 64
+        dx = s/n
+        res = (n, n)
+        size = (s, s)
+
+        centre = (0.75*s, 0.5* s)
+
+        topography = Topography.make_sphere(radius, res, size,centre=centre)
+        ext_topography = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=centre)
+
+        substrate = Solid.FreeFFTElasticHalfSpace(topography.resolution, young,
+                                                  topography.size)
+
+        for system in [NonSmoothContactSystem(substrate, Contact.HardWall(), topography),
+                       SmoothContactSystem(substrate, Contact.LJ93SimpleSmooth(0.01,0.01,10), topography)]:
+            with self.subTest(system=system):
+                offset = 15
+                with self.assertRaises(Solid.FreeFFTElasticHalfSpace.FreeBoundaryError):
+                    opt = system.minimize_proxy(offset=offset)
+                if False:
+                    import matplotlib.pyplot as plt
+                    X, Y = np.meshgrid((np.arange(0, n)) * dx,
+                                       (np.arange(0, n)) * dx)
+                    fig, ax = plt.subplots()
+                    plt.colorbar(
+                        ax.pcolormesh(X, Y, substrate.force)
+                    )
+                    plt.show(block=True)
+

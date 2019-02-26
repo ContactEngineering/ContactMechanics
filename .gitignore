@@ -1,5 +1,6 @@
 *~
 *.pyc
+*.cpython*.so
 __pycache__
 build
 dist
@@ -19,10 +20,8 @@ dist
 /helpers/.ipynb_checkpoints/
 /PyCo/Tools/Optimisation/ConstrainedConjugateGradients.c
 /PyCo/Tools/Optimisation/ConstrainedConjugateGradients.cpp
-/PyCo/Tools/Optimisation/ConstrainedConjugateGradients.cpython*.so
 /PyCo/Tools/Optimisation/ConstrainedConjugateGradients.html
 /PyCo/Tools/fftext.cpp
-/PyCo/Tools/fftext.cpython*.so
+PyCo/Goodies/ScanningProbe.cpp
+PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.cpp
 
-
-*.so

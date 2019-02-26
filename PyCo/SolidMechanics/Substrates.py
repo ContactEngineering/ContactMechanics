@@ -93,6 +93,20 @@ class Substrate(object,metaclass=abc.ABCMeta):
     #    pass
 
 
+    def check(self, force=None):
+        """
+        Checks wether force is still in the value range handled correctly.
+        In this case all forces are ok.
+        Parameters
+        ----------
+        force
+
+        Returns
+        -------
+
+        """
+        pass
+
 
 class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
     """ Generic baseclass for elastic substrates

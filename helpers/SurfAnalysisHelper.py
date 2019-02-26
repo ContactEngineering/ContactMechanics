@@ -51,10 +51,10 @@ def test_surf_analysis(surf, name):
     plt.loglog(q, C, alpha=.1)
     mean, err, q_g = surf_char.grouped_stats(100)
     ax.errorbar(q_g, mean, yerr=err)
-    ax.set_title("{}: H={:.2e}, h_rms={:.2e}".format(name, surf_char.estimate_hurst(), np.sqrt((surf.array() ** 2).mean())))
+    ax.set_title("{}: H={:.2e}, h_rms={:.2e}".format(name, surf_char.estimate_hurst(), np.sqrt((surf.heights() ** 2).mean())))
     a, b = np.polyfit(np.log(q), np.log(C), 1)
     ax.plot(q, q**a*np.exp(b))
-    print(surf.array().mean())
+    print(surf.heights().mean())
     print("(min, max)(C) : {}".format((C.min(), C.max())))
 
 def main():
@@ -63,8 +63,8 @@ def main():
     h_rms = 13.8e-9
     lambda_max= 4e-9
     surf_dict = dict()
-    surf_dict["Topo1_Fit"] = Surf.NumpyTxtSurface("SurfaceExample.asc", size=size, factor=1e-9)
-    surf_dict["Topo1_NoFit"] = Surf.NumpyTxtSurface("SurfaceExampleUnfiltered.asc", size=size, factor=1e-9)
+    surf_dict["Topo1_Fit"] = Surf.read_matrix("SurfaceExample.asc", size=size, factor=1e-9)
+    surf_dict["Topo1_NoFit"] = Surf.read_matrix("SurfaceExampleUnfiltered.asc", size=size, factor=1e-9)
     resolution = surf_dict["Topo1_NoFit"].resolution
     surf_dict["exact"] = Tools.RandomSurfaceExact(resolution, size, hurst, h_rms).get_surface()
     surf_dict["Gauss"] = Tools.RandomSurfaceGaussian(resolution, size, hurst, h_rms).get_surface()
