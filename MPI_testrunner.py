@@ -15,7 +15,6 @@ MPI_tests= [
     "test_unittestFail",
     "MPI_Hertztest",
 #    "MPI_Smoothcontact_tests",
-    "MPI_Topography_Test",
     "MPI_Westergaard_tests",
     "MPI_systemsetup_test",
 #    "MPI_test_wavy_adhesive"
@@ -24,7 +23,6 @@ MPI_tests= [
 # MPI Tests using the unittest framework
 MPI_unittests = [
 "test_unittestFail",
-"MPI_Topography_Test",
 "MPI_Hertztest",
 "MPI_Westergaard_tests",
 "MPI_systemsetup_test",
