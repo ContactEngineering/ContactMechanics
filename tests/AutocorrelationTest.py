@@ -69,6 +69,10 @@ class AutocorrelationTest(PyCoTestCase):
                 dir_A[d] /= (n-d)
             self.assertArrayAlmostEqual(A, dir_A)
 
+            if hasattr(surf, 'to_nonuniform'):
+                r2, A2 = surf.to_nonuniform().autocorrelation_1D()
+                self.assertArrayAlmostEqual(A2, dir_A)
+
 
     def test_brute_force_autocorrelation_2D(self):
         n = 10
