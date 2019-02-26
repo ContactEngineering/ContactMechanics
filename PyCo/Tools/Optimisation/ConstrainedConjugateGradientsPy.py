@@ -40,7 +40,7 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Topography import rms_height, Topography
+from PyCo.Topography import Topography
 
 ###
 
@@ -105,9 +105,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "resolution"):
         surface = topography
-        topography = UniformNumpyTopography(surface)
+        topography = Topography(surface, size=substrate.size)
     else :
-        surface = topography.array()  # Local data
+        surface = topography.heights()  # Local data
 
     # Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays
 

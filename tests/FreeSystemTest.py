@@ -78,7 +78,7 @@ class FastSystemTest(unittest.TestCase):
                                     self.interaction,
                                     self.surface)
         fun = S.objective(.95*self.interaction.r_c)
-        print(fun(np.zeros(S.babushka.substrate.computational_resolution)))
+        print(fun(np.zeros(S.babushka.substrate.domain_resolution)))
 
     def test_SystemFactory(self):
         S = make_system(self.substrate,

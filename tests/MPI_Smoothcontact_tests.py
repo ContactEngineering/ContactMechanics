@@ -6,7 +6,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import Sphere
+    from PyCo.Topography import make_sphere
     from PyCo.System import make_system
     #from PyCo.Tools.Logger import screen
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
@@ -19,6 +19,7 @@ try:
     from PyCo.ContactMechanics import VDW82smoothMin, VDW82
     from PyCo.System import SmoothContactSystem
     from PyCo.Tools.NetCDF import NetCDFContainer
+    from PyCo.Topography import Topography
 
 except ImportError as err:
     import sys
@@ -49,22 +50,25 @@ def test_smoothsphere():
     print(substrate._comp_resolution)
     print(fftengine.domain_resolution)
 
+    # TODO; now it should be alright
+    #class Parallel_Topography(): # Just some Temp implementation of the interface
+    #    def __init__(self,surface,fftengine):
+    #        self.surface = surface
+    #        self.subdomain_resolution = fftengine.subdomain_resolution # TODO: FreeElastHS: sometimes the subdomain is empty, comp_slice ?
+    #        self.subdomain_slice = fftengine.subdomain_slice#
 
-    class Parallel_Topography(): # Just some Temp implementation of the interface
-        def __init__(self,surface,fftengine):
-            self.surface = surface
-            self.subdomain_resolution = fftengine.subdomain_resolution # TODO: FreeElastHS: sometimes the subdomain is empty, comp_slice ?
-            self.subdomain_slice = fftengine.subdomain_slice
-
-            self.domain_resolution = fftengine.domain_resolution
-            self.resolution = self.surface.resolution
-
-        def array(self,*args,**kwargs):
-            return self.surface.array()[self.subdomain_slice]
+        #     self.domain_resolution = fftengine.domain_resolution
+        #     self.resolution = self.surface.resolution
+        #
+        # def array(self,*args,**kwargs):
+        #     return self.surface.heights()[self.subdomain_slice]
 
 
-    surface = Sphere(radius = R, resolution = surf_res ,size =surf_size)
-    psurface = Parallel_Topography(surface, fftengine)
+    surface = make_sphere(radius = R, resolution = surf_res ,size =surf_size)
+    psurface = Topography(surface.heights(),
+                          subdomain_location=substrate.topography_subdomain_location,
+                          subdomain_resolution=substrate.topography_subdomain_resolution,
+                            size=surface.size,pnp = pnp)
 
     system = SmoothContactSystem(substrate, inter, psurface)
 
@@ -73,7 +77,6 @@ def test_smoothsphere():
     force = np.zeros_like(offsets)
 
     nsteps = len(offsets)
-
 
     for i in range(nsteps):
 

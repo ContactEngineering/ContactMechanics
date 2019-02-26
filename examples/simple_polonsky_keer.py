@@ -99,14 +99,14 @@ def constrained_conjugate_gradients(substrate, topography,
         offset = 0
 
     if disp0 is None:
-        u_r = np.zeros(substrate.computational_resolution)
+        u_r = np.zeros(substrate.domain_resolution)
     else:
         u_r = disp0.copy()
 
     comp_slice = [slice(0, substrate.resolution[i])
                   for i in range(substrate.dim)]
 
-    comp_mask = np.zeros(substrate.computational_resolution, dtype=bool)
+    comp_mask = np.zeros(substrate.domain_resolution, dtype=bool)
     comp_mask[tuple(comp_slice)] = True
 
     surf_mask = np.ones(substrate.resolution, dtype=bool)

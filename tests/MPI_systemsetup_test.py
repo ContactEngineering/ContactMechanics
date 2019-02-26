@@ -56,7 +56,7 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
                                or top.subdomain_resolution == (0,0) # for FreeFFTElHS
                         assert top.subdomain_location == substrate.subdomain_location
 
-                        np.testing.assert_array_equal(top.array(),self.data[top.subdomain_slice])
+                        np.testing.assert_array_equal(top.heights(),self.data[top.subdomain_slice])
 
                         # test that the slicing is what is expected
 

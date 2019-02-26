@@ -37,7 +37,7 @@ import numpy as np
 
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from PyCo.ContactMechanics import HardWall
-from PyCo.Topography import Sphere
+from PyCo.Topography import make_sphere
 from PyCo.System import make_system
 import sys
 
@@ -56,7 +56,7 @@ e_combo = 4e6
 # system
 substrate = FreeFFTElasticHalfSpace((res, res), e_combo, (size, size))
 interaction = HardWall()
-surface = Sphere(radius, (res, res), (size, size))
+surface = make_sphere(radius, (res, res), (size, size))
 system = make_system(substrate, interaction, surface)
 
 

@@ -405,9 +405,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         In a parallelized code kforces and kdisp contain only the slice attributed to this processor
         Parameters
         ----------
-        kforces: array of complex type and of size substrate.computational_resolution
+        kforces: array of complex type and of size substrate.domain_resolution
         Fourier representation (output of a 2D rfftn) of the forces acting on the grid points
-        kdisp: array of complex type and of size substrate.computational_resolution
+        kdisp: array of complex type and of size substrate.domain_resolution
         Fourier representation (output of a 2D rfftn) of the displacements of the grid points
 
 

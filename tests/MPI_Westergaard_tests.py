@@ -54,7 +54,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.ReferenceSolutions.Westergaard import _pressure
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
-    from PyCo.Topography import UniformNumpyTopography
+    from PyCo.Topography import Topography
     from PyCo.System import make_system
     from PyCo.Tools.Logger import screen
     from .PyCoTest import PyCoTestCase
@@ -89,7 +89,7 @@ class WestergaardTest(PyCoTestCase):
                                                             (self.sx, self.sy),fftengine=PFFTEngine((nx,ny),self.comm))
                     interaction = HardWall()
                     profile = np.resize(np.cos(2*np.pi*np.arange(nx)/nx), (ny, nx))
-                    surface =UniformNumpyTopography(profile.T, size=(self.sx, self.sy),
+                    surface =Topography(profile.T, size=(self.sx, self.sy),
                                                     #resolution=substrate.resolution,
                                                     subdomain_location = substrate.topography_subdomain_location,
                                                     subdomain_resolution = substrate.topography_subdomain_resolution,
