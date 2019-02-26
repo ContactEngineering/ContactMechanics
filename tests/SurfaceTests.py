@@ -1079,7 +1079,8 @@ class ScalarParametersTest(PyCoTestCase):
         res = (r, )
         for H in [0.3, 0.8]:
             for s in [(1, ), (1.4, )]:
-                t = fourier_synthesis(res, s, H, short_cutoff=4 / r * np.mean(s), rms_slope=0.1)
+                t = fourier_synthesis(res, s, H, short_cutoff=4 / r * np.mean(s), rms_slope=0.1,
+                                      amplitude_distribution=lambda n: 1.0)
                 self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
 
     def test_rms_slope_2d(self):
@@ -1087,5 +1088,6 @@ class ScalarParametersTest(PyCoTestCase):
         res = [r, r]
         for H in [0.3, 0.8]:
             for s in [(1, 1), (1.4, 3.3)]:
-                t = fourier_synthesis(res, s, H, short_cutoff=8 / r * np.mean(s), rms_slope=0.1)
+                t = fourier_synthesis(res, s, H, short_cutoff=8 / r * np.mean(s), rms_slope=0.1,
+                                      amplitude_distribution=lambda n: 1.0)
                 self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
