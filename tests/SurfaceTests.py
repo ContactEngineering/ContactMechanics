@@ -380,8 +380,6 @@ class UniformLineScanTest(PyCoTestCase):
         for mode in ["height", "curvature"]:
             detrended = t.detrend(detrend_mode=mode)
             detrended.heights()
-            import pdb
-            #pdb.set_trace()
             if False:
                 import matplotlib.pyplot as plt
 
