@@ -188,5 +188,5 @@ class HertzTest(unittest.TestCase):
 suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(HertzTest)])
 
 if __name__ in  ['__main__','builtins']:
-    print("Running unittest MPI_FileIO_Test")
+    print("Running unittest MPI_HertzTest")
     result = unittest.TextTestRunner().run(suite)
