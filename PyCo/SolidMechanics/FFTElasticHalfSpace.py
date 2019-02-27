@@ -743,10 +743,21 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 def check_vals(vals):
                     return (vals == 0.).all()
 
-            is_ok &= check_vals(force[:,0])
-            is_ok &= check_vals(force[:, self.resolution[1] - 1])
-            is_ok &= check_vals(force[0, :])
-            is_ok &= check_vals(force[self.resolution[0] - 1, :])
+            if self.subdomain_location[1]==0:
+                is_ok &= check_vals(force[:,0])
+
+            maxiy = self.resolution[1] - 1 - self.topography_subdomain_location[1]
+            if 0 < maxiy < self.topography_subdomain_resolution[1]:
+                is_ok &= check_vals(force[:, maxiy])
+
+            if self.subdomain_location[0] == 0:
+                is_ok &= check_vals(force[0, :])
+
+            maxix = self.resolution[0] - 1 - self.topography_subdomain_location[0]
+            if 0 < maxix < self.topography_subdomain_resolution[0]:
+                is_ok &= check_vals(force[maxix, :])
+
+        is_ok = self.pnp.all(is_ok)
 
         if not is_ok:
             raise self.FreeBoundaryError("forces not zero at the boundary of the "
