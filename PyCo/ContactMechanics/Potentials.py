@@ -470,7 +470,7 @@ class SmoothPotential(Potential):
                     jac=inner_obj_derivative, options=options)
                 nonlocal Δrt
                 if sol.success:
-                    Δrt = np.asscalar(sol.x)
+                    Δrt = sol.x.item()
                     offset = self.naive_pot(self.r_t)[0] - \
                         np.array(spline(Δrt)(Δrt))
                     error = self.naive_pot(self.r_min)[0] - offset + self.gamma

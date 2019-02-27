@@ -133,10 +133,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         """
         if self.dim == 1:
             return (disp[self.comp_slice] - # TODO: Check 1D Compatibility
-                    (self.surface.array(*profile_args, **profile_kwargs) +
+                    (self.surface.heights(*profile_args, **profile_kwargs) +
                      offset))
         return (disp[self.comp_slice] -
-                (self.surface.array(*profile_args, **profile_kwargs) +
+                (self.surface.heights(*profile_args, **profile_kwargs) +
                  offset))
 
     @abc.abstractmethod
@@ -265,6 +265,16 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         self.evaluate(self.disp, offset, forces=gradient)
         result.x = self.shape_minimisation_output(result.x)
         result.jac = self.shape_minimisation_output(result.jac)
+        self.substrate.check(force=self.interaction.force)
+        # the variable (= imposed by the minimzer) is here the displacement,
+        # in contrast to Polonsky and Keer where it is the pressure.
+        # Grad(objective) = substrate.force + interaction.force
+        # norm(Grad(objective))< numerical tolerance
+        # We can ensure that interaction.force is zero at the boundary by
+        # adapting the geometry and the potential (cutoff)
+        # interaction.force will still be nonzero within the numerical tolerance
+        # given by the convergence criterion.
+
         return result
 
     @abc.abstractmethod
@@ -678,10 +688,12 @@ class NonSmoothContactSystem(SystemBase):
         else :
             result = solver(
                 self.substrate,
-                self.surface[:, :],
+                self.surface.heights(),
                 **kwargs)
         if result.success:
             self.disp = result.x
             self.force = self.substrate.force = result.jac
             self.contact_zone = result.jac > 0
+
+            self.substrate.check()
         return result

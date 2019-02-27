@@ -6,7 +6,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import Sphere
+    from PyCo.Topography import make_sphere
     from PyCo.System import NonSmoothContactSystem
 
     #from PyCo.Tools.Logger import screen
@@ -56,7 +56,7 @@ class HertzTest(unittest.TestCase):
                                                     (sx, sx), fftengine=PFFTEngine((2*nx, 2*ny),comm=self.comm),pnp=self.pnp)
 
                 interaction = HardWall()
-                surface = Sphere(self.r_s, (nx, ny), (sx, sx),
+                surface = make_sphere(self.r_s, (nx, ny), (sx, sx),
                                  subdomain_resolution= substrate.topography_subdomain_resolution,
                                  subdomain_location=substrate.topography_subdomain_location,
                                  pnp = substrate.pnp)
@@ -188,5 +188,5 @@ class HertzTest(unittest.TestCase):
 suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(HertzTest)])
 
 if __name__ in  ['__main__','builtins']:
-    print("Running unittest MPI_FileIO_Test")
+    print("Running unittest MPI_HertzTest")
     result = unittest.TextTestRunner().run(suite)

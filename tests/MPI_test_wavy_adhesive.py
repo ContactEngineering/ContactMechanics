@@ -6,7 +6,7 @@ try:
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import Sphere,UniformNumpyTopography
+    from PyCo.Topography import make_sphere,Topography
     from PyCo.System import make_system
     #from PyCo.Tools.Logger import screen
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
@@ -59,10 +59,10 @@ def test_wavy():
             self.resolution = self.surface.resolution
 
         def array(self,*args,**kwargs):
-            return self.surface.array()[self.subdomain_slice]
+            return self.surface.heights()[self.subdomain_slice]
 
 
-    surface =UniformNumpyTopography(np.cos(np.arange(0,n) * np.pi * 2. /n ) * np.ones((n,1)),size = surf_size)
+    surface =Topography(np.cos(np.arange(0,n) * np.pi * 2. /n ) * np.ones((n,1)),size = surf_size)
     psurface = Parallel_Topography(surface, fftengine)
 
     system = SmoothContactSystem(substrate, inter, psurface)

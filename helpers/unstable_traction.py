@@ -36,7 +36,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from PyCo.System import make_system
-from PyCo.Topography import Sphere
+from PyCo.Topography import make_sphere
 from PyCo.ContactMechanics import LJ93smoothMin as LJ_pot
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
 
@@ -50,7 +50,7 @@ for base_res in (64, ):#128, 256, 512, 1024):
     substrate = Substrate(res, young, size)
 
     radius = size[0]/10
-    surface = Sphere(radius, res, size, standoff=float('inf'))
+    surface = make_sphere(radius, res, size, standoff=float('inf'))
 
     sigma = radius/10
     for factor in (.01, .1):#, 1.):

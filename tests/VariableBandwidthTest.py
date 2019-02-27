@@ -31,12 +31,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from math import sqrt
 import unittest
 
 import numpy as np
 
-from PyCo.Topography.VariableBandwidth import checkerboard_tilt_correction
+from PyCo.Topography import Topography
+from PyCo.Topography.Uniform.VariableBandwidth import checkerboard_tilt_correction
 from .PyCoTest import PyCoTestCase
 
 ###
@@ -46,13 +46,13 @@ class TestAnalysis(PyCoTestCase):
     def test_checkerboard_tilt_correction_2d(self):
         arr = np.zeros([4, 4])
         arr[:2, :2] = 1.0
-        outarr = checkerboard_tilt_correction(arr, (4, 4, 4), (1, 1, 1))
+        outarr = checkerboard_tilt_correction(Topography(arr, arr.shape), (4, 4, 4), (1, 1, 1))
         self.assertArrayAlmostEqual(outarr, np.zeros([4, 4]))
 
         arr = np.zeros([4, 4])
         arr[:2, :2] = 1.0
         arr[:2, 1] = 2.0
-        outarr = checkerboard_tilt_correction(arr, (4, 4, 4), (1, 1, 1))
+        outarr = checkerboard_tilt_correction(Topography(arr, arr.shape), (4, 4, 4), (1, 1, 1))
         self.assertArrayAlmostEqual(outarr, np.zeros([4, 4]))
 
 ###

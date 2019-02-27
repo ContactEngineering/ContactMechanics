@@ -67,5 +67,12 @@ The code is documented via Python's documentation strings that can be accesses v
 - `hard_wall.py`: Command line front end for calculations with hard, impenetrable walls between rigid and elastic flat. This front end exclusively uses Polonsky & Keer's constrained conjugate gradient solver to find the deformation of the substrate under the additional contact constraints. Run `hard_wall.py --help` to get a list of command line options.
 - `soft_wall.py`: Command line front end for calculations with soft (possibly adhesive) interactions between rigid and elastic flat. This is a stub rather than a fully featured command line tool that can be used as a starting point for modified script. The present implementation is set up for a solution of Martin Müser's contact mechanics challenge.
 
+Compiling the documentation
+---------------------------
 
-
+- After changes to the PyCo source, you have to build again: ```python setup.py build```
+- Navigate into the docs folder: ```cd docs/``` 
+- Automatically generate reStructuredText files from the source: ```sphinx-apidoc -o source/ ../PyCo``` 
+Do just once, or if you have added/removed classes or methods. In case of the latter, be sure to remove the previous source before: ```rm -rf source/```
+- Build html files: ```make html```
+- The resulting html files can be found in the ```PyCo/docs/_build/html/``` folder. Root is ```PyCo/docs/_build/html/index.html```.

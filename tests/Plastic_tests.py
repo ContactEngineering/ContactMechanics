@@ -51,15 +51,15 @@ class PlasticTest(unittest.TestCase):
         # Test that at very low hardness we converge to (almost) the bearing
         # area geometry
         surface = read('examples/surface1.out')
-        system = make_system(PeriodicFFTElasticHalfSpace(surface.shape, 1.0),
+        system = make_system(PeriodicFFTElasticHalfSpace(surface.resolution, 1.0),
                              HardWall(), PlasticTopography(surface, 0.0000000001))
         offset = -0.002
         result = system.minimize_proxy(offset=offset)
         c = result.jac > 0.0
         ncontact = c.sum()
 
-        bearing_area = bisect(lambda x: (surface.array() > x).sum() - ncontact, -0.03, 0.03)
-        cba = surface.array() > bearing_area
+        bearing_area = bisect(lambda x: (surface.heights() > x).sum() - ncontact, -0.03, 0.03)
+        cba = surface.heights() > bearing_area
 
         self.assertTrue(np.logical_not(c == cba).sum() < 25)
 

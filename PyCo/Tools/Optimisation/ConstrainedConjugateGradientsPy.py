@@ -40,7 +40,7 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Topography import rms_height, UniformNumpyTopography
+from PyCo.Topography import Topography
 
 ###
 
@@ -63,7 +63,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     ----------
     substrate : elastic manifold
         Elastic manifold.
-    topography: UniformNumpyTopography object describing the height profile of the rigid counterbody
+    topography: Topography object describing the height profile of the rigid counterbody
     hardness : array_like
         Hardness of the substrate. Pressure cannot exceed this value. Can be
         scalar or array (i.e. per pixel) value.
@@ -105,9 +105,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "resolution"):
         surface = topography
-        topography = UniformNumpyTopography(surface)
+        topography = Topography(surface, size=substrate.size)
     else :
-        surface = topography.array()  # Local data
+        surface = topography.heights()  # Local data
 
     # Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays
 
@@ -150,7 +150,6 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     # It's the same for PeriodicFFTElHS
     comp_slice = [slice(0,max(0,min(substrate.resolution[i] - substrate.subdomain_location[i],substrate.subdomain_resolution[i])))
                   for i in range(substrate.dim)]
-
     if substrate.dim not in (1, 2):
         raise Exception(
             ("Constrained conjugate gradient currently only implemented for 1 "
@@ -292,7 +291,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         if hardness and pnp.sum(mask_flowing) > 0:
             max_pres = max(max_pres, -pnp.min(p_r[mask_flowing]+hardness))
 
-        # Set all compressive stresses to zero
+        # Set all tensile stresses to zero
         p_r[mask_tensile] = 0.0
 
         # Adjust pressure
@@ -311,9 +310,10 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
         if delta_str != 'mix':
             if pnp.sum(nc_r*1) > 0:
-                # nc_r contains area that penetrate but have zero (or tensile)
-                # pressure. They violate the contact constraint.
-                # Update their forces.
+                # The contact area has changed! nc_r contains area that
+                # penetrate but have zero (or tensile) pressure. They hence
+                # violate the contact constraint. Update their forces and
+                # reset the CG iteration.
                 p_r[comp_mask] += tau*nc_r*g_r
                 delta = 0
                 delta_str = 'sd'
@@ -332,7 +332,6 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         new_u_r = substrate.evaluate_disp(p_r)
         maxdu = pnp.max(abs(new_u_r - u_r))
         u_r = new_u_r
-
         result.nfev += 1
 
         # Store G for next step
@@ -399,14 +398,14 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         if logger is not None and it < maxiter:
             logger.st(log_headers, log_values)
         if callback is not None:
-            d = dict(area=np.asscalar(np.int64(A_contact)),
-                     fractional_area=np.asscalar(np.float64(A_contact/pnp.sum(surf_mask))),
-                     rms_penetration=np.asscalar(np.float64(rms_pen)),
-                     max_penetration=np.asscalar(np.float64(max_pen)),
-                     max_pressure=np.asscalar(np.float64(max_pres)),
-                     pad_pressure=np.asscalar(np.float64(pad_pres)),
-                     penetration_tol=np.asscalar(np.float64(pentol)),
-                     pressure_tol=np.asscalar(np.float64(prestol)))
+            d = dict(area=np.int64(A_contact).item(),
+                     fractional_area=np.float64(A_contact/pnp.sum(surf_mask)).item(),
+                     rms_penetration=np.float64(rms_pen).item(),
+                     max_penetration=np.float64(max_pen).item(),
+                     max_pressure=np.float64(max_pres).item(),
+                     pad_pressure=np.float64(pad_pres).item(),
+                     penetration_tol=np.float64(pentol).item(),
+                     pressure_tol=np.float64(prestol)).item()
             callback(it, p_r, d)
 
         if isnan(G) or isnan(rms_pen):
