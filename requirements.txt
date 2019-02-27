@@ -13,3 +13,4 @@ mpi4py
 pfft-python
 FFTEngine
 MPITools
+pytest>=4
