@@ -491,6 +491,57 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         #else:
         #    return 0
 
+    def weights_frobenius_norm(self):
+        """
+        computes the frobenius norm of the
+
+        Returns
+        -------
+
+        """
+
+        if self.weights.size > 0:
+            if self.fourier_location[-1] == 0: # First column of this fourier data is first of global data
+                #print("First column of this fourier data is first of global data")
+                fact0 = 1
+            elif self.fourier_resolution[-1] > 1:
+                # local first row is in the
+                fact0 = 2
+            else:
+                fact0 = 0
+
+            if self.fourier_location[-1] == 0 and self.fourier_resolution[-1] ==1 :
+                factend = 0
+            elif (self.domain_resolution[-1] % 2 == 1):
+                # odd number of points, last column have always to be symetrized
+                factend = 2
+            elif self.fourier_location[-1] + self.fourier_resolution[-1] - 1 == self.domain_resolution[-1] // 2:
+                # last column of the global rfftn already contains it's symetric
+                factend = 1
+                # print("last Element of the even data has to be accounted only once")
+            else:
+                factend = 2
+                # print("last element of this local slice is not last element of the total global data")
+            # print("fact0={}".format(fact0))
+            # print("factend={}".format(factend))
+
+            if self.fourier_resolution[-1] > 2:
+                factmiddle = 2
+            else:
+                factmiddle = 0
+
+
+            locsum = (
+                    factmiddle * np.sum(np.absolute(self.weights[..., 1:-1])**2)
+                    + fact0 *  np.sum(np.absolute(self.weights[..., 0])**2)
+                    + factend *  np.sum(np.absolute(self.weights[..., -1])**2)
+            ) #/ np.prod(self.domain_resolution)**2
+
+        else:
+            # This handles the case where the processor hods an empty subdomain
+            locsum = np.array([], dtype=np.absolute(self.weights)) #TODO: will this work ?
+            # print(locsum)
+        return np.sqrt(self.pnp.sum(locsum))
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces
