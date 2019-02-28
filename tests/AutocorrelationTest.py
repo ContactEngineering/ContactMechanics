@@ -54,6 +54,32 @@ class AutocorrelationTest(PyCoTestCase):
             self.assertTrue(np.allclose(A, A_ana))
 
 
+    def test_nonuniform_impulse_autocorrelation(self):
+        x = np.array([0, 3.])
+        t = NonuniformLineScan(x, 2*np.ones_like(x))
+        r, A = t.autocorrelation_1D(distances=np.linspace(-4, 4, 101))
+
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.plot(*t.positions_and_heights(), 'r-')
+        plt.plot(r, A, 'k-')
+        plt.show()
+
+    def test_nonuniform_triangle_autocorrelation(self):
+        a = 0.7
+        b = 3
+        x = np.array([0, b])
+        t = NonuniformLineScan(x, a*x)
+        r, A = t.autocorrelation_1D(distances=np.linspace(0, 4, 101))
+
+        self.assertAlmostEqual(A[np.abs(r)<1e-6][0], a**2*b**3/3)
+
+        x = np.array([0, 1., 1.3, 1.7, 2.0, 2.5, 3.0])
+        t = NonuniformLineScan(x, 0.7*x)
+        r2, A2 = t.autocorrelation_1D(distances=np.linspace(0, 4, 101))
+
+        self.assertArrayAlmostEqual(A, A2)
+
     def test_brute_force_autocorrelation_1D(self):
         n = 10
         for surf in [UniformLineScan(np.ones(n), n, periodic=False),
@@ -68,10 +94,6 @@ class AutocorrelationTest(PyCoTestCase):
                     dir_A[d] += (surf.heights()[i] - surf.heights()[i+d])**2/2
                 dir_A[d] /= (n-d)
             self.assertArrayAlmostEqual(A, dir_A)
-
-            if hasattr(surf, 'to_nonuniform'):
-                r2, A2 = surf.to_nonuniform().autocorrelation_1D()
-                self.assertArrayAlmostEqual(A2, dir_A)
 
 
     def test_brute_force_autocorrelation_2D(self):
