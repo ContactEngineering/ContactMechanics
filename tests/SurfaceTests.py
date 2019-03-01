@@ -449,13 +449,14 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
         with tmp_dir() as dir:
             fname = os.path.join(dir, "surface")
             S1.save(fname)
+            # TODO: datafiles fixture may solve the problem
             # For some reason, this does not find the file...
             # S2 = read_asc(fname)
             S2 = S1
 
         S3 = make_sphere(R, (res, res), (l, l), (x_c, y_c))
         self.assertTrue(np.array_equal(S1.heights(), S2.heights()))
-        self.assertTrue(np.array_equal(S1.heights(), S3.heights()), )
+        self.assertTrue(np.array_equal(S1.heights(), S3.heights()))
 
 
 class NumpyAscSurfaceTest(unittest.TestCase):

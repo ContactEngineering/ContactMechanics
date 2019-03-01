@@ -55,8 +55,8 @@ except ImportError as err:
 #class SmoothSystemTest(unittest.TestCase):
 import pytest
 
-@pytest.mark.parametrize("young",[3.,10.,100.])
-def test_minimization_simplesmooth(young):
+@pytest.mark.parametrize("young",[3.]) # ,10.,100.
+def test_minimization_simplesmoothmin(young):
 
 
     eps=1.
@@ -95,7 +95,7 @@ def test_minimization_simplesmooth(young):
                             surface)
 
     #print("testing: {}, rc = {}, offset= {}".format(pot.__class__, S.interaction.r_c, S.interaction.offset))
-    offset = .99 * S.interaction.r_c
+    offset = .8 * S.interaction.r_c
     fun = S.objective(offset, gradient=True)
 
     options = dict(ftol=1e-18, gtol=1e-10)
@@ -123,7 +123,7 @@ def test_minimization_simplesmooth(young):
     assert result.success, "{}".format(result)
 
 @pytest.mark.parametrize("young", [3., 100.]) # mit young = 100 geht auch LJ93smoothMin durch
-@pytest.mark.parametrize("pot_class",[Contact.Lj93.LJ93smoothMin_old, pytest.param(Contact.LJ93smooth, marks=pytest.mark.xfail), Contact.LJ93smoothMin])
+@pytest.mark.parametrize("pot_class",[pytest.param(Contact.LJ93smooth, marks=pytest.mark.xfail), Contact.LJ93smoothMin])
 def test_minimization(pot_class, young):
 
     eps=1
@@ -189,82 +189,6 @@ def test_minimization(pot_class, young):
         fig.tight_layout()
         plt.show(block=True)
     assert result.success, "{}".format(result)
-
-
-
-@pytest.mark.parametrize("comppotclass, testedpotclass",
-                         [(Contact.Lj93.LJ93smoothMin_old,Contact.LJ93smoothMin),
-                          (Contact.LJ93smoothMin, Contact.Lj93.LJ93smoothMin_old)
-                         ])
-def test_compare_values(comppotclass, testedpotclass):
-    young = 3.
-
-    eps = 1.
-    sig = 2.
-    gam = 5.
-
-    r_ti =None
-    r_ti=0.1
-
-    radius = 4.
-
-    base_res = 32
-    res = (base_res, base_res)
-
-    size = (15., 15.)
-    surface = Topography.make_sphere(radius, res, size,
-                                     standoff=float("inf"))
-
-    substrate = Solid.FreeFFTElasticHalfSpace(
-        res, young, size)
-
-
-    comppot = comppotclass(eps, sig, gam, r_ti=r_ti)
-    testedpot=testedpotclass(eps, sig, gam, r_ti=r_ti)
-
-    print("testing: {}".format(comppot.__class__))
-    S = SmoothContactSystem(substrate,
-                            comppot,
-                            surface)
-
-
-    offset = .8 * S.interaction.r_c
-    fun = S.objective(offset, gradient=True)
-
-    options = dict(ftol=1e-6, gtol=1e-5)
-    disp = S.shape_minimisation_input(
-        np.zeros(substrate.computational_resolution))
-
-    def compare(disp):
-        gap = S.compute_gap(disp.reshape(substrate.computational_resolution), offset)
-
-        Vnew, dVnew, ddVnew = testedpot.evaluate(gap, True, True, True, area_scale=S.area_per_pt)
-        Vold, dVold, ddVold = comppot.evaluate(gap, True, True, True, area_scale=S.area_per_pt)
-
-        rtol = 1e-18
-
-        np.testing.assert_allclose(Vnew, Vold, rtol=rtol)
-        np.testing.assert_allclose(dVnew, dVold, rtol=rtol)
-        np.testing.assert_allclose(ddVnew, ddVold, rtol=rtol)
-
-        testedpot.compute(gap, True, True, True, area_scale=S.area_per_pt)
-
-        np.testing.assert_allclose(testedpot.energy, comppot.energy, rtol=rtol)
-        np.testing.assert_allclose(testedpot.force, comppot.force, rtol=rtol)
-        #np.testing.assert_allclose(newpot.curb, pot.curb)
-
-    result = minimize(fun, disp, jac=True,
-                      method='L-BFGS-B', options=options, callback=compare)
-    assert result.success, "{}".format(result)
-
-def test_compute():
-    pot = Contact.LJ93smoothMin(1,2,3)
-    oldpot = Contact.Lj93.LJ93smoothMin_old(1,2,3)
-    print(pot.evaluate(np.array([0.1,0.2,0.3]), True, True, False))
-    print(oldpot.evaluate(np.array([0.1, 0.2, 0.3]), True, True, False))
-    pot.compute(np.array([0.1,0.2,0.3]), True, True, False)
-
-    print((pot.energy, pot.force, pot.curb))
 
 
 class FastSystemTest(unittest.TestCase):
