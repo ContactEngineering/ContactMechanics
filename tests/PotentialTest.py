@@ -40,13 +40,13 @@ try:
     from PyCo.ContactMechanics import LJ93smooth
     from PyCo.ContactMechanics import LJ93smoothMin
     from PyCo.ContactMechanics import LJ93SimpleSmooth
+    from PyCo.ContactMechanics import LJ93SimpleSmoothMin
 
     from PyCo.ContactMechanics import VDW82
     from PyCo.ContactMechanics import VDW82smooth
     from PyCo.ContactMechanics import VDW82smoothMin
     from PyCo.ContactMechanics import VDW82SimpleSmooth
     from PyCo.ContactMechanics import LinearCorePotential
-
 
     from PyCo.ContactMechanics import ExpPotential
 
@@ -416,76 +416,6 @@ class PotentialTest(unittest.TestCase):
                 ax[2].plot(z, c)
             fig.savefig("test_LinearCoreSimpleSmoothPotential.png")
 
-    def test_deepcopy(self):
-        import copy
-        w = 3
-        z0 = 0.5
-        r_ti = 0.4 * z0
-        r_c = 10 * z0
-        import copy
-
-        eps = 1.7294663266397667
-        sig = 3.253732668164946
-
-        c_sr = 2.1e-78
-        hamaker = 68.1e-21
-
-        all_ok = True
-        msg = []
-        for pot in [
-            LJ93(eps, sig),
-            LJ93SimpleSmooth(eps, sig, 3*sig),
-            LJ93smooth(eps, sig),
-            LJ93smoothMin(eps, sig),
-            LJ93smooth(eps,  sig, r_t="inflection"),
-            LJ93smoothMin(eps, sig, r_t_ls="inflection"),
-            LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05),
-            LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05),
-            VDW82(c_sr, hamaker),
-            VDW82smooth(c_sr,  hamaker),
-            VDW82smoothMin(c_sr,  hamaker),
-            VDW82smooth(c_sr,  hamaker, r_t="inflection"),
-            VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection"),
-            VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05),
-            VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05),
-            VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)
-                    ]:
-            copied_potential = copy.deepcopy(pot)
-
-            z = np.array([
-                pot.r_min * 1e-4,
-                pot.r_min * (1-1e-4),
-                pot.r_min * (1 + 1e-4),
-                pot.r_infl * (1 - 1e-4),
-                pot.r_infl * (1 + 1e-4),
-                pot.r_infl * 1e3,
-                pot.r_infl * 1e3,
-                pot.r_infl * 1e3
-            ])
-            mask=np.zeros_like(z)
-            mask[-2:]=True
-            z = np.ma.masked_array(z, mask=mask)
-
-            print("testing {}".format(pot))
-            pot.evaluate(z, True, True, True)
-            copied_potential.evaluate(z, True, True, True)
-
-            np.testing.assert_allclose(copied_potential.evaluate(z, True, True, True), pot.evaluate(z, True, True, True))
-
-            # assert the cached values (energy, force and curvature were also deepcopied)
-            # and so computing with the new instance of the potential does'nt influence the original one
-            refvals = pot.evaluate(z, True, True, True)
-            pot.compute(z, True, True, True)
-            copied_potential.compute(np.random.random((1, 4)))
-            np.testing.assert_allclose(pot.energy, np.sum(refvals[0]))
-            np.testing.assert_allclose(pot.force, refvals[1])
-            np.testing.assert_allclose(pot.curb, refvals[2])
-
-            if hasattr(pot, "parent_potential"): # assert parent potential has also been copied
-                assert pot.parent_potential is not copied_potential.parent_potential
-
-
-
     def test_ExpPotential(self):
         r = np.linspace(-10, 10, 1001)
         pot = ExpPotential(1.0, 1.0)
@@ -610,7 +540,77 @@ class PotentialTest(unittest.TestCase):
 
 import pytest
 
+@pytest.mark.parametrize("pot_creation", [
+                        'LJ93(eps, sig)',
+                        'LJ93SimpleSmooth(eps, sig, 3*sig)',
+                        'LJ93smooth(eps, sig)',
+                        'LJ93smoothMin(eps, sig)',
+                        'LJ93smooth(eps,  sig, r_t="inflection")',
+                        'LJ93smoothMin(eps, sig, r_t_ls="inflection")',
+                        'LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
+                        'VDW82(c_sr, hamaker)',
+                        'VDW82smooth(c_sr,  hamaker)',
+                        'VDW82smoothMin(c_sr,  hamaker)',
+                        'VDW82smooth(c_sr,  hamaker, r_t="inflection")',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
+                        'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)'
+                         ])
+def test_deepcopy(pot_creation):
+    import copy
+    w = 3
+    z0 = 0.5
+    r_ti = 0.4 * z0
+    r_c = 10 * z0
+    import copy
 
+    eps = 1.7294663266397667
+    sig = 3.253732668164946
+
+    c_sr = 2.1e-78
+    hamaker = 68.1e-21
+
+    all_ok = True
+    msg = []
+    pot = eval(pot_creation)
+    copied_potential = copy.deepcopy(pot)
+
+    z = np.array([
+        pot.r_min * 1e-4,
+        pot.r_min * (1 - 1e-4),
+        pot.r_min * (1 + 1e-4),
+        pot.r_infl * (1 - 1e-4),
+        pot.r_infl * (1 + 1e-4),
+        pot.r_infl * 1e3,
+        pot.r_infl * 1e3,
+        pot.r_infl * 1e3
+    ])
+    mask = np.zeros_like(z)
+    mask[-2:] = True
+    z = np.ma.masked_array(z, mask=mask)
+
+    print("testing {}".format(pot))
+    pot.evaluate(z, True, True, True)
+    copied_potential.evaluate(z, True, True, True)
+
+    np.testing.assert_allclose(
+        copied_potential.evaluate(z, True, True, True),
+        pot.evaluate(z, True, True, True))
+
+    # assert the cached values (energy, force and curvature were also deepcopied)
+    # and so computing with the new instance of the potential does'nt influence the original one
+    refvals = pot.evaluate(z, True, True, True)
+    pot.compute(z, True, True, True)
+    copied_potential.compute(np.random.random((1, 4)))
+    np.testing.assert_allclose(pot.energy, np.sum(refvals[0]))
+    np.testing.assert_allclose(pot.force, refvals[1])
+    np.testing.assert_allclose(pot.curb, refvals[2])
+
+    if hasattr(pot,
+               "parent_potential"):  # assert parent potential has also been copied
+        assert pot.parent_potential is not copied_potential.parent_potential
 
 @pytest.mark.parametrize("fill_value", [float("inf"), 1e20])
 @pytest.mark.parametrize("pot_creation", [
@@ -622,6 +622,7 @@ import pytest
                         'LJ93smoothMin(eps, sig, r_t_ls="inflection")',
                         'LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05)',
                         'LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93SimpleSmoothMin(eps, sig, LJ93(eps, sig).r_infl * 2,  LJ93(eps, sig).r_min * 0.8)',
                         'VDW82(c_sr, hamaker)',
                         'VDW82smooth(c_sr,  hamaker)',
                         'VDW82smoothMin(c_sr,  hamaker)',
@@ -645,9 +646,11 @@ def test_masked_arrays(pot_creation, fill_value):
     hma = np.ma.masked_array(h, mask, fill_value=fill_value)
 
     V, dV, ddV = pot.evaluate(hma, True, True, True)
-    print(V)
-    print(np.asarray(V))
+    #print(V)
+    #print(np.asarray(V))
     assert (np.asarray(V[hma.mask])== 0.).all()
+    assert (np.asarray(dV[hma.mask]) == 0.).all()
+    assert (np.asarray(ddV[hma.mask])== 0.).all()
 
 
 @pytest.mark.parametrize("pot_class",[LJ93smooth, LJ93smoothMin])

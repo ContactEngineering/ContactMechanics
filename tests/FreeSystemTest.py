@@ -55,13 +55,13 @@ except ImportError as err:
 #class SmoothSystemTest(unittest.TestCase):
 import pytest
 
+@pytest.mark.parametrize("r_c",[2., 6.])
 @pytest.mark.parametrize("young",[3.]) # ,10.,100.
-def test_minimization_simplesmoothmin(young):
+def test_minimization_simplesmoothmin(young, r_c):
 
 
     eps=1.
-    sig=4.#2
-    gam=1.#5
+    sig=1.#2
 
 
     radius=4.
@@ -78,7 +78,7 @@ def test_minimization_simplesmoothmin(young):
     substrate = Solid.FreeFFTElasticHalfSpace(
         res, young, size)
 
-    pot = Contact.LJ93SimpleSmoothMin(eps, sig, 2, r_ti=0.5)
+    pot = Contact.LJ93SimpleSmoothMin(eps, sig, r_c=r_c, r_ti=0.5)
 
     if False:
         import matplotlib.pyplot as plt
@@ -100,7 +100,7 @@ def test_minimization_simplesmoothmin(young):
 
     options = dict(ftol=1e-18, gtol=1e-10)
     disp = S.shape_minimisation_input(
-        np.zeros(substrate.computational_resolution))
+        np.zeros(substrate.domain_resolution))
 
     lbounds  =S.shape_minimisation_input(ext_surface.heights() + offset)
     bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
@@ -168,7 +168,7 @@ def test_minimization(pot_class, young):
 
     options = dict(ftol=1e-18, gtol=1e-10)
     disp = S.shape_minimisation_input(
-        np.zeros(substrate.computational_resolution))
+        np.zeros(substrate.domain_resolution))
 
     lbounds  =S.shape_minimisation_input(ext_surface.heights() + offset)
     bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
