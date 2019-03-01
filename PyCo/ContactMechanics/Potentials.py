@@ -68,7 +68,7 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
             pass
 
     @abc.abstractmethod
-    def __init__(self, r_cut,pnp=np):
+    def __init__(self, r_cut, pnp=np):
         super().__init__(pnp)
         self.r_c = r_cut
         if r_cut is not None:
@@ -706,6 +706,7 @@ class SmoothPotential(Potential):
 class ChildPotential(Potential):
     def __init__(self, parent_potential):
         self.parent_potential = parent_potential
+        self.pnp = parent_potential.pnp
 
     def __getattr__(self, item):
         #print("looking up item {} in {}".format(item, self.parent_potential))
@@ -889,7 +890,7 @@ class LinearCorePotential(ChildPotential):
         # not calling the superclass's __init__ because this is used in diamond
         # inheritance and I do not want to have to worry about python's method
         # resolution order
-        self.parent_potential = parent_potential
+        super().__init__(parent_potential)
         self.r_ti = r_ti if r_ti is not None else parent_potential.r_min/2
         self.lin_part = self.compute_linear_part()
 
@@ -1002,7 +1003,7 @@ class ParabolicCutoffPotential(ChildPotential):
         Keyword Arguments:
         r_c -- user-defined cut-off radius
         """
-        self.parent_potential = parent_potential
+        super().__init__(parent_potential)
         self.r_c = r_c
 
         self.poly = None
