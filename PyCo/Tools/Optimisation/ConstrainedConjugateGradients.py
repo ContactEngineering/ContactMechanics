@@ -36,6 +36,7 @@ SOFTWARE.
 from .ConstrainedConjugateGradientsPy import constrained_conjugate_gradients as ref
 from .ConstrainedConjugateGradientsOpt import constrained_conjugate_gradients as opt
 
+
 def constrained_conjugate_gradients(substrate, surface, kind='ref', **kwargs):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium

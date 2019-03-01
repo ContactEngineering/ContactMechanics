@@ -37,7 +37,7 @@ from .Systems import SystemBase
 from .Systems import IncompatibleFormulationError
 from .Systems import IncompatibleResolutionError
 
-
+# TODO: give the parallel numpy thrue to the
 def make_system(substrate, interaction, surface):
     """
     Factory function for contact systems. Checks the compatibility between the

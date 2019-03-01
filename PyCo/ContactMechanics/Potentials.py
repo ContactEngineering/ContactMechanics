@@ -68,8 +68,8 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
             pass
 
     @abc.abstractmethod
-    def __init__(self, r_cut):
-        super().__init__()
+    def __init__(self, r_cut,pnp=np):
+        super().__init__(pnp)
         self.r_c = r_cut
         if r_cut is not None:
             self.has_cutoff = not math.isinf(self.r_c)
@@ -81,6 +81,7 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
             self.offset = 0
 
         self.curb = None
+
 
     @abc.abstractmethod
     def __repr__(self):
@@ -99,7 +100,7 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         # pylint: disable=arguments-differ
         energy, self.force, self.curb = self.evaluate(
             gap, pot, forces, curb, area_scale)
-        self.energy = energy.sum() if pot else None
+        self.energy = self.pnp.sum(energy) if pot else None
 
     @abc.abstractmethod
     def naive_pot(self, r, pot=True, forces=False, curb=False):

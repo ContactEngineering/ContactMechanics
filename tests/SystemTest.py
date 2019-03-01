@@ -338,7 +338,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         # directliy like this is almost certainly mistaken
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = -self.sig
-        disp = np.zeros(substrate.computational_resolution)
+        disp = np.zeros(substrate.domain_resolution)
 
         fun_jac = S.objective(offset, gradient=True)
         fun     = S.objective(offset, gradient=False)
@@ -411,7 +411,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ref_profile = np.array(
             ref_data.variables['h']+ref_data.variables['avgh'][0])[:32, :32]
         offset = -.8*potential.r_c
-        gap = S.compute_gap(np.zeros(substrate.computational_resolution), offset)
+        gap = S.compute_gap(np.zeros(substrate.domain_resolution), offset)
         diff = ref_profile-gap
         # pycontact centres spheres at (n + 0.5, m + 0.5). need to correct for test
         correction = radius - np.sqrt(radius**2-.5)
@@ -427,7 +427,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         fun_hard = S.objective(offset + correction, gradient=False)
 
         ## initial guess (cheating) is the solution of pycontact
-        disp = np.zeros(S.substrate.computational_resolution)
+        disp = np.zeros(S.substrate.domain_resolution)
         disp[:ref_data.size, :ref_data.size] = -ref_data.variables['u'][0]
         gap = S.compute_gap(disp, offset)
         print("gap:     min, max = {}, offset = {}".format((gap.min(), gap.max()), offset))
@@ -483,7 +483,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
                  S.substrate.energy, S.interaction.force.sum(),
                  S.substrate.force.sum(), type(S)))
         error = Tools.mean_err(
-            disp, result.x.reshape(S.substrate.computational_resolution))
+            disp, result.x.reshape(S.substrate.domain_resolution))
         self.assertTrue(
             error < ftol,
             "resulting displacements differ: error = {} > tol = {}".format(

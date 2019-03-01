@@ -33,7 +33,7 @@ SOFTWARE.
 """
 
 import numpy as np
-
+import copy
 
 class Interaction(object):
     "base class for all interactions, e.g. interatomic potentials"
@@ -58,9 +58,36 @@ class HardWall(Interaction):
 
 class SoftWall(Interaction):
     "base class for smooth contact mechanics"
-    def __init__(self):
+    def __init__(self,pnp=np):
         self.energy = None
         self.force = None
+        self.pnp = pnp
+
+    def __deepcopy__(self,memo):
+        """
+        makes a deepcopy of all the attributes except self.pnp, where it stores the same reference
+
+        Parameters
+        ----------
+        memo
+
+        Returns
+        -------
+        result SoftWall instance
+        """
+
+        result = self.__class__.__new__(self.__class__)
+        memo[id(self)] = result
+
+        keys = set(self.__dict__.keys())
+
+        #exceptions
+        # pnp is a module or a class impolenting computation methods, it is not copied
+        result.pnp = self.pnp
+        keys.remove('pnp')
+        for k in keys:
+            setattr(result, k, copy.deepcopy(getattr(self, k), memo))
+        return result
 
     def __getstate__(self):
         return self.energy, self.force
@@ -82,7 +109,7 @@ class SoftWall(Interaction):
         """
         energy, self.force = self.evaluate(
             gap, pot, forces, area_scale)
-        self.energy = energy.sum()
+        self.energy = self.pnp.sum(energy)
 
     def evaluate(self, gap, pot=True, forces=False, area_scale=1.):
         """

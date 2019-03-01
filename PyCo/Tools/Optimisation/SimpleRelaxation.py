@@ -125,7 +125,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         logger.pr('pentol = {0}'.format(pentol))
 
     if disp0 is None:
-        u_r = np.zeros(substrate.computational_resolution)
+        u_r = np.zeros(substrate.domain_resolution)
     else:
         u_r = disp0.copy()
 
@@ -137,7 +137,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
              "or 2 dimensions (Your substrate has {}.).").format(
                  substrate.dim))
 
-    comp_mask = np.zeros(substrate.computational_resolution, dtype=bool)
+    comp_mask = np.zeros(substrate.domain_resolution, dtype=bool)
     comp_mask[comp_slice] = True
 
     surf_mask = np.ma.getmask(surface)
@@ -182,7 +182,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         plt.figure()
         plt.subplot(221)
         plt.title('f_r (before)')
-        plt.pcolormesh(f_r[comp_mask].reshape(substrate.computational_resolution))
+        plt.pcolormesh(f_r[comp_mask].reshape(substrate.domain_resolution))
         plt.colorbar()
 
         print(f_r[comp_mask].min(), f_r[comp_mask].max())
@@ -223,7 +223,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
 
         plt.subplot(222)
         plt.title('f_r (after)')
-        plt.pcolormesh(f_r[comp_mask].reshape(substrate.computational_resolution))
+        plt.pcolormesh(f_r[comp_mask].reshape(substrate.domain_resolution))
         plt.colorbar()
 
         assert abs(external_force+f_r.sum()) < 1e-6
@@ -254,12 +254,12 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
 
         plt.subplot(223)
         plt.title('u_r')
-        plt.pcolormesh(u_r[comp_mask].reshape(substrate.computational_resolution))
+        plt.pcolormesh(u_r[comp_mask].reshape(substrate.domain_resolution))
         plt.colorbar()
 
         plt.subplot(224)
         plt.title('g_r')
-        plt.pcolormesh(g_r.reshape(substrate.computational_resolution))
+        plt.pcolormesh(g_r.reshape(substrate.domain_resolution))
         plt.colorbar()
         plt.show()
 

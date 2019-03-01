@@ -132,15 +132,15 @@ cpdef constrained_conjugate_gradients(substrate, surface, disp0=None,
             ("Constrained conjugate gradient currently only implemented for 1 "
              "or 2 dimensions (Your substrate has {}.).").format(
                  substrate.dim))
-    u_r = np.zeros(substrate.computational_resolution)
+    u_r = np.zeros(substrate.domain_resolution)
 
     if n_dim == 1:
         n_col_comp = n_col = 1
 
     else:
-        n_col = substrate.computational_resolution[1]
+        n_col = substrate.domain_resolution[1]
         n_col_comp = substrate.resolution[1]
-    n_row = substrate.computational_resolution[0]
+    n_row = substrate.domain_resolution[0]
     n_row_comp = substrate.resolution[0]
 
     u_r_view = memoryview(u_r)

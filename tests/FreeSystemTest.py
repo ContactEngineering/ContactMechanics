@@ -240,7 +240,7 @@ class FastSystemTest(unittest.TestCase):
                                     self.interaction,
                                     self.surface)
         fun = S.objective(.95*self.interaction.r_c)
-        print(fun(np.zeros(S.babushka.substrate.computational_resolution)))
+        print(fun(np.zeros(S.babushka.substrate.domain_resolution)))
 
     def test_SystemFactory(self):
         S = make_system(self.substrate,
@@ -275,7 +275,7 @@ class FastSystemTest(unittest.TestCase):
 
             options = dict(ftol = 1e-18, gtol = 1e-10)
             disp = S.shape_minimisation_input(
-                np.zeros(self.substrate.computational_resolution))
+                np.zeros(self.substrate.domain_resolution))
             bla = fun(disp)
             result = minimize(fun, disp, jac=True,
                               method = 'L-BFGS-B', options=options)
@@ -325,7 +325,6 @@ class FastSystemTest(unittest.TestCase):
                        self.surface)
             offset = .8 * S.interaction.r_c
             options = dict(ftol = 1e-18, gtol = 1e-10)
-
             result = S.minimize_proxy(offset, options=options)
 
             gap = S.compute_gap(S.disp, offset)
@@ -365,14 +364,14 @@ class FastSystemTest(unittest.TestCase):
         offset = .8 * S.interaction.r_c
         S.create_babushka(offset)
         S.babushka.evaluate(
-            np.zeros(S.babushka.substrate.computational_resolution), offset,
+            np.zeros(S.babushka.substrate.domain_resolution), offset,
             forces=True)
         F_n = S.babushka.compute_normal_force()
         babushka = S.babushka
         S = SmoothContactSystem(self.substrate,
                                 self.min_pot,
                                 self.surface)
-        S.evaluate(np.zeros(S.substrate.computational_resolution), offset, forces=True)
+        S.evaluate(np.zeros(S.substrate.domain_resolution), offset, forces=True)
         F_n2 = S.compute_normal_force()
 
         error = abs(1 - F_n/F_n2)

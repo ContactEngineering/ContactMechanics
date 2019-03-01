@@ -92,6 +92,8 @@ setup(
     package_data = {'': ['ChangeLog.md']},
     include_package_data = True,
     ext_modules = cythonize(extensions),
+    dependency_links = ["git+git@github.com:AntoineSIMTEK/FFTEngine.git",
+                        "git+git@github.com:AntoineSIMTEK/MPITools.git"  ],
     # metadata for upload to PyPI
     author = "Lars Pastewka",
     author_email = "lars.pastewka@imtek.uni-freiburg.de",

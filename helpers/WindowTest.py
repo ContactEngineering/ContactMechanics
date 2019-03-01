@@ -132,7 +132,7 @@ def main():
         float(x[-1]), residual, arr.mean()))
     arr = Tools.shift_and_tilt_approx(surface.heights())
     surface = Surf.Topography(arr, size=size)
-    plot_distro('Topo1_corr', surface.array())
+    plot_distro('Topo1_corr', surface.heights())
     surfs.append(('Topo1_corr', surface))
 
     hurst = .85

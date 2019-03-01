@@ -42,6 +42,8 @@ try:
     from .PyCoTest import PyCoTestCase
     import PyCo.ReferenceSolutions.GreenwoodTripp as GT
     import PyCo.ReferenceSolutions.MaugisDugdale as MD
+    import PyCo.ReferenceSolutions.Hertz as Hz
+
 except ImportError as err:
     import sys
     print(err)
@@ -84,3 +86,28 @@ class ReferenceSolutionsTest(PyCoTestCase):
         N, d = MD._load_and_displacement(A, 1e3)
         self.assertArrayAlmostEqual(N, A**3-A*np.sqrt(6*A), tol=1e-4)
         self.assertArrayAlmostEqual(d, A**2-2/3*np.sqrt(6*A), tol=1e-4)
+
+    def test_Hertz_selfconsistency(self):
+        Es,R,F = np.random.random(3)*100
+        self.assertAlmostEqual(Hz.normal_load(Hz.penetration(F,R,Es),R,Es),F)
+
+    def test_Hertz_refVals(self):
+        "Compare with values computed once"
+
+        Es = 5
+        #print("Es {}".format(Es))
+        R = 4
+
+        Fprescribed = 7 #N
+
+        np.testing.assert_allclose(Hz.penetration(Fprescribed,R,Es), 0.6507879989531481,rtol=1e-7)
+        np.testing.assert_allclose(Hz.radius_and_pressure(Fprescribed,R,Es),(1.6134286460245437,1.2839257217043503),rtol=1e-7)
+
+    def test_Hertz_energy(self):
+        Es = 7;
+        R = 5;
+        ds = np.linspace(0, 3,100)
+        np.testing.assert_allclose(Hz.elastic_energy(ds[-1], R, Es),np.trapz(Hz.normal_load(ds, R, Es),x=ds),rtol = 1e-4)
+
+
+
