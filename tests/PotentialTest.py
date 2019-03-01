@@ -40,7 +40,6 @@ try:
     from PyCo.ContactMechanics import LJ93smooth
     from PyCo.ContactMechanics import LJ93smoothMin
     from PyCo.ContactMechanics import LJ93SimpleSmooth
-    from PyCo.ContactMechanics.Lj93 import LJ93smoothMin_old
 
     from PyCo.ContactMechanics import VDW82
     from PyCo.ContactMechanics import VDW82smooth
@@ -539,75 +538,74 @@ class PotentialTest(unittest.TestCase):
 
         self.assertTrue(all_ok, "\n"+"\n\n".join(msg))
 
-    def test_lj93smoothmin_regression(self):
 
-        import copy
-
-        print("########################################################################")
-        z = np.random.random((200)) *10 -1
-
-
-        mask = np.zeros_like(z)
-        mask[-2:] = True
-        mask[0]=True
-        z = np.ma.masked_array(z, mask=mask)
-
-
-        print(np.max(z))
-        print(np.min(z))
-
-        for params in [dict(epsilon=1.7294663266397667, sigma=3.253732668164946, gamma = 2, r_ti=0.5, r_t_ls = 3),
-                       dict(epsilon=1, sigma=2, gamma=5)]:
-            new = LJ93smoothMin(**params)
-            old = LJ93smoothMin_old(**params)
-
-
-            z[1] = params["sigma"]
-            z[2] = 0
-            z[3] = 0.5
-            z[4] = 3.
-            z[5] = float("inf")
-            z[10] = LJ93(params["epsilon"], params["sigma"]).r_min
-            z[11] = old.r_infl
-            z[12] = old.r_t
-            z[13] = old.r_ti
-            z[14] = old.r_c
-
-
-
-            Vnew, dVnew, ddVnew = new.evaluate(z, True, True, True, area_scale=1.5)
-            Vold, dVold, ddVold = old.evaluate(z, True, True, True, area_scale=1.5)
-
-            np.testing.assert_allclose(Vnew, Vold, rtol=1e-17)
-            np.testing.assert_allclose(dVnew, dVold, rtol=1e-17)
-            np.testing.assert_allclose(ddVnew, ddVold, rtol=1e-17)
-
-            new.compute(z, True, True, True, area_scale=1.5)
-            old.compute(z, True, True, True, area_scale=1.5)
-
-            copied_new = copy.deepcopy(new)
-
-            print(old.lin_part)
-            print(new.lin_part)
-
-            for key in old.__dict__.keys():
-                print(key)
-
-                def allarraycomp(a, b, msg):
-                    if a.dtype == object:
-                        for i, j in zip(a, b):
-                            allarraycomp(i, j, msg=msg)
-                    else:
-                        np.testing.assert_allclose(a, b, err_msg=msg)
-
-                def asserteverything(a, b, msg):
-                    if hasattr(a, "dtype"):
-                        allarraycomp(a,b,msg)
-                    else:
-                        self.assertEqual(a,b, msg = msg)
-
-                asserteverything(getattr(new, key), getattr(old, key), msg="problem for {} : newval: {}, oldval: {}".format(key, getattr(new, key), getattr(old, key)))
-                asserteverything(getattr(copied_new, key), getattr(old, key), msg="problem for {} : newval: {}, oldval: {}".format(key, getattr(new, key), getattr(old, key)))
+# TODO: is there a smart way to do regression tests ?
+    # def test_lj93smoothmin_regression(self):
+    #
+    #     import copy
+    #
+    #     print("########################################################################")
+    #     z = np.random.random((200)) *10 -1
+    #
+    #
+    #     mask = np.zeros_like(z)
+    #     mask[-2:] = True
+    #     mask[0]=True
+    #     z = np.ma.masked_array(z, mask=mask)
+    #
+    #
+    #     print(np.max(z))
+    #     print(np.min(z))
+    #
+    #     for params in [dict(epsilon=1.7294663266397667, sigma=3.253732668164946, gamma = 2, r_ti=0.5, r_t_ls = 3),
+    #                    dict(epsilon=1, sigma=2, gamma=5)]:
+    #         new = LJ93smoothMin(**params)
+    #         old = LJ93smoothMin_old(**params)
+    #
+    #         z[1] = params["sigma"]
+    #         z[2] = 0
+    #         z[3] = 0.5
+    #         z[4] = 3.
+    #         z[5] = float("inf")
+    #         z[10] = LJ93(params["epsilon"], params["sigma"]).r_min
+    #         z[11] = old.r_infl
+    #         z[12] = old.r_t
+    #         z[13] = old.r_ti
+    #         z[14] = old.r_c
+    #
+    #         Vnew, dVnew, ddVnew = new.evaluate(z, True, True, True, area_scale=1.5)
+    #         Vold, dVold, ddVold = old.evaluate(z, True, True, True, area_scale=1.5)
+    #
+    #         np.testing.assert_allclose(Vnew, Vold, rtol=1e-17)
+    #         np.testing.assert_allclose(dVnew, dVold, rtol=1e-17)
+    #         np.testing.assert_allclose(ddVnew, ddVold, rtol=1e-17)
+    #
+    #         new.compute(z, True, True, True, area_scale=1.5)
+    #         old.compute(z, True, True, True, area_scale=1.5)
+    #
+    #         copied_new = copy.deepcopy(new)
+    #
+    #         print(old.lin_part)
+    #         print(new.lin_part)
+    #
+    #         for key in old.__dict__.keys():
+    #             print(key)
+    #
+    #             def allarraycomp(a, b, msg):
+    #                 if a.dtype == object:
+    #                     for i, j in zip(a, b):
+    #                         allarraycomp(i, j, msg=msg)
+    #                 else:
+    #                     np.testing.assert_allclose(a, b, err_msg=msg)
+    #
+    #             def asserteverything(a, b, msg):
+    #                 if hasattr(a, "dtype"):
+    #                     allarraycomp(a,b,msg)
+    #                 else:
+    #                     self.assertEqual(a,b, msg = msg)
+    #
+    #             asserteverything(getattr(new, key), getattr(old, key), msg="problem for {} : newval: {}, oldval: {}".format(key, getattr(new, key), getattr(old, key)))
+    #             asserteverything(getattr(copied_new, key), getattr(old, key), msg="problem for {} : newval: {}, oldval: {}".format(key, getattr(new, key), getattr(old, key)))
 
 
 import pytest
@@ -624,7 +622,6 @@ import pytest
                         'LJ93smoothMin(eps, sig, r_t_ls="inflection")',
                         'LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05)',
                         'LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
-                        'LJ93smoothMin_old(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
                         'VDW82(c_sr, hamaker)',
                         'VDW82smooth(c_sr,  hamaker)',
                         'VDW82smoothMin(c_sr,  hamaker)',
@@ -653,7 +650,7 @@ def test_masked_arrays(pot_creation, fill_value):
     assert (np.asarray(V[hma.mask])== 0.).all()
 
 
-@pytest.mark.parametrize("pot_class",[LJ93smoothMin_old, LJ93smooth, LJ93smoothMin])
+@pytest.mark.parametrize("pot_class",[LJ93smooth, LJ93smoothMin])
 def test_lj93_masked(pot_class):
     eps = 1
     sig = 2
