@@ -125,12 +125,43 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
                       supposed to be expressed per unit area, so systems need
                       to be able to scale their response for their resolution))
         """
-        # pylint: disable=bad-whitespace
-        # pylint: disable=arguments-differ
         if np.isscalar(r):
             r = np.asarray(r)
         if r.shape == ():
             r.shape = (1, )
+
+        # we use subok = False to ensure V will not be a masked array
+        V = np.zeros_like(r, subok=False) if pot else self.SliceableNone()
+        dV = np.zeros_like(r,
+                           subok=False) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r,
+                            subok=False) if curb else self.SliceableNone()
+
+        if np.ma.getmask(r) is not np.ma.nomask:
+            sl = np.logical_not(r.mask)
+            V[sl], dV[sl], ddV[sl] = self._evaluate( r[sl], pot, forces, curb)
+        else:
+            V, dV, ddV = self._evaluate( r, pot, forces,curb)
+
+        # note, if in future we want to return masked arrays we should
+        # set the fill_value to zero afterward
+
+        return (area_scale * V if pot else None,
+                area_scale * dV if forces else None,
+                area_scale * ddV if curb else None)
+
+
+    def _evaluate(self, r, pot=True, forces=False, curb=False):
+        """Evaluates the potential and its derivatives
+        Keyword Arguments:
+        r          -- array of distances
+        pot        -- (default True) if true, returns potential energy
+        forces     -- (default False) if true, returns forces
+        curb       -- (default False) if true, returns second derivative
+        """
+        # pylint: disable=bad-whitespace
+        # pylint: disable=arguments-differ
+
         inside_slice = np.ma.filled(r < self.r_c, fill_value=False)
         V = np.zeros_like(r) if pot else self.SliceableNone()
         dV = np.zeros_like(r) if forces else self.SliceableNone()
@@ -140,9 +171,9 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
             r[inside_slice], pot, forces, curb)
         if V[inside_slice] is not None:
             V[inside_slice] -= self.offset
-        return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
 
     @abc.abstractproperty
     def r_min(self):
@@ -270,24 +301,21 @@ class SmoothPotential(Potential):
         else:
             return None
 
-    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
+    def _evaluate(self, r, pot=True, forces=False, curb=False):
         """Evaluates the potential and its derivatives
         Keyword Arguments:
         r          -- array of distances
         pot        -- (default True) if true, returns potential energy
         forces     -- (default False) if true, returns forces
         curb       -- (default False) if true, returns second derivative
-        area_scale -- (default 1.) scale by this. (Interaction quantities are
-                      supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
-        if np.isscalar(r):
-            r = np.asarray(r)
-        nb_dim = len(r.shape)
-        if nb_dim == 0:
-            r.shape = (1,)
+        # if np.isscalar(r):
+        #     r = np.asarray(r)
+        # nb_dim = len(r.shape)
+        # if nb_dim == 0:
+        #     r.shape = (1,)
         V = np.zeros_like(r) if pot else self.SliceableNone()
         dV = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
@@ -299,9 +327,9 @@ class SmoothPotential(Potential):
 #            raise AssertionError(" I thought this code is never executed")
             V, dV, ddV = self.naive_pot(r, pot, forces, curb)
             V -= self.offset
-            return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
+            return (V if pot else None,
+                    dV if forces else None,
+                    ddV if curb else None)
         else:
             V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_pot(
                 r[sl_inner], pot, forces, curb)
@@ -316,9 +344,9 @@ class SmoothPotential(Potential):
             V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_pot(
                 r[sl_outer], pot, forces, curb)
 
-        return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
 
     def spline_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the spline part and its derivatives of the potential.
@@ -888,16 +916,13 @@ class LinearCorePotential(ChildPotential):
     def __repr__(self):
         return "{0} -> LinearCorePotential: r_ti = {1.r_ti}".format(self.parent_potential.__repr__(),self)
     #@dump_in_out(open("LinearCore.txt", "w"))
-    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
+    def _evaluate(self, r, pot=True, forces=False, curb=False):
         """Evaluates the potential and its derivatives
         Keyword Arguments:
         r          -- array of distances
         pot        -- (default True) if true, returns potential energy
         forces     -- (default False) if true, returns forces
         curb       -- (default False) if true, returns second derivative
-        area_scale -- (default 1.) scale by this. (Interaction quantities are
-                      supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
@@ -928,11 +953,11 @@ class LinearCorePotential(ChildPotential):
             V[sl_core], dV[sl_core], ddV[sl_core] = \
                 self.lin_pot(r[sl_core], pot, forces, curb)
             V[sl_rest], dV[sl_rest], ddV[sl_rest] = \
-                self.parent_potential.evaluate(r[sl_rest], pot, forces, curb, area_scale=1.)
+                self.parent_potential._evaluate(r[sl_rest], pot, forces, curb)
 
-        return (area_scale * V if pot else None,
-                area_scale * dV if forces else None,
-                area_scale * ddV if curb else None)
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
 
 
     def lin_pot(self, r, pot=True, forces=False, curb=False):
@@ -1068,7 +1093,7 @@ class ParabolicCutoffPotential(ChildPotential):
         self.dpoly = np.polyder(self.poly)
         self.ddpoly = np.polyder(self.dpoly)
 
-    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
+    def _evaluate(self, r, pot=True, forces=False, curb=False):
         """
         Evaluates the potential and its derivatives
         Keyword Arguments:
@@ -1076,15 +1101,8 @@ class ParabolicCutoffPotential(ChildPotential):
         pot        -- (default True) if true, returns potential energy
         forces     -- (default False) if true, returns forces
         curb       -- (default False) if true, returns second derivative
-        area_scale -- (default 1.) scale by this. (Interaction quantities are
-                      supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
         """
-        if np.isscalar(r):
-            r = np.asarray(r)
-        nb_dim = len(r.shape)
-        if nb_dim == 0:
-            r.shape = (1,)
+
         V = np.zeros_like(r) if pot else self.SliceableNone()
         dV = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
@@ -1110,7 +1128,7 @@ class ParabolicCutoffPotential(ChildPotential):
             V[sl_in_range], dV[sl_in_range], ddV[sl_in_range] = adjust_pot(
                 r[sl_in_range])
 
-        return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
 
