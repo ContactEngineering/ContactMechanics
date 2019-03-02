@@ -1079,7 +1079,7 @@ class ScalarParametersTest(PyCoTestCase):
         res = (r, )
         for H in [0.3, 0.8]:
             for s in [(1, ), (1.4, )]:
-                t = fourier_synthesis(res, s, H, short_cutoff=4 / r * np.mean(s), rms_slope=0.1,
+                t = fourier_synthesis(res, s, H, short_cutoff=32 / r * np.mean(s), rms_slope=0.1,
                                       amplitude_distribution=lambda n: 1.0)
                 self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
 
@@ -1091,3 +1091,11 @@ class ScalarParametersTest(PyCoTestCase):
                 t = fourier_synthesis(res, s, H, short_cutoff=8 / r * np.mean(s), rms_slope=0.1,
                                       amplitude_distribution=lambda n: 1.0)
                 self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
+
+
+class ConvertersTest(PyCoTestCase):
+    def test_wrapped_x_range(self):
+        t = fourier_synthesis((128, ), (1, ), 0.8, rms_slope=0.1).to_nonuniform()
+        x = t.positions()
+        self.assertAlmostEqual(t.x_range[0], x[0])
+        self.assertAlmostEqual(t.x_range[1], x[-1])
