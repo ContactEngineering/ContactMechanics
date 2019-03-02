@@ -97,9 +97,16 @@ class AutocorrelationTest(PyCoTestCase):
             self.assertArrayAlmostEqual(A[:-2], dir_A[:-2])
 
     def test_nonuniform_impulse_autocorrelation(self):
-        x = np.array([0, 3.])
-        t = NonuniformLineScan(x, 2 * np.ones_like(x))
+        a = 3
+        b = 2
+        x = np.array([0, a])
+        t = NonuniformLineScan(x, b * np.ones_like(x))
         r, A = _bare_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
+
+        A_ref = b**2 * (a - np.abs(r))
+        A_ref[A_ref < 0] = 0
+
+        self.assertArrayAlmostEqual(A, A_ref)
 
     def test_nonuniform_triangle_autocorrelation(self):
         a = 0.7
@@ -136,10 +143,10 @@ class AutocorrelationTest(PyCoTestCase):
         slope = 0.1
         t = fourier_synthesis((r,), (s,), H, rms_slope=slope, amplitude_distribution=lambda n: 1.0)
         r, A = t.autocorrelation_1D()
-        r2, A2 = t.to_nonuniform().autocorrelation_1D()
+        r2, A2 = t.to_nonuniform().autocorrelation_1D(distances=r)
 
         import matplotlib.pyplot as plt
         plt.figure()
-        plt.loglog(r, A, 'r-')
+        plt.loglog(r, A, 'r-', lw=4)
         plt.loglog(r2, A2, 'k-')
         plt.show()
