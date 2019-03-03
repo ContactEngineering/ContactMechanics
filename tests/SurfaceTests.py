@@ -536,7 +536,6 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertIsNone(surf.info['unit'])
 
         bw = surf.bandwidth()
-        print(bw)
         self.assertAlmostEqual(bw[0], (8*1.+2*0.5/10)/9)
         self.assertAlmostEqual(bw[1], 9)
 
@@ -634,7 +633,6 @@ class DetrendedSurfaceTest(unittest.TestCase):
               2.07630937, -0.65408072]
          t = UniformLineScan(h, dx * n)
          for mode in ['height', 'curvature']:
-             print(mode, t.rms_height(), t.detrend(detrend_mode=mode).rms_height())
              self.assertGreater(t.rms_height(), t.detrend(detrend_mode=mode).rms_height(), msg=mode)
 
     def test_smooth_without_size(self):
@@ -776,6 +774,17 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.mean(), 0.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
         self.assertAlmostEqual(surf.rms_curvature(), 0.0)
+
+    def test_noniform_mean_zero(self):
+        surface = fourier_synthesis((512, ), (1.3, ), 0.8, rms_height=1).to_nonuniform()
+        self.assertTrue(not surface.is_uniform)
+        x, h = surface.positions_and_heights()
+        s, = surface.size
+        self.assertAlmostEqual(surface.mean(), np.trapz(h, x)/s)
+        detrended_surface = surface.detrend(detrend_mode='height')
+        self.assertAlmostEqual(detrended_surface.mean(), 0)
+        x, h = detrended_surface.positions_and_heights()
+        self.assertAlmostEqual(np.trapz(h, x), 0)
 
 
 class DetectFormatTest(unittest.TestCase):
