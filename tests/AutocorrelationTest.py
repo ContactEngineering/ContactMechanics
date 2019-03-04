@@ -32,6 +32,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import unittest
+
 import numpy as np
 
 from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
@@ -108,6 +110,27 @@ class AutocorrelationTest(PyCoTestCase):
 
         self.assertArrayAlmostEqual(A, A_ref)
 
+        a = 3
+        b = 2
+        x = np.array([-a, 0, 1e-9, a-1e-9, a, 2 * a])
+        y = np.zeros_like(x)
+        y[2] = b
+        y[3] = b
+        t = NonuniformLineScan(x, y)
+        r, A = _bare_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
+
+        A_ref = b**2 * (a - np.abs(r))
+        A_ref[A_ref < 0] = 0
+
+        self.assertArrayAlmostEqual(A, A_ref)
+
+        t = t.detrend(detrend_mode='center')
+        r, A = _bare_autocorrelation_1D(t, distances=np.linspace(0, 10, 201))
+
+        s, = t.size
+        self.assertAlmostEqual(A[0], t.rms_height() ** 2 * s)
+
+
     def test_nonuniform_triangle_autocorrelation(self):
         a = 0.7
         b = 3
@@ -117,11 +140,19 @@ class AutocorrelationTest(PyCoTestCase):
 
         self.assertAlmostEqual(A[np.abs(r) < 1e-6][0], a ** 2 * b ** 3 / 3)
 
+        r3, A3 = _bare_autocorrelation_1D(t.detrend(detrend_mode='center'), distances=[0])
+        s, = t.size
+        self.assertAlmostEqual(A3[0], t.rms_height() ** 2 * s)
+
         x = np.array([0, 1., 1.3, 1.7, 2.0, 2.5, 3.0])
-        t = NonuniformLineScan(x, 0.7 * x)
+        t = NonuniformLineScan(x, a * x)
         r2, A2 = _bare_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
 
         self.assertArrayAlmostEqual(A, A2)
+
+        r, A = _bare_autocorrelation_1D(t.detrend(detrend_mode='center'), distances=[0])
+        s, = t.size
+        self.assertAlmostEqual(A[0], t.rms_height() ** 2 * s)
 
     def test_self_affine_uniform_autocorrelation(self):
         r = 2048
@@ -136,6 +167,20 @@ class AutocorrelationTest(PyCoTestCase):
         b, a = np.polyfit(np.log(r[m]), np.log(A[m]), 1)
         self.assertTrue(abs(b/2 - H) < 0.1)
 
+    def test_nonuniform_rms_height(self):
+        r = 128
+        s = 1.3
+        H = 0.8
+        slope = 0.1
+        t = fourier_synthesis((r,), (s,), H, rms_slope=slope, amplitude_distribution=lambda n: 1.0) \
+            .to_nonuniform().detrend(detrend_mode='center')
+        self.assertAlmostEqual(t.mean(), 0)
+
+        r, A = _bare_autocorrelation_1D(t, distances=[0])
+        s, = t.size
+        self.assertAlmostEqual(t.rms_height() ** 2 * s, A[0])
+
+    @unittest.skip
     def test_self_affine_nonuniform_autocorrelation(self):
         r = 128
         s = 1
@@ -144,6 +189,9 @@ class AutocorrelationTest(PyCoTestCase):
         t = fourier_synthesis((r,), (s,), H, rms_slope=slope, amplitude_distribution=lambda n: 1.0)
         r, A = t.autocorrelation_1D()
         r2, A2 = t.to_nonuniform().autocorrelation_1D(distances=r)
+
+        print(A)
+        print(A2)
 
         import matplotlib.pyplot as plt
         plt.figure()
