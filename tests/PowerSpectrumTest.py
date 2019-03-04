@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """
-@file   AnalysisTest.py
+@file   PowerSpectrumTest.py
 
 @author Lars Pastewka <lars.pastewka@imtek.uni-freiburg.de>
 
-@date   17 Dec 2018
+@date   25 Feb 2019
 
-@brief  Tests for PyCo analysis tools; power-spectral density,
-        autocorrelation function and variable bandwidth analysis
+@brief  Tests for power-spectral density analysis
 
 @section LICENCE
 
@@ -37,8 +36,8 @@ import unittest
 
 import numpy as np
 
-from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
-from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc, power_spectrum_1D
+from PyCo.Topography import UniformLineScan, NonuniformLineScan
+from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc
 
 from tests.PyCoTest import PyCoTestCase
 

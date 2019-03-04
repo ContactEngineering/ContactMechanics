@@ -55,7 +55,7 @@ class GoodiesTest(unittest.TestCase):
         resolution = (res, res)
         lam_max = .5
         surf_gen = RandomSurfaceExact(resolution, size, hurst, rms_height, lambda_max=lam_max)
-        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
         rms_height_fromC_in = surf.rms_height()
 
         error = abs(1-rms_height_fromC_in/rms_height)
@@ -91,7 +91,7 @@ class GoodiesTest(unittest.TestCase):
         resolution = (res, res)
         lam_max = .5
         surf_gen = RandomSurfaceExact(resolution, size, hurst, rms_height, lambda_max=lam_max)
-        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
         surf_char = Goodies.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
         hurst_out, prefactor_out = surf_char.estimate_hurst(
@@ -116,7 +116,7 @@ class GoodiesTest(unittest.TestCase):
         resolution = (res, res)
         lam_max = .5
         surf_gen = RandomSurfaceGaussian(resolution, size, hurst, rms_height, lambda_max=lam_max, seed=10)
-        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
         surf_char = Goodies.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
         hurst_out, prefactor_out = surf_char.estimate_hurst(

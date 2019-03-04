@@ -98,7 +98,7 @@ class SystemTest(unittest.TestCase):
         pot, forces = S.evaluate(disp, offset, forces = True)
 
     def test_SystemGradient(self):
-        res = 16##self.res##[0]
+        res = self.res##[0]
         size = [r*1.28 for r in self.res]##[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, size)
