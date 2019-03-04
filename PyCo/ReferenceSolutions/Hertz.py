@@ -131,6 +131,22 @@ def radius_and_pressure(N, R, Es):
     
     return a, p0
 
+def max_pressure__penetration(delta, R=1, Es=1):
+    """
+    when R and Es is not specified, delta is supposed to be in units of R
+    and p0 in units of Es
+    Parameters
+    ----------
+    delta: penetration
+    R : Radius
+    Es : contact modulus
+
+    Returns
+    -------
+    max pressure p0
+
+    """
+    return 2 * Es / np.pi  * np.sqrt(delta / R)
 
 def surface_stress(r, poisson=0.5):
     """
