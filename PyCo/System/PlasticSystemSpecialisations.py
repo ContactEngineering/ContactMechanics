@@ -37,8 +37,6 @@ import numpy as np
 from .. import ContactMechanics, SolidMechanics, Topography
 from .Systems import NonSmoothContactSystem
 
-import matplotlib.pyplot as plt
-
 class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
     """
     This system implements a simple penetration hardness model.
