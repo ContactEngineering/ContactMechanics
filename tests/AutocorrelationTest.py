@@ -38,7 +38,7 @@ import numpy as np
 
 from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
 from PyCo.Topography.Generation import fourier_synthesis
-from PyCo.Topography.Nonuniform.Autocorrelation import _bare_autocorrelation_1D
+from PyCo.Topography.Nonuniform.Autocorrelation import height_height_autocorrelation_1D
 
 from tests.PyCoTest import PyCoTestCase
 
@@ -103,7 +103,7 @@ class AutocorrelationTest(PyCoTestCase):
         b = 2
         x = np.array([0, a])
         t = NonuniformLineScan(x, b * np.ones_like(x))
-        r, A = _bare_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
+        r, A = height_height_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
 
         A_ref = b**2 * (a - np.abs(r))
         A_ref[A_ref < 0] = 0
@@ -117,7 +117,7 @@ class AutocorrelationTest(PyCoTestCase):
         y[2] = b
         y[3] = b
         t = NonuniformLineScan(x, y)
-        r, A = _bare_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
+        r, A = height_height_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
 
         A_ref = b**2 * (a - np.abs(r))
         A_ref[A_ref < 0] = 0
@@ -125,7 +125,7 @@ class AutocorrelationTest(PyCoTestCase):
         self.assertArrayAlmostEqual(A, A_ref)
 
         t = t.detrend(detrend_mode='center')
-        r, A = _bare_autocorrelation_1D(t, distances=np.linspace(0, 10, 201))
+        r, A = height_height_autocorrelation_1D(t, distances=np.linspace(0, 10, 201))
 
         s, = t.size
         self.assertAlmostEqual(A[0], t.rms_height() ** 2 * s)
@@ -136,21 +136,21 @@ class AutocorrelationTest(PyCoTestCase):
         b = 3
         x = np.array([0, b])
         t = NonuniformLineScan(x, a * x)
-        r, A = _bare_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
+        r, A = height_height_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
 
         self.assertAlmostEqual(A[np.abs(r) < 1e-6][0], a ** 2 * b ** 3 / 3)
 
-        r3, A3 = _bare_autocorrelation_1D(t.detrend(detrend_mode='center'), distances=[0])
+        r3, A3 = height_height_autocorrelation_1D(t.detrend(detrend_mode='center'), distances=[0])
         s, = t.size
         self.assertAlmostEqual(A3[0], t.rms_height() ** 2 * s)
 
         x = np.array([0, 1., 1.3, 1.7, 2.0, 2.5, 3.0])
         t = NonuniformLineScan(x, a * x)
-        r2, A2 = _bare_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
+        r2, A2 = height_height_autocorrelation_1D(t, distances=np.linspace(-4, 4, 101))
 
         self.assertArrayAlmostEqual(A, A2)
 
-        r, A = _bare_autocorrelation_1D(t.detrend(detrend_mode='center'), distances=[0])
+        r, A = height_height_autocorrelation_1D(t.detrend(detrend_mode='center'), distances=[0])
         s, = t.size
         self.assertAlmostEqual(A[0], t.rms_height() ** 2 * s)
 
@@ -176,25 +176,19 @@ class AutocorrelationTest(PyCoTestCase):
             .to_nonuniform().detrend(detrend_mode='center')
         self.assertAlmostEqual(t.mean(), 0)
 
-        r, A = _bare_autocorrelation_1D(t, distances=[0])
+        r, A = height_height_autocorrelation_1D(t, distances=[0])
         s, = t.size
         self.assertAlmostEqual(t.rms_height() ** 2 * s, A[0])
 
-    @unittest.skip
     def test_self_affine_nonuniform_autocorrelation(self):
         r = 128
-        s = 1
+        s = 1.3
         H = 0.8
         slope = 0.1
-        t = fourier_synthesis((r,), (s,), H, rms_slope=slope, amplitude_distribution=lambda n: 1.0)
-        r, A = t.autocorrelation_1D()
-        r2, A2 = t.to_nonuniform().autocorrelation_1D(distances=r)
+        t = fourier_synthesis((r,), (s,), H, rms_slope=slope, short_cutoff=s/20, amplitude_distribution=lambda n: 1.0)
+        r, A = t.detrend(detrend_mode='center').autocorrelation_1D()
+        r = r[1:-1] # Need to exclude final point because we cannot compute nonuniform ACF at that point
+        A = A[1:-1]
+        r2, A2 = t.detrend(detrend_mode='center').to_nonuniform().autocorrelation_1D(distances=r)
 
-        print(A)
-        print(A2)
-
-        import matplotlib.pyplot as plt
-        plt.figure()
-        plt.loglog(r, A, 'r-', lw=4)
-        plt.loglog(r2, A2, 'k-')
-        plt.show()
+        self.assertArrayAlmostEqual(A, A2, tol=1e-4)
