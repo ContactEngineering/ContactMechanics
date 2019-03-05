@@ -99,12 +99,6 @@ class TestVariableBandwidth(PyCoTestCase):
             # The error is huge...
             self.assertTrue(abs(H+b) < 0.1)
 
-    def test_nonuniform_checkerboard_detrend_vs_rms_height(self):
-        t = fourier_synthesis((2048,), (1,), 0.7, rms_slope=0.1).to_nonuniform()
-        dt = t.checkerboard_detrend(4)
-        for _t in dt:
-            self.assertAlmostEqual(_t.parent_topography.rms_height(), t.rms_height(range=_t.x_range))
-
 ###
 
 if __name__ == '__main__':
