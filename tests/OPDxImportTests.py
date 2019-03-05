@@ -41,7 +41,7 @@ import tempfile, os
 from tempfile import TemporaryDirectory as tmp_dir
 import os
 
-from PyCo.Topography.Readers.OPDxReader import find_2d_data, read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, load_opdx, TopographyLoaderOPDx
+from PyCo.Topography.Readers.OPDxReader import find_2d_data, read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, TopographyLoaderOPDx
 from PyCo.Topography.Generation import RandomSurfaceGaussian
 
 
@@ -79,11 +79,11 @@ class OPDxSurfaceTest(unittest.TestCase):
 
         self.assertEqual(rawdata.shape, (960, 1280))
 
-        self.assertAlmostEqual(metadata["Height value"], 35.85522, places=4)
-        self.assertEqual(metadata["Height unit"], "Âµm")
+        self.assertAlmostEqual(metadata["Image::Height value"], 35.85522, places=4)
+        self.assertEqual(metadata["Image::Height unit"], "Âµm")
 
-        self.assertAlmostEqual(metadata["Width value"], 47.81942, places=4)
-        self.assertEqual(metadata["Width unit"], "Âµm")
+        self.assertAlmostEqual(metadata["Image::Width value"], 47.81942, places=4)
+        self.assertEqual(metadata["Image::Width unit"], "Âµm")
 
 
     def test_topography(self):
@@ -295,27 +295,6 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(item.data.qun.symbol, 'SYM')
         self.assertAlmostEqual(item.data.qun.value, 0.73, places=10)
         self.assertEqual(item.data.qun.extra, [])
-
-    def test_load_opdx(self):
-        file_path = 'tests/file_format_examples/example6.OPDx'
-
-        data_2d = load_opdx(file_path)
-
-        rawdata, metadata = data_2d["Image"]
-
-        self.assertEqual(rawdata.shape, (960, 1280))
-
-        self.assertAlmostEqual(metadata["Height value"], 35.85522, places=4)
-        self.assertEqual(metadata["Height unit"], "Âµm")
-
-        self.assertAlmostEqual(metadata["Width value"], 47.81942, places=4)
-        self.assertEqual(metadata["Width unit"], "Âµm")
-
-
-
-
-
-
 
 
 
