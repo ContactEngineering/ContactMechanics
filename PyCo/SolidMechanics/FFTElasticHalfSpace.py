@@ -39,6 +39,7 @@ from ..Tools.fftext import rfftn, irfftn
 from .Substrates import ElasticSubstrate
 
 
+
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
         Halfspace due to a given array of point forces. This halfspace
