@@ -80,6 +80,7 @@ class TestVariableBandwidth(PyCoTestCase):
             for t in [t0, t0.to_nonuniform()]:
                 mag, bwidth, rms = t.variable_bandwidth(resolution_cutoff=r//32)
                 self.assertAlmostEqual(rms[0], t.detrend().rms_height())
+                self.assertArrayAlmostEqual(bwidth, t.size[0]/mag)
                 # Since this is a self-affine surface, rms(mag) ~ mag^-H
                 b, a = np.polyfit(np.log(mag[1:]), np.log(rms[1:]), 1)
                 # The error is huge...
