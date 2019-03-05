@@ -41,7 +41,7 @@ import tempfile, os
 from tempfile import TemporaryDirectory as tmp_dir
 import os
 
-from PyCo.Topography.Readers.OPDxReader import read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, load_opdx, TopographyLoaderOPDx
+from PyCo.Topography.Readers.OPDxReader import find_2d_data, read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, load_opdx, TopographyLoaderOPDx
 from PyCo.Topography.Generation import RandomSurfaceGaussian
 
 
@@ -74,9 +74,8 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(matrix_start, 4916784)
         self.assertEqual(matrix_length, 4915200)
 """
-        data_2d = loader.topography()
 
-        rawdata, metadata = data_2d["Image"]
+        rawdata, metadata = find_2d_data(loader.hash_table, loader.buffer)["Image"]
 
         self.assertEqual(rawdata.shape, (960, 1280))
 
@@ -85,6 +84,15 @@ class OPDxSurfaceTest(unittest.TestCase):
 
         self.assertAlmostEqual(metadata["Width value"], 47.81942, places=4)
         self.assertEqual(metadata["Width unit"], "Âµm")
+
+
+    def test_topography(self):
+        file_path = 'tests/file_format_examples/example6.OPDx'
+
+        loader = TopographyLoaderOPDx(file_path)
+        topography = loader.topography()
+        print(topography)
+
 
     def test_read_with_check(self):
         buffer = ['V', 'C', 'A', ' ', 'D', 'A', 'T', 'A', '\x01', '\x00', '\x00', 'U', '\x07', '\x00', '\x00', '\x00']
