@@ -40,6 +40,69 @@ import numpy as np
 
 ###
 
+def penetration(N,R,Es):
+    """
+    Given normal load, sphere radius and contact modulus compute rigid body penetration
+
+    Parameters
+    ----------
+    N : float
+        Normal force.
+    R : float
+        Sphere radius.
+    Es : float
+        Contact modulus: Es = E/(1-nu**2) with Young's modulus E and Poisson
+        number nu.
+
+    Returns
+    -------
+    float
+    Normal load
+
+    """
+
+    return (9*N**2/(16*R*Es**2))**(1/3)
+
+def normal_load(d,R,Es):
+    """
+    Given rigid Body Penetration, sphere radius and contact modulus compute normal load
+    Parameters
+    ----------
+    d : float
+        Rigid Body Penetration
+    R : float
+        Sphere Radius
+    Es: float
+        Contact modulus:  Es = E/(1-nu**2) with Young's modulus E and Poisson
+        number nu.
+
+    Returns
+    -------
+    float
+    normal_load
+
+    """
+    return (4/3*Es*np.sqrt(d**3*R))
+
+def elastic_energy(d,R,Es):
+    """
+
+    Parameters
+    ----------
+    d : float
+        Rigid Body Penetration
+    R : float
+        Sphere Radius
+    Es: float
+        Contact modulus:  Es = E/(1-nu**2) with Young's modulus E and Poisson
+        number nu.
+
+    Returns
+    -------
+    Elastic energy
+    """
+    return 8/15 * np.sqrt(R) * Es * d**(5/2)
+
 def radius_and_pressure(N, R, Es):
     """
     Given normal load, sphere radius and contact modulus compute contact radius
@@ -68,6 +131,22 @@ def radius_and_pressure(N, R, Es):
     
     return a, p0
 
+def max_pressure__penetration(delta, R=1, Es=1):
+    """
+    when R and Es is not specified, delta is supposed to be in units of R
+    and p0 in units of Es
+    Parameters
+    ----------
+    delta: penetration
+    R : Radius
+    Es : contact modulus
+
+    Returns
+    -------
+    max pressure p0
+
+    """
+    return 2 * Es / np.pi  * np.sqrt(delta / R)
 
 def surface_stress(r, poisson=0.5):
     """

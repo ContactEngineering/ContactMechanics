@@ -1,2 +1,6 @@
 include versioneer.py
 include PyCo/_version.py
+
+include tests/file_format_examples/*
+include examples/*.py
+include examples/*.out

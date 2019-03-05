@@ -129,9 +129,9 @@ class FastSmoothContactSystem(SmoothContactSystem):
         in_array -- array with the initial guess. has the intuitive shape you
                     think it has
         """
-        if np.prod(self.substrate.computational_resolution) == in_array.size:
+        if np.prod(self.substrate.domain_resolution) == in_array.size:
             return self._get_babushka_array(in_array).reshape(-1)
-        elif (np.prod(self.babushka.substrate.computational_resolution) ==
+        elif (np.prod(self.babushka.substrate.domain_resolution) ==
               in_array.size):
             return in_array.reshape(-1)
         raise IncompatibleResolutionError()
@@ -224,7 +224,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         # does not accept it as argument anymore
         self.offset = offset
         if disp0 is None:
-            disp0 = np.zeros(self.substrate.computational_resolution)
+            disp0 = np.zeros(self.substrate.domain_resolution)
         gap = self.compute_gap(disp_scale*disp0, offset)
         contact = np.argwhere(gap < self.interaction.r_c)
         if contact.size == 0:
@@ -302,7 +302,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         """
         returns a list of tuples that contain the equivalent slices in the
         small and the large array. It differentiates between resolution and
-        computational_resolution.
+        domain_resolution.
         Parameters:
         babushka_resolution -- resolution of smaller scale
         """
@@ -329,19 +329,19 @@ class FastSmoothContactSystem(SmoothContactSystem):
     def _get_babushka_array(self, full_array, babushka_array=None):
         """
         returns the equivalent small-scale array representation of a given
-        large-scale array. In the case of computational_resolution arrays, this
+        large-scale array. In the case of domain_resolution arrays, this
         is a copy. Else a view.
         Parameters:
         full_array     -- large-scale input array
         babushka_array -- optional small-scale output array to overwrite
         """
         # pylint: disable=unused-argument
-        def computational_resolution():
+        def domain_resolution():
             "used when arrays correspond to the substrate"
             nonlocal babushka_array
             if babushka_array is None:
                 babushka_array = np.zeros(
-                    self.babushka.substrate.computational_resolution)
+                    self.babushka.substrate.domain_resolution)
             for bnd in self.bounds:
                 babushka_array[bnd.small] = full_array[bnd.large]
             return babushka_array
@@ -357,7 +357,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         if full_array.shape == self.resolution:
             return normal_resolution()
         else:
-            return computational_resolution()
+            return domain_resolution()
 
     def _get_full_array(self, babushka_array, full_array=None):
         """
@@ -368,12 +368,12 @@ class FastSmoothContactSystem(SmoothContactSystem):
         babushka_array -- small-scale input array
         """
         # pylint: disable=unused-argument
-        def computational_resolution():
+        def domain_resolution():
             "used when arrays correspond to the substrate"
             nonlocal full_array
             if full_array is None:
                 full_array = np.zeros(
-                    self.substrate.computational_resolution)
+                    self.substrate.domain_resolution)
             for bnd in self.bounds:
                 full_array[bnd.large] = babushka_array[bnd.small]
             return full_array
@@ -389,7 +389,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         if babushka_array.shape == self.babushka.resolution:
             return normal_resolution()
         else:
-            return computational_resolution()
+            return domain_resolution()
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
                        options=None, gradient=True, lbounds=None, ubounds=None,
@@ -426,7 +426,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         fun = self.objective(offset, disp0, gradient=gradient,
                              disp_scale=disp_scale)
         if disp0 is None:
-            disp0 = np.zeros(self.substrate.computational_resolution)
+            disp0 = np.zeros(self.substrate.domain_resolution)
         disp0 = self.shape_minimisation_input(disp0)
         if callback is True:
             use_callback = self.callback(force=gradient)

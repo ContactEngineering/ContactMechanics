@@ -32,8 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import abc
 
-class Substrate(object):
+class Substrate(object,metaclass=abc.ABCMeta):
     """ Generic baseclass from which all substate classes derive
     """
     _periodic = None
@@ -58,6 +59,40 @@ class Substrate(object):
             ("periodicity of Substrate type '{}' ('{}') is not defined"
              "").format(cls.name, cls.__name__))
 
+    @property
+    @abc.abstractmethod
+    def domain_resolution(self):
+        """
+        """
+        pass
+
+    @property
+    @abc.abstractmethod
+    def subdomain_resolution(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        pass
+
+    @property
+    @abc.abstractmethod
+    def subdomain_location(self):
+        """
+        When working in Parallel one processor holds only Part of the Data
+
+        :return:
+        """
+        pass
+
+    #@property
+    #@abc.abstractmethod
+    #def dim(self, ):
+    #    "return the substrate's physical dimension"
+    #    pass
+
+
     def check(self, force=None):
         """
         Checks wether force is still in the value range handled correctly.
@@ -72,7 +107,8 @@ class Substrate(object):
         """
         pass
 
-class ElasticSubstrate(Substrate):
+
+class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
     """ Generic baseclass for elastic substrates
     """
     name = 'generic_elastic_halfspace'
@@ -82,6 +118,14 @@ class ElasticSubstrate(Substrate):
     def __init__(self):
         self.energy = None
         self.force = None
+
+    def __repr__(self):
+        dims = 'x', 'y', 'z'
+        size_str = ', '.join('{}: {}({})'.format(dim, size, resolution) for
+                             dim, size, resolution in zip(dims, self.size,
+                                                          self.resolution))
+        return ("{0.dim}-dimensional halfspace '{0.name}', size(resolution) in"
+                " {1}, E' = {0.young}").format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):
         """

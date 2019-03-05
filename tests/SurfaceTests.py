@@ -47,7 +47,8 @@ from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, ma
                              read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
 from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
 from PyCo.Topography.Generation import RandomSurfaceGaussian
-
+import PyCo.Topography.ParallelFromFile
+from PyCo.Topography.ParallelFromFile import TopographyLoaderNPY, TopographyLoaderH5
 from .PyCoTest import PyCoTestCase
 
 
@@ -109,6 +110,8 @@ class TopographyTest(PyCoTestCase):
             (0, 0, 0)])
 
         X2, Y2, h2 = dt.positions_and_heights()
+
+        assert h2.shape == (4, 3)
         assert_array_equal(X2, [
             (0, 0, 0),
             (2, 2, 2),
@@ -320,6 +323,87 @@ class UniformLineScanTest(PyCoTestCase):
         # the following commands should be possible without errors
         st = t.scale(1)
         dt = st.detrend(detrend_mode='center')
+
+    def test_detrend_curvature(self):
+        n = 10
+        dx = 0.5
+        x = np.arange(n ) * dx
+
+        R = 4.
+        h = x**2 / R
+
+        t = UniformLineScan(h, dx * n)
+
+        detrended = t.detrend(detrend_mode="curvature")
+
+        assert abs(detrended.coeffs[-1] / detrended.size[0]**2 - 1/R) < 1e-12
+
+    def test_detrend_same_positions(self):
+        """asserts that the detrended topography has the same x
+        """
+        n = 10
+        dx = 0.5
+        x = np.arange(n) * dx
+        h = np.random.normal(size=n)
+
+        t = UniformLineScan(h, dx * n)
+
+        for mode in ["curvature", "slope", "height"]:
+            detrended = t.detrend(detrend_mode=mode)
+            np.testing.assert_allclose(detrended.positions(), t.positions())
+            np.testing.assert_allclose(detrended.positions_and_heights()[0], t.positions_and_heights()[0])
+
+    def test_detrend_heights_call(self):
+        """ tests if the call of heights make no mistake
+        """
+        n = 10
+        dx = 0.5
+        x = np.arange(n) * dx
+        h = np.random.normal(size=n)
+
+        t = UniformLineScan(h, dx * n)
+        for mode in ["height", "curvature", "slope"]:
+            detrended = t.detrend(detrend_mode=mode)
+            detrended.heights()
+
+    @unittest.expectedFailure
+    def test_detrend_reduces(self):
+        """ tests if detrending really reduces the heights (or slope) as claimed
+        """
+        n = 10
+        dx = 0.5
+        x = np.arange(n) * dx
+        #h = np.random.normal(size=n)
+        h = [ 0.82355941, -1.32205074,  0.77084813,  0.49928252,  0.57872149 , 2.80200331,
+               0.09551251, -1.11616977,  2.07630937, -0.65408072]
+        t = UniformLineScan(h, dx * n)
+        for mode in ["height", "curvature"]:
+            detrended = t.detrend(detrend_mode=mode)
+            detrended.heights()
+            if False:
+                import matplotlib.pyplot as plt
+
+                fig, ax = plt.subplots()
+
+                ax.plot(*t.positions_and_heights(), label="original")
+                ax.plot(*detrended.positions_and_heights(), label="detrended")
+
+                ax.set_xlabel("x")
+                ax.set_ylabel("h")
+                ax.grid(True)
+                ax.legend()
+
+                fig.tight_layout()
+
+                plt.show(block=True)
+
+            assert detrended.rms_height() <= t.rms_height(), "{}".format(h)
+
+        mode = "slope"
+        detrended = t.detrend(detrend_mode=mode)
+        detrended.heights()
+        assert detrended.rms_slope() <= t.rms_slope()
+
 
     def test_power_spectrum_1D(self):
         #
@@ -744,7 +828,6 @@ class DetectFormatTest(unittest.TestCase):
         self.assertEqual(detect_format('tests/file_format_examples/example.asc'), 'xyz')
         self.assertEqual(detect_format('tests/file_format_examples/line_scan_1_minimal_spaces.asc'), 'xyz')
 
-
 class matSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
@@ -756,6 +839,32 @@ class matSurfaceTest(unittest.TestCase):
         self.assertEqual(ny, 2048)
         self.assertAlmostEqual(surface.rms_height(), 1.234061e-07)
         self.assertTrue(surface.is_uniform)
+
+
+class npySurfaceTest(unittest.TestCase):
+    def setUp(self):
+        self.fn = "example.npy"
+        self.res = (128,64)
+        np.random.seed(1)
+        self.data = np.random.random(self.res)
+        self.data -= np.mean(self.data)
+
+        np.save(self.fn, self.data)
+
+    def test_read(self):
+        loader = TopographyLoaderNPY(self.fn)
+        loader.size = (2, 4)
+
+        topo = loader.topography()
+
+        np.testing.assert_array_almost_equal(topo.heights(), self.data)
+
+        #self.assertEqual(topo.info, loader.info)
+        self.assertEqual(topo.size, loader.size)
+
+
+    def tearDown(self):
+        os.remove(self.fn)
 
 
 class x3pSurfaceTest(unittest.TestCase):
@@ -882,16 +991,20 @@ class h5SurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_detect_format_then_read(self):
-        self.assertEqual(detect_format('tests/file_format_examples/surface.2048x2048.h5'), 'h5')
+    def test_detect_format(self):
+
+        self.assertEqual(PyCo.Topography.ParallelFromFile.detect_format( # TODO: this will be the standart detect format method in the future
+            'tests/file_format_examples/surface.2048x2048.h5'), 'h5')
 
     def test_read(self):
-        surface = read_h5('tests/file_format_examples/surface.2048x2048.h5')
-        nx, ny = surface.resolution
+        loader = TopographyLoaderH5('tests/file_format_examples/surface.2048x2048.h5')
+
+        topography = loader.topography()
+        nx, ny = topography.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
-        self.assertTrue(surface.is_uniform)
-        self.assertEqual(surface.dim, 2)
+        self.assertTrue(topography.is_uniform)
+        self.assertEqual(topography.dim, 2)
 
 
 class xyzSurfaceTest(unittest.TestCase):
@@ -1022,3 +1135,19 @@ class IOTest(unittest.TestCase):
                 if x.size is not None:
                     assert_array_equal(x.positions(), y.positions())
                     assert_array_equal(x.heights(), y.heights())
+
+class UnknownFileFormatGivenTest(unittest.TestCase):
+
+    def test_read(self):
+        with self.assertRaises(PyCo.Topography.ParallelFromFile.UnknownFileFormatGiven):
+            PyCo.Topography.ParallelFromFile.read("filename", format="Nonexistentfileformat")
+
+    def test_detect_format(self):
+        with self.assertRaises(PyCo.Topography.ParallelFromFile.UnknownFileFormatGiven):
+            PyCo.Topography.ParallelFromFile.read("filename", format="Nonexistentfileformat")
+
+class FileFormatMismatchTest(unittest.TestCase):
+
+    def test_read(self):
+        with self.assertRaises(PyCo.Topography.ParallelFromFile.CannotDetectFileFormat):
+            PyCo.Topography.ParallelFromFile.read('tests/file_format_examples/surface.2048x2048.h5', format="npy")

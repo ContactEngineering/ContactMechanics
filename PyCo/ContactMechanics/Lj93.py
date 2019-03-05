@@ -34,7 +34,7 @@ SOFTWARE.
 
 from . import Potential, SmoothPotential, MinimisationPotential
 from . import SimpleSmoothPotential
-
+import numpy as np
 
 class LJ93(Potential):
     """ 9-3 Lennard-Jones potential with optional cutoff radius.
@@ -50,7 +50,7 @@ class LJ93(Potential):
 
     name = "lj9-3"
 
-    def __init__(self, epsilon, sigma, r_cut=float('inf')):
+    def __init__(self, epsilon, sigma, r_cut=float('inf'),pnp=np):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε
@@ -59,7 +59,7 @@ class LJ93(Potential):
         """
         self.eps = epsilon
         self.sig = sigma
-        Potential.__init__(self, r_cut)
+        Potential.__init__(self, r_cut,pnp=pnp)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': ε = {0.eps}, σ = {0.sig}, "
@@ -168,7 +168,7 @@ class LJ93smooth(LJ93, SmoothPotential):
     """
     name = 'lj9-3smooth'
 
-    def __init__(self, epsilon, sigma, gamma=None, r_t=None):
+    def __init__(self, epsilon, sigma, gamma=None, r_t=None,pnp=np):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
@@ -177,7 +177,7 @@ class LJ93smooth(LJ93, SmoothPotential):
         gamma   -- (default ε) Work of adhesion, defaults to ε
         r_t     -- (default r_min) transition point, defaults to r_min
         """
-        LJ93.__init__(self, epsilon, sigma, None)
+        LJ93.__init__(self, epsilon, sigma, None,pnp=pnp)
         SmoothPotential.__init__(self, gamma, r_t)
 
     def __repr__(self):
@@ -222,7 +222,7 @@ class LJ93smoothMin(LJ93smooth, MinimisationPotential):
     """
     name = 'lj9-3smooth-min'
 
-    def __init__(self, epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None):
+    def __init__(self, epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None,pnp=np):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
@@ -234,7 +234,7 @@ class LJ93smoothMin(LJ93smooth, MinimisationPotential):
         r_t_ls  -- (default r_min) transition point between lj and spline,
                     defaults to r_min
         """
-        LJ93smooth.__init__(self, epsilon, sigma, gamma, r_t_ls)
+        LJ93smooth.__init__(self, epsilon, sigma, gamma, r_t_ls,pnp=pnp)
         MinimisationPotential.__init__(self, r_ti)
 
     def __repr__(self):
@@ -254,7 +254,7 @@ class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
     """
     name = 'lj9-3simple-smooth'
 
-    def __init__(self, epsilon, sigma, r_c):
+    def __init__(self, epsilon, sigma, r_c,pnp=np):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
@@ -262,7 +262,7 @@ class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
         sigma   -- Lennard-Jones distance parameter σ
         r_c     -- emposed cutoff radius
         """
-        LJ93.__init__(self, epsilon, sigma, r_c)
+        LJ93.__init__(self, epsilon, sigma, r_c,pnp)
         SimpleSmoothPotential.__init__(self, r_c)
 
     @property

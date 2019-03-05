@@ -200,89 +200,13 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         """
         Asserts that the energies computed in the real space and in the fourier space are the same
         """
-        for res in [(16,16),(16,15),(15,16),(15,9)]:
-            with self.subTest(res=res):
-                disp = np.random.normal(size=res)
-                hs = PeriodicFFTElasticHalfSpace(res, self.young, self.size)
-                np.testing.assert_allclose(hs.evaluate(disp, pot=True, forces=True)[0], hs.evaluate(disp, pot=True, forces=False)[0])
+        for res in [(16, 16), (16, 15), (15, 16), (15, 9)]:
 
-    def test_sineWave_disp(self):
-        """
-        Compares the computed forces and energies to the analytical solution for single wavevector displacements (cos(kx) + sin(kx))
-
-        This allows to localize problems in the computation of the energy in the k_space
-
-        Parameters
-        ----------
-        nx
-        ny
-
-        Returns
-        -------
-
-        """
-        for res in [(64,32),(65,32),(64,33),(65,33)]:
-            nx, ny = res
-            with self.subTest(nx=nx,ny=ny):
-
-                sx = 2.45  # 30.0
-                sy = 1.0
-
-                # equivalent Young's modulus
-                E_s = 1.0
-
-                for k in [(1, 0), (0, 1), (1, 2), (nx // 2, 0), (1, ny // 2), (0, 2), (nx // 2, ny // 2), (0, ny // 2)]:
-                    # print("testing wavevector ({}* np.pi * 2 / sx, {}* np.pi * 2 / sy) ".format(*k))
-                    qx = k[0] * np.pi * 2 / sx
-                    qy = k[1] * np.pi * 2 / sy
-                    q = np.sqrt(qx ** 2 + qy ** 2)
-
-                    Y, X = np.meshgrid(np.linspace(0, sy, ny + 1)[:-1], np.linspace(0, sx, nx + 1)[:-1])
-                    disp = np.cos(qx * X + qy * Y) + np.sin(qx * X + qy * Y)
-
-                    refpressure = - disp * E_s / 2 * q
-                    # np.testing.assert_allclose(refpressure,
-                    #    PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                    #    fftengine=NumpyFFTEngine((nx,ny))).evaluate_force(disp) / (sx*sy / (nx*ny)))
-
-                    substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),)
-
-                    kpressure = substrate.evaluate_k_force(disp) / substrate.area_per_pt / (nx * ny)
-                    expected_k_disp = np.zeros((nx, ny // 2 + 1), dtype=complex)
-                    expected_k_disp[k[0], k[1]] += .5 - .5j
-
-                    # add the symetrics
-                    if k[1] == 0:
-                        expected_k_disp[-k[0], 0] += .5 + .5j
-                    if k[1] == ny // 2 and ny % 2 == 0:
-                        expected_k_disp[-k[0], k[1]] += .5 + .5j
-
-                    np.testing.assert_allclose(rfftn(disp) / (nx * ny),
-                                               expected_k_disp, rtol=1e-7, atol=1e-10)
-
-                    expected_k_pressure = - E_s / 2 * q * expected_k_disp
-                    np.testing.assert_allclose(kpressure, expected_k_pressure, rtol=1e-7, atol=1e-10)
-
-                    computedpressure = substrate.evaluate_force(disp) / substrate.area_per_pt
-                    np.testing.assert_allclose(computedpressure, refpressure, atol=1e-10, rtol=1e-7)
-
-                    computedenergy_kspace = substrate.evaluate(disp, pot=True, forces=False)[0]
-                    computedenergy = substrate.evaluate(disp, pot=True, forces=True)[0]
-                    refenergy = E_s / 8 * 2 * q * sx * sy
-
-                    # print(substrate.domain_resolution[-1] % 2)
-                    # print(substrate.fourier_resolution)
-                    # print(substrate.fourier_location[-1] + substrate.fourier_resolution[-1] - 1)
-                    # print(substrate.domain_resolution[-1] // 2 )
-                    # print(computedenergy)
-                    # print(computedenergy_kspace)
-                    # print(refenergy)
-                    np.testing.assert_allclose(computedenergy, refenergy, rtol=1e-10,
-                                               err_msg="wavevektor {} for domain_resolution {}".format(
-                                                   k, substrate.computational_resolution))
-                    np.testing.assert_allclose(computedenergy_kspace, refenergy, rtol=1e-10,
-                                               err_msg="wavevektor {} for domain_resolution {}".format(
-                                                   k, substrate.computational_resolution))
+            disp = np.random.normal(size=res)
+            hs = PeriodicFFTElasticHalfSpace(res, self.young, self.size)
+            np.testing.assert_allclose(
+                hs.evaluate(disp, pot=True, forces=True)[0],
+                hs.evaluate(disp, pot=True, forces=False)[0])
 
     def test_unit_neutrality(self):
         tol = 1e-7
@@ -384,6 +308,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
                                          poisson=self.poisson, thickness=100)
         self.assertTrue(np.count_nonzero(np.isnan(hs.weights)) == 0)
 
+    #TODO: Test independence of result of x and y Direction
 
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
@@ -430,15 +355,15 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
     def test_realnessEnergy(self):
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.size)
-        force = np.zeros(hs.computational_resolution)
+        force = np.zeros(hs.domain_resolution)
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
         kdisp = hs.evaluate_k_disp(force)
         kforce = rfftn(force)
-        np_pts = np.prod(self.res)
+        np_pts = np.prod(hs.domain_resolution)
         area_per_pt = np.prod(self.size)/np_pts
-        energy = .5*(np.vdot(-kforce, kdisp)+
-                     np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1]))/np_pts
+        energy = .5 * (np.vdot(-kforce, kdisp) +
+                       np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
         error = abs(energy.imag)
         tol = 1e-10
         self.assertTrue(error < tol,
@@ -499,6 +424,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
                 abs(E-e)<tol,
                 "theoretical E = {}, computed e = {}, diff(tol) = {}({})".format(
                     E, e, E-e, tol))
+
 
     def test_unit_neutrality(self):
         tol = 1e-7

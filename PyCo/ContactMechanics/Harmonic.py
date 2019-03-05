@@ -33,6 +33,7 @@ SOFTWARE.
 """
 
 from . import Potential
+import numpy as np
 
 
 class HarmonicPotential(Potential):
@@ -44,13 +45,13 @@ class HarmonicPotential(Potential):
 
     name = "lj9-3"
 
-    def __init__(self, spring_constant):
+    def __init__(self, spring_constant,pnp=np):
         """
         Keyword Arguments:
         spring_constant -- Spring constant k
         """
         self.spring_constant = spring_constant
-        Potential.__init__(self, 0)
+        Potential.__init__(self, 0,pnp)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': k = {0.spring_constant}").format(self)
