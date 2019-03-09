@@ -90,6 +90,9 @@ class ReferenceSolutionsTest(PyCoTestCase):
     def test_Hertz_selfconsistency(self):
         Es,R,F = np.random.random(3)*100
         self.assertAlmostEqual(Hz.normal_load(Hz.penetration(F,R,Es),R,Es),F)
+        self.assertAlmostEqual(
+            Hz.radius_and_pressure(F,R, Es)[1],
+            Hz.max_pressure__penetration(Hz.penetration(F,R,Es), R, Es))
 
     def test_Hertz_refVals(self):
         "Compare with values computed once"
