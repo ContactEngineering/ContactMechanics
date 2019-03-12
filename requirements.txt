@@ -14,4 +14,4 @@ pfft-python
 FFTEngine
 MPITools
 pytest>=4
-git+git@github.com:AntoineSIMTEK/runtests.git
+git+git@github.com:AntoineSIMTEK/runtests.git#egg=runtests
