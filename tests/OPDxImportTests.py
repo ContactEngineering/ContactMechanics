@@ -34,15 +34,8 @@ SOFTWARE.
 
 #try:
 import unittest
-import numpy as np
-import numpy.matlib as mp
-from numpy.random import rand, random
-import tempfile, os
-from tempfile import TemporaryDirectory as tmp_dir
-import os
 
 from PyCo.Topography.Readers.OPDxReader import find_2d_data, read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, TopographyLoaderOPDx
-from PyCo.Topography.Generation import RandomSurfaceGaussian
 
 
 # except ImportError as err:
@@ -84,14 +77,19 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(metadata["Image::Width value"], 47.81942, places=4)
         self.assertEqual(metadata["Image::Width unit"], "Âµm")
 
-
     def test_topography(self):
         file_path = 'tests/file_format_examples/opdx2.OPDx'
 
         loader = TopographyLoaderOPDx(file_path)
         topography = loader.topography()
-        print(topography)
 
+        self.assertAlmostEqual(topography.size[0], 0.00047819, places=8)
+        self.assertAlmostEqual(topography.size[1], 0.00035855, places=8)
+
+        self.assertEqual(topography.resolution[0], 960)
+        self.assertEqual(topography.resolution[1], 1280)
+
+        self.assertAlmostEqual(topography._heights[0, 0], -7.7315344e-05, places=12)
 
     def test_read_with_check(self):
         buffer = ['V', 'C', 'A', ' ', 'D', 'A', 'T', 'A', '\x01', '\x00', '\x00', 'U', '\x07', '\x00', '\x00', '\x00']
