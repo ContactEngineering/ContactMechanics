@@ -57,10 +57,10 @@ class OPDxSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        file_path = 'tests/file_format_examples/example6.OPDx'
+        file_path = 'tests/file_format_examples/opdx2.OPDx'
 
         loader = TopographyLoaderOPDx(file_path)
-        """
+
         self.assertEqual(len(loader.buffer), 9835211)
 
         # Check if the loader has found the data matrices, should be two
@@ -73,7 +73,6 @@ class OPDxSurfaceTest(unittest.TestCase):
         matrix_length = loader.hash_table["/2D_Data/Raw/Matrix"].data.matrix.buf.length
         self.assertEqual(matrix_start, 4916784)
         self.assertEqual(matrix_length, 4915200)
-"""
 
         rawdata, metadata = find_2d_data(loader.hash_table, loader.buffer)["Image"]
 
@@ -87,7 +86,7 @@ class OPDxSurfaceTest(unittest.TestCase):
 
 
     def test_topography(self):
-        file_path = 'tests/file_format_examples/example6.OPDx'
+        file_path = 'tests/file_format_examples/opdx2.OPDx'
 
         loader = TopographyLoaderOPDx(file_path)
         topography = loader.topography()
