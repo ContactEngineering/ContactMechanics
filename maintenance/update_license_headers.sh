@@ -1,6 +1,7 @@
 #! /bin/sh
+# Updates all Python files with license taken from README.md and copyright information obtained from the git log.
 
 for fn in `find commandline examples helpers maintenance PyCo tests -name "*.py"`; do
   echo $fn
-  python3 helpers/copyright.py $fn | cat - LICENCE.md | python3 helpers/replace_header.py $fn
+  python3 maintenance/copyright.py $fn | cat - LICENSE.md | python3 maintenance/replace_header.py $fn
 done
