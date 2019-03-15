@@ -1,6 +1,5 @@
 #
-# Copyright 2017 Lars Pastewka
-#           2016 Till Junge
+# Copyright 2019 Lars Pastewka
 # 
 # ### MIT license
 # 
@@ -23,10 +22,18 @@
 # SOFTWARE.
 #
 
-"""
-Defines all solid mechanics model used in PyCo
-"""
 
-from .Substrates import Substrate, ElasticSubstrate, PlasticSubstrate
-from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace
-from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace
+import sys
+
+file_lines = open(sys.argv[1], 'r').readlines()
+header_lines = sys.stdin.readlines()
+
+while file_lines[0].startswith('#'):
+    file_lines = file_lines[1:]
+
+file_lines.insert(0, '#\n')
+for header_line in header_lines[::-1]:
+    file_lines.insert(0, '# {}'.format(header_line))
+file_lines.insert(0, '#\n')
+
+open(sys.argv[1], 'w').writelines(file_lines)

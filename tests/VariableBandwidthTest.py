@@ -1,34 +1,28 @@
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Lars Pastewka
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   VariableBandwidthTests.py
-
-@author Lars Pastewka <lars.pastewka@imtek.uni-freiburg.de>
-
-@date   06 Sep 2018
-
-@brief  Test tools for variable bandwidth analysis.
-
-@section LICENCE
-
-Copyright 2015-2018 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Test tools for variable bandwidth analysis.
 """
 
 import unittest
@@ -78,8 +72,9 @@ class TestVariableBandwidth(PyCoTestCase):
                                    amplitude_distribution=lambda n: 1.0)
 
             for t in [t0, t0.to_nonuniform()]:
-                mag, rms = t.variable_bandwidth(resolution_cutoff=r//32)
+                mag, bwidth, rms = t.variable_bandwidth(resolution_cutoff=r//32)
                 self.assertAlmostEqual(rms[0], t.detrend().rms_height())
+                self.assertArrayAlmostEqual(bwidth, t.size[0]/mag)
                 # Since this is a self-affine surface, rms(mag) ~ mag^-H
                 b, a = np.polyfit(np.log(mag[1:]), np.log(rms[1:]), 1)
                 # The error is huge...
@@ -91,18 +86,12 @@ class TestVariableBandwidth(PyCoTestCase):
         for H in [0.3, 0.8]:
             t = fourier_synthesis(res, (1, 1), H, rms_slope=0.1,
                                   amplitude_distribution=lambda n: 1.0)
-            mag, rms = t.variable_bandwidth(resolution_cutoff=r//32)
+            mag, bwidth, rms = t.variable_bandwidth(resolution_cutoff=r//32)
             self.assertAlmostEqual(rms[0], t.detrend().rms_height())
             # Since this is a self-affine surface, rms(mag) ~ mag^-H
             b, a = np.polyfit(np.log(mag[1:]), np.log(rms[1:]), 1)
             # The error is huge...
             self.assertTrue(abs(H+b) < 0.1)
-
-    def test_nonuniform_checkerboard_detrend_vs_rms_height(self):
-        t = fourier_synthesis((2048,), (1,), 0.7, rms_slope=0.1).to_nonuniform()
-        dt = t.checkerboard_detrend(4)
-        for _t in dt:
-            self.assertAlmostEqual(_t.parent_topography.rms_height(), t.rms_height(range=_t.x_range))
 
 ###
 
