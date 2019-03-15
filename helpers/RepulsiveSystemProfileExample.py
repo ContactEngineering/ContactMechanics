@@ -1,6 +1,6 @@
 #
-# Copyright 2019 Antoine Sanner
-#           2017-2018 Lars Pastewka
+# Copyright 2017, 2019 Lars Pastewka
+#           2019 Antoine Sanner
 #           2016 km7219@lsdf-28-131.scc.kit.edu
 #           2016 Till Junge
 # 
