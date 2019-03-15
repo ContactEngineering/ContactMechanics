@@ -57,6 +57,7 @@ else:
     from FFTEngine import FFTWEngine
     DEFAULTENGINE = FFTWEngine
 
+
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
         Halfspace due to a given array of point forces. This halfspace
