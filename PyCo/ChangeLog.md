@@ -1,6 +1,14 @@
 Change log for PyCo
 ===================
 
+v0.31.0 (5Mar19)
+----------------
+
+- Added height-difference autocorrelation and variable bandwidth analysis for nonuniform
+  line scans.
+- Added wrapper 'to_nonuniform' function that turns uniform into nonuniform line scans.
+- Bug fix: 'center' detrend mode for nonunform line scans now minimizes rms height.
+
 v0.30.0 (15Feb19)
 -----------------
 

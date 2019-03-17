@@ -1,7 +1,5 @@
 #
-# Copyright 2017, 2019 Lars Pastewka
-#           2018-2019 Antoine Sanner
-#           2016 Till Junge
+# Copyright 2019 Lars Pastewka
 # 
 # ### MIT license
 # 
@@ -24,15 +22,18 @@
 # SOFTWARE.
 #
 
-"""
-Defines all solvers used in PyCo
-"""
 
-from .Systems import IncompatibleFormulationError
-from .Systems import IncompatibleResolutionError
-from .Systems import SmoothContactSystem
-from .Systems import NonSmoothContactSystem
+import sys
 
-from .SmoothSystemSpecialisations import FastSmoothContactSystem
-from .PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
-from .Factory import make_system
+file_lines = open(sys.argv[1], 'r').readlines()
+header_lines = sys.stdin.readlines()
+
+while file_lines[0].startswith('#'):
+    file_lines = file_lines[1:]
+
+file_lines.insert(0, '#\n')
+for header_line in header_lines[::-1]:
+    file_lines.insert(0, '# {}'.format(header_line))
+file_lines.insert(0, '#\n')
+
+open(sys.argv[1], 'w').writelines(file_lines)
