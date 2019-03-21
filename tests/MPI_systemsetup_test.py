@@ -31,7 +31,7 @@ from FFTEngine import PFFTEngine
 from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics.Interactions import HardWall
 from PyCo.Topography import MPITopographyLoader
-from PyCo.Topography.ParallelFromFile import TopographyLoaderNPY
+from PyCo.Topography.IO import NPYReader
 import numpy as np
 
 class MPI_TopographyLoading_Test(unittest.TestCase):
@@ -54,7 +54,7 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
 
         for HS in [PeriodicFFTElasticHalfSpace,FreeFFTElasticHalfSpace]:
             with self.subTest(HS=HS):
-                for loader in [MPITopographyLoader, TopographyLoaderNPY]: #TODO: these implementations are redundant, only one of them will persist
+                for loader in [MPITopographyLoader, NPYReader]: #TODO: these implementations are redundant, only one of them will persist
                     with self.subTest(loader=loader):
                         interaction = HardWall()
 

@@ -55,25 +55,27 @@ SOFTWARE.
 
 #try:
 import unittest
+import os
 
-from PyCo.Topography.Readers.MIReader import TopographyLoaderMI
+from PyCo.Topography.IO.MI import MIReader
 
 
 # except ImportError as err:
 #    import sys
 #    print(err)
 #    sys.exit(-1)
+DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
 
-
+@unittest.skip("Not implemented yet")
 class MISurfaceTest(unittest.TestCase):
 
     def setUp(self):
         pass
 
     def test_topography(self):
-        file_path = 'tests/file_format_examples/mi1.mi'
+        file_path = os.path.join(DATADIR, 'mi1.mi')
 
-        loader = TopographyLoaderMI(file_path)
+        loader = MIReader(file_path)
         topography = loader.topography()
 
         self.assertAlmostEqual(topography.size[0], 2.0000000000000002e-005, places=8)

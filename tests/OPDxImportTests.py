@@ -55,9 +55,9 @@ SOFTWARE.
 
 #try:
 import unittest
-
-from PyCo.Topography.Readers.OPDxReader import find_2d_data, read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, TopographyLoaderOPDx
-
+import os
+from PyCo.Topography.IO.OPDx import find_2d_data, read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, OPDxReader
+DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
 
 # except ImportError as err:
 #    import sys
@@ -71,9 +71,9 @@ class OPDxSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        file_path = 'tests/file_format_examples/opdx2.OPDx'
+        file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
-        loader = TopographyLoaderOPDx(file_path)
+        loader = OPDxReader(file_path)
 
         self.assertEqual(len(loader.buffer), 9835211)
 
@@ -99,9 +99,9 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(metadata["Image::Width unit"], "Âµm")
 
     def test_topography(self):
-        file_path = 'tests/file_format_examples/opdx2.OPDx'
+        file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
-        loader = TopographyLoaderOPDx(file_path)
+        loader = OPDxReader(file_path)
         topography = loader.topography()
 
         self.assertAlmostEqual(topography.size[0], 0.00047819, places=8)

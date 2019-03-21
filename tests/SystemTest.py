@@ -50,6 +50,9 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+
+BASEDIR = os.path.dirname(os.path.realpath(__file__))
+
 class SystemTest(unittest.TestCase):
     def setUp(self):
         self.size = (7.5+5*rand(), 7.5+5*rand())
@@ -359,8 +362,8 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
     def test_comparison_pycontact(self):
         tol = 1e-9
-        ref_fpath = 'tests/ref_smooth_sphere.nc'
-        out_fpath = 'tests/ref_smooth_sphere.out'
+        ref_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.nc')
+        out_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.out')
         ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
         with open(out_fpath) as fh:
             fh.__next__()
@@ -479,8 +482,8 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
     def test_size_insensitivity(self):
         tol = 1e-6
-        ref_fpath = 'tests/ref_smooth_sphere.nc'
-        out_fpath = 'tests/ref_smooth_sphere.out'
+        ref_fpath = os.path.join(BASEDIR,'ref_smooth_sphere.nc')
+        out_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.out')
         ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
         with open(out_fpath) as fh:
             fh.__next__()
