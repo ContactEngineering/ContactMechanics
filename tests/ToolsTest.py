@@ -132,5 +132,6 @@ class ToolTest(PyCoTestCase):
 
         dx = np.abs(dmap-np.roll(dmap,1))
         dy = np.abs(dmap-np.roll(dmap,1,axis=1))
-        self.assertLessEqual(np.max(dx),np.sqrt(2))
-        self.assertLessEqual(np.max(dy),np.sqrt(2))
+
+        self.assertLessEqual(np.max(dx),np.sqrt(2) + 1e-15)
+        self.assertLessEqual(np.max(dy),np.sqrt(2) + 1e-15)
