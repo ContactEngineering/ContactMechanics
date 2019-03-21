@@ -244,7 +244,7 @@ class UniformLineScanTest(PyCoTestCase):
 
         x = np.array((0, 1, 2, 3, 4))
         h = 2 * x
-        t = UniformLineScan(x, h)
+        t = UniformLineScan(h, 5)
         self.assertEqual(t.dim, 1)
 
     def test_positions_and_heights(self):
