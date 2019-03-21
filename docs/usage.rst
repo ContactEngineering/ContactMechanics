@@ -60,6 +60,10 @@ Example:::
     print('rms height after detrending and rescaling =',
           surface.detrend(detrend_mode='curvature').scale(2.0).rms_height())
 
+Elastic half-space module
+-------------------------
 
+Coordinate system
++++++++++++++++++
 
-
+TODO: Clarify coordinate system, i.e. which direction is down into the half-space.

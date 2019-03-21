@@ -1,41 +1,29 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Lars Pastewka
+#           2018-2019 Antoine Sanner
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   04-SystemTest.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   11 Feb 2015
-
-@brief  Tests the creation of tribosystems
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
-You should have received a copy of the GNU General Public License
-along with GNU Emacs; see the file COPYING. If not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
+Tests the creation of tribosystems
 """
 
 try:
@@ -61,6 +49,9 @@ except ImportError as err:
     import sys
     print(err)
     sys.exit(-1)
+
+
+BASEDIR = os.path.dirname(os.path.realpath(__file__))
 
 class SystemTest(unittest.TestCase):
     def setUp(self):
@@ -98,7 +89,7 @@ class SystemTest(unittest.TestCase):
         pot, forces = S.evaluate(disp, offset, forces = True)
 
     def test_SystemGradient(self):
-        res = 16##self.res##[0]
+        res = self.res##[0]
         size = [r*1.28 for r in self.res]##[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
             res, 25*self.young, size)
@@ -371,8 +362,8 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
     def test_comparison_pycontact(self):
         tol = 1e-9
-        ref_fpath = 'tests/ref_smooth_sphere.nc'
-        out_fpath = 'tests/ref_smooth_sphere.out'
+        ref_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.nc')
+        out_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.out')
         ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
         with open(out_fpath) as fh:
             fh.__next__()
@@ -491,8 +482,8 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
     def test_size_insensitivity(self):
         tol = 1e-6
-        ref_fpath = 'tests/ref_smooth_sphere.nc'
-        out_fpath = 'tests/ref_smooth_sphere.out'
+        ref_fpath = os.path.join(BASEDIR,'ref_smooth_sphere.nc')
+        out_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.out')
         ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
         with open(out_fpath) as fh:
             fh.__next__()

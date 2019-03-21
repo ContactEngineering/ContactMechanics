@@ -1,35 +1,29 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Lars Pastewka
+#           2018 Antoine Sanner
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   GoodiesTest.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   02 Feb 2016
-
-@brief  Tests for PyCo Goodies
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Tests for PyCo Goodies
 """
 
 try:
@@ -55,7 +49,7 @@ class GoodiesTest(unittest.TestCase):
         resolution = (res, res)
         lam_max = .5
         surf_gen = RandomSurfaceExact(resolution, size, hurst, rms_height, lambda_max=lam_max)
-        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
         rms_height_fromC_in = surf.rms_height()
 
         error = abs(1-rms_height_fromC_in/rms_height)
@@ -91,7 +85,7 @@ class GoodiesTest(unittest.TestCase):
         resolution = (res, res)
         lam_max = .5
         surf_gen = RandomSurfaceExact(resolution, size, hurst, rms_height, lambda_max=lam_max)
-        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
         surf_char = Goodies.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
         hurst_out, prefactor_out = surf_char.estimate_hurst(
@@ -116,7 +110,7 @@ class GoodiesTest(unittest.TestCase):
         resolution = (res, res)
         lam_max = .5
         surf_gen = RandomSurfaceGaussian(resolution, size, hurst, rms_height, lambda_max=lam_max, seed=10)
-        surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
+        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
         surf_char = Goodies.CharacterisePeriodicSurface(surf)
         prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
         hurst_out, prefactor_out = surf_char.estimate_hurst(

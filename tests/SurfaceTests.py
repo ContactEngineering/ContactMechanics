@@ -1,35 +1,30 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Lars Pastewka
+#           2018-2019 Antoine Sanner
+#           2018-2019 Michael Röttger
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   SurfaceTests.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   27 Jan 2015
-
-@brief  Tests surface classes
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Tests surface classes
 """
 
 import unittest
@@ -43,14 +38,20 @@ import os
 import io
 import pickle
 
-from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, read, read_asc, read_di,
-                             read_h5, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz)
-from PyCo.Topography.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
+from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere)
+
+from PyCo.Topography.IO.FromFile import read, read_asc, read_di, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz
+
+from PyCo.Topography.IO.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
+
 from PyCo.Topography.Generation import RandomSurfaceGaussian
-import PyCo.Topography.ParallelFromFile
-from PyCo.Topography.ParallelFromFile import TopographyLoaderNPY, TopographyLoaderH5
+import PyCo.Topography.IO
+from PyCo.Topography.IO import NPYReader, H5Reader
+from PyCo.Topography.Generation import fourier_synthesis
+
 from .PyCoTest import PyCoTestCase
 
+DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
 
 class TopographyTest(PyCoTestCase):
 
@@ -243,7 +244,7 @@ class UniformLineScanTest(PyCoTestCase):
 
         x = np.array((0, 1, 2, 3, 4))
         h = 2 * x
-        t = UniformLineScan(x, h)
+        t = UniformLineScan(h, 5)
         self.assertEqual(t.dim, 1)
 
     def test_positions_and_heights(self):
@@ -548,7 +549,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         pass
 
     def test_example1(self):
-        surf = read_asc('tests/file_format_examples/example1.txt')
+        surf = read_asc(os.path.join(DATADIR,  'example1.txt'))
         self.assertEqual(surf.resolution, (1024, 1024))
         self.assertAlmostEqual(surf.size[0], 2000)
         self.assertAlmostEqual(surf.size[1], 2000)
@@ -558,7 +559,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertEqual(surf.info['unit'], 'nm')
 
     def test_example2(self):
-        surf = read_asc('tests/file_format_examples/example2.txt')
+        surf = read_asc(os.path.join(DATADIR, 'example2.txt'))
         self.assertEqual(surf.resolution, (650, 650))
         self.assertAlmostEqual(surf.size[0], 0.0002404103)
         self.assertAlmostEqual(surf.size[1], 0.0002404103)
@@ -568,7 +569,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertEqual(surf.info['unit'], 'm')
 
     def test_example3(self):
-        surf = read_asc('tests/file_format_examples/example3.txt')
+        surf = read_asc(os.path.join(DATADIR,  'example3.txt'))
         self.assertEqual(surf.resolution, (256, 256))
         self.assertAlmostEqual(surf.size[0], 10e-6)
         self.assertAlmostEqual(surf.size[1], 10e-6)
@@ -578,7 +579,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertEqual(surf.info['unit'], 'm')
 
     def test_example4(self):
-        surf = read_asc('tests/file_format_examples/example4.txt')
+        surf = read_asc(os.path.join(DATADIR,  'example4.txt'))
         self.assertEqual(surf.resolution, (305, 75))
         self.assertAlmostEqual(surf.size[0], 0.00011280791)
         self.assertAlmostEqual(surf.size[1], 2.773965e-05)
@@ -594,7 +595,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.size[1], 2)
 
     def test_example5(self):
-        surf = read_asc('tests/file_format_examples/example5.txt')
+        surf = read_asc(os.path.join(DATADIR,  'example5.txt'))
         self.assertEqual(surf.resolution, (10, 10))
         self.assertEqual(surf.size, (10, 10))
         self.assertAlmostEqual(surf.rms_height(), 1.0)
@@ -613,7 +614,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
 
     def test_simple_nonuniform_line_scan(self):
-        surf = read_xyz('tests/file_format_examples/line_scan_1_minimal_spaces.asc')
+        surf = read_xyz(os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc'))
 
         self.assertAlmostEqual(surf.size, (9.0,))
 
@@ -636,7 +637,42 @@ class DetrendedSurfaceTest(unittest.TestCase):
 
         self._flat_arr = arr
 
-    def test_smooth_flat_with_size(self):
+    def test_smooth_flat_1d(self):
+        arr = self._flat_arr
+
+        a = 1.2
+        d = .2
+        arr = np.arange(5) * a + d
+
+        surf = UniformLineScan(arr, (1, )).detrend(detrend_mode='center')
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf.mean(), 0)
+
+        surf = UniformLineScan(arr, (1.5, )).detrend(detrend_mode='slope')
+        self.assertEqual(surf.dim, 1)
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf.mean(), 0)
+        self.assertAlmostEqual(surf.rms_slope(), 0)
+
+        surf = UniformLineScan(arr, arr.shape).detrend(detrend_mode='height')
+        self.assertEqual(surf.dim, 1)
+        self.assertTrue(surf.is_uniform)
+        self.assertAlmostEqual(surf.mean(), 0)  # TODO fails -> implement detrending without using size
+        self.assertAlmostEqual(surf.rms_slope(), 0)
+        self.assertTrue(surf.rms_height() < UniformLineScan(arr, arr.shape).rms_height())
+
+        surf2 = UniformLineScan(arr, (1, )).detrend(detrend_mode='height')
+        self.assertEqual(surf.dim, 1)
+        self.assertTrue(surf2.is_uniform)
+        self.assertAlmostEqual(surf2.rms_slope(), 0)
+        self.assertTrue(surf2.rms_height() < UniformLineScan(arr, arr.shape).rms_height())
+
+        self.assertAlmostEqual(surf.rms_height(), surf2.rms_height())
+
+        x, z = surf2.positions_and_heights()
+        self.assertAlmostEqual(np.mean(np.diff(x)), surf2.size[0] / surf2.resolution[0])
+
+    def test_smooth_flat_2d(self):
         arr = self._flat_arr
 
         a = 1.2
@@ -674,6 +710,18 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surf2.size[0] / surf2.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surf2.size[1] / surf2.resolution[1])
 
+    def test_detrend_reduces(self):
+         """ tests if detrending really reduces the heights (or slope) as claimed
+         """
+         n = 10
+         dx = 0.5
+         x = np.arange(n) * dx
+         h = [0.82355941, -1.32205074, 0.77084813, 0.49928252, 0.57872149, 2.80200331, 0.09551251, -1.11616977,
+              2.07630937, -0.65408072]
+         t = UniformLineScan(h, dx * n)
+         for mode in ['height', 'curvature']:
+             self.assertGreater(t.rms_height(), t.detrend(detrend_mode=mode).rms_height(), msg=mode)
+
     def test_smooth_without_size(self):
         arr = self._flat_arr
         surf = Topography(arr, (1, 1)).detrend(detrend_mode='height')
@@ -709,7 +757,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.rms_curvature(), 0.0)
 
     def test_randomly_rough(self):
-        surface = RandomSurfaceGaussian((512, 512), (1., 1.), 0.8, rms_height=1).get_surface()
+        surface = fourier_synthesis((512, 512), (1., 1.), 0.8, rms_height=1)
         self.assertTrue(surface.is_uniform)
         cut = Topography(surface[:64, :64], size=(64., 64.))
         self.assertTrue(cut.is_uniform)
@@ -721,7 +769,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertTrue(untilt1.rms_slope() > untilt2.rms_slope())
 
     def test_nonuniform(self):
-        surf = read_xyz('tests/file_format_examples/example.asc')
+        surf = read_xyz(os.path.join(DATADIR,  'example.asc'))
         self.assertFalse(surf.is_uniform)
         self.assertEqual(surf.dim, 1)
 
@@ -814,27 +862,39 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.rms_slope(), 0.0)
         self.assertAlmostEqual(surf.rms_curvature(), 0.0)
 
+    def test_noniform_mean_zero(self):
+        surface = fourier_synthesis((512, ), (1.3, ), 0.8, rms_height=1).to_nonuniform()
+        self.assertTrue(not surface.is_uniform)
+        x, h = surface.positions_and_heights()
+        s, = surface.size
+        self.assertAlmostEqual(surface.mean(), np.trapz(h, x)/s)
+        detrended_surface = surface.detrend(detrend_mode='height')
+        self.assertAlmostEqual(detrended_surface.mean(), 0)
+        x, h = detrended_surface.positions_and_heights()
+        self.assertAlmostEqual(np.trapz(h, x), 0)
+
 
 class DetectFormatTest(unittest.TestCase):
     def setUp(self):
         pass
 
     def test_detection(self):
-        self.assertEqual(detect_format('tests/file_format_examples/example1.di'), 'di')
-        self.assertEqual(detect_format('tests/file_format_examples/example2.di'), 'di')
-        self.assertEqual(detect_format('tests/file_format_examples/example.ibw'), 'ibw')
-        self.assertEqual(detect_format('tests/file_format_examples/example.opd'), 'opd')
-        self.assertEqual(detect_format('tests/file_format_examples/example.x3p'), 'x3p')
-        self.assertEqual(detect_format('tests/file_format_examples/example1.mat'), 'mat')
-        self.assertEqual(detect_format('tests/file_format_examples/example.asc'), 'xyz')
-        self.assertEqual(detect_format('tests/file_format_examples/line_scan_1_minimal_spaces.asc'), 'xyz')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'example1.di')), 'di')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'example2.di')), 'di')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'example.ibw')), 'ibw')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'example.opd')), 'opd')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'example.x3p')), 'x3p')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'example1.mat')), 'mat')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'example.asc')), 'xyz')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc')), 'xyz')
+
 
 class matSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
 
     def test_read(self):
-        surface = read_mat('tests/file_format_examples/example1.mat')
+        surface = read_mat(os.path.join(DATADIR,  'example1.mat'))
         nx, ny = surface.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
@@ -853,16 +913,15 @@ class npySurfaceTest(unittest.TestCase):
         np.save(self.fn, self.data)
 
     def test_read(self):
-        loader = TopographyLoaderNPY(self.fn)
-        loader.size = (2, 4)
+        size = (2,4)
+        loader = NPYReader(self.fn)
 
-        topo = loader.topography()
+        topo = loader.topography(size=size)
 
         np.testing.assert_array_almost_equal(topo.heights(), self.data)
 
         #self.assertEqual(topo.info, loader.info)
-        self.assertEqual(topo.size, loader.size)
-
+        self.assertEqual(topo.size, size)
 
     def tearDown(self):
         os.remove(self.fn)
@@ -873,14 +932,14 @@ class x3pSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        surface = read_x3p('tests/file_format_examples/example.x3p')
+        surface = read_x3p(os.path.join(DATADIR,  'example.x3p'))
         nx, ny = surface.resolution
         self.assertEqual(nx, 777)
         self.assertEqual(ny, 1035)
         sx, sy = surface.size
         self.assertAlmostEqual(sx, 0.00068724)
         self.assertAlmostEqual(sy, 0.00051593)
-        surface = read_x3p('tests/file_format_examples/example2.x3p')
+        surface = read_x3p(os.path.join(DATADIR,  'example2.x3p'))
         nx, ny = surface.resolution
         self.assertEqual(nx, 650)
         self.assertEqual(ny, 650)
@@ -890,7 +949,7 @@ class x3pSurfaceTest(unittest.TestCase):
         self.assertTrue(surface.is_uniform)
 
     def test_points_for_uniform_topography(self):
-        surface = read_x3p('tests/file_format_examples/example.x3p')
+        surface = read_x3p(os.path.join(DATADIR,  'example.x3p'))
         x, y, z = surface.positions_and_heights()
         self.assertAlmostEqual(np.mean(np.diff(x[:, 0])), surface.size[0] / surface.resolution[0])
         self.assertAlmostEqual(np.mean(np.diff(y[0, :])), surface.size[1] / surface.resolution[1])
@@ -901,7 +960,7 @@ class opdSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        surface = read_opd('tests/file_format_examples/example.opd')
+        surface = read_opd(os.path.join(DATADIR,  'example.opd'))
         nx, ny = surface.resolution
         self.assertEqual(nx, 640)
         self.assertEqual(ny, 480)
@@ -933,7 +992,7 @@ class diSurfaceTest(unittest.TestCase):
                                            0.83011806260022758,  # AmplitudeError
                                            None])  # Phase
         ]:
-            surfaces = read_di('tests/file_format_examples/{}'.format(fn))
+            surfaces = read_di(os.path.join(DATADIR,  '{}').format(fn))
             if type(surfaces) is not list:
                 surfaces = [surfaces]
             for surface, rms in zip(surfaces, rmslist):
@@ -958,7 +1017,7 @@ class ibwSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        surface = read_ibw('tests/file_format_examples/example.ibw')
+        surface = read_ibw(os.path.join(DATADIR,  'example.ibw'))
         nx, ny = surface.resolution
         self.assertEqual(nx, 512)
         self.assertEqual(ny, 512)
@@ -969,7 +1028,7 @@ class ibwSurfaceTest(unittest.TestCase):
         self.assertTrue(surface.is_uniform)
 
     def test_detect_format_then_read(self):
-        f = open('tests/file_format_examples/example.ibw', 'rb')
+        f = open(os.path.join(DATADIR,  'example.ibw'), 'rb')
         fmt = detect_format(f)
         self.assertTrue(fmt, 'ibw')
         surface = read(f, format=fmt)
@@ -981,7 +1040,7 @@ class hgtSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        surface = read_hgt('tests/file_format_examples/N46E013.hgt')
+        surface = read_hgt(os.path.join(DATADIR,  'N46E013.hgt'))
         nx, ny = surface.resolution
         self.assertEqual(nx, 3601)
         self.assertEqual(ny, 3601)
@@ -994,13 +1053,13 @@ class h5SurfaceTest(unittest.TestCase):
 
     def test_detect_format(self):
 
-        self.assertEqual(PyCo.Topography.ParallelFromFile.detect_format( # TODO: this will be the standart detect format method in the future
-            'tests/file_format_examples/surface.2048x2048.h5'), 'h5')
+        self.assertEqual(PyCo.Topography.IO.detect_format( # TODO: this will be the standart detect format method in the future
+            os.path.join(DATADIR,  'surface.2048x2048.h5')), 'h5')
 
     def test_read(self):
-        loader = TopographyLoaderH5('tests/file_format_examples/surface.2048x2048.h5')
+        loader = H5Reader(os.path.join(DATADIR,  'surface.2048x2048.h5'))
 
-        topography = loader.topography()
+        topography = loader.topography(size=(1.,1.))
         nx, ny = topography.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
@@ -1013,10 +1072,10 @@ class xyzSurfaceTest(unittest.TestCase):
         pass
 
     def test_detect_format_then_read(self):
-        self.assertEqual(detect_format('tests/file_format_examples/example.asc'), 'xyz')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'example.asc')), 'xyz')
 
     def test_read(self):
-        surface = read_xyz('tests/file_format_examples/example.asc')
+        surface = read_xyz(os.path.join(DATADIR,  'example.asc'))
         self.assertFalse(surface.is_uniform)
         x, y = surface.positions_and_heights()
         self.assertGreater(len(x), 0)
@@ -1030,10 +1089,10 @@ class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
         pass
 
     def test_detect_format_then_read(self):
-        self.assertEqual(detect_format('tests/file_format_examples/line_scan_1_minimal_spaces.asc'), 'xyz')
+        self.assertEqual(detect_format(os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc')), 'xyz')
 
     def test_read(self):
-        surface = read_xyz('tests/file_format_examples/line_scan_1_minimal_spaces.asc')
+        surface = read_xyz(os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc'))
 
         self.assertFalse(surface.is_uniform)
         self.assertEqual(surface.dim, 1)
@@ -1045,7 +1104,7 @@ class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
 
 class PipelineTests(unittest.TestCase):
     def test_scaled_topography(self):
-        surf = read_xyz('tests/file_format_examples/example.asc')
+        surf = read_xyz(os.path.join(DATADIR,  'example.asc'))
         for fac in [1.0, 2.0, np.pi]:
             surf2 = surf.scale(fac)
             self.assertAlmostEqual(fac * surf.rms_height(kind='Rq'), surf2.rms_height(kind='Rq'))
@@ -1054,20 +1113,20 @@ class PipelineTests(unittest.TestCase):
 class IOTest(unittest.TestCase):
     def setUp(self):
         self.binary_example_file_list = [
-            'tests/file_format_examples/example1.di',
-            'tests/file_format_examples/example.ibw',
-            'tests/file_format_examples/example1.mat',
-            'tests/file_format_examples/example.opd',
-            'tests/file_format_examples/example.x3p',
-            'tests/file_format_examples/example2.x3p',
+            os.path.join(DATADIR,  'example1.di'),
+            os.path.join(DATADIR,  'example.ibw'),
+            os.path.join(DATADIR,  'example1.mat'),
+            os.path.join(DATADIR,  'example.opd'),
+            os.path.join(DATADIR,  'example.x3p'),
+            os.path.join(DATADIR,  'example2.x3p'),
         ]
         self.text_example_file_list = [
-            'tests/file_format_examples/example.asc',
-            'tests/file_format_examples/example1.txt',
-            'tests/file_format_examples/example2.txt',
-            'tests/file_format_examples/example3.txt',
-            'tests/file_format_examples/example4.txt',
-            'tests/file_format_examples/line_scan_1_minimal_spaces.asc',
+            os.path.join(DATADIR,  'example.asc'),
+            os.path.join(DATADIR,  'example1.txt'),
+            os.path.join(DATADIR,  'example2.txt'),
+            os.path.join(DATADIR,  'example3.txt'),
+            os.path.join(DATADIR,  'example4.txt'),
+            os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc'),
         ]
         self.text_example_memory_list = [
             """
@@ -1140,15 +1199,42 @@ class IOTest(unittest.TestCase):
 class UnknownFileFormatGivenTest(unittest.TestCase):
 
     def test_read(self):
-        with self.assertRaises(PyCo.Topography.ParallelFromFile.UnknownFileFormatGiven):
-            PyCo.Topography.ParallelFromFile.read("filename", format="Nonexistentfileformat")
+        with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
+            PyCo.Topography.IO.read(os.path.join(DATADIR,  "surface.2048x2048.h5"), format='Nonexistentfileformat')
 
     def test_detect_format(self):
-        with self.assertRaises(PyCo.Topography.ParallelFromFile.UnknownFileFormatGiven):
-            PyCo.Topography.ParallelFromFile.read("filename", format="Nonexistentfileformat")
+        with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
+            PyCo.Topography.IO.read(os.path.join(DATADIR,  "surface.2048x2048.h5"), format='Nonexistentfileformat')
 
 class FileFormatMismatchTest(unittest.TestCase):
-
     def test_read(self):
-        with self.assertRaises(PyCo.Topography.ParallelFromFile.CannotDetectFileFormat):
-            PyCo.Topography.ParallelFromFile.read('tests/file_format_examples/surface.2048x2048.h5', format="npy")
+        with self.assertRaises(PyCo.Topography.IO.FileFormatMismatch):
+            PyCo.Topography.IO.read(os.path.join(DATADIR,  'surface.2048x2048.h5'), format="npy")
+
+class ScalarParametersTest(PyCoTestCase):
+    @unittest.skip
+    def test_rms_slope_1d(self):
+        r = 4096
+        res = (r, )
+        for H in [0.3, 0.8]:
+            for s in [(1, ), (1.4, )]:
+                t = fourier_synthesis(res, s, H, short_cutoff=32 / r * np.mean(s), rms_slope=0.1,
+                                      amplitude_distribution=lambda n: 1.0)
+                self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
+
+    def test_rms_slope_2d(self):
+        r = 2048
+        res = [r, r]
+        for H in [0.3, 0.8]:
+            for s in [(1, 1), (1.4, 3.3)]:
+                t = fourier_synthesis(res, s, H, short_cutoff=8 / r * np.mean(s), rms_slope=0.1,
+                                      amplitude_distribution=lambda n: 1.0)
+                self.assertAlmostEqual(t.rms_slope(), 0.1, places=2)
+
+
+class ConvertersTest(PyCoTestCase):
+    def test_wrapped_x_range(self):
+        t = fourier_synthesis((128, ), (1, ), 0.8, rms_slope=0.1).to_nonuniform()
+        x = t.positions()
+        self.assertAlmostEqual(t.x_range[0], x[0])
+        self.assertAlmostEqual(t.x_range[1], x[-1])
