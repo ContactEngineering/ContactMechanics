@@ -51,7 +51,7 @@ def parse_git_log(log, authors):
                 author = authors[email]
             except KeyError:
                 author = email
-        elif 'copyright' in line.lower():
+        elif 'copyright' in line.lower() or 'license' in line.lower():
             date = None
     if date is not None:
         committers[author].add(date.year)
