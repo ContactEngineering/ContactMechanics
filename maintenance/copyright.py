@@ -38,8 +38,12 @@ def read_authors(fn):
 
 def parse_git_log(log, authors):
     committers = defaultdict(set)
+    date = None
     for line in log.decode('utf-8').split('\n'):
-        if line.startswith('Author:'):
+        if line.startswith('commit'):
+            if date is not None:
+                committers[author].add(date.year)
+        elif line.startswith('Author:'):
             email = line.rsplit('<', maxsplit=1)[1][:-1]
         elif line.startswith('Date:'):
             date = datetime.strptime(line[5:].rsplit(maxsplit=1)[0].strip(), '%a %b %d %H:%M:%S %Y')
@@ -47,7 +51,10 @@ def parse_git_log(log, authors):
                 author = authors[email]
             except KeyError:
                 author = email
-            committers[author].add(date.year)
+        elif 'copyright' in line.lower():
+            date = None
+    if date is not None:
+        committers[author].add(date.year)
     return committers
 
 
