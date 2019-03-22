@@ -1,5 +1,6 @@
 #
-# Copyright 2019 k.o.haase@googlemail.com
+# Copyright 2019 Antoine Sanner
+#           2019 Kai Haase
 # 
 # ### MIT license
 # 
