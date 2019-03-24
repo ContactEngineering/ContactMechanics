@@ -80,7 +80,7 @@ try:
     from PyCo.Topography import Topography
     from PyCo.System import make_system
     from PyCo.Tools.Logger import screen
-    from .PyCoTest import PyCoTestCase
+
 
     from PyCo.Tools.Logger import Logger
 
@@ -90,7 +90,7 @@ except ImportError as err:
     sys.exit(-1)
 
 # -----------------------------------------------------------------------------
-class WestergaardTest(PyCoTestCase):
+class WestergaardTest(unittest.TestCase):
     def setUp(self):
         # system size
         self.sx = 30.0
@@ -106,7 +106,7 @@ class WestergaardTest(PyCoTestCase):
     def test_constrained_conjugate_gradients(self):
         for kind in ['ref']: # Add 'opt' to test optimized solver, but does
                              # not work on Travis!
-            for nx, ny in [(256, 16)]: #, (256, 15), (255, 16)]: #256,16
+            for nx, ny in [(1024, 16)]: #, (256, 15), (255, 16)]: #256,16
                 for disp0, normal_force in [(-0.9, None), (-0.1, None)]: # (0.1, None),
                     substrate = PeriodicFFTElasticHalfSpace((nx, ny), self.E_s,
                                                             (self.sx, self.sy),fftengine=PFFTEngine((nx,ny),self.comm))
@@ -148,7 +148,12 @@ class WestergaardTest(PyCoTestCase):
                     #plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
                     #plt.plot(x, pth, 'r-')
                     #plt.show()
-                    self.assertArrayAlmostEqual(forces[:, 0]/substrate.area_per_pt, pth[substrate.subdomain_slice[0]], tol=1e-2)
+                    error_mask = np.abs((forces[:, 0] / substrate.area_per_pt -pth[substrate.subdomain_slice[0]]) >= 1e-12 +  1e-2 * np.abs(pth[substrate.subdomain_slice[0]]))
+
+                    #np.testing.assert_allclose(forces[:, 0]/substrate.area_per_ pth[substrate.subdomain_slice[0]], rtol=1e-2, atol = 1e-12)
+                    assert np.count_nonzero(error_mask) == 0, "max relative diff at index {} with ref = {}, computed= {}".format(
+                            np.arange(substrate.subdomain_resolution[0])[error_mask], pth[substrate.subdomain_slice[0]][error_mask],
+                            forces[:, 0][error_mask] / substrate.area_per_pt)
 
 suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(WestergaardTest)])
 if __name__ in  ['__main__','builtins']:
