@@ -93,7 +93,7 @@ setup(
     include_package_data = True,
     ext_modules = cythonize(extensions),
     dependency_links = ["git+git@github.com:AntoineSIMTEK/FFTEngine.git",
-                        "git+git@github.com:AntoineSIMTEK/MPITools.git"  ],
+                        "git+git@github.com:AntoineSIMTEK/NuMPI.git"  ],
     # metadata for upload to PyPI
     author = "Lars Pastewka",
     author_email = "lars.pastewka@imtek.uni-freiburg.de",

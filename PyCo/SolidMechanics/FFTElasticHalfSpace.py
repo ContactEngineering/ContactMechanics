@@ -139,7 +139,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         if pnp is None:
             if self.fftengine.is_MPI:
-                from MPITools.Tools.ParallelNumpy import ParallelNumpy
+                from NuMPI.Tools.ParallelNumpy import ParallelNumpy
                 self.pnp = ParallelNumpy(self.fftengine.comm)
             else:
                 self.pnp = np
@@ -147,7 +147,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         else:
             self.pnp = pnp
             #if self.fftengine.is_MPI:
-                #from MPITools.Tools.ParallelNumpy import ParallelNumpy
+                #from NuMPI.Tools.ParallelNumpy import ParallelNumpy
                 #if isinstance(self.pnp,ParallelNumpy): raise ValueError("fftengine is parallel but you provided a computation tool ({}) different from ({})".format(self.pnp.__class__,ParallelNumpy.__))
 
         #self.fftengine = fftengine(self.domain_resolution)  # because when called in subclass,

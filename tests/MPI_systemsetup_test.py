@@ -30,8 +30,7 @@ from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSp
 from FFTEngine import PFFTEngine
 from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics.Interactions import HardWall
-from PyCo.Topography import MPITopographyLoader
-from PyCo.Topography.IO import NPYReader
+from PyCo.Topography.IO import NPYReader, read
 import numpy as np
 
 class MPI_TopographyLoading_Test(unittest.TestCase):
@@ -54,12 +53,12 @@ class MPI_TopographyLoading_Test(unittest.TestCase):
 
         for HS in [PeriodicFFTElasticHalfSpace,FreeFFTElasticHalfSpace]:
             with self.subTest(HS=HS):
-                for loader in [MPITopographyLoader, NPYReader]: #TODO: these implementations are redundant, only one of them will persist
+                for loader in [read, NPYReader]: #TODO: these implementations are redundant, only one of them will persist
                     with self.subTest(loader=loader):
                         interaction = HardWall()
 
                         # Read metadata from the file and returns a UniformTopgraphy Object
-                        fileReader = MPITopographyLoader(self.fn, comm=comm)
+                        fileReader = loader(self.fn, comm=comm)
 
                         assert fileReader.resolution == self.res
 

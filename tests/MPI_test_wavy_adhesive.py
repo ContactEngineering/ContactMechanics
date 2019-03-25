@@ -36,8 +36,8 @@ try:
                                                surface_displacements,
                                                surface_stress)
     from FFTEngine import PFFTEngine
-    from MPITools.Optimization import LBFGS
-    from MPITools.Tools.ParallelNumpy import ParallelNumpy
+    from NuMPI.Optimization import LBFGS
+    from NuMPI.Tools.ParallelNumpy import ParallelNumpy
     from mpi4py import MPI
     from PyCo.ContactMechanics import VDW82smoothMin, VDW82
     from PyCo.System import SmoothContactSystem

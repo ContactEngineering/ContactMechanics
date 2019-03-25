@@ -40,7 +40,7 @@ DEFAULTFFTENGINE = NumpyFFTEngine
 
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 
-from MPITools.Tools import ParallelNumpy
+from NuMPI.Tools import ParallelNumpy
 
 comm = MPI.COMM_WORLD
 pnp = ParallelNumpy(comm=comm)

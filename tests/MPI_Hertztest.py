@@ -43,7 +43,7 @@ try:
 
     from mpi4py import MPI
     from FFTEngine import PFFTEngine
-    from MPITools.Tools.ParallelNumpy import ParallelNumpy
+    from NuMPI.Tools.ParallelNumpy import ParallelNumpy
 
 except ImportError as err:
     import sys

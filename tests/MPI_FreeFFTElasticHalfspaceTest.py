@@ -36,7 +36,7 @@ if _withMPI:
 
 from FFTEngine import NumpyFFTEngine
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-from MPITools.Tools import ParallelNumpy
+from NuMPI.Tools import ParallelNumpy
 
 
 comm = MPI.COMM_WORLD

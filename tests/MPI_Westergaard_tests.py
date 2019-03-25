@@ -69,7 +69,7 @@ except ImportError:
 if _withMPI:
     from FFTEngine import PFFTEngine
     from FFTEngine.helpers import gather
-    from MPITools.Tools.ParallelNumpy import ParallelNumpy
+    from NuMPI.Tools.ParallelNumpy import ParallelNumpy
 
 try:
     import unittest
