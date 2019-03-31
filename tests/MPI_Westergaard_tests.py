@@ -58,6 +58,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
+import pytest
 try :
     from mpi4py import MPI
     _withMPI=True
@@ -71,91 +73,77 @@ if _withMPI:
     from FFTEngine.helpers import gather
     from NuMPI.Tools.ParallelNumpy import ParallelNumpy
 
-try:
-    import unittest
-    import numpy as np
-    from PyCo.ContactMechanics import HardWall
-    from PyCo.ReferenceSolutions.Westergaard import _pressure
-    from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
-    from PyCo.Topography import Topography
-    from PyCo.System import make_system
-    from PyCo.Tools.Logger import screen
+import numpy as np
+from PyCo.ContactMechanics import HardWall
+from PyCo.ReferenceSolutions.Westergaard import _pressure
+from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
+from PyCo.Topography import Topography
+from PyCo.System import make_system
+from PyCo.Tools.Logger import screen
 
 
-    from PyCo.Tools.Logger import Logger
+from PyCo.Tools.Logger import Logger
 
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
 
 # -----------------------------------------------------------------------------
-class WestergaardTest(unittest.TestCase):
-    def setUp(self):
-        # system size
-        self.sx = 30.0
-        self.sy = 1.0
-        # equivalent Young's modulus
-        self.E_s = 3.56
+def test_constrained_conjugate_gradients(comm):
+    sx = 30.0
+    sy = 1.0
+    # equivalent Young's modulus
+    E_s = 3.56
+    pnp = ParallelNumpy(comm)
 
-        self.comm = MPI.COMM_WORLD
+    for kind in ['ref']: # Add 'opt' to test optimized solver, bxwut does
+                         # not work on Travis!
+        for nx, ny in [(16384, 4*comm.Get_size())]: #, (256, 15), (255, 16)]: #256,16
+            # if ny is too small, one processor will end
+            # with one empty fourier subdomain, what is not supported
+            # 16384 points are indeed needed to reach the relative error of 1e-2
 
-        self.pnp = ParallelNumpy(self.comm)
+            for disp0, normal_force in [(-0.9, None), (-0.1, None)]: # (0.1, None),
+                substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s,
+                                                        (sx, sy),fftengine=PFFTEngine((nx,ny),comm))
+                interaction = HardWall()
+                profile = np.resize(np.cos(2*np.pi*np.arange(nx)/nx), (ny, nx))
+                surface =Topography(profile.T, size=(sx, sy),
+                                                #resolution=substrate.resolution,
+                                                subdomain_location = substrate.topography_subdomain_location,
+                                                subdomain_resolution = substrate.topography_subdomain_resolution,
+                                                pnp=substrate.pnp)
+                system = make_system(substrate, interaction, surface)
 
+                result = system.minimize_proxy(offset=disp0,
+                                               external_force=normal_force,
+                                               kind=kind,
+                                               pentol=1e-12)
+                offset = result.offset
+                forces = result.jac
+                displ = result.x[:forces.shape[0], :forces.shape[1]]
+                converged = result.success
+                assert converged
 
-    def test_constrained_conjugate_gradients(self):
-        for kind in ['ref']: # Add 'opt' to test optimized solver, but does
-                             # not work on Travis!
-            for nx, ny in [(1024, 16)]: #, (256, 15), (255, 16)]: #256,16
-                for disp0, normal_force in [(-0.9, None), (-0.1, None)]: # (0.1, None),
-                    substrate = PeriodicFFTElasticHalfSpace((nx, ny), self.E_s,
-                                                            (self.sx, self.sy),fftengine=PFFTEngine((nx,ny),self.comm))
-                    interaction = HardWall()
-                    profile = np.resize(np.cos(2*np.pi*np.arange(nx)/nx), (ny, nx))
-                    surface =Topography(profile.T, size=(self.sx, self.sy),
-                                                    #resolution=substrate.resolution,
-                                                    subdomain_location = substrate.topography_subdomain_location,
-                                                    subdomain_resolution = substrate.topography_subdomain_resolution,
-                                                    pnp=substrate.pnp)
-                    system = make_system(substrate, interaction, surface)
+                #print(forces)
+                #print(displ)
 
-                    result = system.minimize_proxy(offset=disp0,
-                                                   external_force=normal_force,
-                                                   kind=kind,
-                                                   pentol=1e-9)
-                    offset = result.offset
-                    forces = result.jac
-                    displ = result.x[:forces.shape[0], :forces.shape[1]]
-                    converged = result.success
-                    self.assertTrue(converged)
+                x = np.arange(nx)*sx/nx
+                mean_pressure = pnp.sum(forces)/np.prod(substrate.size)
+                pth = mean_pressure * _pressure(x/sx, mean_pressure=sx*mean_pressure/E_s)
 
-                    #print(forces)
-                    #print(displ)
+                # symetrize the Profile
+                pth[1:] = pth[1:] + pth[:0:-1]
 
-                    x = np.arange(nx)*self.sx/nx
-                    mean_pressure = self.pnp.sum(forces)/np.prod(substrate.size)
-                    pth = mean_pressure * _pressure(x/self.sx, mean_pressure=self.sx*mean_pressure/self.E_s)
+                #import matplotlib.pyplot as plt
+                #plt.figure()
+                ##plt.plot(np.arange(nx)*sx/nx, profile)
+                #plt.plot(x, displ[:, 0], 'r-')
+                #plt.plot(x, surface[:, 0]+offset, 'k-')
+                #plt.figure()
+                #plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
+                #plt.plot(x, pth, 'r-')
+                #plt.show()
+                error_mask = np.abs((forces[:, 0] / substrate.area_per_pt -pth[substrate.subdomain_slice[0]]) >= 1e-12 +  1e-2 * np.abs(pth[substrate.subdomain_slice[0]]))
 
-                    # symetrize the Profile
-                    pth[1:] = pth[1:] + pth[:0:-1]
-
-                    #import matplotlib.pyplot as plt
-                    #plt.figure()
-                    ##plt.plot(np.arange(nx)*self.sx/nx, profile)
-                    #plt.plot(x, displ[:, 0], 'r-')
-                    #plt.plot(x, surface[:, 0]+offset, 'k-')
-                    #plt.figure()
-                    #plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
-                    #plt.plot(x, pth, 'r-')
-                    #plt.show()
-                    error_mask = np.abs((forces[:, 0] / substrate.area_per_pt -pth[substrate.subdomain_slice[0]]) >= 1e-12 +  1e-2 * np.abs(pth[substrate.subdomain_slice[0]]))
-
-                    #np.testing.assert_allclose(forces[:, 0]/substrate.area_per_ pth[substrate.subdomain_slice[0]], rtol=1e-2, atol = 1e-12)
-                    assert np.count_nonzero(error_mask) == 0, "max relative diff at index {} with ref = {}, computed= {}".format(
-                            np.arange(substrate.subdomain_resolution[0])[error_mask], pth[substrate.subdomain_slice[0]][error_mask],
-                            forces[:, 0][error_mask] / substrate.area_per_pt)
-
-suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(WestergaardTest)])
-if __name__ in  ['__main__','builtins']:
-    print("Running unittest MPI_FileIO_Test")
-    result = unittest.TextTestRunner().run(suite)
+                #np.testing.assert_allclose(forces[:, 0]/substrate.area_per_ pth[substrate.subdomain_slice[0]], rtol=1e-2, atol = 1e-12)
+                assert np.count_nonzero(error_mask) == 0, "max relative diff at index {} with ref = {}, computed= {}".format(
+                        np.arange(substrate.subdomain_resolution[0])[error_mask], pth[substrate.subdomain_slice[0]][error_mask],
+                        forces[:, 0][error_mask] / substrate.area_per_pt)
