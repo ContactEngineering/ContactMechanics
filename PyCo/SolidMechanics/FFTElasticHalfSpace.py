@@ -46,14 +46,9 @@ except:
 
 # I will never take the parallel as default because most of the tests will fail because of this
 
-if 'darwin' in sys.platform:
-    # print("FFTWEngine causes failure on darwin, will not be tested")
-    from FFTEngine import NumpyFFTEngine
-    DEFAULTENGINE = NumpyFFTEngine
-else:
-    from FFTEngine import FFTWEngine
-    DEFAULTENGINE = FFTWEngine
 
+from FFTEngine import NumpyFFTEngine
+DEFAULTENGINE = NumpyFFTEngine
 
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
