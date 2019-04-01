@@ -49,20 +49,6 @@ FIXTURE_DIR = os.path.join(
     'file_format_examples')
 
 
-@pytest.fixture()
-def fftengine_class(comm):
-    try:
-        from FFTEngine import PFFTEngine as engine
-    except Exception as err:
-        if comm.Get_size() == 1:
-            try:
-                from FFTEngine import FFTWEngine as engine
-            except:
-                from FFTEngine import NumpyFFTEngine as engine
-        else:
-            raise err
-    return engine
-
 
 def test_hard_wall_bearing_area(comm, fftengine_class, datafiles):
     # Test that at very low hardness we converge to (almost) the bearing

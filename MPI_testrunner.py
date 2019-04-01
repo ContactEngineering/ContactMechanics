@@ -13,9 +13,7 @@ MPI_tests= [
     "MPI_PeriodicFFTElasticHalfspaceTest",
     "MPI_FreeFFTElasticHalfspaceTest",
     "test_unittestFail",
-    "MPI_Hertztest",
 #    "MPI_Smoothcontact_tests",
-    "MPI_Westergaard_tests",
     "MPI_systemsetup_test",
 #    "MPI_test_wavy_adhesive"
 ]
@@ -23,8 +21,6 @@ MPI_tests= [
 # MPI Tests using the unittest framework
 MPI_unittests = [
 "test_unittestFail",
-"MPI_Hertztest",
-"MPI_Westergaard_tests",
 "MPI_systemsetup_test",
 ]
 
@@ -117,7 +113,7 @@ if __name__ == "__main__":
                     print(exsc)
 
                 anyfailed = np.array(False, dtype=bool)
-                comm.Allreduce(np.array(local_failed,dtype=bool), anyfailed, op=MPI.LOR)
+                comm.Allreduce(np.array(local_failed, dtype=bool), anyfailed, op=MPI.LOR)
                 if anyfailed:
                     if comm.Get_rank() == 0: print("failed")
                     failedTests.append(test)
