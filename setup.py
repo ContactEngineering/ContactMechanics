@@ -64,13 +64,6 @@ extensions = [
         include_dirs=[np.get_include()]
         ),
     Extension(
-        name="PyCo.Tools.fftext",
-        sources=["PyCo/Tools/fftext.pyx", "PyCo/Tools/fftext_cc.cc"],
-        extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args,
-        include_dirs=[np.get_include()],
-        language="c++"),
-    Extension(
         name="PyCo.Tools.Optimisation.ConstrainedConjugateGradientsOpt",
         sources=["PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.pyx"],
         include_dirs=[np.get_include()],
