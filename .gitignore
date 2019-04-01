@@ -5,6 +5,7 @@ __pycache__
 build
 dist
 *egg-info
+/tests/*.png
 /helpers/*.png
 /helpers/*.png.pdf
 /helpers/figs.pdf
