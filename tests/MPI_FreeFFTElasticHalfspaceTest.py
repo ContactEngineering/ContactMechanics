@@ -39,26 +39,38 @@ from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from NuMPI.Tools import ParallelNumpy
 
 
-comm = MPI.COMM_WORLD
-pnp = ParallelNumpy(comm=comm)
-fftengineList = [PFFTEngine]
+
 DEFAULTFFTENGINE = NumpyFFTEngine
 
+@pytest.fixture
+def pnp(comm):
+    return ParallelNumpy(comm)
 
-def test_resolutions(fftengineclass, nx=64,ny=32):
+@pytest.fixture
+def basenpoints(comm):
+    return (comm.Get_size() -1)* 4 # Base number of points in order to avoid empty subdomains when using a lot of processors
+
+
+@pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
+def test_resolutions(comm, pnp, fftengine_class, nx,ny, basenpoints):
+    nx += basenpoints
+    ny += basenpoints
     sx, sy = 100, 200
     E_s = 3
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengineclass((2 * nx, 2 * ny), comm), pnp=pnp)
+                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
     assert substrate.resolution == (nx, ny)
     assert substrate.domain_resolution == (2 * nx, 2 * ny)
     assert pnp.sum(np.array(np.prod(substrate.subdomain_resolution))) == 4 * nx * ny
 
-def test_weights(fftengineclass,nx=64,ny=32):
+@pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
+def test_weights(comm, pnp, fftengine_class,nx,ny, basenpoints):
     """
     Compare with the old serial Implementation
     """
+    nx += basenpoints
+    ny += basenpoints
     E_s = 1.5
 
     def _compute_fourier_coeffs_serial_impl(hs):
@@ -110,12 +122,16 @@ def test_weights(fftengineclass,nx=64,ny=32):
                                 fftengine=NumpyFFTEngine((2 * nx, 2 * ny), comm)))
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengineclass((2 * nx, 2 * ny), comm), pnp=pnp)
+                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
     local_weights, local_facts = substrate._compute_fourier_coeffs()
     np.testing.assert_allclose(local_weights, ref_weights[substrate.fourier_slice], 1e-12)
     np.testing.assert_allclose(local_facts, ref_facts[substrate.subdomain_slice], 1e-12)
 
-def test_evaluate_disp_uniform_pressure(fftengineclass, nx=64,ny=32):
+@pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
+def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basenpoints):
+    nx += basenpoints
+    ny += basenpoints
+
     sx, sy = 100, 200
     E_s=1.5
     forces = np.zeros((2 * nx, 2 * ny))
@@ -147,7 +163,7 @@ def test_evaluate_disp_uniform_pressure(fftengineclass, nx=64,ny=32):
 
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengineclass((2 * nx, 2 * ny), comm), pnp=pnp)
+                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
 
     if comm.Get_size() > 1:
         with pytest.raises(FreeFFTElasticHalfSpace.Error):
@@ -170,11 +186,14 @@ def test_evaluate_disp_uniform_pressure(fftengineclass, nx=64,ny=32):
     np.testing.assert_allclose(computed_disp[s_c], refdisp[s_refdisp])
 
 if __name__ in ['__main__', 'builtins']:
-    for fftengineclass in fftengineList:
+    comm = MPI.COMM_WORLD
+    pnp = ParallelNumpy(comm=comm)
+    fftengineList = [PFFTEngine]
+    for fftengine_class in fftengineList:
         for res in [(64, 32), (65, 33)]:
             print("Testing Resolution {}".format(res))
-            test_resolutions(fftengineclass, *res)
+            test_resolutions(comm, pnp, fftengine_class, *res,0)
             print("test weights")
-            test_weights(fftengineclass, *res)
+            test_weights(comm, pnp, fftengine_class, *res,0 )
             print("test evaluate_distest evaluate_disp")
-            test_evaluate_disp_uniform_pressure(fftengineclass, *res)
+            test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, *res, 0)
