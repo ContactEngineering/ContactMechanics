@@ -48,9 +48,7 @@ FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'file_format_examples')
 
-
-
-def test_hard_wall_bearing_area(comm, fftengine_class, datafiles):
+def test_hard_wall_bearing_area(comm, fftengine_class):
     # Test that at very low hardness we converge to (almost) the bearing
     # area geometry
     pnp = ParallelNumpy(comm)
