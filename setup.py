@@ -64,13 +64,6 @@ extensions = [
         include_dirs=[np.get_include()]
         ),
     Extension(
-        name="PyCo.Tools.fftext",
-        sources=["PyCo/Tools/fftext.pyx", "PyCo/Tools/fftext_cc.cc"],
-        extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args,
-        include_dirs=[np.get_include()],
-        language="c++"),
-    Extension(
         name="PyCo.Tools.Optimisation.ConstrainedConjugateGradientsOpt",
         sources=["PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.pyx"],
         include_dirs=[np.get_include()],
@@ -93,7 +86,7 @@ setup(
     include_package_data = True,
     ext_modules = cythonize(extensions),
     dependency_links = ["git+git@github.com:AntoineSIMTEK/FFTEngine.git",
-                        "git+git@github.com:AntoineSIMTEK/MPITools.git"  ],
+                        "git+git@github.com:AntoineSIMTEK/NuMPI.git"  ],
     # metadata for upload to PyPI
     author = "Lars Pastewka",
     author_email = "lars.pastewka@imtek.uni-freiburg.de",

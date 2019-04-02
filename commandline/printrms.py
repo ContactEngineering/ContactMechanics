@@ -1,5 +1,5 @@
 #
-# Copyright 2017, 2019 Lars Pastewka
+# Copyright 2017-2018 Lars Pastewka
 # 
 # ### MIT license
 # 

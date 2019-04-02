@@ -1,6 +1,6 @@
 #
 # Copyright 2016-2017, 2019 Lars Pastewka
-#           2019 k.o.haase@googlemail.com
+#           2019 Kai Haase
 #           2018-2019 Antoine Sanner
 #           2016 Till Junge
 # 
@@ -46,14 +46,9 @@ except:
 
 # I will never take the parallel as default because most of the tests will fail because of this
 
-if 'darwin' in sys.platform:
-    # print("FFTWEngine causes failure on darwin, will not be tested")
-    from FFTEngine import NumpyFFTEngine
-    DEFAULTENGINE = NumpyFFTEngine
-else:
-    from FFTEngine import FFTWEngine
-    DEFAULTENGINE = FFTWEngine
 
+from FFTEngine import NumpyFFTEngine
+DEFAULTENGINE = NumpyFFTEngine
 
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
@@ -139,7 +134,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         if pnp is None:
             if self.fftengine.is_MPI:
-                from MPITools.Tools.ParallelNumpy import ParallelNumpy
+                from NuMPI.Tools.ParallelNumpy import ParallelNumpy
                 self.pnp = ParallelNumpy(self.fftengine.comm)
             else:
                 self.pnp = np
@@ -147,7 +142,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         else:
             self.pnp = pnp
             #if self.fftengine.is_MPI:
-                #from MPITools.Tools.ParallelNumpy import ParallelNumpy
+                #from NuMPI.Tools.ParallelNumpy import ParallelNumpy
                 #if isinstance(self.pnp,ParallelNumpy): raise ValueError("fftengine is parallel but you provided a computation tool ({}) different from ({})".format(self.pnp.__class__,ParallelNumpy.__))
 
         #self.fftengine = fftengine(self.domain_resolution)  # because when called in subclass,

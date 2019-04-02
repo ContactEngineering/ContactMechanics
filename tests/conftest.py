@@ -22,9 +22,29 @@
 # SOFTWARE.
 #
 
+import pytest
+
 collect_ignore_glob = ["*MPI_*.py"]
 
 from runtests.mpi import MPITestFixture
 
-comm = MPITestFixture([1,2,3, 4,10], scope='session')
+#@pytest.fixture
+#def commsizes(request):
+#    return [int(s) for s in request.config.getoption("--commsizes").split(',')]
 
+#comm = MPITestFixture([int(s) for s in config.getoption("--commsizes").split(',')], scope='session')
+comm = MPITestFixture([1,2,4], scope='session')
+
+@pytest.fixture(scope="session")
+def fftengine_class(comm):
+    try:
+        from FFTEngine import PFFTEngine as engine
+    except Exception as err:
+        if comm.Get_size() == 1:
+            try:
+                from FFTEngine import FFTWEngine as engine
+            except:
+                from FFTEngine import NumpyFFTEngine as engine
+        else:
+            raise err
+    return engine
