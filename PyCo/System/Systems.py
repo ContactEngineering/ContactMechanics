@@ -36,7 +36,7 @@ import scipy
 from .. import ContactMechanics, SolidMechanics, Topography
 from ..Tools import compare_containers
 from ..Tools.Optimisation import constrained_conjugate_gradients, simple_relaxation
-from NuMPI.Tools import ParallelNumpy
+from NuMPI.Tools import Reduction
 
 class IncompatibleFormulationError(Exception):
     # pylint: disable=missing-docstring

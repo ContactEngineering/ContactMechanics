@@ -36,7 +36,7 @@ try:
                                                surface_stress)
     from FFTEngine import PFFTEngine
     from NuMPI.Optimization import LBFGS
-    from NuMPI.Tools.ParallelNumpy import ParallelNumpy
+    from NuMPI.Tools.Reduction import Reduction
     from mpi4py import MPI
     from PyCo.ContactMechanics import VDW82smoothMin, VDW82
     from PyCo.System import SmoothContactSystem
@@ -62,7 +62,7 @@ def test_wavy(comm):
 
     fftengine = PFFTEngine((n,n),comm=comm)
 
-    pnp = ParallelNumpy(comm=comm)
+    pnp = Reduction(comm=comm)
 
     inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w,pnp = pnp)
 

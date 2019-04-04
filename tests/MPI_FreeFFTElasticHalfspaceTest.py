@@ -36,7 +36,7 @@ if _withMPI:
 
 from FFTEngine import NumpyFFTEngine
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-from NuMPI.Tools import ParallelNumpy
+from NuMPI.Tools import Reduction
 
 
 
@@ -44,7 +44,7 @@ DEFAULTFFTENGINE = NumpyFFTEngine
 
 @pytest.fixture
 def pnp(comm):
-    return ParallelNumpy(comm)
+    return Reduction(comm)
 
 @pytest.fixture
 def basenpoints(comm):
@@ -187,7 +187,7 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basen
 
 if __name__ in ['__main__', 'builtins']:
     comm = MPI.COMM_WORLD
-    pnp = ParallelNumpy(comm=comm)
+    pnp = Reduction(comm=comm)
     fftengineList = [PFFTEngine]
     for fftengine_class in fftengineList:
         for res in [(64, 32), (65, 33)]:
