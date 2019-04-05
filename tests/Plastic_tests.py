@@ -33,7 +33,7 @@ try:
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
     from PyCo.Topography import read, PlasticTopography
     from PyCo.System import make_system
-    from NuMPI.Tools.ParallelNumpy import ParallelNumpy
+    from NuMPI.Tools.Reduction import Reduction
 
     from PyCo.Topography import Topography
     from runtests.mpi import MPITest
@@ -51,7 +51,7 @@ FIXTURE_DIR = os.path.join(
 def test_hard_wall_bearing_area(comm, fftengine_class):
     # Test that at very low hardness we converge to (almost) the bearing
     # area geometry
-    pnp = ParallelNumpy(comm)
+    pnp = Reduction(comm)
     fullsurface = read(os.path.join(FIXTURE_DIR, 'surface1.out')).topography()
     domain_resolution = fullsurface.resolution
     substrate = PeriodicFFTElasticHalfSpace(

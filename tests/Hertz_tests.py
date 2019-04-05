@@ -44,7 +44,7 @@ try:
 
     from mpi4py import MPI
     from FFTEngine import PFFTEngine
-    from NuMPI.Tools.ParallelNumpy import ParallelNumpy
+    from NuMPI.Tools.Reduction import Reduction
 
 except ImportError as err:
     import sys
@@ -78,7 +78,7 @@ def test_elastic_solution(self):
 @pytest.mark.parametrize("resolution", [(512, 512), (512, 511), (511, 512)])
 def test_constrained_conjugate_gradients(self, resolution, comm,
                                          fftengine_class):
-    pnp = ParallelNumpy(comm)
+    pnp = Reduction(comm)
     nx, ny = resolution
     for disp0, normal_force in [(0.1, None), (0, 15.0)]:
         sx = 5.0

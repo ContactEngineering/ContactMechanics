@@ -71,7 +71,7 @@ except ImportError:
 if _withMPI:
     from FFTEngine import PFFTEngine
     from FFTEngine.helpers import gather
-    from NuMPI.Tools.ParallelNumpy import ParallelNumpy
+    from NuMPI.Tools.Reduction import Reduction
 
 import numpy as np
 from PyCo.ContactMechanics import HardWall
@@ -91,7 +91,7 @@ def test_constrained_conjugate_gradients(comm):
     sy = 1.0
     # equivalent Young's modulus
     E_s = 3.56
-    pnp = ParallelNumpy(comm)
+    pnp = Reduction(comm)
 
     for kind in ['ref']: # Add 'opt' to test optimized solver, bxwut does
                          # not work on Travis!

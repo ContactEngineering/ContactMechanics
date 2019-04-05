@@ -35,6 +35,9 @@ from runtests.mpi import MPITestFixture
 #comm = MPITestFixture([int(s) for s in config.getoption("--commsizes").split(',')], scope='session')
 comm = MPITestFixture([1,2,4], scope='session')
 
+from NuMPI import MPI
+maxcomm= MPITestFixture([MPI.COMM_WORLD.Get_size()], scope="session")
+
 @pytest.fixture(scope="session")
 def fftengine_class(comm):
     try:

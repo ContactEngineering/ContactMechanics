@@ -41,10 +41,10 @@ DEFAULTFFTENGINE = NumpyFFTEngine
 
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 
-from NuMPI.Tools import ParallelNumpy
+from NuMPI.Tools import Reduction
 @pytest.fixture
 def pnp(comm):
-    return ParallelNumpy(comm)
+    return Reduction(comm)
 
 @pytest.fixture
 def basenpoints(comm):
