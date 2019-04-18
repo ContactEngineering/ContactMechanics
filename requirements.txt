@@ -9,7 +9,6 @@ netCDF4>=1.0.0
 h5py
 pandas
 sphinx==1.8.2
-mpi4py
 pfft-python
 FFTEngine
 git+https://github.com/IMTEK-Simulation/NuMPI.git
