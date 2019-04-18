@@ -1051,7 +1051,6 @@ class h5SurfaceTest(unittest.TestCase):
         pass
 
     def test_detect_format(self):
-
         self.assertEqual(PyCo.Topography.IO.detect_format( # TODO: this will be the standart detect format method in the future
             os.path.join(DATADIR,  'surface.2048x2048.h5')), 'h5')
 
