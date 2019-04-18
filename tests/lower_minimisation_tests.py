@@ -276,7 +276,7 @@ class AugmentedLagrangianTest(unittest.TestCase):
         pass
 
     def test_example(self):
-        """
+        r"""
         Example 20.5: Minimise the fuction $f(x)$
         $$\min_{x\in\mathbb{R}^2} 2(x_1^2+x_2^2 -1)-x_1$$
         under the constraint
