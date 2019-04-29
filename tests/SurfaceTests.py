@@ -38,9 +38,9 @@ import os
 import io
 import pickle
 
-from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere)
+from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, read)
 
-from PyCo.Topography.IO.FromFile import read, read_asc, read_di, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz
+from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz
 
 from PyCo.Topography.IO.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
 
@@ -976,25 +976,28 @@ class diSurfaceTest(unittest.TestCase):
     def test_read(self):
         # All units are nm
         for (fn, n, s, rmslist) in [
-            ('example1.di', 512, 500.0, [9.9459868005603909,  # Height
-                                         114.01328027385664,  # Height
-                                         None,  # Phase
-                                         None]),  # AmplitudeError
-            ('example2.di', 512, 300.0, [24.721922008645919,  # Height
-                                         24.807150576054838,  # Height
-                                         0.13002312109876774]),  # Deflection
-            ('example3.di', 256, 10000.0, [226.42539668457405,  # ZSensor
-                                           None,  # AmplitudeError
-                                           None,  # Phase
-                                           264.00285276203158]),  # Height
-            ('example4.di', 512, 10000.0, [81.622909804184744,  # ZSensor
-                                           0.83011806260022758,  # AmplitudeError
-                                           None])  # Phase
+            ('example1.di', 512, 500.0, [(9.9459868005603909,  "Height"),
+                                         (114.01328027385664,  "Height"),
+                                         (None, "Phase"),
+                                         (None, "AmplitudeError")]),
+            ('example2.di', 512, 300.0, [(24.721922008645919,"Height"),
+                                         (24.807150576054838,"Height"),
+                                         (0.13002312109876774, "Deflection")]),
+            ('example3.di', 256, 10000.0, [(226.42539668457405, "ZSensor"),
+                                           (None, "AmplitudeError"),
+                                           (None, "Phase"),
+                                           (264.00285276203158, "Height")]),  # Height
+            ('example4.di', 512, 10000.0, [(81.622909804184744, "ZSensor"),  # ZSensor
+                                           (0.83011806260022758, "AmplitudeError"),  # AmplitudeError
+                                           (None, "Phase")])  # Phase
         ]:
-            surfaces = read_di(os.path.join(DATADIR,  '{}').format(fn))
-            if type(surfaces) is not list:
-                surfaces = [surfaces]
-            for surface, rms in zip(surfaces, rmslist):
+            reader = read(os.path.join(DATADIR,  '{}').format(fn), format="di")
+
+
+            for i, (rms, name) in enumerate(rmslist):
+                assert reader.channels[i]["name"] == name
+                surface = reader.topography(channel=i)
+
                 nx, ny = surface.resolution
                 self.assertEqual(nx, n)
                 self.assertEqual(ny, n)
