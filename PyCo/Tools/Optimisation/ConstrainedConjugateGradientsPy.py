@@ -400,7 +400,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                      max_pressure=np.float64(max_pres).item(),
                      pad_pressure=np.float64(pad_pres).item(),
                      penetration_tol=np.float64(pentol).item(),
-                     pressure_tol=np.float64(prestol)).item()
+                     pressure_tol=np.float64(prestol).item())
             callback(it, p_r, d)
 
         if isnan(G) or isnan(rms_pen):
