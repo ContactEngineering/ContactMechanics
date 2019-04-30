@@ -33,8 +33,9 @@ from PyCo.Topography import make_sphere
 from FFTEngine import PFFTEngine
 from NuMPI.Optimization import LBFGS
 from NuMPI.Tools.Reduction import Reduction
-from mpi4py import MPI
-from PyCo.ContactMechanics import VDW82smoothMin, VDW82
+
+
+from PyCo.ContactMechanics import VDW82smoothMin
 from PyCo.System import SmoothContactSystem
 
 

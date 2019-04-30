@@ -57,10 +57,10 @@ import matplotlib.pyplot as plt
 fig, (axEn, axgrad) = plt.subplots(2,1, sharex = True)
 n = 256
 
+endx = []
+
 for method, name in zip([LBFGS, "L-BFGS-B"],
                         ["NuMPI", "Scipy"]):
-
-
     # sphere radius:
     r_s = 10.0
     # contact radius
@@ -113,7 +113,7 @@ for method, name in zip([LBFGS, "L-BFGS-B"],
     disp0 = np.where(disp0 > 0, disp0, 0)
     # disp0 = system.shape_minimisation_input(disp0)
 
-    maxcor = 10
+    maxcor = 20
 
     starttime = time.time()
     counter = iter_inspector()
@@ -127,8 +127,7 @@ for method, name in zip([LBFGS, "L-BFGS-B"],
                                          gtol=1e-6 * abs(w / z0),
                                          ftol=1e-20,
                                          maxcor=maxcor))
-
-
+    endx.append(result.x)
 
     print(method)
     print(result.message)
@@ -139,7 +138,12 @@ for method, name in zip([LBFGS, "L-BFGS-B"],
     assert converged
 
     axgrad.plot(range(objective_monitor.neval), objective_monitor.maxgradients, label="{}".format(name))
-    axEn.plot(range(objective_monitor.neval), (objective_monitor.energies - objective_monitor.energies[-1] )/ (objective_monitor.energies[0] - objective_monitor.energies[-1]), label="{}".format(name))
+    axEn.plot(range(objective_monitor.neval), (objective_monitor.energies -
+                objective_monitor.energies[-1] )/ (objective_monitor.energies[0] - objective_monitor.energies[-1]),
+              label="{}".format(name))
+
+print("max(|deformation {} - {} |)= {}".format("NuMPI", "Scipy", np.max(abs(endx[0].reshape(-1)-endx[1].reshape(-1)))))
+print("max(|deformation Scipy|) = {}".format(np.max(abs(endx[-1]))))
 
 axEn.set_xlabel("# of objective evaluations")
 axEn.set_ylabel("E(i)-E(last) / (E(0)-E(last))")
@@ -155,5 +159,3 @@ for a in (axEn, axgrad):
 
 fig.suptitle("n={}".format(n))
 fig.savefig("{}.png".format(os.path.basename(__file__)))
-
-

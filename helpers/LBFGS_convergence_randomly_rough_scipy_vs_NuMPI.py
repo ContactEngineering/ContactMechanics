@@ -1,3 +1,8 @@
+"""
+I should use better units, there are often abnormal termination in linesearch problems
+
+"""
+
 
 import time
 import os
@@ -83,7 +88,7 @@ for method, name in zip(["L-BFGS-B", LBFGS],
     sx = nx * dx
     sy = ny * dy
 
-    z0 = 2.0  # needed to get small tolerance, but very very slow
+    z0 = 4.0  # needed to get small tolerance, but very very slow
 
     w = 0.01 * E_s * z0
 
@@ -126,15 +131,14 @@ for method, name in zip(["L-BFGS-B", LBFGS],
                                              maxcor=maxcor))
         converged = result.success
         assert converged
-    except:
+    except Exception as err:
         print("went wrong")
+        print(err)
 
     print(method)
     print(result.message)
     print("nevals: {}".format(objective_monitor.neval))
     print(result.nit)
-
-
 
     axgrad.plot(range(objective_monitor.neval), objective_monitor.maxgradients, label="{}".format(name))
     axEn.plot(range(objective_monitor.neval), (objective_monitor.energies - objective_monitor.energies[-1] )/ (objective_monitor.energies[0] - objective_monitor.energies[-1]), label="{}".format(name))

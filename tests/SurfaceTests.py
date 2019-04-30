@@ -893,13 +893,15 @@ class matSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        surface = read_mat(os.path.join(DATADIR,  'example1.mat'))
+        from PyCo.Topography.IO import MatReader
+        surface = MatReader(os.path.join(DATADIR,  'example1.mat')).topography(size=[1.,1.])
         nx, ny = surface.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
         self.assertAlmostEqual(surface.rms_height(), 1.234061e-07)
         self.assertTrue(surface.is_uniform)
 
+    #TODO: test with multiple data
 
 class npySurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -1033,7 +1035,7 @@ class ibwSurfaceTest(unittest.TestCase):
         f = open(os.path.join(DATADIR,  'example.ibw'), 'rb')
         fmt = detect_format(f)
         self.assertTrue(fmt, 'ibw')
-        surface = read(f, format=fmt)
+        surface = read(f, format=fmt).topography()
         f.close()
 
 
@@ -1178,7 +1180,9 @@ class IOTest(unittest.TestCase):
         file_list = self.text_example_file_list + self.binary_example_file_list
 
         for fn in file_list:
-            t = read(fn)
+            print(fn)
+            reader = read(fn)
+            t = reader.topography(size=reader.size if reader.size is not None else [1.,] * len(reader.resolution))
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
 
