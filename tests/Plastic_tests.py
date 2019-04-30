@@ -65,7 +65,14 @@ def test_hard_wall_bearing_area(comm, fftengine_class):
     system = make_system(substrate,
                          HardWall(), PlasticTopography(surface, 0.0000000001))
     offset = -0.002
-    result = system.minimize_proxy(offset=offset)
+    if comm.rank == 0:
+        def cb(it, p_r, d):
+            print("{0}: area = {1}".format(it, d["area"]))
+    else:
+        def cb(it, p_r, d):
+            pass
+
+    result = system.minimize_proxy(offset=offset,  callback=cb)
     assert result.success
     c = result.jac > 0.0
     ncontact = pnp.sum(c)
