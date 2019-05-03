@@ -43,7 +43,6 @@ try:
     #  normal_load)
 
     from mpi4py import MPI
-    from FFTEngine import PFFTEngine
     from NuMPI.Tools.Reduction import Reduction
 
 except ImportError as err:
@@ -229,4 +228,3 @@ def test_constrained_conjugate_gradients(self, resolution, comm,
         except ValueError as err:
             msg = str(err) + msg
             raise ValueError(msg)
-

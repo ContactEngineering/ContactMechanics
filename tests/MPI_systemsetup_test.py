@@ -31,7 +31,6 @@ import pytest
 
 from mpi4py import MPI
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
-from FFTEngine import PFFTEngine
 from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics.Interactions import HardWall
 from PyCo.Topography.IO import NPYReader, read
@@ -55,7 +54,7 @@ DATADIR = os.path.dirname(os.path.realpath(__file__))
 
 @pytest.mark.parametrize("HS", [PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace])
 @pytest.mark.parametrize("loader", [read, NPYReader])
-def test_LoadTopoFromFile(comm, HS, loader):
+def test_LoadTopoFromFile(comm, fftengine_class,  HS, loader):
 
     fn = DATADIR + "/worflowtest.npy"
     res = (128, 64)
@@ -77,7 +76,7 @@ def test_LoadTopoFromFile(comm, HS, loader):
     assert fileReader.resolution == res
 
     # create a substrate according to the topography
-    fftengine = PFFTEngine(domain_resolution = fileReader.resolution, comm = comm)
+    fftengine = fftengine_class(fileReader.resolution, comm = comm)
     Es = 1
     if fileReader.size is not None:
         substrate = HS(resolution=fileReader.resolution, size=fileReader.size, young=Es, fftengine=fftengine )

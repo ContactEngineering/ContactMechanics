@@ -33,7 +33,7 @@ except ImportError:
     _withMPI = False
 
 if _withMPI:
-    from FFTEngine import PFFTEngine
+
     from FFTEngine.helpers import gather
 from FFTEngine import NumpyFFTEngine
 
@@ -403,6 +403,7 @@ def test_multipleSineWaves_evaluate(comm,pnp, fftengine_class,nx, ny, basenpoint
 
 if __name__ in ['__main__', 'builtins']:
     comm = MPI.COMM_WORLD
+    from FFTEngine import PFFTEngine
     fftengineList = [PFFTEngine]
     basenpoints = comm.Get_size() * 4 # Base number of points in order to avoid empty subdomains when using a lot of processors 
     for fftengine_class in fftengineList:

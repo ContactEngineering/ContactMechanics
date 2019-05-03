@@ -31,8 +31,6 @@ except ImportError:
     print("No MPI")
     _withMPI = False
 
-if _withMPI:
-    from FFTEngine import PFFTEngine
 
 from FFTEngine import NumpyFFTEngine
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
@@ -186,6 +184,7 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basen
     np.testing.assert_allclose(computed_disp[s_c], refdisp[s_refdisp])
 
 if __name__ in ['__main__', 'builtins']:
+    from FFTEngine import PFFTEngine
     comm = MPI.COMM_WORLD
     pnp = Reduction(comm=comm)
     fftengineList = [PFFTEngine]
