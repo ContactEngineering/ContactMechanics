@@ -35,7 +35,6 @@ try:
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
                                                surface_displacements,
                                                surface_stress)
-    from FFTEngine import PFFTEngine
     from NuMPI.Optimization import LBFGS
     from NuMPI.Tools.Reduction import Reduction  # TODO: This should be explicitly from NuMPI
     from mpi4py import MPI

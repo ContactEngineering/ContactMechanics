@@ -34,7 +34,6 @@ try:
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
                                                surface_displacements,
                                                surface_stress)
-    from FFTEngine import PFFTEngine
     from NuMPI.Optimization import LBFGS
     from NuMPI.Tools.Reduction import Reduction
     from mpi4py import MPI
@@ -48,7 +47,7 @@ except ImportError as err:
     sys.exit(-1)
 
 _toplot=False
-def test_wavy(comm):
+def test_wavy(comm, fftengine_class):
 
     n=32
     surf_res = (n,n)
@@ -60,7 +59,7 @@ def test_wavy(comm):
     R = 100
     w = 0.01*z0 * Es
 
-    fftengine = PFFTEngine((n,n),comm=comm)
+    fftengine = fftengine_class((n,n),comm=comm)
 
     pnp = Reduction(comm=comm)
 

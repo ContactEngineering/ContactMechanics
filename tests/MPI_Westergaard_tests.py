@@ -69,7 +69,6 @@ except ImportError:
     _withMPI =False
 
 if _withMPI:
-    from FFTEngine import PFFTEngine
     from FFTEngine.helpers import gather
     from NuMPI.Tools.Reduction import Reduction
 
@@ -86,7 +85,7 @@ from PyCo.Tools.Logger import Logger
 
 
 # -----------------------------------------------------------------------------
-def test_constrained_conjugate_gradients(comm):
+def test_constrained_conjugate_gradients(comm, fftengine_class):
     sx = 30.0
     sy = 1.0
     # equivalent Young's modulus
@@ -102,7 +101,7 @@ def test_constrained_conjugate_gradients(comm):
 
             for disp0, normal_force in [(-0.9, None), (-0.1, None)]: # (0.1, None),
                 substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s,
-                                                        (sx, sy),fftengine=PFFTEngine((nx,ny),comm))
+                                                        (sx, sy),fftengine=fftengine_class((nx,ny),comm))
                 interaction = HardWall()
                 profile = np.resize(np.cos(2*np.pi*np.arange(nx)/nx), (ny, nx))
                 surface =Topography(profile.T, size=(sx, sy),

@@ -29,22 +29,21 @@ Tests surface classes
 
 import unittest
 import numpy as np
-import numpy.matlib as mp
-from numpy.random import rand, random
+
+from numpy.random import rand
 from numpy.testing import assert_array_equal
-import tempfile, os
+
 from tempfile import TemporaryDirectory as tmp_dir
 import os
 import io
 import pickle
 
-from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere)
+from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, read)
 
-from PyCo.Topography.IO.FromFile import read, read_asc, read_di, read_hgt, read_ibw, read_mat, read_opd, read_x3p, read_xyz
+from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_ibw, read_opd, read_x3p, read_xyz
 
 from PyCo.Topography.IO.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
 
-from PyCo.Topography.Generation import RandomSurfaceGaussian
 import PyCo.Topography.IO
 from PyCo.Topography.IO import NPYReader, H5Reader
 from PyCo.Topography.Generation import fourier_synthesis
@@ -53,189 +52,7 @@ from .PyCoTest import PyCoTestCase
 
 DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
 
-class TopographyTest(PyCoTestCase):
 
-    def test_positions(self):
-
-        shape = (12, 11)
-        nx, ny = shape
-        surf = Topography(np.zeros(shape), (1, 1))
-        x, y = surf.positions()
-        self.assertEqual(x.shape, shape)
-        self.assertEqual(y.shape, shape)
-        self.assertAlmostEqual(x.min(), 0.0)
-        self.assertAlmostEqual(x.max(), 1 - 1 / nx)
-        self.assertAlmostEqual(y.min(), 0.0)
-        self.assertAlmostEqual(y.max(), 1 - 1 / ny)
-
-    def test_positions_and_heights(self):
-
-        X = np.arange(3).reshape(1, 3)
-        Y = np.arange(4).reshape(4, 1)
-        h = X+Y
-
-        t = Topography(h, (8,6))
-
-        self.assertEqual(t.resolution, (4,3))
-
-        assert_array_equal(t.heights(), h)
-        X2, Y2, h2 = t.positions_and_heights()
-        assert_array_equal(X2, [
-            (0, 0, 0),
-            (2, 2, 2),
-            (4, 4, 4),
-            (6, 6, 6),
-        ])
-        assert_array_equal(Y2, [
-            (0, 2, 4),
-            (0, 2, 4),
-            (0, 2, 4),
-            (0, 2, 4),
-        ])
-        assert_array_equal(h2, [
-            (0, 1, 2),
-            (1, 2, 3),
-            (2, 3, 4),
-            (3, 4, 5)])
-
-        #
-        # After detrending, the position and heights should have again
-        # just 3 arrays and the third array should be the same as .heights()
-        #
-        dt = t.detrend(detrend_mode='slope')
-
-        self.assertArrayAlmostEqual(dt.heights(), [
-            (0, 0, 0),
-            (0, 0, 0),
-            (0, 0, 0),
-            (0, 0, 0)])
-
-        X2, Y2, h2 = dt.positions_and_heights()
-
-        assert h2.shape == (4, 3)
-        assert_array_equal(X2, [
-            (0, 0, 0),
-            (2, 2, 2),
-            (4, 4, 4),
-            (6, 6, 6),
-        ])
-        assert_array_equal(Y2, [
-            (0, 2, 4),
-            (0, 2, 4),
-            (0, 2, 4),
-            (0, 2, 4),
-        ])
-        self.assertArrayAlmostEqual(h2, [
-            (0, 0, 0),
-            (0, 0, 0),
-            (0, 0, 0),
-            (0, 0, 0)])
-
-    def test_squeeze_uniform_line_scan(self):
-        x = np.linspace(0, 4 * np.pi, 101)
-        h = np.sin(x)
-        surface = UniformLineScan(h, 4 * np.pi).scale(2.0)
-        surface2 = surface.squeeze()
-        self.assertTrue(isinstance(surface2, UniformLineScan))
-        self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
-
-    def test_squeeze_nonuniform_line_scan(self):
-        x = np.linspace(0, 4 * np.pi, 101) ** (1.3)
-        h = np.sin(x)
-        surface = NonuniformLineScan(x, h).scale(2.0)
-        surface2 = surface.squeeze()
-        self.assertTrue(isinstance(surface2, NonuniformLineScan))
-        self.assertArrayAlmostEqual(surface.positions(), surface2.positions())
-        self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
-
-    def test_squeeze_topography(self):
-        x = np.linspace(0, 4 * np.pi, 101)
-        y = np.linspace(0, 8 * np.pi, 103)
-        h = np.sin(x.reshape(-1, 1)) + np.cos(y.reshape(1, -1))
-        surface = Topography(h, (1.2, 3.2)).scale(2.0)
-        surface2 = surface.squeeze()
-        self.assertTrue(isinstance(surface2, Topography))
-        self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
-
-    def test_attribute_error(self):
-        X = np.arange(3).reshape(1, 3)
-        Y = np.arange(4).reshape(4, 1)
-        h = X+Y
-        t = Topography(h, (8,6))
-
-        # nonsense attributes return attribute error
-        with self.assertRaises(AttributeError):
-            t.ababababababababa
-
-        #
-        # only scaled topographies have coeff
-        #
-        with self.assertRaises(AttributeError):
-            t.coeff
-
-        st = t.scale(1)
-
-        self.assertEqual(st.coeff, 1)
-
-        #
-        # only detrended topographies have detrend_mode
-        #
-        with self.assertRaises(AttributeError):
-            st.detrend_mode
-
-        dm = st.detrend(detrend_mode='height').detrend_mode
-        self.assertEqual(dm, 'height')
-
-        #
-        # this all should also work after pickling
-        #
-        t2 = pickle.loads(pickle.dumps(t))
-
-        with self.assertRaises(AttributeError):
-            t2.coeff
-
-        st2 = t2.scale(1)
-
-        self.assertEqual(st2.coeff, 1)
-
-        with self.assertRaises(AttributeError):
-            st2.detrend_mode
-
-        dm2 = st2.detrend(detrend_mode='height').detrend_mode
-        self.assertEqual(dm2, 'height')
-
-        #
-        # this all should also work after scaled+pickled
-        #
-        t3 = pickle.loads(pickle.dumps(st))
-
-        with self.assertRaises(AttributeError):
-            t3.detrend_mode
-
-        dm3 = t3.detrend(detrend_mode='height').detrend_mode
-        self.assertEqual(dm3, 'height')
-
-    def test_init_with_lists_calling_scale_and_detrend(self):
-
-        t = Topography([[1,1,1,1],
-                        [1,1,1,1],
-                        [1,1,1,1]], size=(1,1))
-
-        # the following commands should be possible without errors
-        st = t.scale(1)
-        dt = st.detrend(detrend_mode='center')
-
-    def test_power_spectrum_1D(self):
-
-        X = np.arange(3).reshape(1, 3)
-        Y = np.arange(4).reshape(4, 1)
-        h = X+Y
-
-        t = Topography(h, (8,6))
-
-        q1, C1 = t.power_spectrum_1D(window='hann')
-
-        # TODO add check for values
 
 
 class UniformLineScanTest(PyCoTestCase):
@@ -246,6 +63,15 @@ class UniformLineScanTest(PyCoTestCase):
         h = 2 * x
         t = UniformLineScan(h, 5)
         self.assertEqual(t.dim, 1)
+
+
+    def test_squeeze(self):
+        x = np.linspace(0, 4 * np.pi, 101)
+        h = np.sin(x)
+        surface = UniformLineScan(h, 4 * np.pi).scale(2.0)
+        surface2 = surface.squeeze()
+        self.assertTrue(isinstance(surface2, UniformLineScan))
+        self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
     def test_positions_and_heights(self):
 
@@ -423,6 +249,15 @@ class NonuniformLineScanTest(PyCoTestCase):
         h = 2 * x
         t = NonuniformLineScan(x, h)
         self.assertEqual(t.dim, 1)
+
+    def test_squeeze(self):
+        x = np.linspace(0, 4 * np.pi, 101) ** (1.3)
+        h = np.sin(x)
+        surface = NonuniformLineScan(x, h).scale(2.0)
+        surface2 = surface.squeeze()
+        self.assertTrue(isinstance(surface2, NonuniformLineScan))
+        self.assertArrayAlmostEqual(surface.positions(), surface2.positions())
+        self.assertArrayAlmostEqual(surface.heights(), surface2.heights())
 
     def test_positions_and_heights(self):
 
@@ -894,13 +729,15 @@ class matSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        surface = read_mat(os.path.join(DATADIR,  'example1.mat'))
+        from PyCo.Topography.IO import MatReader
+        surface = MatReader(os.path.join(DATADIR,  'example1.mat')).topography(size=[1.,1.])
         nx, ny = surface.resolution
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
         self.assertAlmostEqual(surface.rms_height(), 1.234061e-07)
         self.assertTrue(surface.is_uniform)
 
+    #TODO: test with multiple data
 
 class npySurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -977,25 +814,28 @@ class diSurfaceTest(unittest.TestCase):
     def test_read(self):
         # All units are nm
         for (fn, n, s, rmslist) in [
-            ('example1.di', 512, 500.0, [9.9459868005603909,  # Height
-                                         114.01328027385664,  # Height
-                                         None,  # Phase
-                                         None]),  # AmplitudeError
-            ('example2.di', 512, 300.0, [24.721922008645919,  # Height
-                                         24.807150576054838,  # Height
-                                         0.13002312109876774]),  # Deflection
-            ('example3.di', 256, 10000.0, [226.42539668457405,  # ZSensor
-                                           None,  # AmplitudeError
-                                           None,  # Phase
-                                           264.00285276203158]),  # Height
-            ('example4.di', 512, 10000.0, [81.622909804184744,  # ZSensor
-                                           0.83011806260022758,  # AmplitudeError
-                                           None])  # Phase
+            ('example1.di', 512, 500.0, [(9.9459868005603909,  "Height"),
+                                         (114.01328027385664,  "Height"),
+                                         (None, "Phase"),
+                                         (None, "AmplitudeError")]),
+            ('example2.di', 512, 300.0, [(24.721922008645919,"Height"),
+                                         (24.807150576054838,"Height"),
+                                         (0.13002312109876774, "Deflection")]),
+            ('example3.di', 256, 10000.0, [(226.42539668457405, "ZSensor"),
+                                           (None, "AmplitudeError"),
+                                           (None, "Phase"),
+                                           (264.00285276203158, "Height")]),  # Height
+            ('example4.di', 512, 10000.0, [(81.622909804184744, "ZSensor"),  # ZSensor
+                                           (0.83011806260022758, "AmplitudeError"),  # AmplitudeError
+                                           (None, "Phase")])  # Phase
         ]:
-            surfaces = read_di(os.path.join(DATADIR,  '{}').format(fn))
-            if type(surfaces) is not list:
-                surfaces = [surfaces]
-            for surface, rms in zip(surfaces, rmslist):
+            reader = read(os.path.join(DATADIR,  '{}').format(fn), format="di")
+
+
+            for i, (rms, name) in enumerate(rmslist):
+                assert reader.channels[i]["name"] == name
+                surface = reader.topography(channel=i)
+
                 nx, ny = surface.resolution
                 self.assertEqual(nx, n)
                 self.assertEqual(ny, n)
@@ -1031,7 +871,7 @@ class ibwSurfaceTest(unittest.TestCase):
         f = open(os.path.join(DATADIR,  'example.ibw'), 'rb')
         fmt = detect_format(f)
         self.assertTrue(fmt, 'ibw')
-        surface = read(f, format=fmt)
+        surface = read(f, format=fmt).topography()
         f.close()
 
 
@@ -1176,7 +1016,9 @@ class IOTest(unittest.TestCase):
         file_list = self.text_example_file_list + self.binary_example_file_list
 
         for fn in file_list:
-            t = read(fn)
+            print(fn)
+            reader = read(fn)
+            t = reader.topography(size=reader.size if reader.size is not None else [1.,] * len(reader.resolution))
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
 
@@ -1238,3 +1080,5 @@ class ConvertersTest(PyCoTestCase):
         x = t.positions()
         self.assertAlmostEqual(t.x_range[0], x[0])
         self.assertAlmostEqual(t.x_range[1], x[-1])
+
+
