@@ -38,7 +38,8 @@ import os
 import io
 import pickle
 
-from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, read)
+from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan, make_sphere, read
+from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 
 from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_ibw, read_opd, read_x3p, read_xyz
 
@@ -384,6 +385,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
     def test_example1(self):
         surf = read_asc(os.path.join(DATADIR,  'example1.txt'))
+        self.assertTrue(isinstance(surf, ScaledUniformTopography))
         self.assertEqual(surf.resolution, (1024, 1024))
         self.assertAlmostEqual(surf.size[0], 2000)
         self.assertAlmostEqual(surf.size[1], 2000)
@@ -430,6 +432,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
     def test_example5(self):
         surf = read_asc(os.path.join(DATADIR,  'example5.txt'))
+        self.assertTrue(isinstance(surf, Topography))
         self.assertEqual(surf.resolution, (10, 10))
         self.assertEqual(surf.size, (10, 10))
         self.assertAlmostEqual(surf.rms_height(), 1.0)
