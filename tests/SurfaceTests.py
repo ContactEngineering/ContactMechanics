@@ -194,44 +194,6 @@ class UniformLineScanTest(PyCoTestCase):
             detrended = t.detrend(detrend_mode=mode)
             detrended.heights()
 
-    @unittest.expectedFailure
-    def test_detrend_reduces(self):
-        """ tests if detrending really reduces the heights (or slope) as claimed
-        """
-        n = 10
-        dx = 0.5
-        x = np.arange(n) * dx
-        #h = np.random.normal(size=n)
-        h = [ 0.82355941, -1.32205074,  0.77084813,  0.49928252,  0.57872149 , 2.80200331,
-               0.09551251, -1.11616977,  2.07630937, -0.65408072]
-        t = UniformLineScan(h, dx * n)
-        for mode in ["height", "curvature"]:
-            detrended = t.detrend(detrend_mode=mode)
-            detrended.heights()
-            if False:
-                import matplotlib.pyplot as plt
-
-                fig, ax = plt.subplots()
-
-                ax.plot(*t.positions_and_heights(), label="original")
-                ax.plot(*detrended.positions_and_heights(), label="detrended")
-
-                ax.set_xlabel("x")
-                ax.set_ylabel("h")
-                ax.grid(True)
-                ax.legend()
-
-                fig.tight_layout()
-
-                plt.show(block=True)
-
-            assert detrended.rms_height() <= t.rms_height(), "{}".format(h)
-
-        mode = "slope"
-        detrended = t.detrend(detrend_mode=mode)
-        detrended.heights()
-        assert detrended.rms_slope() <= t.rms_slope()
-
 
     def test_power_spectrum_1D(self):
         #
@@ -556,8 +518,13 @@ class DetrendedSurfaceTest(unittest.TestCase):
          h = [0.82355941, -1.32205074, 0.77084813, 0.49928252, 0.57872149, 2.80200331, 0.09551251, -1.11616977,
               2.07630937, -0.65408072]
          t = UniformLineScan(h, dx * n)
-         for mode in ['height', 'curvature']:
-             self.assertGreater(t.rms_height(), t.detrend(detrend_mode=mode).rms_height(), msg=mode)
+         for mode in ['height', 'curvature', 'slope']:
+             detrended = t.detrend(detrend_mode=mode)
+             self.assertAlmostEqual(detrended.mean(), 0)
+             if mode == 'slope':
+                 self.assertGreater(t.rms_slope(), detrended.rms_slope(), msg=mode)
+             else:
+                 self.assertGreater(t.rms_height(), detrended.rms_height(), msg=mode)
 
     def test_smooth_without_size(self):
         arr = self._flat_arr
