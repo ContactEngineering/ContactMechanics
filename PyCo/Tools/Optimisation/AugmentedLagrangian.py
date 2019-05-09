@@ -163,7 +163,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
     update_tol0 = penalty**alpha*update_tol0
     update_tol = update_tol0/penalty**alpha
     current_tol = tol
-    constraints = constraints['fun']
+    constraints = constraints[0]['fun']
 
     mod_objective = construct_augmented_lagrangian(fun, constraints)
     mod_jac = None if jac is None else construct_augm_lag_grad(
