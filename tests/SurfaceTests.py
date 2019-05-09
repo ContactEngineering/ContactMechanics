@@ -38,15 +38,16 @@ import os
 import io
 import pickle
 
-from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan, make_sphere, read
+from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan, make_sphere, open_topography
 from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 
-from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_ibw, read_opd, read_x3p, read_xyz
+from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz
 
 from PyCo.Topography.IO.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
+from PyCo.Topography.IO import detect_format
 
 import PyCo.Topography.IO
-from PyCo.Topography.IO import NPYReader, H5Reader
+from PyCo.Topography.IO import NPYReader, H5Reader, IbwReader
 from PyCo.Topography.Generation import fourier_synthesis
 
 from .PyCoTest import PyCoTestCase
@@ -798,7 +799,7 @@ class diSurfaceTest(unittest.TestCase):
                                            (0.83011806260022758, "AmplitudeError"),  # AmplitudeError
                                            (None, "Phase")])  # Phase
         ]:
-            reader = read(os.path.join(DATADIR,  '{}').format(fn), format="di")
+            reader = open_topography(os.path.join(DATADIR, '{}').format(fn), format="di")
 
 
             for i, (rms, name) in enumerate(rmslist):
@@ -826,7 +827,8 @@ class ibwSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        surface = read_ibw(os.path.join(DATADIR,  'example.ibw'))
+        reader = IbwReader(os.path.join(DATADIR,  'example.ibw'))
+        surface = reader.topography()
         nx, ny = surface.resolution
         self.assertEqual(nx, 512)
         self.assertEqual(ny, 512)
@@ -840,7 +842,7 @@ class ibwSurfaceTest(unittest.TestCase):
         f = open(os.path.join(DATADIR,  'example.ibw'), 'rb')
         fmt = detect_format(f)
         self.assertTrue(fmt, 'ibw')
-        surface = read(f, format=fmt).topography()
+        surface = open_topography(f, format=fmt).topography()
         f.close()
 
 
@@ -950,23 +952,23 @@ class IOTest(unittest.TestCase):
         for fn in self.text_example_file_list:
             # Text file can be opened as binary or text
             with open(fn, 'rb') as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg=fn)
             with open(fn, 'r') as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg=fn)
         for fn in self.binary_example_file_list:
             with open(fn, 'rb') as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg=fn)
         for datastr in self.text_example_memory_list:
             with io.StringIO(datastr) as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg="text memory stream for '{}' was closed".format(datastr))
 
             # Doing the same when but only giving a binary stream
             with io.BytesIO(datastr.encode(encoding='utf-8')) as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg="binary memory stream for '{}' was closed".format(datastr))
 
     def test_is_binary_stream(self):
@@ -986,7 +988,7 @@ class IOTest(unittest.TestCase):
 
         for fn in file_list:
             print(fn)
-            reader = read(fn)
+            reader = open_topography(fn)
             t = reader.topography(size=reader.size if reader.size is not None else [1.,] * len(reader.resolution))
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
@@ -1011,16 +1013,16 @@ class UnknownFileFormatGivenTest(unittest.TestCase):
 
     def test_read(self):
         with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.read(os.path.join(DATADIR,  "surface.2048x2048.h5"), format='Nonexistentfileformat')
+            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"), format='Nonexistentfileformat')
 
     def test_detect_format(self):
         with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.read(os.path.join(DATADIR,  "surface.2048x2048.h5"), format='Nonexistentfileformat')
+            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"), format='Nonexistentfileformat')
 
 class FileFormatMismatchTest(unittest.TestCase):
     def test_read(self):
         with self.assertRaises(PyCo.Topography.IO.FileFormatMismatch):
-            PyCo.Topography.IO.read(os.path.join(DATADIR,  'surface.2048x2048.h5'), format="npy")
+            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, 'surface.2048x2048.h5'), format="npy")
 
 class ScalarParametersTest(PyCoTestCase):
     @unittest.skip

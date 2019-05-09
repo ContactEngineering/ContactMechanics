@@ -31,7 +31,7 @@ try:
     from scipy.optimize import bisect
     from PyCo.ContactMechanics import HardWall
     from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-    from PyCo.Topography import read, PlasticTopography
+    from PyCo.Topography import open_topography, PlasticTopography
     from PyCo.System import make_system
     from NuMPI.Tools.Reduction import Reduction
 
@@ -52,7 +52,7 @@ def test_hard_wall_bearing_area(comm, fftengine_class):
     # Test that at very low hardness we converge to (almost) the bearing
     # area geometry
     pnp = Reduction(comm)
-    fullsurface = read(os.path.join(FIXTURE_DIR, 'surface1.out')).topography()
+    fullsurface = open_topography(os.path.join(FIXTURE_DIR, 'surface1.out')).topography()
     domain_resolution = fullsurface.resolution
     substrate = PeriodicFFTElasticHalfSpace(
         domain_resolution, 1.0,
