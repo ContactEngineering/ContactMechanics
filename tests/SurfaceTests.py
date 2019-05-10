@@ -43,7 +43,7 @@ from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 
 from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz
 
-from PyCo.Topography.IO.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
+from PyCo.Topography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
 from PyCo.Topography.IO import detect_format
 
 import PyCo.Topography.IO
@@ -412,6 +412,11 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(bw[0], 1.5/10)
         self.assertAlmostEqual(bw[1], 1.5)
 
+    def test_example6(self):
+        topography_file = open_topography(os.path.join(DATADIR,  'example6.txt'))
+        surf = topography_file.topography()
+        self.assertTrue(isinstance(surf, UniformLineScan))
+        self.assertTrue(np.allclose(surf.heights(), [1,2,3,4,5,6,7,8,9]))
 
     def test_simple_nonuniform_line_scan(self):
         surf = read_xyz(os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc'))
@@ -422,7 +427,6 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertIsNone(surf.info['unit'])
 
         bw = surf.bandwidth()
-        print(bw)
         self.assertAlmostEqual(bw[0], (8*1.+2*0.5/10)/9)
         self.assertAlmostEqual(bw[1], 9)
 
@@ -987,7 +991,6 @@ class IOTest(unittest.TestCase):
         file_list = self.text_example_file_list + self.binary_example_file_list
 
         for fn in file_list:
-            print(fn)
             reader = open_topography(fn)
             t = reader.topography(size=reader.size if reader.size is not None else [1.,] * len(reader.resolution))
             s = pickle.dumps(t)
