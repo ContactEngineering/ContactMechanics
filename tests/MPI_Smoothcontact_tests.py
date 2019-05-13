@@ -55,7 +55,8 @@ except ImportError as err:
     sys.exit(-1)
 
 _toplot =True
-@pytest.skip("is very slow, call it explicitely")
+
+@pytest.mark.skip("is very slow, call it explicitely")
 def test_smoothsphere(maxcomm, fftengine_class): # TODO problem: difficult to compare contact_area with MD Model,
     """
     This test needs a lot of computational effort

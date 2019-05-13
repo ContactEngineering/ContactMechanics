@@ -71,47 +71,67 @@ class OPDxSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_read(self):
+    def test_read_header(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
         loader = OPDxReader(file_path)
 
-        self.assertEqual(len(loader.buffer), 9835211)
+        channel_0, channel_1 = loader.channels()
 
-        # Check if the loader has found the data matrices, should be two
-        matrix_start = loader.hash_table["/2D_Data/Image/Matrix"].data.matrix.buf.p
-        matrix_length = loader.hash_table["/2D_Data/Image/Matrix"].data.matrix.buf.length
-        self.assertEqual(matrix_start, 800)
-        self.assertEqual(matrix_length, 4915200)  # 1280 * 960 * 4byte
+        # Check if metadata has been read in
 
-        matrix_start = loader.hash_table["/2D_Data/Raw/Matrix"].data.matrix.buf.p
-        matrix_length = loader.hash_table["/2D_Data/Raw/Matrix"].data.matrix.buf.length
-        self.assertEqual(matrix_start, 4916784)
-        self.assertEqual(matrix_length, 4915200)
+        # Default channel should be 1, 'raw'
+        self.assertEqual(loader._default_channel, 1)
 
-        rawdata, metadata = find_2d_data(loader.hash_table, loader.buffer)["Image"]
+        # Channel 0: Image
+        self.assertEqual(channel_0['Name'], 'Image')
+        self.assertEqual(channel_0['Time'], '12:53:14 PM')
 
-        self.assertEqual(rawdata.shape, (960, 1280))
+        self.assertEqual(channel_0['ImageHeight'], 960)
+        self.assertEqual(channel_0['ImageWidth'], 1280)
 
-        self.assertAlmostEqual(metadata["Image::Height value"], 35.85522, places=4)
-        self.assertEqual(metadata["Image::Height unit"], "Âµm")
+        self.assertEqual(channel_0['Width_value'], 47.81942809668896)
+        self.assertEqual(channel_0['Height_value'], 35.85522403809594)
+        self.assertEqual(channel_0['z_scale'], 1.0)
 
-        self.assertAlmostEqual(metadata["Image::Width value"], 47.81942, places=4)
-        self.assertEqual(metadata["Image::Width unit"], "Âµm")
+        # Channel 1: Raw
+
+        self.assertEqual(channel_1['Name'], 'Raw')
+        self.assertEqual(channel_1['Time'], '12:53:14 PM')
+
+        self.assertEqual(channel_1['ImageHeight'], 960)
+        self.assertEqual(channel_1['ImageWidth'], 1280)
+
+        self.assertEqual(channel_1['Width_value'], 47.81942809668896)
+        self.assertEqual(channel_1['Height_value'], 35.85522403809594)
+        self.assertEqual(channel_1['z_scale'], 78.592625,)
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
         loader = OPDxReader(file_path)
+
+        self.assertEqual(loader._default_channel, 1)
+
         topography = loader.topography()
 
-        self.assertAlmostEqual(topography.size[0], 0.00047819, places=8)
-        self.assertAlmostEqual(topography.size[1], 0.00035855, places=8)
+        # Check physical sizes
+        self.assertAlmostEqual(topography.size[0], 47.819, places=3)
+        self.assertAlmostEqual(topography.size[1], 35.855, places=3)
 
+        # Check resolutions
         self.assertEqual(topography.resolution[0], 960)
         self.assertEqual(topography.resolution[1], 1280)
 
-        self.assertAlmostEqual(topography._heights[0, 0], -7.7315344e-05, places=12)
+        # Check unit
+        self.assertEqual(topography._info['unit'], 'nm')
+
+        # Check an entry in the metadata
+        self.assertEqual(topography._info['SequenceNumber'], 5972)
+
+        # Check a height value
+        self.assertAlmostEqual(topography._heights[0, 0], -7731.534, places=3)
+        
 
     def test_read_with_check(self):
         buffer = ['V', 'C', 'A', ' ', 'D', 'A', 'T', 'A', '\x01', '\x00', '\x00', 'U', '\x07', '\x00', '\x00', '\x00']
@@ -314,12 +334,3 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(item.data.qun.symbol, 'SYM')
         self.assertAlmostEqual(item.data.qun.value, 0.73, places=10)
         self.assertEqual(item.data.qun.extra, [])
-
-
-
-
-
-
-
-
-
