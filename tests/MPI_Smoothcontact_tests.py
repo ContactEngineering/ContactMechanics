@@ -184,13 +184,13 @@ def test_smoothsphere(maxcomm, fftengine_class): # TODO problem: difficult to co
         ax.legend()
 
         fig.tight_layout()
-
+        fig.savefig("test_smoothsphere_area_force.png")
         fig2, ax2 = plt.subplots()
 
         ax2.plot(offsets, normal_force)
+        fig2.savefig("test_smoothsphere_penetration_force.png")
 
-    if toPlot:
-        plt.show(block=True)
+
 
 if __name__ == "__main__":
     from mpi4py import MPI
