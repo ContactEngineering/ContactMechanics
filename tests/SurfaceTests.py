@@ -682,6 +682,52 @@ class DetrendedSurfaceTest(unittest.TestCase):
         x, h = detrended_surface.positions_and_heights()
         self.assertAlmostEqual(np.trapz(h, x), 0)
 
+    def test_uniform_curvatures_2d(self):
+        radius = 100.
+        surface = make_sphere(radius, (160,131), (2., 3.),
+                              kind="paraboloid")
+
+        detrended = surface.detrend(detrend_mode="curvature")
+        if False:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots()
+            ax.contour(*surface.positions_and_heights())
+            ax.set_aspect(1)
+            plt.show(block=True)
+
+        self.assertAlmostEqual(abs(detrended.curvatures[0]), 1 / radius)
+        self.assertAlmostEqual(abs(detrended.curvatures[1]), 1 / radius)
+        self.assertAlmostEqual(abs(detrended.curvatures[2]), 0)
+
+    def test_uniform_curvatures_1d(self):
+        radius = 100.
+        surface = make_sphere(radius, (13, ), (6.,),
+                              kind="paraboloid")
+
+        detrended = surface.detrend(detrend_mode="curvature")
+        if False:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots()
+            ax.contour(*surface.positions_and_heights())
+            ax.set_aspect(1)
+            plt.show(block=True)
+
+        self.assertAlmostEqual(abs(detrended.curvatures[0]), 1 / radius)
+
+    def test_nonuniform_curvatures(self):
+        radius = 400.
+        center = 50.
+
+        # generate a nonregular monotically increasing sery of x
+        xs = np.cumsum(np.random.lognormal(size=20))
+        xs /= np.max(xs)
+        xs *= 80.
+
+        heights = 1 / (2*radius) * (xs - center)**2
+
+        surface = NonuniformLineScan(xs, heights)
+        detrended = surface.detrend(detrend_mode="curvature")
+        self.assertAlmostEqual(abs(detrended.curvatures[0]), 1 / radius)
 
 class DetectFormatTest(unittest.TestCase):
     def setUp(self):
