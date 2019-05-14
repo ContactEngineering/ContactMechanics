@@ -33,7 +33,7 @@ from mpi4py import MPI
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics.Interactions import HardWall
-from PyCo.Topography.IO import NPYReader, read
+from PyCo.Topography.IO import NPYReader, open_topography
 import numpy as np
 import os
 
@@ -53,7 +53,7 @@ DATADIR = os.path.dirname(os.path.realpath(__file__))
 #     return (fn, res, data)
 
 @pytest.mark.parametrize("HS", [PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace])
-@pytest.mark.parametrize("loader", [read, NPYReader])
+@pytest.mark.parametrize("loader", [open_topography, NPYReader])
 def test_LoadTopoFromFile(comm, fftengine_class,  HS, loader):
 
     fn = DATADIR + "/worflowtest.npy"

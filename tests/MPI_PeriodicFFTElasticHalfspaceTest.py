@@ -191,7 +191,7 @@ def test_sineWave_disp(comm,pnp, fftengine_class, nx, ny, basenpoints):
 
 @pytest.mark.parametrize("nx, ny", [(8, 8),
                                     (17,128),
-                                    (1,128)])
+                                    (3,128)])
 def test_sineWave_disp_rotation_invariance(comm,pnp, fftengine_class, nx, ny, basenpoints):
     """
     for a sinusoidal displacement, tests if the energy depends on if the wave is

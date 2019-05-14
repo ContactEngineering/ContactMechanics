@@ -37,8 +37,8 @@ All topography classes implement the following analysis functions that can retur
 
 Example:::
 
-    from PyCo.Topography import read
-    surface = read('my_surface.opd')
+    from PyCo.Topography import open_topography
+    surface = open_topography('my_surface.opd')
     print('rms height =', surface.rms_height())
     print('rms slope =', surface.rms_slope())
     print('rms curvature =', surface.rms_curvature())
@@ -53,8 +53,8 @@ Pipeline function return a new topography. This topography does not own the orig
 
 Example:::
 
-    from PyCo.Topography import read
-    surface = read('my_surface.opd')
+    from PyCo.Topography import open_topography
+    surface = open_topography('my_surface.opd')
     print('rms height before detrending =', surface.rms_height())
     print('rms height after detrending =', surface.detrend(detrend_mode='curvature').rms_height())
     print('rms height after detrending and rescaling =',

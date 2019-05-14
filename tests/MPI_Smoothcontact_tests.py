@@ -55,7 +55,8 @@ except ImportError as err:
     sys.exit(-1)
 
 _toplot =True
-@pytest.skip("is very slow, call it explicitely")
+
+@pytest.mark.skip("is very slow, call it explicitely")
 def test_smoothsphere(maxcomm, fftengine_class): # TODO problem: difficult to compare contact_area with MD Model,
     """
     This test needs a lot of computational effort
@@ -184,13 +185,13 @@ def test_smoothsphere(maxcomm, fftengine_class): # TODO problem: difficult to co
         ax.legend()
 
         fig.tight_layout()
-
+        fig.savefig("test_smoothsphere_area_force.png")
         fig2, ax2 = plt.subplots()
 
         ax2.plot(offsets, normal_force)
+        fig2.savefig("test_smoothsphere_penetration_force.png")
 
-    if toPlot:
-        plt.show(block=True)
+
 
 if __name__ == "__main__":
     from mpi4py import MPI

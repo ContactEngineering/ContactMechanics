@@ -38,14 +38,16 @@ import os
 import io
 import pickle
 
-from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, read)
+from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan, make_sphere, open_topography
+from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 
-from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_ibw, read_opd, read_x3p, read_xyz
+from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz
 
-from PyCo.Topography.IO.FromFile import detect_format, get_unit_conversion_factor, is_binary_stream
+from PyCo.Topography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
+from PyCo.Topography.IO import detect_format
 
 import PyCo.Topography.IO
-from PyCo.Topography.IO import NPYReader, H5Reader
+from PyCo.Topography.IO import NPYReader, H5Reader, IbwReader
 from PyCo.Topography.Generation import fourier_synthesis
 
 from .PyCoTest import PyCoTestCase
@@ -192,44 +194,6 @@ class UniformLineScanTest(PyCoTestCase):
         for mode in ["height", "curvature", "slope"]:
             detrended = t.detrend(detrend_mode=mode)
             detrended.heights()
-
-    @unittest.expectedFailure
-    def test_detrend_reduces(self):
-        """ tests if detrending really reduces the heights (or slope) as claimed
-        """
-        n = 10
-        dx = 0.5
-        x = np.arange(n) * dx
-        #h = np.random.normal(size=n)
-        h = [ 0.82355941, -1.32205074,  0.77084813,  0.49928252,  0.57872149 , 2.80200331,
-               0.09551251, -1.11616977,  2.07630937, -0.65408072]
-        t = UniformLineScan(h, dx * n)
-        for mode in ["height", "curvature"]:
-            detrended = t.detrend(detrend_mode=mode)
-            detrended.heights()
-            if False:
-                import matplotlib.pyplot as plt
-
-                fig, ax = plt.subplots()
-
-                ax.plot(*t.positions_and_heights(), label="original")
-                ax.plot(*detrended.positions_and_heights(), label="detrended")
-
-                ax.set_xlabel("x")
-                ax.set_ylabel("h")
-                ax.grid(True)
-                ax.legend()
-
-                fig.tight_layout()
-
-                plt.show(block=True)
-
-            assert detrended.rms_height() <= t.rms_height(), "{}".format(h)
-
-        mode = "slope"
-        detrended = t.detrend(detrend_mode=mode)
-        detrended.heights()
-        assert detrended.rms_slope() <= t.rms_slope()
 
 
     def test_power_spectrum_1D(self):
@@ -385,6 +349,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
     def test_example1(self):
         surf = read_asc(os.path.join(DATADIR,  'example1.txt'))
+        self.assertTrue(isinstance(surf, ScaledUniformTopography))
         self.assertEqual(surf.resolution, (1024, 1024))
         self.assertAlmostEqual(surf.size[0], 2000)
         self.assertAlmostEqual(surf.size[1], 2000)
@@ -431,6 +396,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
     def test_example5(self):
         surf = read_asc(os.path.join(DATADIR,  'example5.txt'))
+        self.assertTrue(isinstance(surf, Topography))
         self.assertEqual(surf.resolution, (10, 10))
         self.assertEqual(surf.size, (10, 10))
         self.assertAlmostEqual(surf.rms_height(), 1.0)
@@ -447,6 +413,11 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(bw[0], 1.5/10)
         self.assertAlmostEqual(bw[1], 1.5)
 
+    def test_example6(self):
+        topography_file = open_topography(os.path.join(DATADIR,  'example6.txt'))
+        surf = topography_file.topography()
+        self.assertTrue(isinstance(surf, UniformLineScan))
+        self.assertTrue(np.allclose(surf.heights(), [1,2,3,4,5,6,7,8,9]))
 
     def test_simple_nonuniform_line_scan(self):
         surf = read_xyz(os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc'))
@@ -457,7 +428,6 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertIsNone(surf.info['unit'])
 
         bw = surf.bandwidth()
-        print(bw)
         self.assertAlmostEqual(bw[0], (8*1.+2*0.5/10)/9)
         self.assertAlmostEqual(bw[1], 9)
 
@@ -554,8 +524,13 @@ class DetrendedSurfaceTest(unittest.TestCase):
          h = [0.82355941, -1.32205074, 0.77084813, 0.49928252, 0.57872149, 2.80200331, 0.09551251, -1.11616977,
               2.07630937, -0.65408072]
          t = UniformLineScan(h, dx * n)
-         for mode in ['height', 'curvature']:
-             self.assertGreater(t.rms_height(), t.detrend(detrend_mode=mode).rms_height(), msg=mode)
+         for mode in ['height', 'curvature', 'slope']:
+             detrended = t.detrend(detrend_mode=mode)
+             self.assertAlmostEqual(detrended.mean(), 0)
+             if mode == 'slope':
+                 self.assertGreater(t.rms_slope(), detrended.rms_slope(), msg=mode)
+             else:
+                 self.assertGreater(t.rms_height(), detrended.rms_height(), msg=mode)
 
     def test_smooth_without_size(self):
         arr = self._flat_arr
@@ -708,6 +683,52 @@ class DetrendedSurfaceTest(unittest.TestCase):
         x, h = detrended_surface.positions_and_heights()
         self.assertAlmostEqual(np.trapz(h, x), 0)
 
+    def test_uniform_curvatures_2d(self):
+        radius = 100.
+        surface = make_sphere(radius, (160,131), (2., 3.),
+                              kind="paraboloid")
+
+        detrended = surface.detrend(detrend_mode="curvature")
+        if False:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots()
+            ax.contour(*surface.positions_and_heights())
+            ax.set_aspect(1)
+            plt.show(block=True)
+
+        self.assertAlmostEqual(abs(detrended.curvatures[0]), 1 / radius)
+        self.assertAlmostEqual(abs(detrended.curvatures[1]), 1 / radius)
+        self.assertAlmostEqual(abs(detrended.curvatures[2]), 0)
+
+    def test_uniform_curvatures_1d(self):
+        radius = 100.
+        surface = make_sphere(radius, (13, ), (6.,),
+                              kind="paraboloid")
+
+        detrended = surface.detrend(detrend_mode="curvature")
+        if False:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots()
+            ax.contour(*surface.positions_and_heights())
+            ax.set_aspect(1)
+            plt.show(block=True)
+
+        self.assertAlmostEqual(abs(detrended.curvatures[0]), 1 / radius)
+
+    def test_nonuniform_curvatures(self):
+        radius = 400.
+        center = 50.
+
+        # generate a nonregular monotically increasing sery of x
+        xs = np.cumsum(np.random.lognormal(size=20))
+        xs /= np.max(xs)
+        xs *= 80.
+
+        heights = 1 / (2*radius) * (xs - center)**2
+
+        surface = NonuniformLineScan(xs, heights)
+        detrended = surface.detrend(detrend_mode="curvature")
+        self.assertAlmostEqual(abs(detrended.curvatures[0]), 1 / radius)
 
 class DetectFormatTest(unittest.TestCase):
     def setUp(self):
@@ -829,7 +850,7 @@ class diSurfaceTest(unittest.TestCase):
                                            (0.83011806260022758, "AmplitudeError"),  # AmplitudeError
                                            (None, "Phase")])  # Phase
         ]:
-            reader = read(os.path.join(DATADIR,  '{}').format(fn), format="di")
+            reader = open_topography(os.path.join(DATADIR, '{}').format(fn), format="di")
 
 
             for i, (rms, name) in enumerate(rmslist):
@@ -857,7 +878,8 @@ class ibwSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        surface = read_ibw(os.path.join(DATADIR,  'example.ibw'))
+        reader = IbwReader(os.path.join(DATADIR,  'example.ibw'))
+        surface = reader.topography()
         nx, ny = surface.resolution
         self.assertEqual(nx, 512)
         self.assertEqual(ny, 512)
@@ -871,7 +893,7 @@ class ibwSurfaceTest(unittest.TestCase):
         f = open(os.path.join(DATADIR,  'example.ibw'), 'rb')
         fmt = detect_format(f)
         self.assertTrue(fmt, 'ibw')
-        surface = read(f, format=fmt).topography()
+        surface = open_topography(f, format=fmt).topography()
         f.close()
 
 
@@ -981,23 +1003,23 @@ class IOTest(unittest.TestCase):
         for fn in self.text_example_file_list:
             # Text file can be opened as binary or text
             with open(fn, 'rb') as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg=fn)
             with open(fn, 'r') as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg=fn)
         for fn in self.binary_example_file_list:
             with open(fn, 'rb') as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg=fn)
         for datastr in self.text_example_memory_list:
             with io.StringIO(datastr) as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg="text memory stream for '{}' was closed".format(datastr))
 
             # Doing the same when but only giving a binary stream
             with io.BytesIO(datastr.encode(encoding='utf-8')) as f:
-                read(f)
+                open_topography(f)
                 self.assertFalse(f.closed, msg="binary memory stream for '{}' was closed".format(datastr))
 
     def test_is_binary_stream(self):
@@ -1016,8 +1038,7 @@ class IOTest(unittest.TestCase):
         file_list = self.text_example_file_list + self.binary_example_file_list
 
         for fn in file_list:
-            print(fn)
-            reader = read(fn)
+            reader = open_topography(fn)
             t = reader.topography(size=reader.size if reader.size is not None else [1.,] * len(reader.resolution))
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
@@ -1042,16 +1063,16 @@ class UnknownFileFormatGivenTest(unittest.TestCase):
 
     def test_read(self):
         with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.read(os.path.join(DATADIR,  "surface.2048x2048.h5"), format='Nonexistentfileformat')
+            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"), format='Nonexistentfileformat')
 
     def test_detect_format(self):
         with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.read(os.path.join(DATADIR,  "surface.2048x2048.h5"), format='Nonexistentfileformat')
+            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"), format='Nonexistentfileformat')
 
 class FileFormatMismatchTest(unittest.TestCase):
     def test_read(self):
         with self.assertRaises(PyCo.Topography.IO.FileFormatMismatch):
-            PyCo.Topography.IO.read(os.path.join(DATADIR,  'surface.2048x2048.h5'), format="npy")
+            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, 'surface.2048x2048.h5'), format="npy")
 
 class ScalarParametersTest(PyCoTestCase):
     @unittest.skip

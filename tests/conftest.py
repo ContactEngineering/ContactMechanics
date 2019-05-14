@@ -24,8 +24,6 @@
 
 import pytest
 
-collect_ignore_glob = ["*MPI_*.py"]
-
 from runtests.mpi import MPITestFixture
 
 #@pytest.fixture

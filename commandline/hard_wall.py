@@ -35,7 +35,7 @@ import PyCo
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                  PeriodicFFTElasticHalfSpace)
-from PyCo.Topography import read, DetrendedTopography, PlasticTopography, ScaledTopography
+from PyCo.Topography import open_topography, DetrendedTopography, PlasticTopography, ScaledTopography
 from PyCo.System import make_system
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -323,9 +323,9 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 
 # Read a surface topography from a text file. Returns a PyCo.Topography.Topography
 # object.
-surface = read(arguments.filename)
+surface = open_topography(arguments.filename)
 # Set the *physical* size of the surface. We here set it to equal the shape,
-# i.e. the resolution of the surface just read. Size is returned by surface.size
+# i.e. the resolution of the surface just open_topography. Size is returned by surface.size
 # and can be unknown, i.e. *None*.
 if arguments.size is not None:
     surface.size = arguments.size
