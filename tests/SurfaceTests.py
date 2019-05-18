@@ -971,6 +971,19 @@ class PipelineTests(unittest.TestCase):
             surf2 = surf.scale(fac)
             self.assertAlmostEqual(fac * surf.rms_height(kind='Rq'), surf2.rms_height(kind='Rq'))
 
+    def test_transposed_topography(self):
+        surf = fourier_synthesis([124, 368], [6, 3], 0.8, rms_slope=0.1)
+        nx, ny = surf.resolution
+        sx, sy = surf.size
+        surf2 = surf.transpose()
+        nx2, ny2 = surf2.resolution
+        sx2, sy2 = surf2.size
+        self.assertEqual(nx, ny2)
+        self.assertEqual(ny, nx2)
+        self.assertEqual(sx, sy2)
+        self.assertEqual(sy, sx2)
+        self.assertTrue((surf.heights() == surf2.heights().T).all())
+
 
 class IOTest(unittest.TestCase):
     def setUp(self):
