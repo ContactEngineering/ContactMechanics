@@ -13,5 +13,5 @@ pfft-python
 FFTEngine
 git+https://github.com/IMTEK-Simulation/NuMPI.git
 pytest>=4
-git+https://github.com:AntoineSIMTEK/FFTEngine
-git+https://github.com:AntoineSIMTEK/runtests.git#egg=runtests
+git+https://github.com/AntoineSIMTEK/FFTEngine
+git+https://github.com/AntoineSIMTEK/runtests.git#egg=runtests
