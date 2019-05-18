@@ -36,9 +36,7 @@ import numpy as np
 import versioneer
 from setuptools import setup, find_packages, Extension
 from Cython.Build import cythonize
-import os
 import sys
-
 
 # Hack for a --openmp option that compiles with parallel FFTW3
 if '--openmp' in sys.argv:
