@@ -32,13 +32,13 @@ import numpy as np
 import copy
 
 class Interaction(object):
-    "base class for all interactions, e.g. interatomic potentials"
+    """base class for all interactions, e.g. interatomic potentials"""
     # pylint: disable=too-few-public-methods
     pass
 
 
 class HardWall(Interaction):
-    "base class for non-smooth contact mechanics"
+    """base class for non-smooth contact mechanics"""
     # pylint: disable=too-few-public-methods
     def __init__(self):
         self.penetration = None
@@ -53,7 +53,7 @@ class HardWall(Interaction):
 
 
 class SoftWall(Interaction):
-    "base class for smooth contact mechanics"
+    """base class for smooth contact mechanics"""
     def __init__(self,pnp=np):
         self.energy = None
         self.force = None
@@ -94,7 +94,7 @@ class SoftWall(Interaction):
     def compute(self, gap, pot=True, forces=False, area_scale=1.):
         """
         computes and stores the interaction energy and/or forces based on the
-        as fuction of the gap
+        as function of the gap
         Parameters:
         gap        -- array containing the point-wise gap values
         pot        -- (default True) whether the energy should be evaluated
