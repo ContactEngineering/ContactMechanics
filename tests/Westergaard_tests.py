@@ -1,6 +1,6 @@
 #
-# Copyright 2018-2019 Antoine Sanner
-#           2018-2019 Lars Pastewka
+# Copyright 2018-2019 Lars Pastewka
+#           2018-2019 Antoine Sanner
 # 
 # ### MIT license
 # 
@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 """
 Tests adhesion-free flat punch results
 """
