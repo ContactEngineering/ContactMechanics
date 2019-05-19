@@ -96,9 +96,9 @@ class UniformLineScanTest(PyCoTestCase):
         t = UniformLineScan(h, 4)
 
         with self.assertRaises(AttributeError):
-            t.coeff
-        # a scaled line scan has a coeff
-        self.assertEqual(t.scale(1).coeff, 1)
+            t.scale_factor
+        # a scaled line scan has a scale_factor
+        self.assertEqual(t.scale(1).scale_factor, 1)
 
         #
         # This should also work after the topography has been pickled
@@ -107,9 +107,9 @@ class UniformLineScanTest(PyCoTestCase):
         t2 = pickle.loads(pt)
 
         with self.assertRaises(AttributeError):
-            t2.coeff
-        # a scaled line scan has a coeff
-        self.assertEqual(t2.scale(1).coeff, 1)
+            t2.scale_factor
+        # a scaled line scan has a scale_factor
+        self.assertEqual(t2.scale(1).scale_factor, 1)
 
     def test_setting_info_dict(self):
 
@@ -241,9 +241,9 @@ class NonuniformLineScanTest(PyCoTestCase):
 
         t = NonuniformLineScan([1,2,4], [2,4,8])
         with self.assertRaises(AttributeError):
-            t.coeff
-        # a scaled line scan has a coeff
-        self.assertEqual(t.scale(1).coeff, 1)
+            t.scale_factor
+        # a scaled line scan has a scale_factor
+        self.assertEqual(t.scale(1).scale_factor, 1)
 
         #
         # This should also work after the topography has been pickled
@@ -252,9 +252,9 @@ class NonuniformLineScanTest(PyCoTestCase):
         t2 = pickle.loads(pt)
 
         with self.assertRaises(AttributeError):
-            t2.coeff
-        # a scaled line scan has a coeff
-        self.assertEqual(t2.scale(1).coeff, 1)
+            t2.scale_factor
+        # a scaled line scan has a scale_factor
+        self.assertEqual(t2.scale(1).scale_factor, 1)
 
     def test_setting_info_dict(self):
 
@@ -1114,5 +1114,3 @@ class ConvertersTest(PyCoTestCase):
         x = t.positions()
         self.assertAlmostEqual(t.x_range[0], x[0])
         self.assertAlmostEqual(t.x_range[1], x[-1])
-
-
