@@ -1,6 +1,6 @@
 #
-# Copyright 2019 Antoine Sanner
-#           2019 Kai Haase
+# Copyright 2019 Kai Haase
+#           2019 Antoine Sanner
 # 
 # ### MIT license
 # 
@@ -22,48 +22,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-"""
-@file   SurfaceTests.py
 
-@author Till Junge <till.junge@kit.edu>
-
-@date   27 Jan 2015
-
-@brief  Tests surface classes
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-#try:
 import unittest
 import os
-from PyCo.Topography.IO.OPDx import find_2d_data, read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, OPDxReader
-DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
+from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, read_int16, read_int32, read_int64, \
+    read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, \
+    read_named_struct, read_item, OPDxReader
 
-# except ImportError as err:
-#    import sys
-#    print(err)
-#    sys.exit(-1)
+DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
 
 
 class OPDxSurfaceTest(unittest.TestCase):
@@ -104,7 +70,7 @@ class OPDxSurfaceTest(unittest.TestCase):
 
         self.assertEqual(channel_1['Width_value'], 47.81942809668896)
         self.assertEqual(channel_1['Height_value'], 35.85522403809594)
-        self.assertEqual(channel_1['z_scale'], 78.592625,)
+        self.assertEqual(channel_1['z_scale'], 78.592625, )
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
@@ -131,7 +97,6 @@ class OPDxSurfaceTest(unittest.TestCase):
 
         # Check a height value
         self.assertAlmostEqual(topography._heights[0, 0], -7731.534, places=3)
-        
 
     def test_read_with_check(self):
         buffer = ['V', 'C', 'A', ' ', 'D', 'A', 'T', 'A', '\x01', '\x00', '\x00', 'U', '\x07', '\x00', '\x00', '\x00']
