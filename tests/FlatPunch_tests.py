@@ -35,8 +35,10 @@ try:
     from PyCo.System import make_system
 except ImportError as err:
     import sys
+
     print(err)
     sys.exit(-1)
+
 
 # -----------------------------------------------------------------------------
 class FlatPunchTest(unittest.TestCase):
@@ -47,51 +49,49 @@ class FlatPunchTest(unittest.TestCase):
         self.E_s = 3.56
 
     def test_constrained_conjugate_gradients(self):
-        for kind in ['ref']: # Add 'opt' to test optimized solver, but does
-                             # not work on Travis!
-            for nx, ny in [(256, 256), (256, 255), (255, 256)]:
-                for disp0, normal_force in [(0, 15.0)]: # (0.1, None),
-                    sx = sy = 2.5*self.r_s
-                    substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
-                                                        (sx, sy))
-                    interaction = HardWall()
-                    r_sq = (sx/nx*(np.arange(nx)-nx//2)).reshape(-1,1)**2 + \
-                           (sy/ny*(np.arange(ny)-ny//2)).reshape(1,-1)**2
-                    surface = Topography(
-                        np.ma.masked_where(r_sq > self.r_s**2,
-                                           np.zeros([nx, ny])),
-                        (sx, sy)
-                        )
-                    system = make_system(substrate, interaction, surface)
-                    try:
-                        result = system.minimize_proxy(offset=disp0,
-                                                       external_force=normal_force,
-                                                       kind=kind,
-                                                       pentol=1e-4)
-                    except substrate.FreeBoundaryError as err:
-                        if False:
-                            import matplotlib.pyplot as plt
-                            fig,ax = plt.subplots()
+        for nx, ny in [(256, 256), (256, 255), (255, 256)]:
+            for disp0, normal_force in [(0, 15.0)]:  # (0.1, None),
+                sx = sy = 2.5 * self.r_s
+                substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
+                                                    (sx, sy))
+                interaction = HardWall()
+                r_sq = (sx / nx * (np.arange(nx) - nx // 2)).reshape(-1, 1) ** 2 + \
+                       (sy / ny * (np.arange(ny) - ny // 2)).reshape(1, -1) ** 2
+                surface = Topography(
+                    np.ma.masked_where(r_sq > self.r_s ** 2,
+                                       np.zeros([nx, ny])),
+                    (sx, sy)
+                )
+                system = make_system(substrate, interaction, surface)
+                try:
+                    result = system.minimize_proxy(offset=disp0,
+                                                   external_force=normal_force,
+                                                   pentol=1e-4)
+                except substrate.FreeBoundaryError as err:
+                    if False:
+                        import matplotlib.pyplot as plt
+                        fig, ax = plt.subplots()
 
-                            #ax.pcolormesh(substrate.force / surface.area_per_pt,rasterized=True)
-                            ax.pcolormesh(surface.heights(), rasterized=True)
-                            ax.set_xlabel("")
-                            ax.set_ylabel("")
+                        # ax.pcolormesh(substrate.force / surface.area_per_pt,rasterized=True)
+                        ax.pcolormesh(surface.heights(), rasterized=True)
+                        ax.set_xlabel("")
+                        ax.set_ylabel("")
 
-                            ax.legend()
+                        ax.legend()
 
-                            fig.tight_layout()
-                            plt.show(block=True)
+                        fig.tight_layout()
+                        plt.show(block=True)
 
-                        raise err
-                    offset = result.offset
-                    forces = -result.jac
-                    converged = result.success
-                    self.assertTrue(converged)
+                    raise err
+                offset = result.offset
+                forces = -result.jac
+                converged = result.success
+                self.assertTrue(converged)
 
-                    # Check contact stiffness
-                    self.assertAlmostEqual(-forces.sum()/offset / (2*self.r_s*self.E_s),
-                                           1.0, places=2)
+                # Check contact stiffness
+                self.assertAlmostEqual(-forces.sum() / offset / (2 * self.r_s * self.E_s),
+                                       1.0, places=2)
+
 
 if __name__ == '__main__':
     unittest.main()
