@@ -1114,3 +1114,29 @@ class ConvertersTest(PyCoTestCase):
         x = t.positions()
         self.assertAlmostEqual(t.x_range[0], x[0])
         self.assertAlmostEqual(t.x_range[1], x[-1])
+
+    def test_delegation(self):
+        t1 = fourier_synthesis((128, ), (1, ), 0.8, rms_slope=0.1)
+        t2 = t1.detrend()
+        t3 = t2.to_nonuniform()
+        t4 = t3.scale(2.0)
+
+        t4.scale_factor
+        with self.assertRaises(AttributeError):
+            t2.scale_factor
+        t2.detrend_mode
+        # detrend_mode should not be delegated to the parent class
+        with self.assertRaises(AttributeError):
+            t4.detrend_mode
+
+        # t2 should have 'to_nonuniform'
+        t2.to_nonuniform()
+        # but it should not have 'to_uniform'
+        with self.assertRaises(AttributeError):
+            t2.to_uniform(100, 10)
+
+        # t4 should have 'to_uniform'
+        t4.to_uniform(100, 10)
+        # but it should not have 'to_nonuniform'
+        with self.assertRaises(AttributeError):
+            t4.to_nonuniform()
