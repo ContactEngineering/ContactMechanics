@@ -1,6 +1,6 @@
 #
-# Copyright 2019 Antoine Sanner
-#           2019 Kai Haase
+# Copyright 2019 Kai Haase
+#           2019 Antoine Sanner
 # 
 # ### MIT license
 # 
