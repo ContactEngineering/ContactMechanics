@@ -52,15 +52,7 @@ class CustomBuildExtCommand(build_ext):
         build_ext.run(self)
 
 
-# Hack for a --openmp option that compiles with parallel FFTW3
-if '--openmp' in sys.argv:
-    index = sys.argv.index('--openmp')
-    sys.argv.pop(index)  # Removes the '--openmp'
-    extra_compile_args = ["-std=c++11", "-fopenmp"]
-    extra_link_args = ["-lfftw3_omp", "-lfftw3", "-lm", "-fopenmp"]
-else:
-    extra_compile_args = ["-std=c++11"]
-    extra_link_args = ["-lfftw3", "-lm"]
+extra_compile_args = ["-std=c++11"]
 
 scripts = ['commandline/hard_wall.py',
            'commandline/soft_wall.py',
