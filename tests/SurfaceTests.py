@@ -567,7 +567,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.rms_curvature(), 0.0)
 
     def test_randomly_rough(self):
-        surface = fourier_synthesis((512, 512), (1., 1.), 0.8, rms_height=1)
+        surface = fourier_synthesis((511, 511), (1., 1.), 0.8, rms_height=1)
         self.assertTrue(surface.is_uniform)
         cut = Topography(surface[:64, :64], size=(64., 64.))
         self.assertTrue(cut.is_uniform)
