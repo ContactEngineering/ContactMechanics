@@ -32,11 +32,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import numpy as np
 import versioneer
 from setuptools import setup, find_packages, Extension
+from setuptools.command.build_ext import build_ext
 from Cython.Build import cythonize
 import sys
+
+
+class CustomBuildExtCommand(build_ext):
+    """build_ext command for use when numpy headers are needed."""
+
+    def run(self):
+        # Import numpy here, only when headers are needed
+        import numpy
+
+        # Add numpy headers to include_dirs
+        self.include_dirs.append(numpy.get_include())
+
+        # Call original build_ext command
+        build_ext.run(self)
+
 
 # Hack for a --openmp option that compiles with parallel FFTW3
 if '--openmp' in sys.argv:
@@ -48,48 +63,50 @@ else:
     extra_compile_args = ["-std=c++11"]
     extra_link_args = ["-lfftw3", "-lm"]
 
-scripts =  ['commandline/hard_wall.py',
-            'commandline/soft_wall.py',
-            'commandline/plotacf.py',
-            'commandline/plotpsd.py',
-            'commandline/plotmap.py']
+scripts = ['commandline/hard_wall.py',
+           'commandline/soft_wall.py',
+           'commandline/plotacf.py',
+           'commandline/plotpsd.py',
+           'commandline/plotmap.py']
 
 extensions = [
     Extension(
         name='_PyCo',
         sources=['c/patchfinder.cpp',
                  'c/PyCo_module.cpp'],
-        include_dirs=[np.get_include()]
-        ),
+    ),
     Extension(
         name="PyCo.Tools.Optimisation.ConstrainedConjugateGradientsOpt",
         sources=["PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.pyx"],
-        include_dirs=[np.get_include()],
         language="c++"),
     Extension(
         name="PyCo.Goodies.ScanningProbe",
         sources=["PyCo/Goodies/ScanningProbe.pyx"],
-        include_dirs=[np.get_include()],
         language="c++")]
 
-
-
 setup(
-    name = "PyCo",
-    version = versioneer.get_version(),
-    cmdclass = versioneer.get_cmdclass(),
-    scripts = scripts,
-    packages = find_packages(),
-    package_data = {'': ['ChangeLog.md']},
-    include_package_data = True,
-    ext_modules = cythonize(extensions),
-    dependency_links = ["git+git@github.com:AntoineSIMTEK/FFTEngine.git",
-                        "git+git@github.com:AntoineSIMTEK/NuMPI.git"  ],
+    name="PyCo",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(cmdclass={'build_ext': CustomBuildExtCommand}),
+    scripts=scripts,
+    packages=find_packages(),
+    package_data={'': ['ChangeLog.md']},
+    include_package_data=True,
+    ext_modules=cythonize(extensions),
     # metadata for upload to PyPI
-    author = "Lars Pastewka",
-    author_email = "lars.pastewka@imtek.uni-freiburg.de",
-    description = "Efficient contact mechanics with Python",
-    license = "MIT",
-    test_suite = 'tests',
-    python_requires='>3.5.0'
+    author="Lars Pastewka",
+    author_email="lars.pastewka@imtek.uni-freiburg.de",
+    description="Efficient contact mechanics with Python",
+    license="MIT",
+    test_suite='tests',
+    # dependencies
+    python_requires='>3.5.0',
+    install_requires=[
+        'numpy>=1.11.0',
+        'cython>=0.15,<0.29',
+        'pfft-python',
+        'FFTEngine',
+        'NuMPI',
+        'FFTEngine'
+    ]
 )
