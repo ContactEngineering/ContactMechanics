@@ -1136,7 +1136,13 @@ class ConvertersTest(PyCoTestCase):
             t2.to_uniform(100, 10)
 
         # t4 should have 'to_uniform'
-        t4.to_uniform(100, 10)
+        t5 = t4.to_uniform(100, 10)
         # but it should not have 'to_nonuniform'
         with self.assertRaises(AttributeError):
             t4.to_nonuniform()
+
+        # t5 should have 'to_nonuniform'
+        t5.to_nonuniform()
+        # but it should not have 'to_uniform'
+        with self.assertRaises(AttributeError):
+            t5.to_uniform(100, 10)
