@@ -76,10 +76,6 @@ extensions = [
                  'c/PyCo_module.cpp'],
     ),
     Extension(
-        name="PyCo.Tools.Optimisation.ConstrainedConjugateGradientsOpt",
-        sources=["PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.pyx"],
-        language="c++"),
-    Extension(
         name="PyCo.Goodies.ScanningProbe",
         sources=["PyCo/Goodies/ScanningProbe.pyx"],
         language="c++")]
