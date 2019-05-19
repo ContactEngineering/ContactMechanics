@@ -74,11 +74,8 @@ extensions = [
         name='_PyCo',
         sources=['c/patchfinder.cpp',
                  'c/PyCo_module.cpp'],
-    ),
-    Extension(
-        name="PyCo.Goodies.ScanningProbe",
-        sources=["PyCo/Goodies/ScanningProbe.pyx"],
-        language="c++")]
+    )
+]
 
 setup(
     name="PyCo",
