@@ -35,7 +35,6 @@ SOFTWARE.
 import versioneer
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
-from Cython.Build import cythonize
 import sys
 
 
@@ -85,7 +84,7 @@ setup(
     packages=find_packages(),
     package_data={'': ['ChangeLog.md']},
     include_package_data=True,
-    ext_modules=cythonize(extensions),
+    ext_modules=extensions,
     # metadata for upload to PyPI
     author="Lars Pastewka",
     author_email="lars.pastewka@imtek.uni-freiburg.de",
@@ -96,7 +95,6 @@ setup(
     python_requires='>3.5.0',
     install_requires=[
         'numpy>=1.11.0',
-        'cython>=0.15,<0.29',
         'pfft-python',
         'FFTEngine',
         'NuMPI',
