@@ -121,7 +121,7 @@ class TopographyTest(PyCoTestCase):
 
         st = t.scale(1)
 
-        self.assertEqual(st.coeff, 1)
+        self.assertEqual(st.scale_factor, 1)
 
         #
         # only detrended topographies have detrend_mode
@@ -138,11 +138,11 @@ class TopographyTest(PyCoTestCase):
         t2 = pickle.loads(pickle.dumps(t))
 
         with self.assertRaises(AttributeError):
-            t2.coeff
+            t2.scale_factor
 
         st2 = t2.scale(1)
 
-        self.assertEqual(st2.coeff, 1)
+        self.assertEqual(st2.scale_factor, 1)
 
         with self.assertRaises(AttributeError):
             st2.detrend_mode
