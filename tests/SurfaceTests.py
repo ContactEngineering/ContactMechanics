@@ -1146,3 +1146,12 @@ class ConvertersTest(PyCoTestCase):
         # but it should not have 'to_uniform'
         with self.assertRaises(AttributeError):
             t5.to_uniform(100, 10)
+
+    def test_autocompletion(self):
+        t1 = fourier_synthesis((128, ), (1, ), 0.8, rms_slope=0.1)
+        t2 = t1.detrend()
+        t3 = t2.to_nonuniform()
+
+        self.assertIn('detrend', dir(t1))
+        self.assertIn('to_nonuniform', dir(t2))
+        self.assertIn('to_uniform', dir(t3))
