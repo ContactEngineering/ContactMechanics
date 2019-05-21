@@ -58,7 +58,11 @@ SOFTWARE.
 import unittest
 import os
 from PyCo.Topography.IO.OPDx import find_2d_data, read_with_check, read_float, read_double, read_int16, read_int32, read_int64, read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, OPDxReader
-DATADIR = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'file_format_examples')
+DATADIR = os.path.join(
+    os.path.dirname(
+    os.path.dirname(
+    os.path.dirname(os.path.realpath(__file__)))),
+    'file_format_examples')
 
 # except ImportError as err:
 #    import sys

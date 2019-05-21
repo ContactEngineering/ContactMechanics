@@ -28,7 +28,12 @@ import os
 
 from PyCo.Topography.IO.MI import MIReader
 
-DATADIR = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'file_format_examples')
+DATADIR = os.path.join(
+    os.path.dirname(
+    os.path.dirname(
+    os.path.dirname(
+    os.path.realpath(__file__)))),
+    'file_format_examples')
 
 
 class MISurfaceTest(unittest.TestCase):
