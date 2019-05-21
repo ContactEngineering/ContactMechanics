@@ -32,7 +32,10 @@ import numpy as np
 from PyCo.Topography import Topography, UniformLineScan
 from PyCo.Topography.Generation import fourier_synthesis
 from ..PyCoTest import PyCoTestCase
-
+import pytest
+from NuMPI import MPI
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 ###
 
 class TestVariableBandwidth(PyCoTestCase):

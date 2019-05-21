@@ -27,6 +27,12 @@
 Tests surface classes
 """
 
+from NuMPI import MPI
+import pytest
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
+
 import unittest
 import numpy as np
 
@@ -52,10 +58,9 @@ from PyCo.Topography.Generation import fourier_synthesis
 
 from ..PyCoTest import PyCoTestCase
 
-DATADIR = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'file_format_examples')
-
-
-
+DATADIR = os.path.join(
+    os.path.dirname(
+    os.path.dirname(os.path.realpath(__file__))), 'file_format_examples')
 
 class UniformLineScanTest(PyCoTestCase):
 
@@ -346,6 +351,7 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
 class NumpyAscSurfaceTest(unittest.TestCase):
     def setUp(self):
         pass
+
 
     def test_example1(self):
         surf = read_asc(os.path.join(DATADIR,  'example1.txt'))

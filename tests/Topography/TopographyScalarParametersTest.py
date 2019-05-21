@@ -22,21 +22,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-try:
-    import unittest
-    import numpy as np
-    import time
-    import math
 
-    from PyCo.Topography import Topography, NonuniformLineScan
-    import PyCo.Topography.Uniform.ScalarParameters as Uniform
-    import PyCo.Topography.Nonuniform.ScalarParameters as Nonuniform
+import pytest
+import unittest
+import numpy as np
 
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
 
+from PyCo.Topography import Topography, NonuniformLineScan
+
+from NuMPI import MPI
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 
 class SinewaveTestUniform(unittest.TestCase):
     def setUp(self):
