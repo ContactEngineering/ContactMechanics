@@ -52,7 +52,7 @@ surface = read(arguments.filename, format=detect_format(arguments.filename))
 ###
 
 try:
-    sx, sy = surface.size
+    sx, sy = surface.physical_sizes
 except TypeError:
     sx, sy = surface.shape
 nx, ny = surface.shape

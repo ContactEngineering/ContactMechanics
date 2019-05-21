@@ -78,8 +78,8 @@ def test_LoadTopoFromFile(comm, fftengine_class,  HS, loader):
     # create a substrate according to the topography
     fftengine = fftengine_class(fileReader.resolution, comm = comm)
     Es = 1
-    if fileReader.size is not None:
-        substrate = HS(resolution=fileReader.resolution, size=fileReader.size, young=Es, fftengine=fftengine )
+    if fileReader.physical_sizes is not None:
+        substrate = HS(resolution=fileReader.resolution, size=fileReader.physical_sizes, young=Es, fftengine=fftengine)
     else:
         substrate = HS(resolution=fileReader.resolution,size=fileReader.resolution, young = Es, fftengine=fftengine )
 

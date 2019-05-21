@@ -95,7 +95,7 @@ def mean_err(arr1, arr2, rfft=False):
 
 def compute_wavevectors(resolution, size, nb_dims):
     """
-    computes and returns the wavevectors q that exist for the surfaces size
+    computes and returns the wavevectors q that exist for the surfaces physical_sizes
     and resolution as one vector of components per dimension
     """
     vectors = list()

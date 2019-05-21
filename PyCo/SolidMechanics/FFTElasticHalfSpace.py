@@ -64,7 +64,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     name = "periodic_fft_elastic_halfspace"
     _periodic = True
 
-    def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=None,
+    def __init__(self, resolution, young, physical_sizes=2 * np.pi, stiffness_q0=None,
                  thickness=None, poisson=0.0, superclass=True, fftengine=None, pnp = None):
         """
         Keyword Arguments:
@@ -72,7 +72,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                         The length of the tuple determines the spatial dimension
                         of the problem.
         young        -- Young's modulus
-        size         -- (default 2π) domain size. For multidimensional problems,
+        physical_sizes         -- (default 2π) domain physical_sizes. For multidimensional problems,
                         a tuple can be provided to specify the lenths per
                         dimension. If the tuple has less entries than dimensions,
                         the last value in repeated.
@@ -92,8 +92,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         super().__init__()
         if not hasattr(resolution, "__iter__"):
             resolution = (resolution, )
-        if not hasattr(size, "__iter__"):
-            size = (size, )
+        if not hasattr(physical_sizes, "__iter__"):
+            physical_sizes = (physical_sizes,)
         self.__dim = len(resolution)
         if self.dim not in (1, 2):
             raise self.Error(
@@ -105,22 +105,22 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.resolution = resolution
         tmpsize = list()
         for i in range(self.dim):
-            tmpsize.append(size[min(i, len(size)-1)])
-        self.size = tuple(tmpsize)
+            tmpsize.append(physical_sizes[min(i, len(physical_sizes) - 1)])
+        self.physical_sizes = tuple(tmpsize)
         self.nb_pts = np.prod(self.resolution)
-        self.area_per_pt = np.prod(self.size)/self.nb_pts
+        self.area_per_pt = np.prod(self.physical_sizes) / self.nb_pts
         try:
             self.steps = tuple(
                 float(size)/res for size, res in
-                zip(self.size, self.resolution))
+                zip(self.physical_sizes, self.resolution))
         except ZeroDivisionError as err:
             raise ZeroDivisionError(
                 ("{}, when trying to handle "
                  "    self.steps = tuple("
-                 "        float(size)/res for size, res in"
-                 "        zip(self.size, self.resolution))"
-                 "Parameters: self.size = {}, self.resolution = {}"
-                 "").format(err, self.size, self.resolution))
+                 "        float(physical_sizes)/res for physical_sizes, res in"
+                 "        zip(self.physical_sizes, self.resolution))"
+                 "Parameters: self.physical_sizes = {}, self.resolution = {}"
+                 "").format(err, self.physical_sizes, self.resolution))
         self.young = young
         self.poisson = poisson
         self.contact_modulus = young/(1-poisson**2)
@@ -232,9 +232,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     def __repr__(self):
         dims = 'x', 'y', 'z'
         size_str = ', '.join('{}: {}({})'.format(dim, size, resolution) for
-                             dim, size, resolution in zip(dims, self.size,
+                             dim, size, resolution in zip(dims, self.physical_sizes,
                                                           self.resolution))
-        return ("{0.dim}-dimensional halfspace '{0.name}', size(resolution) in"
+        return ("{0.dim}-dimensional halfspace '{0.name}', physical_sizes(resolution) in"
                 " {1}, E' = {0.young}").format(self, size_str)
 
     def _compute_fourier_coeffs(self):
@@ -258,14 +258,14 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             facts = np.zeros(self.fourier_resolution)
             for index in range(self.fourier_location[0]+2, self.fourier_resolution[0]+1):
                  facts[index - 1] = \
-                    self.size[0]/(self.contact_modulus*index*np.pi)
+                     self.physical_sizes[0] / (self.contact_modulus * index * np.pi)
             self.weights= facts
         elif self.dim == 2:
             if np.prod(self.fourier_resolution )== 0:
                 self.weights = np.zeros(self.fourier_resolution)
             else:
                 nx, ny = self.resolution
-                sx, sy = self.size
+                sx, sy = self.physical_sizes
                 # Note: q-values from 0 to 1, not from 0 to 2*pi
                 qx = np.arange(self.fourier_location[0],
                                self.fourier_location[0] +
@@ -398,9 +398,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         In a parallelized code kforces and kdisp contain only the slice attributed to this processor
         Parameters
         ----------
-        kforces: array of complex type and of size substrate.domain_resolution
+        kforces: array of complex type and of physical_sizes substrate.domain_resolution
         Fourier representation (output of a 2D rfftn) of the forces acting on the grid points
-        kdisp: array of complex type and of size substrate.domain_resolution
+        kdisp: array of complex type and of physical_sizes substrate.domain_resolution
         Fourier representation (output of a 2D rfftn) of the displacements of the grid points
 
 
@@ -522,7 +522,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     name = "free_fft_elastic_halfspace"
     _periodic = False
 
-    def __init__(self, resolution, young, size=2*np.pi,fftengine=None, pnp = None):
+    def __init__(self, resolution, young, physical_sizes=2 * np.pi, fftengine=None, pnp = None):
         """
         Keyword Arguments:
         resolution  -- Tuple containing number of points in spatial directions.
@@ -534,13 +534,13 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                        will still be 2nx by 2ny.
         young       -- Equiv. Young's modulus E'
                        1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
-        size        -- (default 2π) domain size. For multidimensional problems,
+        physical_sizes        -- (default 2π) domain physical_sizes. For multidimensional problems,
                        a tuple can be provided to specify the lenths per
                        dimension. If the tuple has less entries than
                        dimensions, the last value in repeated.
         """
         self._comp_resolution = tuple((2 * r for r in resolution))
-        super().__init__(resolution, young, size, superclass=False,fftengine=fftengine,pnp=pnp)
+        super().__init__(resolution, young, physical_sizes, superclass=False, fftengine=fftengine, pnp=pnp)
         self._compute_fourier_coeffs()
         self._compute_i_fourier_coeffs()
 
@@ -550,7 +550,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         returns an instance with same physical properties with a smaller
         computational grid
         """
-        size = tuple((resolution[i]/float(self.resolution[i])*self.size[i] for
+        size = tuple((resolution[i] / float(self.resolution[i]) * self.physical_sizes[i] for
                       i in range(self.dim)))
         return type(self)(resolution, self.young, size)
 
@@ -755,7 +755,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         if not is_ok:
             raise self.FreeBoundaryError("forces not zero at the boundary of the "
                                          "active domain, "
-                                         "increase the size of your domain")
+                                         "increase the physical_sizes of your domain")
 
     def check(self, force=None):
         """

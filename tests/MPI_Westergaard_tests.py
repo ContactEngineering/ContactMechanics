@@ -85,7 +85,7 @@ def test_constrained_conjugate_gradients(comm, fftengine_class):
             # print(displ)
 
             x = np.arange(nx) * sx / nx
-            mean_pressure = pnp.sum(forces) / np.prod(substrate.size)
+            mean_pressure = pnp.sum(forces) / np.prod(substrate.physical_sizes)
             pth = mean_pressure * _pressure(x / sx, mean_pressure=sx * mean_pressure / E_s)
 
             # symetrize the Profile

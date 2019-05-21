@@ -123,8 +123,8 @@ for method, name in zip(["L-BFGS-B", LBFGS],
 
     # Parallel Topography Patch
 
-    substrate = PeriodicFFTElasticHalfSpace((nx, ny), young=E_s, size=(sx, sx),
-                                        fftengine=fftengine, pnp=pnp)
+    substrate = PeriodicFFTElasticHalfSpace((nx, ny), young=E_s, physical_sizes=(sx, sx),
+                                            fftengine=fftengine, pnp=pnp)
     # print(substrate._comp_resolution)
     # print(fftengine.domain_resolution)
 

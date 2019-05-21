@@ -47,9 +47,9 @@ BndSet = namedtuple('BndSet', ('large', 'small'))
 
 class FastSmoothContactSystem(SmoothContactSystem):
     """
-    This proxy class tries to take advantage of the system-size independence of
+    This proxy class tries to take advantage of the system-physical_sizes independence of
     non-periodic FFT-solved systems by determining the required minimum system
-    size, encapsulating a SmoothContactSystem of that size and run it almost
+    physical_sizes, encapsulating a SmoothContactSystem of that physical_sizes and run it almost
     transparently instead of the full system.
     It's almost transparent, because by its nature, the small system does not
     compute displacements everywhere the large system exists. Therefore, for
@@ -71,7 +71,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
     class BabushkaBoundaryError(Exception):
         """
-        Called when the choosen size of the Babushka System had an Influence on
+        Called when the choosen physical_sizes of the Babushka System had an Influence on
         the Solution. In the Future, one may catch this error,
         increase the margin and restart minimization
         """
@@ -114,7 +114,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
     def shape_minimisation_input(self, in_array):
         """
         For minimisation of smart systems, the initial guess array (e.g.
-        displacement) may have a non-intuitive shape and size (The problem size
+        displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes
         may be decreased, as for free, non-periodic systems, or increased as
         with augmented-lagrangian-type issues). Use the output of this function
         as argument x0 for scipy minimisation functions. Also, if your initial
@@ -437,7 +437,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         def compound_callback(disp_k):
             """
             The callback first check whether the new state of the system
-            violates the size restrictions of the babuška system before calling
+            violates the physical_sizes restrictions of the babuška system before calling
             the user-provided callback function
             Parameter:
             disp_k -- flattened displacement vector at the current optimization

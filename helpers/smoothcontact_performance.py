@@ -96,7 +96,7 @@ inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w, pnp =
 
 # Parallel Topography Patch
 
-substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, size=(sx,sx), fftengine=fftengine, pnp=pnp)
+substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx), fftengine=fftengine, pnp=pnp)
 print(substrate._comp_resolution)
 print(fftengine.domain_resolution)
 

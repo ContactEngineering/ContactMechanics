@@ -46,7 +46,7 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
         surf_char = CharacterisePeriodicSurface(self.surface)
         hurst = surf_char.estimate_hurst()
         rms_height = self.surface.rms_height()
-        super().__init__(surface.resolution, surface.size, hurst, rms_height,
+        super().__init__(surface.resolution, surface.physical_sizes, hurst, rms_height,
                          seed=None, lambda_max=None)
 
     def generate_phases(self):

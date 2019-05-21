@@ -35,7 +35,7 @@ def test_sphere(comm, fftengine_class):
     R = 20.
     center = (3.,3.)
     substrate = FreeFFTElasticHalfSpace(resolution=(nx, ny), young=1.,
-                                        size=(sx, sy),
+                                        physical_sizes=(sx, sy),
                                         fftengine=fftengine_class((2*nx, 2*ny),
                                                                   comm=comm))
     extended_topography = make_sphere(R, (2*nx, 2*ny), (sx, sy), centre=center,
@@ -55,8 +55,8 @@ def test_sphere_periodic(comm, fftengine_class):
     R = 20.
     center = (1., 1.5)
     substrate = PeriodicFFTElasticHalfSpace(resolution=(nx, ny), young=1.,
-                                        size=(sx, sy),
-                                        fftengine=fftengine_class(
+                                            physical_sizes=(sx, sy),
+                                            fftengine=fftengine_class(
                                             (nx, ny),
                                             comm=comm))
 
@@ -84,7 +84,7 @@ def test_sphere_standoff(comm, fftengine_class):
     standoff = 10.
 
     substrate = FreeFFTElasticHalfSpace(resolution=(nx, ny), young=1.,
-                                        size=(sx, sy),
+                                        physical_sizes=(sx, sy),
                                         fftengine=fftengine_class(
                                             (2 * nx, 2 * ny),
                                             comm=comm))

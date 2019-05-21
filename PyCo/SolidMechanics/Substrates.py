@@ -120,7 +120,7 @@ class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
         size_str = ', '.join('{}: {}({})'.format(dim, size, resolution) for
                              dim, size, resolution in zip(dims, self.size,
                                                           self.resolution))
-        return ("{0.dim}-dimensional halfspace '{0.name}', size(resolution) in"
+        return ("{0.dim}-dimensional halfspace '{0.name}', physical_sizes(resolution) in"
                 " {1}, E' = {0.young}").format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):

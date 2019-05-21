@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 # This is the elastic contact modulus, E*.
 E_s = 2
 
-# This is the physical size of the surfaces.
+# This is the physical physical_sizes of the surfaces.
 sx, sy = 1, 1
 
 ###
@@ -355,7 +355,7 @@ def constrained_conjugate_gradients(substrate, topography,
 ###
 
 # Read the topography from file.
-topography = read_matrix('surface1.out', size=(sx, sy))
+topography = read_matrix('surface1.out', physical_sizes=(sx, sy))
 
 print('RMS height of topography = {}'.format(topography.rms_height()))
 print('RMS slope of topography = {}'.format(topography.rms_slope()))
@@ -366,7 +366,7 @@ nx, ny = topography.resolution
 # Periodic substrate, i.e. the elastic half-space.
 substrate = PeriodicFFTElasticHalfSpace((nx, ny), # resolution
                                         E_s, # contact modulus
-                                        (sx, sx)) # physical size
+                                        (sx, sx)) # physical physical_sizes
 
 # Contact pressure: 0.05 h_rms' E_s / kappa with kappa = 2, which means ~ 5% contact area
 res = constrained_conjugate_gradients(substrate, topography.heights(),

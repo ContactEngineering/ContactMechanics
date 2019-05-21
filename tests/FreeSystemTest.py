@@ -187,14 +187,14 @@ def test_minimization(pot_class, young):
 
 class FastSystemTest(unittest.TestCase):
     def setUp(self):
-        self.size = (15, 15)#(7.5+5*rand(), 7.5+5*rand())
+        self.physical_sizes = (15, 15)#(7.5+5*rand(), 7.5+5*rand())
         self.radius = 4
         base_res = 32
         self.res = (base_res, base_res)
         self.young = 3#+2*random()
 
         self.substrate = Solid.FreeFFTElasticHalfSpace(
-            self.res, self.young, self.size)
+            self.res, self.young, self.physical_sizes)
 
         self.eps = 1# +np.random.rand()
         self.sig = 2# +np.random.rand()
@@ -209,7 +209,9 @@ class FastSystemTest(unittest.TestCase):
         #self.interaction =Contact.ExpPotential(self.gam, 0.05, self.rcut)
         #self.min_pot = Contact.ExpPotential(self.gam, 0.05, self.rcut)
 
-        self.surface = Topography.make_sphere(self.radius, self.res, self.size, standoff=float('inf'))
+        self.surface = Topography.make_sphere(self.radius, self.res,
+                                              self.physical_sizes,
+                                              standoff=float('inf'))
 
         if False:
             import matplotlib.pyplot as plt
@@ -388,7 +390,7 @@ class FastSystemTest(unittest.TestCase):
         energy_c   = force_c*length_c
 
         young = (self.young, pressure_c*self.young)
-        size = (self.size, tuple((length_c*s for s in self.size)))
+        size = (self.physical_sizes, tuple((length_c * s for s in self.physical_sizes)))
         print("SIZES!!!!! = ", size)
         radius = (self.radius, length_c*self.radius)
         res = self.res
@@ -500,7 +502,7 @@ class FastSystemTest(unittest.TestCase):
 
             interaction = Contact.LJ93smoothMin(young/18*np.sqrt(2/5),2.5**(1/6),gamma=gam)
 
-            substrate = Solid.FreeFFTElasticHalfSpace(surface.resolution, young, surface.size)
+            substrate = Solid.FreeFFTElasticHalfSpace(surface.resolution, young, surface.physical_sizes)
             system = FastSmoothContactSystem(substrate, interaction, surface, margin=4)
 
             start_disp = - interaction.r_c + 1e-10
@@ -546,7 +548,7 @@ class FastSystemTest(unittest.TestCase):
         ext_topography = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=centre)
 
         substrate = Solid.FreeFFTElasticHalfSpace(topography.resolution, young,
-                                                  topography.size)
+                                                  topography.physical_sizes)
 
         for system in [NonSmoothContactSystem(substrate, Contact.HardWall(), topography),
                        SmoothContactSystem(substrate, Contact.LJ93SimpleSmooth(0.01,0.01,10), topography)]:

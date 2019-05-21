@@ -55,14 +55,14 @@ BASEDIR = os.path.dirname(os.path.realpath(__file__))
 
 class SystemTest(unittest.TestCase):
     def setUp(self):
-        self.size = (7.5+5*rand(), 7.5+5*rand())
+        self.physical_sizes = (7.5+5*rand(), 7.5+5*rand())
         self.radius = 100
         base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
         self.substrate = Solid.PeriodicFFTElasticHalfSpace(
-            self.res, self.young, self.size)
+            self.res, self.young, self.physical_sizes)
 
         self.eps = 1+np.random.rand()
         self.sig = 3+np.random.rand()
@@ -70,7 +70,7 @@ class SystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.sphere = Topography.make_sphere(self.radius, self.res, self.size)
+        self.sphere = Topography.make_sphere(self.radius, self.res, self.physical_sizes)
 
     def test_RejectInconsistentInputTypes(self):
         with self.assertRaises(IncompatibleFormulationError):
@@ -78,7 +78,7 @@ class SystemTest(unittest.TestCase):
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
-        incompat_sphere = Topography.make_sphere(self.radius, incompat_res, self.size)
+        incompat_sphere = Topography.make_sphere(self.radius, incompat_res, self.physical_sizes)
         with self.assertRaises(IncompatibleResolutionError):
             make_system(self.substrate, self.smooth, incompat_sphere)
 
@@ -194,9 +194,9 @@ class SystemTest(unittest.TestCase):
         ## this merely makes sure that the code doesn't throw exceptions
         ## the plausibility of the result is not verified
         res = self.res[0]
-        size = self.size[0]
+        size = self.physical_sizes[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+            res, 25*self.young, self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -233,9 +233,9 @@ class SystemTest(unittest.TestCase):
 
     def test_minimize_proxy(self):
         res = self.res
-        size = self.size
+        size = self.physical_sizes
         substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+            res, 25*self.young, self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -254,9 +254,9 @@ class SystemTest(unittest.TestCase):
 
     def test_minimize_proxy_tol(self):
         res = self.res
-        size = self.size
+        size = self.physical_sizes
         substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+            res, 25*self.young, self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -298,14 +298,14 @@ class SystemTest(unittest.TestCase):
 
 class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
     def setUp(self):
-        self.size = (7.5+5*rand(), 7.5+5*rand())
+        self.physical_sizes = (7.5+5*rand(), 7.5+5*rand())
         self.radius = 100
         base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
         self.substrate = Solid.FreeFFTElasticHalfSpace(
-            self.res, self.young, self.size)
+            self.res, self.young, self.physical_sizes)
 
         self.eps = 1+np.random.rand()
         self.sig = 3+np.random.rand()
@@ -313,15 +313,15 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smooth(self.eps, self.sig, self.gam)
 
-        self.sphere = Topography.make_sphere(self.radius, self.res, self.size)
+        self.sphere = Topography.make_sphere(self.radius, self.res, self.physical_sizes)
 
     def test_unconfirmed_minimization(self):
         ## this merely makes sure that the code doesn't throw exceptions
         ## the plausibility of the result is not verified
         res = self.res[0]
-        size = self.size[0]
+        size = self.physical_sizes[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+            res, 25*self.young, self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         # here, i deliberately avoid using the make_system, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a

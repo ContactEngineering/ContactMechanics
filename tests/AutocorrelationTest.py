@@ -120,7 +120,7 @@ class AutocorrelationTest(PyCoTestCase):
         t = t.detrend(detrend_mode='center')
         r, A = height_height_autocorrelation_1D(t, distances=np.linspace(0, 10, 201))
 
-        s, = t.size
+        s, = t.physical_sizes
         self.assertAlmostEqual(A[0], t.rms_height() ** 2 * s)
 
 
@@ -134,7 +134,7 @@ class AutocorrelationTest(PyCoTestCase):
         self.assertAlmostEqual(A[np.abs(r) < 1e-6][0], a ** 2 * b ** 3 / 3)
 
         r3, A3 = height_height_autocorrelation_1D(t.detrend(detrend_mode='center'), distances=[0])
-        s, = t.size
+        s, = t.physical_sizes
         self.assertAlmostEqual(A3[0], t.rms_height() ** 2 * s)
 
         x = np.array([0, 1., 1.3, 1.7, 2.0, 2.5, 3.0])
@@ -144,7 +144,7 @@ class AutocorrelationTest(PyCoTestCase):
         self.assertArrayAlmostEqual(A, A2)
 
         r, A = height_height_autocorrelation_1D(t.detrend(detrend_mode='center'), distances=[0])
-        s, = t.size
+        s, = t.physical_sizes
         self.assertAlmostEqual(A[0], t.rms_height() ** 2 * s)
 
     def test_self_affine_uniform_autocorrelation(self):
@@ -170,7 +170,7 @@ class AutocorrelationTest(PyCoTestCase):
         self.assertAlmostEqual(t.mean(), 0)
 
         r, A = height_height_autocorrelation_1D(t, distances=[0])
-        s, = t.size
+        s, = t.physical_sizes
         self.assertAlmostEqual(t.rms_height() ** 2 * s, A[0])
 
     def test_self_affine_nonuniform_autocorrelation(self):

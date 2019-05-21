@@ -32,7 +32,7 @@ def test_save_and_load(comm_self, file_format_examples):
         resolution = topography.resolution
         topography_subdomain_resolution = topography.resolution
         topography_subdomain_location = (0,0)
-        size= (1., 1.)
+        physical_sizes= (1., 1.)
         pnp = topography.pnp
 
     loaded_topography = NPYReader(npyfile, comm=comm_self

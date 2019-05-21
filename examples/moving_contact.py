@@ -50,12 +50,12 @@ E_s = 2
 
 ###
 
-# This is the physical size of the surfaces.
+# This is the physical physical_sizes of the surfaces.
 sx, sy = 1, 1
 
 # Read the two contacting surfacs.
-surface1 = read_matrix('surface1.out', size=(sx, sy))
-surface2 = read_matrix('surface2.out', size=(sx, sy))
+surface1 = read_matrix('surface1.out', physical_sizes=(sx, sy))
+surface2 = read_matrix('surface2.out', physical_sizes=(sx, sy))
 
 print('RMS heights of surfaces = {} {}'.format(surface1.rms_height(),
                                                surface2.rms_height()))

@@ -100,7 +100,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "resolution"):
         surface = topography
-        topography = Topography(surface, size=substrate.size)
+        topography = Topography(surface, size=substrate.physical_sizes)
     else :
         surface = topography.heights()  # Local data
 

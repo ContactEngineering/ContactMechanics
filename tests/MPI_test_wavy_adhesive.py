@@ -67,14 +67,14 @@ def test_wavy(comm, fftengine_class):
 
     # Parallel Topography Patch
 
-    substrate = PeriodicFFTElasticHalfSpace(surf_res, young=Es, size=surf_size,
+    substrate = PeriodicFFTElasticHalfSpace(surf_res, young=Es, physical_sizes=surf_size,
                                             fftengine=fftengine, pnp=pnp)
 
     surface = Topography(
         np.cos(np.arange(0, n) * np.pi * 2. / n) * np.ones((n, 1)),
         size=surf_size)
 
-    psurface = Topography(surface.heights(), size=surface.size,
+    psurface = Topography(surface.heights(), size=surface.physical_sizes,
                           subdomain_location=substrate.topography_subdomain_location,
                           subdomain_resolution=substrate.subdomain_resolution,
                           periodic=True, pnp=pnp)

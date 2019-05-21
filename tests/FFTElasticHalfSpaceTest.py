@@ -45,7 +45,7 @@ except ImportError as err:
 
 class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
     def setUp(self):
-        self.size = (7.5+5*rand(), 7.5+5*rand())
+        self.physical_sizes = (7.5+5*rand(), 7.5+5*rand())
         base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
@@ -58,7 +58,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         for i in (1, 2):
             s_res = base_res*i
             test_res = (s_res, s_res)
-            hs = PeriodicFFTElasticHalfSpace(test_res, self.young, self.size)
+            hs = PeriodicFFTElasticHalfSpace(test_res, self.young, self.physical_sizes)
             forces = np.zeros(test_res)
             forces[:s_res//2,:s_res//2] = 1.
 
@@ -70,7 +70,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
     def test_parabolic_shape_force(self):
         """ tests whether the Elastic energy is a quadratic function of the
             applied force"""
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
         force = random(self.res)
         force -= force.mean()
         nb_tests = 4
@@ -85,7 +85,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
     def test_parabolic_shape_disp(self):
         """ tests whether the Elastic energy is a quadratic function of the
             applied displacement"""
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
         disp = random(self.res)
         disp -= disp.mean()
         nb_tests = 4
@@ -125,7 +125,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         tol = 1e-10
         for res in ((self.res[0],), self.res, (self.res[0]+1, self.res[1]),
                     (self.res[0], self.res[1]+1)):
-            hs = PeriodicFFTElasticHalfSpace(res, self.young, self.size)
+            hs = PeriodicFFTElasticHalfSpace(res, self.young, self.physical_sizes)
             disp = random(res)
             disp -= disp.mean()
 
@@ -197,7 +197,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         for res in [(16, 16), (16, 15), (15, 16), (15, 9)]:
 
             disp = np.random.normal(size=res)
-            hs = PeriodicFFTElasticHalfSpace(res, self.young, self.size)
+            hs = PeriodicFFTElasticHalfSpace(res, self.young, self.physical_sizes)
             np.testing.assert_allclose(
                 hs.evaluate(disp, pot=True, forces=True)[0],
                 hs.evaluate(disp, pot=True, forces=False)[0])
@@ -219,9 +219,9 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         energy_rc = (1., 1./energy_c)
         resolution = (32, 32)
         young = (self.young, pressure_c*self.young)
-        size = self.size[0], 2*self.size[1]
+        size = self.physical_sizes[0], 2 * self.physical_sizes[1]
         size = (size, tuple((length_c*s for s in size)))
-        print('SELF.SIZE = {}'.format(self.size))
+        print('SELF.SIZE = {}'.format(self.physical_sizes))
 
         disp = np.random.random(resolution)
         disp -= disp.mean()
@@ -256,7 +256,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
 
         resolution = (32, )
         young = (self.young, pressure_c*self.young)
-        size = (self.size[0], length_c*self.size[0])
+        size = (self.physical_sizes[0], length_c * self.physical_sizes[0])
 
         disp = np.random.random(resolution)
         disp -= disp.mean()
@@ -274,31 +274,31 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
     def test_uniform_displacement(self):
         """ tests whether uniform displacement returns stiffness_q0"""
         sq0 = 1.43
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
                                          stiffness_q0=sq0)
         force = hs.evaluate_force(-np.ones(self.res))
-        self.assertAlmostEqual(force.sum()/np.prod(self.size), sq0)
+        self.assertAlmostEqual(force.sum() / np.prod(self.physical_sizes), sq0)
 
     def test_uniform_displacement_finite_height(self):
         """ tests whether uniform displacement returns stiffness_q0"""
         h0 = 3.45
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
                                          poisson=self.poisson, thickness=h0)
         force = hs.evaluate_force(-np.ones(self.res))
         M = (1-self.poisson)/((1-2*self.poisson)*(1+self.poisson))*self.young
-        self.assertAlmostEqual(force.sum()/np.prod(self.size), M/h0)
+        self.assertAlmostEqual(force.sum() / np.prod(self.physical_sizes), M / h0)
 
     def test_limit_of_large_thickness(self):
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
                                          poisson=self.poisson)
-        hsf = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+        hsf = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
                                           poisson=self.poisson, thickness=20)
         diff = hs.weights-hsf.weights
         self.assertArrayAlmostEqual(hs.weights.ravel()[1:],
                                     hsf.weights.ravel()[1:], tol=1e-6)
 
     def test_no_nans(self):
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.size,
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
                                          poisson=self.poisson, thickness=100)
         self.assertTrue(np.count_nonzero(np.isnan(hs.weights)) == 0)
 
@@ -306,7 +306,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
 
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
-        self.size = (7.5+5*rand(), 7.5+5*rand())
+        self.physical_sizes = (7.5+5*rand(), 7.5+5*rand())
         base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
@@ -318,7 +318,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         for i in (1, 2):
             s_res = base_res*i
             test_res = (s_res, s_res)
-            hs = FreeFFTElasticHalfSpace(test_res, self.young, self.size)
+            hs = FreeFFTElasticHalfSpace(test_res, self.young, self.physical_sizes)
             forces = np.zeros([2*r for r in test_res])
             forces[:s_res//2,:s_res//2] = 1.
 
@@ -331,7 +331,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         print('Computation of Fourier coefficients:')
         for i in range(1, 4):
             res = (2**i, 2**i)
-            hs = FreeFFTElasticHalfSpace(res, self.young, self.size)
+            hs = FreeFFTElasticHalfSpace(res, self.young, self.physical_sizes)
 
             start = time.perf_counter()
             w2, f2 =hs._compute_fourier_coeffs2()
@@ -348,14 +348,14 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             self.assertTrue(error == 0)
 
     def test_realnessEnergy(self):
-        hs = FreeFFTElasticHalfSpace(self.res, self.young, self.size)
+        hs = FreeFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
         force = np.zeros(hs.domain_resolution)
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
         kdisp = hs.evaluate_k_disp(force)
         kforce = rfftn(force)
         np_pts = np.prod(hs.domain_resolution)
-        area_per_pt = np.prod(self.size)/np_pts
+        area_per_pt = np.prod(self.physical_sizes) / np_pts
         energy = .5 * (np.vdot(-kforce, kdisp) +
                        np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
         error = abs(energy.imag)
@@ -437,7 +437,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         energy_rc = (1., 1./energy_c)
         resolution = (32, 32)
         young = (self.young, pressure_c*self.young)
-        size = (self.size, tuple((length_c*s for s in self.size)))
+        size = (self.physical_sizes, tuple((length_c * s for s in self.physical_sizes)))
 
         comp_resolution = tuple((2*res for res in resolution))
         disp = np.random.random(comp_resolution)

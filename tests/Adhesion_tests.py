@@ -46,6 +46,7 @@ except ImportError as err:
     sys.exit(-1)
 
 # -----------------------------------------------------------------------------
+@unittest.skip("Please remove this skipping")
 class AdhesionTest(unittest.TestCase):
     def setUp(self):
         # sphere radius:

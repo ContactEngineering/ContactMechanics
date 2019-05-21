@@ -158,12 +158,12 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         Aᵣ = ──
              A₀
         """
-        return self.compute_contact_area()/np.prod(self.substrate.size)
+        return self.compute_contact_area()/np.prod(self.substrate.physical_sizes)
 
     def shape_minimisation_input(self, in_array):
         """
         For minimisation of smart systems, the initial guess array (e.g.
-        displacement) may have a non-intuitive shape and size (The problem size
+        displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes
         may be decreased, as for free, non-periodic systems, or increased as
         with augmented-lagrangian-type issues). Use the output of this function
         as argument x0 for scipy minimisation functions. Also, if you initial
@@ -181,7 +181,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
     def shape_minimisation_output(self, in_array):
         """
         For minimisation of smart systems, the output array (e.g.
-        displacement) may have a non-intuitive shape and size (The problem size
+        displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes
         may be decreased, as for free, non-periodic systems, or increased as
         with augmented-lagrangian-type issues). Use  this function
         to get the array shape you expect to have
@@ -285,7 +285,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         interface. Returns a function of only disp
         Keyword Arguments:
         offset     -- determines indentation depth
-        disp0      -- preexisting displacement. influences e.g., the size of
+        disp0      -- preexisting displacement. influences e.g., the physical_sizes of
                       the proxy system in some 'smart' system subclasses
         gradient   -- (default False) whether the gradient is supposed to be
                       used
