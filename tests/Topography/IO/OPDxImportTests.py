@@ -27,9 +27,11 @@
 import unittest
 import os
 
-from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, read_int16, read_int32, read_int64, \
-    read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, \
-    read_named_struct, read_item, OPDxReader read_varlen, read_structured, read_name, DektakQuantUnit, read_dimension2d_content, read_quantunit_content, read_named_struct, read_item, OPDxReader
+from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, \
+    read_int16, read_int32, read_int64, read_varlen, read_structured, \
+    read_name, DektakQuantUnit, read_dimension2d_content, \
+    read_quantunit_content, read_named_struct, read_item, OPDxReader
+
 import pytest
 from NuMPI import MPI
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
@@ -40,9 +42,6 @@ DATADIR = os.path.join(
     os.path.dirname(
     os.path.dirname(os.path.realpath(__file__)))),
     'file_format_examples')
-
-DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
-
 
 class OPDxSurfaceTest(unittest.TestCase):
 

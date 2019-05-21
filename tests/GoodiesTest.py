@@ -26,17 +26,19 @@
 Tests for PyCo Goodies
 """
 
-try:
-    import unittest
-    import numpy as np
-    import warnings
 
-    import PyCo.Goodies as Goodies
-    from PyCo.Topography.Generation import RandomSurfaceExact, RandomSurfaceGaussian
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+import unittest
+import numpy as np
+import warnings
+
+import PyCo.Goodies as Goodies
+from PyCo.Topography.Generation import RandomSurfaceExact, RandomSurfaceGaussian
+
+from NuMPI import MPI
+import pytest
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
+
 
 class GoodiesTest(unittest.TestCase):
     def test_surf_param_recovery(self):
