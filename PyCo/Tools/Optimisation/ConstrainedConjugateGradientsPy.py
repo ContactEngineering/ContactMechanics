@@ -283,8 +283,10 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         max_pres = 0
         if pnp.sum(mask_tensile*1) > 0:
             max_pres = pnp.max(p_r[mask_tensile]*1)
-        if hardness and pnp.sum(mask_flowing) > 0:
-            max_pres = max(max_pres, -pnp.min(p_r[mask_flowing]+hardness))
+        if hardness :
+            A_fl = pnp.sum(mask_flowing)
+            if A_fl > 0:
+                max_pres = max(max_pres, -pnp.min(p_r[mask_flowing]+hardness))
 
         # Set all tensile stresses to zero
         p_r[mask_tensile] = 0.0
@@ -356,6 +358,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         log_values = [delta_str, it, A_contact, A_contact/pnp.sum(surf_mask*1), psum,
                       offset]
 
+        if hardness:
+            log_headers += ['plast. area', 'frac.plast. area']
+            log_values += [A_fl, A_fl / pnp.sum(surf_mask*1) ]
         if verbose:
             log_headers += ['rms pen.', 'max. pen.', 'max. force',
                             'max. pad force', 'max. du', 'CG area',
