@@ -46,7 +46,7 @@ Example:::
 Pipelines
 +++++++++
 
-Pipeline function return a new topography. This topography does not own the original data but executes the full pipeline everytime `heights` is executed. The `clone` method returns a new topography that contains the data returned by the pipeline. Pipelines can be concatenated together.
+Pipeline functions return a new topography. This topography does not own the original data but executes the full pipeline everytime `heights` is executed. The `clone` method returns a new topography that contains the data returned by the pipeline. Pipelines can be concatenated together.
 
 - `scale`: Rescale all heights by a certain factor.
 - `detrend`: Compute a detrended topography.

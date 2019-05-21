@@ -1,3 +1,27 @@
+#
+# Copyright 2019 Lars Pastewka
+#           2019 Antoine Sanner
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -121,7 +145,7 @@ class TopographyTest(PyCoTestCase):
 
         st = t.scale(1)
 
-        self.assertEqual(st.coeff, 1)
+        self.assertEqual(st.scale_factor, 1)
 
         #
         # only detrended topographies have detrend_mode
@@ -138,11 +162,11 @@ class TopographyTest(PyCoTestCase):
         t2 = pickle.loads(pickle.dumps(t))
 
         with self.assertRaises(AttributeError):
-            t2.coeff
+            t2.scale_factor
 
         st2 = t2.scale(1)
 
-        self.assertEqual(st2.coeff, 1)
+        self.assertEqual(st2.scale_factor, 1)
 
         with self.assertRaises(AttributeError):
             st2.detrend_mode

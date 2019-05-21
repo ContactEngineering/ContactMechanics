@@ -1,5 +1,5 @@
 #
-# Copyright 2016, 2018 Lars Pastewka
+# Copyright 2016, 2019 Lars Pastewka
 #           2016 Till Junge
 # 
 # ### MIT license
@@ -30,4 +30,3 @@ Helper tools for PyCo
 from .SurfaceAnalysis import CharacterisePeriodicSurface, CharacteriseSurface
 from .SurfaceModification import (ModifyExistingPeriodicSurface,
                                   estimate_short_cutoff)
-from .ScanningProbe import scan_surface

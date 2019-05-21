@@ -30,6 +30,7 @@ import unittest
 import numpy as np
 
 from PyCo.Topography import UniformLineScan, NonuniformLineScan
+from PyCo.Topography.Generation import fourier_synthesis
 from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc
 
 from ..PyCoTest import PyCoTestCase
@@ -188,3 +189,8 @@ class PowerSpectrumTest(PyCoTestCase):
             v1 = sinc(x + dx)
             v2 = sinc(x - dx)
             self.assertAlmostEqual(dsinc(x), (v1 - v2) / (2 * dx), places=5, msg='x = {}'.format(x))
+
+    def test_NaNs(self):
+        surf = fourier_synthesis([1024, 512], [2, 1], 0.8, rms_slope=0.1)
+        q, C = surf.power_spectrum_2D(nbins=1000)
+        self.assertEqual(np.isnan(C).sum(), 0)

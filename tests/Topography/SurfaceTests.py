@@ -1,6 +1,6 @@
 #
-# Copyright 2018-2019 Antoine Sanner
-#           2018-2019 Lars Pastewka
+# Copyright 2018-2019 Lars Pastewka
+#           2018-2019 Antoine Sanner
 #           2018-2019 Michael Röttger
 # 
 # ### MIT license
@@ -101,9 +101,9 @@ class UniformLineScanTest(PyCoTestCase):
         t = UniformLineScan(h, 4)
 
         with self.assertRaises(AttributeError):
-            t.coeff
-        # a scaled line scan has a coeff
-        self.assertEqual(t.scale(1).coeff, 1)
+            t.scale_factor
+        # a scaled line scan has a scale_factor
+        self.assertEqual(t.scale(1).scale_factor, 1)
 
         #
         # This should also work after the topography has been pickled
@@ -112,9 +112,9 @@ class UniformLineScanTest(PyCoTestCase):
         t2 = pickle.loads(pt)
 
         with self.assertRaises(AttributeError):
-            t2.coeff
-        # a scaled line scan has a coeff
-        self.assertEqual(t2.scale(1).coeff, 1)
+            t2.scale_factor
+        # a scaled line scan has a scale_factor
+        self.assertEqual(t2.scale(1).scale_factor, 1)
 
     def test_setting_info_dict(self):
 
@@ -246,9 +246,9 @@ class NonuniformLineScanTest(PyCoTestCase):
 
         t = NonuniformLineScan([1,2,4], [2,4,8])
         with self.assertRaises(AttributeError):
-            t.coeff
-        # a scaled line scan has a coeff
-        self.assertEqual(t.scale(1).coeff, 1)
+            t.scale_factor
+        # a scaled line scan has a scale_factor
+        self.assertEqual(t.scale(1).scale_factor, 1)
 
         #
         # This should also work after the topography has been pickled
@@ -257,9 +257,9 @@ class NonuniformLineScanTest(PyCoTestCase):
         t2 = pickle.loads(pt)
 
         with self.assertRaises(AttributeError):
-            t2.coeff
-        # a scaled line scan has a coeff
-        self.assertEqual(t2.scale(1).coeff, 1)
+            t2.scale_factor
+        # a scaled line scan has a scale_factor
+        self.assertEqual(t2.scale(1).scale_factor, 1)
 
     def test_setting_info_dict(self):
 
@@ -573,7 +573,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.rms_curvature(), 0.0)
 
     def test_randomly_rough(self):
-        surface = fourier_synthesis((512, 512), (1., 1.), 0.8, rms_height=1)
+        surface = fourier_synthesis((511, 511), (1., 1.), 0.8, rms_height=1)
         self.assertTrue(surface.is_uniform)
         cut = Topography(surface[:64, :64], size=(64., 64.))
         self.assertTrue(cut.is_uniform)
@@ -977,6 +977,19 @@ class PipelineTests(unittest.TestCase):
             surf2 = surf.scale(fac)
             self.assertAlmostEqual(fac * surf.rms_height(kind='Rq'), surf2.rms_height(kind='Rq'))
 
+    def test_transposed_topography(self):
+        surf = fourier_synthesis([124, 368], [6, 3], 0.8, rms_slope=0.1)
+        nx, ny = surf.resolution
+        sx, sy = surf.size
+        surf2 = surf.transpose()
+        nx2, ny2 = surf2.resolution
+        sx2, sy2 = surf2.size
+        self.assertEqual(nx, ny2)
+        self.assertEqual(ny, nx2)
+        self.assertEqual(sx, sy2)
+        self.assertEqual(sy, sx2)
+        self.assertTrue((surf.heights() == surf2.heights().T).all())
+
 
 class IOTest(unittest.TestCase):
     def setUp(self):
@@ -1108,4 +1121,43 @@ class ConvertersTest(PyCoTestCase):
         self.assertAlmostEqual(t.x_range[0], x[0])
         self.assertAlmostEqual(t.x_range[1], x[-1])
 
+    def test_delegation(self):
+        t1 = fourier_synthesis((128, ), (1, ), 0.8, rms_slope=0.1)
+        t2 = t1.detrend()
+        t3 = t2.to_nonuniform()
+        t4 = t3.scale(2.0)
 
+        t4.scale_factor
+        with self.assertRaises(AttributeError):
+            t2.scale_factor
+        t2.detrend_mode
+        # detrend_mode should not be delegated to the parent class
+        with self.assertRaises(AttributeError):
+            t4.detrend_mode
+
+        # t2 should have 'to_nonuniform'
+        t2.to_nonuniform()
+        # but it should not have 'to_uniform'
+        with self.assertRaises(AttributeError):
+            t2.to_uniform(100, 10)
+
+        # t4 should have 'to_uniform'
+        t5 = t4.to_uniform(100, 10)
+        # but it should not have 'to_nonuniform'
+        with self.assertRaises(AttributeError):
+            t4.to_nonuniform()
+
+        # t5 should have 'to_nonuniform'
+        t5.to_nonuniform()
+        # but it should not have 'to_uniform'
+        with self.assertRaises(AttributeError):
+            t5.to_uniform(100, 10)
+
+    def test_autocompletion(self):
+        t1 = fourier_synthesis((128, ), (1, ), 0.8, rms_slope=0.1)
+        t2 = t1.detrend()
+        t3 = t2.to_nonuniform()
+
+        self.assertIn('detrend', dir(t1))
+        self.assertIn('to_nonuniform', dir(t2))
+        self.assertIn('to_uniform', dir(t3))
