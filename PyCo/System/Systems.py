@@ -257,6 +257,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
                                              method=method, jac=gradient,
                                              callback=callback, **kwargs)
+        self.offset=offset
         self.disp = self.shape_minimisation_output(result.x*disp_scale)
         self.evaluate(self.disp, offset, forces=gradient)
         result.x = self.shape_minimisation_output(result.x)
@@ -687,6 +688,7 @@ class NonSmoothContactSystem(SystemBase):
                 self.surface.heights(),
                 **kwargs)
         if result.success:
+            self.offset = result.offset
             self.disp = result.x
             self.force = self.substrate.force = result.jac
             self.contact_zone = result.jac > 0
