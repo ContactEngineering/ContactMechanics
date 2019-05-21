@@ -23,8 +23,13 @@
 #
 
 import pytest
+import os
 
 from runtests.mpi import MPITestFixture
+
+@pytest.fixture(scope="session")
+def file_format_examples():
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
 
 #@pytest.fixture
 #def commsizes(request):

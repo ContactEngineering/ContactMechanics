@@ -50,9 +50,9 @@ import PyCo.Topography.IO
 from PyCo.Topography.IO import NPYReader, H5Reader, IbwReader
 from PyCo.Topography.Generation import fourier_synthesis
 
-from .PyCoTest import PyCoTestCase
+from ..PyCoTest import PyCoTestCase
 
-DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
+DATADIR = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'file_format_examples')
 
 
 

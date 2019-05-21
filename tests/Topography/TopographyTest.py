@@ -4,7 +4,7 @@ from numpy.testing import assert_array_equal
 import pickle
 
 from PyCo.Topography import Topography
-from .PyCoTest import PyCoTestCase
+from ..PyCoTest import PyCoTestCase
 from NuMPI.Tools import Reduction
 
 

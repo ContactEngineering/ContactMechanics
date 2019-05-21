@@ -32,7 +32,7 @@ import numpy as np
 from PyCo.Topography import UniformLineScan, NonuniformLineScan
 from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc
 
-from tests.PyCoTest import PyCoTestCase
+from ..PyCoTest import PyCoTestCase
 
 
 class PowerSpectrumTest(PyCoTestCase):

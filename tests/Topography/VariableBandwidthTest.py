@@ -31,7 +31,7 @@ import numpy as np
 
 from PyCo.Topography import Topography, UniformLineScan
 from PyCo.Topography.Generation import fourier_synthesis
-from .PyCoTest import PyCoTestCase
+from ..PyCoTest import PyCoTestCase
 
 ###
 
