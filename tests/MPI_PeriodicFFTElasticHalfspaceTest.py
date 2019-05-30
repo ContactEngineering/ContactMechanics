@@ -66,7 +66,7 @@ def test_weights_gather(comm, pnp, fftengine_type, nx, ny, basenpoints):
     E_s = 1.0
     substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy), fft=fftengine_type,
                                             comm=comm)
-    fourres = (substrate.domain_resolution[0], substrate.domain_resolution[1] // 2 + 1)
+    fourres = (substrate.nb_domain_grid_pts[0], substrate.nb_domain_grid_pts[1] // 2 + 1)
     weights = gather(substrate.weights, substrate.fourier_slices, fourres, comm, root=0)
     iweights = gather(substrate.iweights, substrate.fourier_slices, fourres, comm, root=0)
     if comm.Get_rank() == 0:
@@ -181,17 +181,17 @@ def test_sineWave_disp(comm, pnp, fftengine_type, nx, ny, basenpoints):
         computedenergy = substrate.evaluate(disp[substrate.subdomain_slices], pot=True, forces=True)[0]
         refenergy = E_s / 8 * 2 * q * sx * sy
 
-        #print(substrate.domain_resolution[-1] % 2)
-        #print(substrate.fourier_resolution)
-        #print(substrate.fourier_locations[-1] + substrate.fourier_resolution[-1] - 1)
-        #print(substrate.domain_resolution[-1] // 2 )
+        #print(substrate.nb_domain_grid_pts[-1] % 2)
+        #print(substrate.nb_fourier_grid_pts)
+        #print(substrate.fourier_locations[-1] + substrate.nb_fourier_grid_pts[-1] - 1)
+        #print(substrate.nb_domain_grid_pts[-1] // 2 )
         #print(computedenergy)
         #print(computedenergy_kspace)
         #print(refenergy)
         np.testing.assert_allclose(computedenergy, refenergy, rtol=1e-10,
-                                   err_msg="wavevektor {} for domain_resolution {}, subdomain resolution {}, fourier_resolution {}".format(k, substrate.domain_resolution, substrate.subdomain_resolution, substrate.fourier_resolution))
+                                   err_msg="wavevektor {} for nb_domain_grid_pts {}, subdomain nb_grid_pts {}, nb_fourier_grid_pts {}".format(k, substrate.nb_domain_grid_pts, substrate.nb_subdomain_grid_pts, substrate.nb_fourier_grid_pts))
         np.testing.assert_allclose(computedenergy_kspace, refenergy, rtol=1e-10,
-                                   err_msg="wavevektor {} for domain_resolution {}, subdomain resolution {}, fourier_resolution {}".format(k, substrate.domain_resolution, substrate.subdomain_resolution, substrate.fourier_resolution))
+                                   err_msg="wavevektor {} for nb_domain_grid_pts {}, subdomain nb_grid_pts {}, nb_fourier_grid_pts {}".format(k, substrate.nb_domain_grid_pts, substrate.nb_subdomain_grid_pts, substrate.nb_fourier_grid_pts))
 
 @pytest.mark.parametrize("nx, ny", [(8, 8),
                                     (17,128),
@@ -431,7 +431,7 @@ if __name__ in ['__main__', 'builtins']:
 
         print("Testing Free FFTElastic Halfspace computation")
         for res in [(64, 32), (65, 33)]:
-            print("testing resolution {}".format(res))
+            print("testing nb_grid_pts {}".format(res))
             test_sineWave_disp(comm, pnp, fftengine_class, *res, basenpoints)
             test_sineWave_force(comm, pnp, fftengine_class, *res, basenpoints)
             test_multipleSineWaves_evaluate(comm, pnp, fftengine_class, *res, basenpoints)

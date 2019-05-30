@@ -100,7 +100,7 @@ def test_minimization_simplesmoothmin(young, r_c):
 
     options = dict(ftol=1e-18, gtol=1e-10)
     disp = S.shape_minimisation_input(
-        np.zeros(substrate.domain_resolution))
+        np.zeros(substrate.nb_domain_grid_pts))
 
     lbounds  =S.shape_minimisation_input(ext_surface.heights() + offset)
     bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
@@ -110,7 +110,7 @@ def test_minimization_simplesmoothmin(young, r_c):
         import matplotlib.pyplot as plt
         fig,ax = plt.subplots()
 
-        #ax.pcolormesh(result.x.reshape(substrate.computational_resolution))
+        #ax.pcolormesh(result.x.reshape(substrate.computational_nb_grid_pts))
         ax.pcolormesh(S.interaction.force)
     #    np.savetxt("{}_forces.txt".format(pot_class.__name__), S.interaction.force)
         ax.set_xlabel("x")
@@ -169,7 +169,7 @@ def test_minimization(pot_class, young, base_res):
 
     options = dict(ftol=1e-18, gtol=1e-10)
     disp = S.shape_minimisation_input(
-        np.zeros(substrate.domain_resolution))
+        np.zeros(substrate.nb_domain_grid_pts))
 
     lbounds  =S.shape_minimisation_input(ext_surface.heights() + offset)
     bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
@@ -179,7 +179,7 @@ def test_minimization(pot_class, young, base_res):
         import matplotlib.pyplot as plt
         fig,ax = plt.subplots()
 
-        #ax.pcolormesh(result.x.reshape(substrate.computational_resolution))
+        #ax.pcolormesh(result.x.reshape(substrate.computational_nb_grid_pts))
         ax.pcolormesh(S.interaction.force)
         np.savetxt("{}_forces.txt".format(pot_class.__name__), S.interaction.force)
         ax.set_xlabel("x")
@@ -243,7 +243,7 @@ class FastSystemTest(unittest.TestCase):
                                     self.interaction,
                                     self.surface)
         fun = S.objective(.95*self.interaction.r_c)
-        print(fun(np.zeros(S.babushka.substrate.domain_resolution)))
+        print(fun(np.zeros(S.babushka.substrate.nb_domain_grid_pts)))
 
     def test_SystemFactory(self):
         S = make_system(self.substrate,
@@ -278,7 +278,7 @@ class FastSystemTest(unittest.TestCase):
 
             options = dict(ftol = 1e-18, gtol = 1e-10)
             disp = S.shape_minimisation_input(
-                np.zeros(self.substrate.domain_resolution))
+                np.zeros(self.substrate.nb_domain_grid_pts))
             bla = fun(disp)
             result = minimize(fun, disp, jac=True,
                               method = 'L-BFGS-B', options=options)
@@ -367,14 +367,14 @@ class FastSystemTest(unittest.TestCase):
         offset = .8 * S.interaction.r_c
         S.create_babushka(offset)
         S.babushka.evaluate(
-            np.zeros(S.babushka.substrate.domain_resolution), offset,
+            np.zeros(S.babushka.substrate.nb_domain_grid_pts), offset,
             forces=True)
         F_n = S.babushka.compute_normal_force()
         babushka = S.babushka
         S = SmoothContactSystem(self.substrate,
                                 self.min_pot,
                                 self.surface)
-        S.evaluate(np.zeros(S.substrate.domain_resolution), offset, forces=True)
+        S.evaluate(np.zeros(S.substrate.nb_domain_grid_pts), offset, forces=True)
         F_n2 = S.compute_normal_force()
 
         error = abs(1 - F_n/F_n2)
@@ -423,7 +423,7 @@ class FastSystemTest(unittest.TestCase):
 
         gaps = list()
         for i in range(2):
-            gap = systems[i].compute_gap(np.zeros(systems[i].resolution), offsets[i])
+            gap = systems[i].compute_gap(np.zeros(systems[i].nb_grid_pts), offsets[i])
             gaps.append(gap*length_rc[i])
 
         error = Tools.mean_err(gaps[0], gaps[1])
@@ -509,7 +509,7 @@ class FastSystemTest(unittest.TestCase):
 
             interaction = Contact.LJ93smoothMin(young/18*np.sqrt(2/5),2.5**(1/6),gamma=gam)
 
-            substrate = Solid.FreeFFTElasticHalfSpace(surface.resolution, young, surface.physical_sizes)
+            substrate = Solid.FreeFFTElasticHalfSpace(surface.nb_grid_pts, young, surface.physical_sizes)
             system = FastSmoothContactSystem(substrate, interaction, surface, margin=4)
 
             start_disp = - interaction.r_c + 1e-10
@@ -554,7 +554,7 @@ class FastSystemTest(unittest.TestCase):
         topography = Topography.make_sphere(radius, res, size,centre=centre)
         ext_topography = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=centre)
 
-        substrate = Solid.FreeFFTElasticHalfSpace(topography.resolution, young,
+        substrate = Solid.FreeFFTElasticHalfSpace(topography.nb_grid_pts, young,
                                                   topography.physical_sizes)
 
         for system in [NonSmoothContactSystem(substrate, Contact.HardWall(), topography),

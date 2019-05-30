@@ -64,7 +64,7 @@ class PulloffTest(unittest.TestCase):
     def tst_FirstContactThenOffset(self):
         system = make_system(self.substrate, self.pot, self.surface)
         offset0 = .5*self.pot.r_min + .5*self.pot.r_c
-        disp0 = np.zeros(self.substrate.domain_resolution)
+        disp0 = np.zeros(self.substrate.nb_domain_grid_pts)
 
         def obj_fun(offset):
             nonlocal disp0
@@ -106,7 +106,7 @@ class PulloffTest(unittest.TestCase):
     def tst_FirstOffsetThenContact(self):
         system = make_system(self.substrate, self.pot, self.surface)
         offset0 = .5*self.pot.r_min + .5*self.pot.r_c
-        disp0 = np.zeros(self.substrate.domain_resolution)
+        disp0 = np.zeros(self.substrate.nb_domain_grid_pts)
 
         def minimize_force(offset0, const_disp):
             system.create_babushka(offset0, const_disp)

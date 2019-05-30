@@ -52,7 +52,7 @@ def basenpoints(comm):
 
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
-def test_resolutions(comm, pnp, fftengine_type, nx, ny, basenpoints):
+def test_nb_grid_ptss(comm, pnp, fftengine_type, nx, ny, basenpoints):
     nx += basenpoints
     ny += basenpoints
     sx, sy = 100, 200
@@ -60,9 +60,9 @@ def test_resolutions(comm, pnp, fftengine_type, nx, ny, basenpoints):
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                         fft=fftengine_type, comm=comm)
-    assert substrate.resolution == (nx, ny)
-    assert substrate.domain_resolution == (2 * nx, 2 * ny)
-    assert pnp.sum(np.array(np.prod(substrate.subdomain_resolution))) == 4 * nx * ny
+    assert substrate.nb_grid_pts == (nx, ny)
+    assert substrate.nb_domain_grid_pts == (2 * nx, 2 * ny)
+    assert pnp.sum(np.array(np.prod(substrate.nb_subdomain_grid_pts))) == 4 * nx * ny
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
 def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints):
@@ -81,19 +81,19 @@ def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints):
            concern
         """
         # pylint: disable=invalid-name
-        facts = np.zeros(tuple((res * 2 for res in hs.resolution)))
+        facts = np.zeros(tuple((res * 2 for res in hs.nb_grid_pts)))
         a = hs.steps[0] * .5
         if hs.dim == 1:
             pass
         else:
             b = hs.steps[1] * .5
-            x_s = np.arange(hs.resolution[0] * 2)
-            x_s = np.where(x_s <= hs.resolution[0], x_s,
-                           x_s - hs.resolution[0] * 2) * hs.steps[0]
+            x_s = np.arange(hs.nb_grid_pts[0] * 2)
+            x_s = np.where(x_s <= hs.nb_grid_pts[0], x_s,
+                           x_s - hs.nb_grid_pts[0] * 2) * hs.steps[0]
             x_s.shape = (-1, 1)
-            y_s = np.arange(hs.resolution[1] * 2)
-            y_s = np.where(y_s <= hs.resolution[1], y_s,
-                           y_s - hs.resolution[1] * 2) * hs.steps[1]
+            y_s = np.arange(hs.nb_grid_pts[1] * 2)
+            y_s = np.where(y_s <= hs.nb_grid_pts[1], y_s,
+                           y_s - hs.nb_grid_pts[1] * 2) * hs.steps[1]
             y_s.shape = (1, -1)
             facts = 1 / (np.pi * hs.young) * (
                     (x_s + a) * np.log(((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
@@ -175,12 +175,12 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_type, nx, ny, basen
     computed_disp = substrate.evaluate_disp(forces[substrate.subdomain_slices])
     # print(computed_disp)
     # make the comparison only on the nonpadded domain
-    s_c = tuple([slice(1, max(0, min(substrate.resolution[i] - 1 - substrate.subdomain_location[i],
-                                     substrate.subdomain_resolution[i])))
+    s_c = tuple([slice(1, max(0, min(substrate.nb_grid_pts[i] - 1 - substrate.subdomain_locations[i],
+                                     substrate.nb_subdomain_grid_pts[i])))
                  for i in range(substrate.dim)])
 
-    s_refdisp = tuple([slice(s_c[i].start + substrate.subdomain_location[i],
-                             s_c[i].stop + substrate.subdomain_location[i]) for i in range(substrate.dim)])
+    s_refdisp = tuple([slice(s_c[i].start + substrate.subdomain_locations[i],
+                             s_c[i].stop + substrate.subdomain_locations[i]) for i in range(substrate.dim)])
     # print(s_c)
     # print(s_refdisp)
     np.testing.assert_allclose(computed_disp[s_c], refdisp[s_refdisp])
@@ -193,7 +193,7 @@ if __name__ in ['__main__', 'builtins']:
     for fftengine_class in fftengineList:
         for res in [(64, 32), (65, 33)]:
             print("Testing Resolution {}".format(res))
-            test_resolutions(comm, pnp, fftengine_class, *res,0)
+            test_nb_grid_ptss(comm, pnp, fftengine_class, *res,0)
             print("test weights")
             test_weights(comm, pnp, fftengine_class, *res,0 )
             print("test evaluate_distest evaluate_disp")

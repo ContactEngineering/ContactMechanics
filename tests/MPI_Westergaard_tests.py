@@ -66,9 +66,9 @@ def test_constrained_conjugate_gradients(comm, fftengine_type):
             interaction = HardWall()
             profile = np.resize(np.cos(2 * np.pi * np.arange(nx) / nx), (ny, nx))
             surface = Topography(profile.T, size=(sx, sy),
-                                 # resolution=substrate.resolution,
-                                 subdomain_location=substrate.topography_subdomain_location,
-                                 subdomain_resolution=substrate.topography_subdomain_resolution,
+                                 # nb_grid_pts=substrate.nb_grid_pts,
+                                 subdomain_locations=substrate.topography_subdomain_locations,
+                                 nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                                  pnp=substrate.pnp)
             system = make_system(substrate, interaction, surface)
 
@@ -107,5 +107,5 @@ def test_constrained_conjugate_gradients(comm, fftengine_type):
             # np.testing.assert_allclose(forces[:, 0]/substrate.area_per_ pth[substrate.subdomain_slices[0]], rtol=1e-2, atol = 1e-12)
             assert np.count_nonzero(
                 error_mask) == 0, "max relative diff at index {} with ref = {}, computed= {}".format(
-                np.arange(substrate.subdomain_resolution[0])[error_mask], pth[substrate.subdomain_slices[0]][error_mask],
+                np.arange(substrate.nb_subdomain_grid_pts[0])[error_mask], pth[substrate.subdomain_slices[0]][error_mask],
                 forces[:, 0][error_mask] / substrate.area_per_pt)

@@ -67,7 +67,7 @@ for base_res in (32, 64, 128, 256, 512):
     pullof_forces = list()
     offsets = list()
     contact_area = list()
-    disp = np.zeros(substrate.domain_resolution)
+    disp = np.zeros(substrate.nb_domain_grid_pts)
     force = -1.
 
     def iterator(initial_offset):
@@ -86,7 +86,7 @@ for base_res in (32, 64, 128, 256, 512):
     ax1.set_ylabel("normal force")
     ax2.set_ylabel("contact area", color='r')
     line_force, = ax1.plot(offsets, pullof_forces,
-                           label="resolution = {}".format(res))
+                           label="nb_grid_pts = {}".format(res))
     line_area, = ax2.plot(offsets, contact_area, color=line_force.get_color(),
                           linestyle='--')
     ax1.legend(loc='center right')

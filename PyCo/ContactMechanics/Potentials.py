@@ -120,7 +120,7 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         curb       -- (default False) if true, returns second derivative
         area_scale -- (default 1.) scale by this. (Interaction quantities are
                       supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
+                      to be able to scale their response for their nb_grid_pts))
         """
         if np.isscalar(r):
             r = np.asarray(r)
@@ -260,7 +260,7 @@ class SmoothPotential(Potential):
         # pylint: disable=super-init-not-called
         # not calling the superclass's __init__ because this is used in diamond
         # inheritance and I do not want to have to worry about python's method
-        # resolution order
+        # nb_grid_pts order
         self.gamma = gamma if gamma is not None else -self.naive_min
         # Warning: this assumes that the minimum of the potential is a negative
         # value. This will fail curiously if you use this class to implement a
@@ -756,7 +756,7 @@ class MinimisationPotential(SmoothPotential):
         # pylint: disable=super-init-not-called
         # not calling the superclass's __init__ because this is used in diamond
         # inheritance and I do not want to have to worry about python's method
-        # resolution order
+        # nb_grid_pts order
         self.r_ti = r_ti if r_ti is not None else self.r_min/2
         self.lin_part = self.compute_linear_part()
 
@@ -794,7 +794,7 @@ class MinimisationPotential(SmoothPotential):
         curb       -- (default False) if true, returns second derivative
         area_scale -- (default 1.) scale by this. (Interaction quantities are
                       supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
+                      to be able to scale their response for their nb_grid_pts))
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
@@ -892,7 +892,7 @@ class LinearCorePotential(ChildPotential):
         # pylint: disable=super-init-not-called
         # not calling the superclass's __init__ because this is used in diamond
         # inheritance and I do not want to have to worry about python's method
-        # resolution order
+        # nb_grid_pts order
         super().__init__(parent_potential)
         self.r_ti = r_ti if r_ti is not None else parent_potential.r_min/2
         self.lin_part = self.compute_linear_part()

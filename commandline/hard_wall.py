@@ -325,7 +325,7 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 # object.
 surface = open_topography(arguments.filename)
 # Set the *physical* physical_sizes of the surface. We here set it to equal the shape,
-# i.e. the resolution of the surface just open_topography. Size is returned by surface.physical_sizes
+# i.e. the nb_grid_pts of the surface just open_topography. Size is returned by surface.physical_sizes
 # and can be unknown, i.e. *None*.
 if arguments.size is not None:
     surface.physical_sizes = arguments.size

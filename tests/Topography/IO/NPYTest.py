@@ -29,9 +29,9 @@ def test_save_and_load(comm_self, file_format_examples):
     save_npy(npyfile, topography)
 
     class dummy_substrate:
-        resolution = topography.resolution
-        topography_subdomain_resolution = topography.resolution
-        topography_subdomain_location = (0,0)
+        nb_grid_pts = topography.nb_grid_pts
+        topography_nb_subdomain_grid_pts = topography.nb_grid_pts
+        topography_subdomain_locations = (0,0)
         physical_sizes= (1., 1.)
         pnp = topography.pnp
 

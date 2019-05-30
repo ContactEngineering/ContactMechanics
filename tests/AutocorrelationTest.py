@@ -72,7 +72,7 @@ class AutocorrelationTest(PyCoTestCase):
                      Topography(np.random.random([n, m]), (n, m), periodic=False)]:
             r, A, A_xy = surf.autocorrelation_2D(return_map=True)
 
-            nx, ny = surf.resolution
+            nx, ny = surf.nb_grid_pts
             dir_A_xy = np.zeros([n, m])
             dir_A = np.zeros_like(A)
             dir_n = np.zeros_like(A)

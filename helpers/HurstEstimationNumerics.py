@@ -186,12 +186,12 @@ def main():
     hurst = .75
     h_rms = 3.24e-8
     res = 128
-    resolution = (res, res)
+    nb_grid_pts = (res, res)
 
     seed = 2
 
     surface = Tools.RandomSurfaceGaussian(
-        resolution, size, hurst, h_rms, lambda_max=lam_max, seed=seed).get_surface()
+        nb_grid_pts, size, hurst, h_rms, lambda_max=lam_max, seed=seed).get_surface()
 
     plot_naive(surface, lam_max)
 

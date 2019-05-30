@@ -75,10 +75,10 @@ def test_elastic_solution(self):
     sig = Hz.surface_stress(r)[0] / self.p_0
 
 
-@pytest.mark.parametrize("resolution", [(512, 512), (512, 511), (511, 512)])
-def test_constrained_conjugate_gradients(self, resolution, comm,fftengine_type):
+@pytest.mark.parametrize("nb_grid_pts", [(512, 512), (512, 511), (511, 512)])
+def test_constrained_conjugate_gradients(self, nb_grid_pts, comm,fftengine_type):
     pnp = Reduction(comm)
-    nx, ny = resolution
+    nx, ny = nb_grid_pts
     for disp0, normal_force in [(0.1, None), (0, 15.0)]:
         sx = 5.0
 
@@ -87,8 +87,8 @@ def test_constrained_conjugate_gradients(self, resolution, comm,fftengine_type):
 
         interaction = HardWall()
         surface = make_sphere(self.r_s, (nx, ny), (sx, sx),
-                              subdomain_resolution=substrate.topography_subdomain_resolution,
-                              subdomain_location=substrate.topography_subdomain_location,
+                              nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
+                              subdomain_locations=substrate.topography_subdomain_locations,
                               pnp=substrate.pnp)
         system = NonSmoothContactSystem(substrate, interaction, surface)
 
@@ -157,13 +157,13 @@ def test_constrained_conjugate_gradients(self, resolution, comm,fftengine_type):
                 if substrate.fftengine.comm.Get_rank() == i:
                     print(i)
                     print(
-                        "subdom_res:  %s" % substrate.subdomain_resolution.__repr__())
+                        "subdom_res:  %s" % substrate.nb_subdomain_grid_pts.__repr__())
                     print(
                         "shape p_numerical: %s" % p_numerical.shape.__repr__())
                 else:
                     continue
 
-        if np.prod(substrate.subdomain_resolution) > 0:
+        if np.prod(substrate.nb_subdomain_grid_pts) > 0:
             x = ((np.arange(nx) - nx / 2) * sx / nx).reshape(-1, 1)[
                 substrate.subdomain_slices[0], :]
             y = ((np.arange(ny) - ny / 2) * sx / ny).reshape(1, -1)[:,

@@ -101,7 +101,7 @@ class SoftWall(Interaction):
         forces     -- (default False) whether the forces should be evaluated
         area_scale -- (default 1.) scale by this. (Interaction quantities are
                       supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
+                      to be able to scale their response for their nb_grid_pts))
         """
         energy, self.force = self.evaluate(
             gap, pot, forces, area_scale)
@@ -117,6 +117,6 @@ class SoftWall(Interaction):
         forces     -- (default False) whether the forces should be evaluated
         area_scale -- (default 1.) scale by this. (Interaction quantities are
                       supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
+                      to be able to scale their response for their nb_grid_pts))
         """
         raise NotImplementedError()

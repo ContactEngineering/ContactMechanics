@@ -125,7 +125,7 @@ for method, name in zip(["L-BFGS-B", LBFGS],
 
     substrate = PeriodicFFTElasticHalfSpace((nx, ny), young=E_s,
                                             physical_sizes=(sx, sx), pnp=pnp)
-    # print(substrate._comp_resolution)
+    # print(substrate._comp_nb_grid_pts)
     # print(fftengine.nb_domain_grid_pts)
 
 

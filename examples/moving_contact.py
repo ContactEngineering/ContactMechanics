@@ -60,7 +60,7 @@ surface2 = read_matrix('surface2.out', physical_sizes=(sx, sy))
 print('RMS heights of surfaces = {} {}'.format(surface1.rms_height(),
                                                surface2.rms_height()))
 
-# This is the grid resolution of the two surfaces.
+# This is the grid nb_grid_pts of the two surfaces.
 nx, ny = surface1.shape
 
 # TranslatedSurface knows how to translate a surface into some direction.
@@ -84,7 +84,7 @@ disp = np.zeros(surface1.shape)
 # Dump some information to this NetCDF file. Inspect the NetCDF with the
 # 'ncdump' command.
 container = NetCDFContainer('traj.nc', mode='w', double=True)
-# NetCDF needs to know the resolution/shape
+# NetCDF needs to know the nb_grid_pts/shape
 container.set_shape(surface2)
 # This creates a field called 'surface2' inside the NetCDF file.
 container.surface2 = surface2.heights()

@@ -64,7 +64,7 @@ class MISurfaceTest(unittest.TestCase):
                           'trace': 'Trace'})
 
         self.assertEqual(loader._default_channel, 0)
-        self.assertEqual(loader.resolution, (256, 256))
+        self.assertEqual(loader.nb_grid_pts, (256, 256))
 
         self.assertAlmostEqual(loader.physical_sizes[0], 2.0000000000000002e-005, places=8)
         self.assertAlmostEqual(loader.physical_sizes[1], 2.0000000000000002e-005, places=8)

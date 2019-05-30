@@ -57,14 +57,14 @@ class Substrate(object,metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def domain_resolution(self):
+    def nb_domain_grid_pts(self):
         """
         """
         pass
 
     @property
     @abc.abstractmethod
-    def subdomain_resolution(self):
+    def nb_subdomain_grid_pts(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
@@ -74,7 +74,7 @@ class Substrate(object,metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def subdomain_location(self):
+    def subdomain_locations(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
@@ -117,10 +117,10 @@ class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
 
     def __repr__(self):
         dims = 'x', 'y', 'z'
-        size_str = ', '.join('{}: {}({})'.format(dim, size, resolution) for
-                             dim, size, resolution in zip(dims, self.size,
-                                                          self.resolution))
-        return ("{0.dim}-dimensional halfspace '{0.name}', physical_sizes(resolution) in"
+        size_str = ', '.join('{}: {}({})'.format(dim, size, nb_grid_pts) for
+                             dim, size, nb_grid_pts in zip(dims, self.size,
+                                                          self.nb_grid_pts))
+        return ("{0.dim}-dimensional halfspace '{0.name}', physical_sizes(nb_grid_pts) in"
                 " {1}, E' = {0.young}").format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):

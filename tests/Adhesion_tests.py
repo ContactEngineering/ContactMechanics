@@ -84,7 +84,7 @@ class AdhesionTest(unittest.TestCase):
                                                lbounds=ext_surface.heights() + _disp0,
                                                tol=self.tol)
                 u = result.x
-                u.shape = ext_surface.resolution
+                u.shape = ext_surface.nb_grid_pts
                 f = substrate.evaluate_force(u)
                 converged = result.success
                 self.assertTrue(converged)

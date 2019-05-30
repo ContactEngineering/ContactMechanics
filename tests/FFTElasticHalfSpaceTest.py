@@ -141,7 +141,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
             error = Tools.mean_err(disp, hs.evaluate_disp(hs.evaluate_force(disp)))
             self.assertTrue(
                 error < tol,
-                "for resolution = {}, error = {} > tol = {}".format(
+                "for nb_grid_pts = {}, error = {} > tol = {}".format(
                     res, error, tol))
 
             force = random(res)
@@ -150,7 +150,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
             error = Tools.mean_err(force, hs.evaluate_force(hs.evaluate_disp(force)))
             self.assertTrue(
                 error < tol,
-                "for resolution = {}, error = {} > tol = {}".format(
+                "for nb_grid_pts = {}, error = {} > tol = {}".format(
                     res, error, tol))
 
     #@unittest.skip("wait on 1d support")
@@ -228,19 +228,19 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         force_rc = (1., 1./force_c)
         pressure_rc = (1., 1./pressure_c)
         energy_rc = (1., 1./energy_c)
-        resolution = (32, 32)
+        nb_grid_pts = (32, 32)
         young = (self.young, pressure_c*self.young)
         size = self.physical_sizes[0], 2 * self.physical_sizes[1]
         size = (size, tuple((length_c*s for s in size)))
         print('SELF.SIZE = {}'.format(self.physical_sizes))
 
-        disp = np.random.random(resolution)
+        disp = np.random.random(nb_grid_pts)
         disp -= disp.mean()
         disp = (disp, disp*length_c)
 
         forces = list()
         for i in range(2):
-            sub = PeriodicFFTElasticHalfSpace(resolution, young[i], size[i])
+            sub = PeriodicFFTElasticHalfSpace(nb_grid_pts, young[i], size[i])
             force = sub.evaluate_force(disp[i])
             forces.append(force*force_rc[i])
         error = Tools.mean_err(forces[0], forces[1])
@@ -265,16 +265,16 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         energy_rc = (1., 1./energy_c)
         force_per_length_rc = (1., 1./force_per_length_c)
 
-        resolution = (32, )
+        nb_grid_pts = (32, )
         young = (self.young, pressure_c*self.young)
         size = (self.physical_sizes[0], length_c * self.physical_sizes[0])
 
-        disp = np.random.random(resolution)
+        disp = np.random.random(nb_grid_pts)
         disp -= disp.mean()
         disp = (disp, disp*length_c)
 
         forces = list()
-        subs = tuple((PeriodicFFTElasticHalfSpace(resolution, y, s) for y, s in
+        subs = tuple((PeriodicFFTElasticHalfSpace(nb_grid_pts, y, s) for y, s in
                       zip(young, size)))
         forces = tuple((s.evaluate_force(d)*f_p_l for s, d, f_p_l in
                         zip(subs, disp, force_per_length_rc)))
@@ -382,8 +382,8 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
     def test_temp(self):
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
-        force = np.zeros(hs.domain_resolution)
-        assert hs.domain_resolution == tuple([2*r for r in self.res ])
+        force = np.zeros(hs.nb_domain_grid_pts)
+        assert hs.nb_domain_grid_pts == tuple([2*r for r in self.res ])
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0],
                                              :self.res[1]].mean()
@@ -398,7 +398,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         np.testing.assert_allclose(kdisp_hs.imag, kdisp.imag)
 
         kforce = rfftn(force)
-        np_pts = np.prod(hs.domain_resolution)
+        np_pts = np.prod(hs.nb_domain_grid_pts)
         area_per_pt = np.prod(self.physical_sizes) / np_pts
         energy = .5 * (np.vdot(-kforce, kdisp) +
                        np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
@@ -416,12 +416,12 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
     def test_realnessEnergy(self):
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
-        force = np.zeros(hs.domain_resolution)
+        force = np.zeros(hs.nb_domain_grid_pts)
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
         kdisp = hs.evaluate_k_disp(force)
         kforce = rfftn(force)
-        np_pts = np.prod(hs.domain_resolution)
+        np_pts = np.prod(hs.nb_domain_grid_pts)
         area_per_pt = np.prod(self.physical_sizes) / np_pts
         energy = .5 * (np.vdot(-kforce, kdisp) +
                        np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
@@ -502,18 +502,18 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         force_rc = (1., 1./force_c)
         pressure_rc = (1., 1./pressure_c)
         energy_rc = (1., 1./energy_c)
-        resolution = (32, 32)
+        nb_grid_pts = (32, 32)
         young = (self.young, pressure_c*self.young)
         size = (self.physical_sizes, tuple((length_c * s for s in self.physical_sizes)))
 
-        comp_resolution = tuple((2*res for res in resolution))
-        disp = np.random.random(comp_resolution)
+        comp_nb_grid_pts = tuple((2*res for res in nb_grid_pts))
+        disp = np.random.random(comp_nb_grid_pts)
         disp -= disp.mean()
         disp = (disp, disp*length_c)
 
         forces = list()
         for i in range(2):
-            sub = FreeFFTElasticHalfSpace(resolution, young[i], size[i])
+            sub = FreeFFTElasticHalfSpace(nb_grid_pts, young[i], size[i])
             force = sub.evaluate_force(disp[i])
             forces.append(force*force_rc[i])
         error = Tools.mean_err(forces[0], forces[1])

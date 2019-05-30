@@ -75,8 +75,8 @@ def test_wavy(comm, fftengine_type):
         size=surf_size)
 
     psurface = Topography(surface.heights(), size=surface.physical_sizes,
-                          subdomain_location=substrate.topography_subdomain_location,
-                          subdomain_resolution=substrate.subdomain_resolution,
+                          subdomain_locations=substrate.topography_subdomain_locations,
+                          nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts,
                           periodic=True, pnp=pnp)
 
     system = SmoothContactSystem(substrate, inter, psurface)

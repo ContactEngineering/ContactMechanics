@@ -58,7 +58,7 @@ class CharacterisePeriodicSurface(object):
             raise Exception("Only 2D surfaces, for the time being")
         if self.surface.physical_sizes[0] != self.surface.physical_sizes[1]:
             raise Exception("Only square surfaces, for the time being")
-        if self.surface.resolution[0] != self.surface.resolution[1]:
+        if self.surface.nb_grid_pts[0] != self.surface.nb_grid_pts[1]:
             raise Exception("Only square surfaces, for the time being")
 
         self.window = 1
@@ -74,7 +74,7 @@ class CharacterisePeriodicSurface(object):
         Generates the phases and amplitudes, readies the metasurface to
         generate Topography objects
         """
-        res, size = self.surface.resolution, self.surface.physical_sizes
+        res, size = self.surface.nb_grid_pts, self.surface.physical_sizes
         # equivalent lattice constant**2
         area = np.prod(size)
         h_a = fftn(self.surface.heights() * self.window, area)
@@ -91,7 +91,7 @@ class CharacterisePeriodicSurface(object):
         Generates the phases and amplitudes, readies the metasurface to
         generate Topography objects
         """
-        res, size = self.surface.resolution, self.surface.physical_sizes
+        res, size = self.surface.nb_grid_pts, self.surface.physical_sizes
         # equivalent lattice constant**2
 
         tmp = np.fft.fft(self.surface.heights() * self.window, axis=0)
@@ -328,7 +328,7 @@ class CharacterisePeriodicSurface(object):
     @property
     def lambda_shannon(self):
         " wavelength of shannon limit"
-        return 2 * self.surface.physical_sizes[0] / self.surface.resolution[0]
+        return 2 * self.surface.physical_sizes[0] / self.surface.nb_grid_pts[0]
 
     @property
     def q_shannon(self):
@@ -420,9 +420,9 @@ class CharacteriseSurface(CharacterisePeriodicSurface):
     def get_window(self, window_type, window_params):
         " return an evaluated window as an np.array"
         if window_type == 'hanning':
-            window = 2*np.hanning(self.surface.resolution[0])
+            window = 2*np.hanning(self.surface.nb_grid_pts[0])
         elif window_type == 'kaiser':
-            window = np.kaiser(self.surface.resolution[0], **window_params)
+            window = np.kaiser(self.surface.nb_grid_pts[0], **window_params)
         else:
             raise Exception("Window type '{}' not known.".format(window_type))
         window = window.reshape((-1, 1))*window

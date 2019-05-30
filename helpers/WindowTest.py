@@ -131,7 +131,7 @@ def main():
     surfs.append(('Topo1_corr', surface))
 
     hurst = .85
-    res = surface.resolution
+    res = surface.nb_grid_pts
     h_rms = 2.11e-8
 
     surface = Tools.RandomSurfaceGaussian(res, size, hurst, h_rms).get_surface()

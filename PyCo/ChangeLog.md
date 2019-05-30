@@ -31,9 +31,9 @@ API Changes:
 - Uniform topographies and line scans can be periodic.
 - Removed unit property from height containers. Units are now stored in the info dictionary,
   which has to be set on generation of the height container.
-- All topographies must have a physical_sizes. Readers use the resolution as the default physical_sizes 
+- All topographies must have a physical_sizes. Readers use the nb_grid_pts as the default physical_sizes 
   if the files contain no physical_sizes information. 
-- Removed 'shape' alias to 'resolution' property for height containers.
+- Removed 'shape' alias to 'nb_grid_pts' property for height containers.
 - Size + shape are now always tuples, physical_sizes is also always set as tuple.
 - Topographies can now be pickled and unpickled.  
 - Replaced class 'Sphere' with generator function 'make_sphere'.

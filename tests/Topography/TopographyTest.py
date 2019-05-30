@@ -39,9 +39,9 @@ def test_positions(comm, fftengine_type):
     fftengine=FFT((nx, ny), fft=fftengine_type, communicator=comm)
     pnp = Reduction(comm)
 
-    surf = Topography(np.zeros(fftengine.nb_subdomain_grid_pts), resolution=(nx, ny),
+    surf = Topography(np.zeros(fftengine.nb_subdomain_grid_pts), nb_grid_pts=(nx, ny),
                       size = (sx, sy),
-                      subdomain_location=fftengine.subdomain_locations, pnp=pnp)
+                      subdomain_locations=fftengine.subdomain_locations, pnp=pnp)
 
     x, y = surf.positions()
     assert x.shape == fftengine.nb_subdomain_grid_pts
@@ -63,7 +63,7 @@ class TopographyTest(PyCoTestCase):
 
         t = Topography(h, (8,6))
 
-        self.assertEqual(t.resolution, (4,3))
+        self.assertEqual(t.nb_grid_pts, (4, 3))
 
         assert_array_equal(t.heights(), h)
         X2, Y2, h2 = t.positions_and_heights()

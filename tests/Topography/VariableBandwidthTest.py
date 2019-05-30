@@ -75,7 +75,7 @@ class TestVariableBandwidth(PyCoTestCase):
                                    amplitude_distribution=lambda n: 1.0)
 
             for t in [t0, t0.to_nonuniform()]:
-                mag, bwidth, rms = t.variable_bandwidth(resolution_cutoff=r//32)
+                mag, bwidth, rms = t.variable_bandwidth(nb_grid_pts_cutoff=r//32)
                 self.assertAlmostEqual(rms[0], t.detrend().rms_height())
                 self.assertArrayAlmostEqual(bwidth, t.physical_sizes[0] / mag)
                 # Since this is a self-affine surface, rms(mag) ~ mag^-H
@@ -89,7 +89,7 @@ class TestVariableBandwidth(PyCoTestCase):
         for H in [0.3, 0.8]:
             t = fourier_synthesis(res, (1, 1), H, rms_slope=0.1,
                                   amplitude_distribution=lambda n: 1.0)
-            mag, bwidth, rms = t.variable_bandwidth(resolution_cutoff=r//32)
+            mag, bwidth, rms = t.variable_bandwidth(nb_grid_pts_cutoff=r//32)
             self.assertAlmostEqual(rms[0], t.detrend().rms_height())
             # Since this is a self-affine surface, rms(mag) ~ mag^-H
             b, a = np.polyfit(np.log(mag[1:]), np.log(rms[1:]), 1)

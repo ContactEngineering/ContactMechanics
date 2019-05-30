@@ -96,9 +96,9 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(topography.physical_sizes[0], 47.819, places=3)
         self.assertAlmostEqual(topography.physical_sizes[1], 35.855, places=3)
 
-        # Check resolutions
-        self.assertEqual(topography.resolution[0], 960)
-        self.assertEqual(topography.resolution[1], 1280)
+        # Check nb_grid_ptss
+        self.assertEqual(topography.nb_grid_pts[0], 960)
+        self.assertEqual(topography.nb_grid_pts[1], 1280)
 
         # Check unit
         self.assertEqual(topography._info['unit'], 'nm')
