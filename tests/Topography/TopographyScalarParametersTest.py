@@ -44,7 +44,7 @@ class SinewaveTestUniform(unittest.TestCase):
         self.sinsurf = np.sin(2 * np.pi / self.L * X) * np.sin(2 * np.pi / self.L * Y) * self.hm
         self.size= (self.L,self.L)
 
-        self.surf = Topography(self.sinsurf, size=self.size)
+        self.surf = Topography(self.sinsurf, physical_sizes=self.size)
 
         self.precision = 5
 

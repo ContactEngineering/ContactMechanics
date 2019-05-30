@@ -559,7 +559,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
         arr = f + x * a + y * b + x * x * c + y * y * d + x * y * e
         sx, sy = 3, 2.5
         nx, ny = arr.shape
-        surf = Topography(arr, size=(sx, sy))
+        surf = Topography(arr, physical_sizes=(sx, sy))
         surf = surf.detrend(detrend_mode='curvature')
         self.assertTrue(surf.is_uniform)
         self.assertAlmostEqual(surf.coeffs[0], b * nx)
@@ -575,7 +575,7 @@ class DetrendedSurfaceTest(unittest.TestCase):
     def test_randomly_rough(self):
         surface = fourier_synthesis((511, 511), (1., 1.), 0.8, rms_height=1)
         self.assertTrue(surface.is_uniform)
-        cut = Topography(surface[:64, :64], size=(64., 64.))
+        cut = Topography(surface[:64, :64], physical_sizes=(64., 64.))
         self.assertTrue(cut.is_uniform)
         untilt1 = cut.detrend(detrend_mode='height')
         untilt2 = cut.detrend(detrend_mode='slope')

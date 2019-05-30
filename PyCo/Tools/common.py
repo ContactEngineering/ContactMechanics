@@ -93,7 +93,7 @@ def mean_err(arr1, arr2, rfft=False):
     return abs(np.ravel(arr1[tuple(comp_sl)]-arr2[tuple(comp_sl)])).mean()
 
 
-def compute_wavevectors(nb_grid_pts, size, nb_dims):
+def compute_wavevectors(nb_grid_pts, physical_sizes, nb_dims):
     """
     computes and returns the wavevectors q that exist for the surfaces physical_sizes
     and nb_grid_pts as one vector of components per dimension
@@ -101,11 +101,11 @@ def compute_wavevectors(nb_grid_pts, size, nb_dims):
     vectors = list()
     if nb_dims == 1:
         nb_grid_pts = [nb_grid_pts]
-        size = [size]
+        physical_sizes = [physical_sizes]
     for dim in range(nb_dims):
-        vectors.append(2*np.pi*np.fft.fftfreq(
+        vectors.append(2 * np.pi * np.fft.fftfreq(
             nb_grid_pts[dim],
-            size[dim]/nb_grid_pts[dim]))
+            physical_sizes[dim] / nb_grid_pts[dim]))
     return vectors
 
 

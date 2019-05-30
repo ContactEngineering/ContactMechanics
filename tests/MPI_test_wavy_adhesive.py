@@ -72,9 +72,9 @@ def test_wavy(comm, fftengine_type):
 
     surface = Topography(
         np.cos(np.arange(0, n) * np.pi * 2. / n) * np.ones((n, 1)),
-        size=surf_size)
+        physical_sizes=surf_size)
 
-    psurface = Topography(surface.heights(), size=surface.physical_sizes,
+    psurface = Topography(surface.heights(), physical_sizes=surface.physical_sizes,
                           subdomain_locations=substrate.topography_subdomain_locations,
                           nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts,
                           periodic=True, pnp=pnp)

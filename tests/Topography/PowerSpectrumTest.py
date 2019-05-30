@@ -44,7 +44,7 @@ class PowerSpectrumTest(PyCoTestCase):
                     for n in [16, 128]:
                         x = np.arange(n) * L / n
                         h = np.sin(2 * np.pi * k * x / L)
-                        t = UniformLineScan(h, size=L, periodic=periodic)
+                        t = UniformLineScan(h, physical_sizes=L, periodic=periodic)
                         q, C = t.power_spectrum_1D()
 
                         # The ms height of the sine is 1/2. The sum over the PSD (from -q to +q) is the ms height.

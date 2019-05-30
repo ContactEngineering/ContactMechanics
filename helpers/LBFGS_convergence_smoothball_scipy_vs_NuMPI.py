@@ -117,7 +117,7 @@ for method, name in zip([LBFGS, "L-BFGS-B"],
     # print(substrate._comp_nb_grid_pts)
     # print(fftengine.nb_domain_grid_pts)
 
-    surface = make_sphere(radius=r_s, nb_grid_pts=(nx, ny), size=(sx, sx),
+    surface = make_sphere(radius=r_s, nb_grid_pts=(nx, ny), physical_sizes=(sx, sx),
                           subdomain_locations=substrate.topography_subdomain_locations,
                           nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                           pnp=pnp,

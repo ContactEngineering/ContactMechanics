@@ -280,12 +280,12 @@ class CharacterisePeriodicSurface(object):
 
     def compute_rms_height_q_space(self):  # pylint: disable=missing-docstring
         tmp_surf = Topography(self.surface.heights * self.window,
-                              size=self.surface.physical_sizes)
+                              physical_sizes=self.surface.physical_sizes)
         return tmp_surf.rms_height_q_space()
 
     def compute_rms_slope_q_space(self):  # pylint: disable=missing-docstring
         tmp_surf = Topography(self.surface.heights() * self.window,
-                              size=self.surface.physical_sizes)
+                              physical_sizes=self.surface.physical_sizes)
         return tmp_surf.rms_slope_q_space()
 
     def grouped_stats(self, nb_groups, percentiles=(5, 95), filter_nan=True):

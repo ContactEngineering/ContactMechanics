@@ -40,7 +40,7 @@ def test_positions(comm, fftengine_type):
     pnp = Reduction(comm)
 
     surf = Topography(np.zeros(fftengine.nb_subdomain_grid_pts), nb_grid_pts=(nx, ny),
-                      size = (sx, sy),
+                      physical_sizes= (sx, sy),
                       subdomain_locations=fftengine.subdomain_locations, pnp=pnp)
 
     x, y = surf.positions()
@@ -189,7 +189,7 @@ class TopographyTest(PyCoTestCase):
 
         t = Topography([[1,1,1,1],
                         [1,1,1,1],
-                        [1,1,1,1]], size=(1,1))
+                        [1,1,1,1]], physical_sizes=(1, 1))
 
         # the following commands should be possible without errors
         st = t.scale(1)

@@ -573,7 +573,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """
         # pylint: disable=too-many-locals
         if self.fftengine.communicator.size>1:
-            raise NotImplementedError("This implementation of the computation of the fourier coeffs is not compatible with MPI FFTEngines")
+            raise NotImplementedError("This implementation of the computation of the fourier coeffs is not compatible with MPI fftengines")
 
         if self.dim == 1:
             pass

@@ -65,7 +65,7 @@ def test_constrained_conjugate_gradients(comm, fftengine_type):
                                                     fft="mpi", comm=comm)
             interaction = HardWall()
             profile = np.resize(np.cos(2 * np.pi * np.arange(nx) / nx), (ny, nx))
-            surface = Topography(profile.T, size=(sx, sy),
+            surface = Topography(profile.T, physical_sizes=(sx, sy),
                                  # nb_grid_pts=substrate.nb_grid_pts,
                                  subdomain_locations=substrate.topography_subdomain_locations,
                                  nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
