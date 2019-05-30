@@ -81,6 +81,6 @@ setup(
         'pfft-python',
         'FFTEngine',
         'NuMPI',
-        'FFTEngine'
+        'mufft'
     ]
 )

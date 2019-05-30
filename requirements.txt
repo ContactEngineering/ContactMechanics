@@ -9,8 +9,7 @@ h5py
 pandas
 sphinx==1.8.2
 pfft-python
-FFTEngine
 git+https://github.com/IMTEK-Simulation/NuMPI.git
 pytest>=4
-git+https://github.com/AntoineSIMTEK/FFTEngine
+git+https://gitlab.com/muspectre/muspectre.git#egg=mufft
 git+https://github.com/AntoineSIMTEK/runtests.git#egg=runtests
