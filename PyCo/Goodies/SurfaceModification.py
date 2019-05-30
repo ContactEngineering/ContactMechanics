@@ -46,7 +46,7 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
         surf_char = CharacterisePeriodicSurface(self.surface)
         hurst = surf_char.estimate_hurst()
         rms_height = self.surface.rms_height()
-        super().__init__(surface.resolution, surface.size, hurst, rms_height,
+        super().__init__(surface.nb_grid_pts, surface.physical_sizes, hurst, rms_height,
                          seed=None, lambda_max=None)
 
     def generate_phases(self):
@@ -61,7 +61,7 @@ def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None,
                           return_bounds=False):
     surf = ModifyExistingPeriodicSurface(surface)
     cutoff1 = np.mean(surf.size)
-    cutoff2 = np.mean([x/y for x, y in zip(surf.size, surf.resolution)])/2
+    cutoff2 = np.mean([x/y for x, y in zip(surf.size, surf.nb_grid_pts)])/2
     initial_slope = rms_slope(surf.get_surface())
     initial_curvature = rms_curvature(surf.get_surface())
     if rms_slope is not None:

@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 # This is the elastic contact modulus, E*.
 E_s = 2
 
-# This is the physical size of the surfaces.
+# This is the physical physical_sizes of the surfaces.
 sx, sy = 1, 1
 
 ###
@@ -122,17 +122,17 @@ def constrained_conjugate_gradients(substrate, topography,
         offset = 0
 
     if disp0 is None:
-        u_r = np.zeros(substrate.domain_resolution)
+        u_r = np.zeros(substrate.nb_domain_grid_pts)
     else:
         u_r = disp0.copy()
 
-    comp_slice = [slice(0, substrate.resolution[i])
+    comp_slice = [slice(0, substrate.nb_grid_pts[i])
                   for i in range(substrate.dim)]
 
-    comp_mask = np.zeros(substrate.domain_resolution, dtype=bool)
+    comp_mask = np.zeros(substrate.nb_domain_grid_pts, dtype=bool)
     comp_mask[tuple(comp_slice)] = True
 
-    surf_mask = np.ones(substrate.resolution, dtype=bool)
+    surf_mask = np.ones(substrate.nb_grid_pts, dtype=bool)
     pad_mask = np.logical_not(comp_mask)
     N_pad = pad_mask.sum()
     u_r[comp_mask] = np.where(u_r[comp_mask] < topography[surf_mask]+offset,
@@ -355,18 +355,17 @@ def constrained_conjugate_gradients(substrate, topography,
 ###
 
 # Read the topography from file.
-topography = read_matrix('surface1.out', size=(sx, sy))
+topography = read_matrix('surface1.out', physical_sizes=(sx, sy))
 
 print('RMS height of topography = {}'.format(topography.rms_height()))
 print('RMS slope of topography = {}'.format(topography.rms_slope()))
 
-# This is the grid resolution of the topography.
-nx, ny = topography.resolution
+# This is the grid nb_grid_pts of the topography.
+nx, ny = topography.nb_grid_pts
 
 # Periodic substrate, i.e. the elastic half-space.
-substrate = PeriodicFFTElasticHalfSpace((nx, ny), # resolution
-                                        E_s, # contact modulus
-                                        (sx, sx)) # physical size
+substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s,
+                                        (sx, sx))  # physical physical_sizes
 
 # Contact pressure: 0.05 h_rms' E_s / kappa with kappa = 2, which means ~ 5% contact area
 res = constrained_conjugate_gradients(substrate, topography.heights(),

@@ -54,7 +54,7 @@ def newton_confidence_region(fun, x0, jac, hess, tol, store_iterates=None,
     tol            -- Tolerance for termination
     store_iterates -- (default None) if set to 'iterate' the full iterates are
                       stored in module-level constant iterates
-    radius0        -- (default 10) size of initial confidence region size
+    radius0        -- (default 10) physical_sizes of initial confidence region physical_sizes
     eta1/eta2      -- (default 0.01, 0.9) heuristics for step length
                       modifications. Defaults from Bierlaire (2006)
     method         -- (default 'steihaug_toint') solver for confidence region

@@ -120,11 +120,11 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         logger.pr('pentol = {0}'.format(pentol))
 
     if disp0 is None:
-        u_r = np.zeros(substrate.domain_resolution)
+        u_r = np.zeros(substrate.nb_domain_grid_pts)
     else:
         u_r = disp0.copy()
 
-    comp_slice = [slice(0, substrate.resolution[i])
+    comp_slice = [slice(0, substrate.nb_grid_pts[i])
                   for i in range(substrate.dim)]
     if substrate.dim not in (1, 2):
         raise Exception(
@@ -132,12 +132,12 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
              "or 2 dimensions (Your substrate has {}.).").format(
                  substrate.dim))
 
-    comp_mask = np.zeros(substrate.domain_resolution, dtype=bool)
+    comp_mask = np.zeros(substrate.nb_domain_grid_pts, dtype=bool)
     comp_mask[comp_slice] = True
 
     surf_mask = np.ma.getmask(surface)
     if surf_mask is np.ma.nomask:
-        surf_mask = np.ones(substrate.resolution, dtype=bool)
+        surf_mask = np.ones(substrate.nb_grid_pts, dtype=bool)
     else:
         comp_mask[comp_slice][surf_mask] = False
         surf_mask = np.logical_not(surf_mask)
@@ -177,7 +177,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         plt.figure()
         plt.subplot(221)
         plt.title('f_r (before)')
-        plt.pcolormesh(f_r[comp_mask].reshape(substrate.domain_resolution))
+        plt.pcolormesh(f_r[comp_mask].reshape(substrate.nb_domain_grid_pts))
         plt.colorbar()
 
         print(f_r[comp_mask].min(), f_r[comp_mask].max())
@@ -218,7 +218,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
 
         plt.subplot(222)
         plt.title('f_r (after)')
-        plt.pcolormesh(f_r[comp_mask].reshape(substrate.domain_resolution))
+        plt.pcolormesh(f_r[comp_mask].reshape(substrate.nb_domain_grid_pts))
         plt.colorbar()
 
         assert abs(external_force+f_r.sum()) < 1e-6
@@ -249,12 +249,12 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
 
         plt.subplot(223)
         plt.title('u_r')
-        plt.pcolormesh(u_r[comp_mask].reshape(substrate.domain_resolution))
+        plt.pcolormesh(u_r[comp_mask].reshape(substrate.nb_domain_grid_pts))
         plt.colorbar()
 
         plt.subplot(224)
         plt.title('g_r')
-        plt.pcolormesh(g_r.reshape(substrate.domain_resolution))
+        plt.pcolormesh(g_r.reshape(substrate.nb_domain_grid_pts))
         plt.colorbar()
         plt.show()
 

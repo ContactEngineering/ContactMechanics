@@ -47,7 +47,7 @@ except ImportError as err:
 # -----------------------------------------------------------------------------
 class WestergaardTest(PyCoTestCase):
     def setUp(self):
-        # system size
+        # system physical_sizes
         self.sx = 30.0
         self.sy = 1.0
         # equivalent Young's modulus

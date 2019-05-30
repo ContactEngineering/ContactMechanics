@@ -32,7 +32,6 @@ Implement the FFT-based elasticity solver of pycontact
 from collections import namedtuple
 import numpy as np
 import sys
-#from ..Tools.fftext import rfftn, irfftn
 
 
 from .Substrates import ElasticSubstrate
@@ -46,9 +45,8 @@ except:
 
 # I will never take the parallel as default because most of the tests will fail because of this
 
-
-from FFTEngine import NumpyFFTEngine
-DEFAULTENGINE = NumpyFFTEngine
+from muFFT import FFT
+from NuMPI.Tools import Reduction
 
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
@@ -64,15 +62,15 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     name = "periodic_fft_elastic_halfspace"
     _periodic = True
 
-    def __init__(self, resolution, young, size=2*np.pi, stiffness_q0=None,
-                 thickness=None, poisson=0.0, superclass=True, fftengine=None, pnp = None):
+    def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi, stiffness_q0=None,
+                 thickness=None, poisson=0.0, superclass=True, fft="serial", comm=MPI.COMM_SELF):
         """
         Keyword Arguments:
-        resolution   -- Tuple containing number of points in spatial directions.
+        nb_grid_pts   -- Tuple containing number of points in spatial directions.
                         The length of the tuple determines the spatial dimension
                         of the problem.
         young        -- Young's modulus
-        size         -- (default 2π) domain size. For multidimensional problems,
+        physical_sizes         -- (default 2π) domain physical_sizes. For multidimensional problems,
                         a tuple can be provided to specify the lenths per
                         dimension. If the tuple has less entries than dimensions,
                         the last value in repeated.
@@ -88,13 +86,16 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                         modulus.
         superclass   -- (default True) client software never uses this. Only
                         inheriting subclasses use this.
+        fft: string
+        FFT engine to use. Options are 'fftw', 'fftwmpi', 'pfft' and 'p3dfft'.
+            Default: 'fftw'.
         """
         super().__init__()
-        if not hasattr(resolution, "__iter__"):
-            resolution = (resolution, )
-        if not hasattr(size, "__iter__"):
-            size = (size, )
-        self.__dim = len(resolution)
+        if not hasattr(nb_grid_pts, "__iter__"):
+            nb_grid_pts = (nb_grid_pts, )
+        if not hasattr(physical_sizes, "__iter__"):
+            physical_sizes = (physical_sizes,)
+        self.__dim = len(nb_grid_pts)
         if self.dim not in (1, 2):
             raise self.Error(
                 ("Dimension of this problem is {}. Only 1 and 2-dimensional "
@@ -102,51 +103,35 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         if stiffness_q0 is not None and thickness is not None:
             raise self.Error("Please specify either stiffness_q0 or thickness "
                              "or neither.")
-        self.resolution = resolution
+        self.nb_grid_pts = nb_grid_pts
         tmpsize = list()
         for i in range(self.dim):
-            tmpsize.append(size[min(i, len(size)-1)])
-        self.size = tuple(tmpsize)
-        self.nb_pts = np.prod(self.resolution)
-        self.area_per_pt = np.prod(self.size)/self.nb_pts
+            tmpsize.append(physical_sizes[min(i, len(physical_sizes) - 1)])
+        self.physical_sizes = tuple(tmpsize)
+        self.nb_pts = np.prod(self.nb_grid_pts)
+        self.area_per_pt = np.prod(self.physical_sizes) / self.nb_pts
         try:
             self.steps = tuple(
                 float(size)/res for size, res in
-                zip(self.size, self.resolution))
+                zip(self.physical_sizes, self.nb_grid_pts))
         except ZeroDivisionError as err:
             raise ZeroDivisionError(
                 ("{}, when trying to handle "
                  "    self.steps = tuple("
-                 "        float(size)/res for size, res in"
-                 "        zip(self.size, self.resolution))"
-                 "Parameters: self.size = {}, self.resolution = {}"
-                 "").format(err, self.size, self.resolution))
+                 "        float(physical_sizes)/res for physical_sizes, res in"
+                 "        zip(self.physical_sizes, self.nb_grid_pts))"
+                 "Parameters: self.physical_sizes = {}, self.nb_grid_pts = {}"
+                 "").format(err, self.physical_sizes, self.nb_grid_pts))
         self.young = young
         self.poisson = poisson
         self.contact_modulus = young/(1-poisson**2)
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
 
-        if fftengine is not None:
-            self.fftengine = fftengine
-        else:
-            self.fftengine = DEFAULTENGINE(self.domain_resolution)
+        self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft, communicator=comm)
 
-        if pnp is None:
-            if self.fftengine.is_MPI:
-                from NuMPI.Tools.Reduction import Reduction
-                self.pnp = Reduction(self.fftengine.comm)
-            else:
-                self.pnp = np
-        #TODO: test the choice of parallelnumpy and FFTEngine, automatically use ParallelNuzmpy if fftengine is parallel ?
-        else:
-            self.pnp = pnp
-            #if self.fftengine.is_MPI:
-                #from NuMPI.Tools.Reduction import Reduction
-                #if isinstance(self.pnp,Reduction): raise ValueError("fftengine is parallel but you provided a computation tool ({}) different from ({})".format(self.pnp.__class__,Reduction.__))
+        self.pnp = Reduction(comm)
 
-        #self.fftengine = fftengine(self.domain_resolution)  # because when called in subclass,
-                                                            # the computational resolution isn't known already
         if superclass:
             self._compute_fourier_coeffs()
             self._compute_i_fourier_coeffs()
@@ -157,84 +142,84 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return self.__dim
 
     @property
-    def domain_resolution(self, ):
+    def nb_domain_grid_pts(self, ):
         """
-        usually, the resolution of the system is equal to the geometric
-        resolution (of the surface). For example free boundary conditions,
-        require the computational resolution to differ from the geometric one,
+        usually, the nb_grid_pts of the system is equal to the geometric
+        nb_grid_pts (of the surface). For example free boundary conditions,
+        require the computational nb_grid_pts to differ from the geometric one,
         see FreeFFTElasticHalfSpace.
         """
-        return self.resolution
+        return self.nb_grid_pts
 
     @property
-    def subdomain_resolution(self):
+    def nb_subdomain_grid_pts(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.fftengine.subdomain_resolution
+        return self.fftengine.nb_subdomain_grid_pts
 
     @property
-    def topography_subdomain_resolution(self):
-        return self.subdomain_resolution
+    def topography_nb_subdomain_grid_pts(self):
+        return self.nb_subdomain_grid_pts
 
     @property
-    def subdomain_location(self):
+    def subdomain_locations(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.fftengine.subdomain_location
+        return self.fftengine.subdomain_locations
 
     @property
-    def topography_subdomain_location(self):
-        return self.subdomain_location
+    def topography_subdomain_locations(self):
+        return self.subdomain_locations
 
     @property
-    def subdomain_slice(self):
+    def subdomain_slices(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.fftengine.subdomain_slice
+        return self.fftengine.subdomain_slices
 
     @property
-    def fourier_resolution(self):
+    def nb_fourier_grid_pts(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.fftengine.fourier_resolution
+        return self.fftengine.nb_fourier_grid_pts
 
     @property
-    def fourier_location(self):
+    def fourier_locations(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.fftengine.fourier_location
+        return self.fftengine.fourier_locations
 
     @property
-    def fourier_slice(self):
+    def fourier_slices(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.fftengine.fourier_slice
+        return self.fftengine.fourier_slices
 
 
     def __repr__(self):
         dims = 'x', 'y', 'z'
-        size_str = ', '.join('{}: {}({})'.format(dim, size, resolution) for
-                             dim, size, resolution in zip(dims, self.size,
-                                                          self.resolution))
-        return ("{0.dim}-dimensional halfspace '{0.name}', size(resolution) in"
+        size_str = ', '.join('{}: {}({})'.format(dim, size, nb_grid_pts) for
+                             dim, size, nb_grid_pts in zip(dims, self.physical_sizes,
+                                                          self.nb_grid_pts))
+        return ("{0.dim}-dimensional halfspace '{0.name}', physical_sizes(nb_grid_pts) in"
                 " {1}, E' = {0.young}").format(self, size_str)
 
     def _compute_fourier_coeffs(self):
@@ -255,31 +240,31 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             2015]
         """
         if self.dim == 1:
-            facts = np.zeros(self.fourier_resolution)
-            for index in range(self.fourier_location[0]+2, self.fourier_resolution[0]+1):
+            facts = np.zeros(self.nb_fourier_grid_pts)
+            for index in range(self.fourier_locations[0] + 2, self.nb_fourier_grid_pts[0] + 1):
                  facts[index - 1] = \
-                    self.size[0]/(self.contact_modulus*index*np.pi)
+                     self.physical_sizes[0] / (self.contact_modulus * index * np.pi)
             self.weights= facts
         elif self.dim == 2:
-            if np.prod(self.fourier_resolution )== 0:
-                self.weights = np.zeros(self.fourier_resolution)
+            if np.prod(self.nb_fourier_grid_pts )== 0:
+                self.weights = np.zeros(self.nb_fourier_grid_pts)
             else:
-                nx, ny = self.resolution
-                sx, sy = self.size
+                nx, ny = self.nb_grid_pts
+                sx, sy = self.physical_sizes
                 # Note: q-values from 0 to 1, not from 0 to 2*pi
-                qx = np.arange(self.fourier_location[0],
-                               self.fourier_location[0] +
-                               self.fourier_resolution[0], dtype=np.float64)
+                qx = np.arange(self.fourier_locations[0],
+                               self.fourier_locations[0] +
+                               self.nb_fourier_grid_pts[0], dtype=np.float64)
                 qx = np.where(qx <= nx//2, qx/sx, (nx-qx)/sx)
-                qy = np.arange(self.fourier_location[1],
-                               self.fourier_location[1] +
-                               self.fourier_resolution[1], dtype=np.float64)
+                qy = np.arange(self.fourier_locations[1],
+                               self.fourier_locations[1] +
+                               self.nb_fourier_grid_pts[1], dtype=np.float64)
                 qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
                 q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
-                if self.fourier_location == (0, 0):
+                if self.fourier_locations == (0, 0):
                     q[0, 0] = np.NaN;  # q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
                 facts = np.pi*self.contact_modulus*q
-                if self.thickness is not None: #TODO: parallel test for this case
+                if self.thickness is not None:
                     # Compute correction for finite thickness
                     q *= 2*np.pi*self.thickness
                     fac = 3 - 4*self.poisson
@@ -291,13 +276,13 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     # q-values that are converged to the infinite system expression.
                     corr[np.isnan(corr)] = 1.0
                     facts *= corr
-                    if self.fourier_location == (0, 0):
+                    if self.fourier_locations == (0, 0):
                         facts[0, 0] = self.young / self.thickness * \
                                       (1 - self.poisson) / (
                                                   (1 - 2 * self.poisson) * (
                                                       1 + self.poisson))
                 else:
-                    if self.fourier_location == (0, 0):
+                    if self.fourier_locations == (0, 0):
                         if self.stiffness_q0 is None:
                             facts[0, 0] = (facts[1, 0].real + facts[0, 1].real) / 2
                         elif self.stiffness_q0 == 0.0:
@@ -306,7 +291,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                             facts[0, 0] = self.stiffness_q0
 
                 self.weights = 1 / facts
-                if self.fourier_location == (0, 0):
+                if self.fourier_locations == (0, 0):
                     if self.stiffness_q0 == 0.0:
                         self.weights[0, 0] = 0.0
 
@@ -321,48 +306,52 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
-        if forces.shape != self.subdomain_resolution:
+        if forces.shape != self.nb_subdomain_grid_pts:
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
-                 "s resolution ({1})").format(
-                     forces.shape, self.subdomain_resolution))  # nopep8
-        return self.fftengine.irfftn(self.weights * self.fftengine.rfftn(-forces)).real / self.area_per_pt
+                 "s nb_grid_pts ({1})").format(
+                     forces.shape, self.nb_subdomain_grid_pts))  # nopep8
+        return self.fftengine.ifft(
+            self.weights * self.fftengine.fft(-forces)).real \
+            / self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_force(self, disp):
         """ Computes the force (*not* pressures) due to a given displacement array
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
         """
-        if disp.shape != self.subdomain_resolution:
+        if disp.shape != self.nb_subdomain_grid_pts:
             raise self.Error(
                 ("displacements array has a different shape ({0}) than this "
-                 "halfspace's resolution ({1})").format(
-                     disp.shape, self.subdomain_resolution))  # nopep8
-        return -self.fftengine.irfftn(self.iweights * self.fftengine.rfftn(disp)).real * self.area_per_pt
+                 "halfspace's nb_grid_pts ({1})").format(
+                     disp.shape, self.nb_subdomain_grid_pts))  # nopep8
+        return -self.fftengine.ifft(
+            self.iweights * self.fftengine.fft(disp)).real \
+            * self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
-        if forces.shape != self.subdomain_resolution:
+        if forces.shape != self.nb_subdomain_grid_pts:
             raise self.Error(
                 ("force array has a different shape ({0}) than this halfspace'"
-                 "s resolution ({1})").format(
-                     forces.shape, self.subdomain_resolution))  # nopep8
-        return self.weights * self.fftengine.rfftn(-forces)/self.area_per_pt
+                 "s nb_grid_pts ({1})").format(
+                     forces.shape, self.nb_subdomain_grid_pts))  # nopep8
+        return self.weights * self.fftengine.fft(-forces)/self.area_per_pt
 
     def evaluate_k_force(self, disp):
         """ Computes the K-space forces (*not* pressures) due to a given displacement array
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
         """
-        if disp.shape != self.subdomain_resolution:
+        if disp.shape != self.nb_subdomain_grid_pts:
             raise self.Error(
                 ("displacements array has a different shape ({0}) than this "
-                 "halfspace's resolution ({1})").format(
-                     disp.shape, self.subdomain_resolution))  # nopep8
-        return -self.iweights*self.fftengine.rfftn(disp)*self.area_per_pt
+                 "halfspace's nb_grid_pts ({1})").format(
+                     disp.shape, self.nb_subdomain_grid_pts))  # nopep8
+        return -self.iweights*self.fftengine.fft(disp)*self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
         """
@@ -398,9 +387,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         In a parallelized code kforces and kdisp contain only the slice attributed to this processor
         Parameters
         ----------
-        kforces: array of complex type and of size substrate.domain_resolution
+        kforces: array of complex type and of physical_sizes substrate.nb_domain_grid_pts
         Fourier representation (output of a 2D rfftn) of the forces acting on the grid points
-        kdisp: array of complex type and of size substrate.domain_resolution
+        kdisp: array of complex type and of physical_sizes substrate.nb_domain_grid_pts
         Fourier representation (output of a 2D rfftn) of the displacements of the grid points
 
 
@@ -421,7 +410,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # When the number of points in the last dimension is even, the last column (Nyquist Frequency) has also no symetric.
         #
         # The serial code implementation would look like this
-        # if (self.domain_resolution[-1] % 2 == 0)
+        # if (self.nb_domain_grid_pts[-1] % 2 == 0)
         #   return .5*(np.vdot(kdisp, -kforces).real +
         #           np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real # adding the data that has been omitted by rfftn
         #           # because of symetry
@@ -440,21 +429,21 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         #FIXME: why this test was done in earlier versions
         # if kdisp.shape[-1] > 0:
         if kdisp.size > 0:
-            if self.fourier_location[-1] == 0: # First column of this fourier data is first of global data
+            if self.fourier_locations[-1] == 0: # First column of this fourier data is first of global data
                 #print("First column of this fourier data is first of global data")
                 fact0 = 1
-            elif self.fourier_resolution[-1] > 1:
+            elif self.nb_fourier_grid_pts[-1] > 1:
                 # local first row is in the
                 fact0 = 2
             else:
                 fact0 = 0
 
-            if self.fourier_location[-1] == 0 and self.fourier_resolution[-1] ==1 :
+            if self.fourier_locations[-1] == 0 and self.nb_fourier_grid_pts[-1] ==1 :
                 factend = 0
-            elif (self.domain_resolution[-1] % 2 == 1):
+            elif (self.nb_domain_grid_pts[-1] % 2 == 1):
                 # odd number of points, last column have always to be symetrized
                 factend = 2
-            elif self.fourier_location[-1] + self.fourier_resolution[-1] - 1 == self.domain_resolution[-1] // 2:
+            elif self.fourier_locations[-1] + self.nb_fourier_grid_pts[-1] - 1 == self.nb_domain_grid_pts[-1] // 2:
                 # last column of the global rfftn already contains it's symetric
                 factend = 1
                 # print("last Element of the even data has to be accounted only once")
@@ -464,7 +453,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             # print("fact0={}".format(fact0))
             # print("factend={}".format(factend))
 
-            if self.fourier_resolution[-1] > 2:
+            if self.nb_fourier_grid_pts[-1] > 2:
                 factmiddle = 2
             else:
                 factmiddle = 0
@@ -473,7 +462,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                factmiddle * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
              + fact0 *   np.vdot(kdisp[...,  0], -kforces[...,  0]).real
              + factend * np.vdot(kdisp[..., -1], -kforces[..., -1]).real
-               ) / np.prod(self.domain_resolution) #nopep8
+               ) / np.prod(self.nb_domain_grid_pts) #nopep8
             # We divide by the total number of points to get the appropriate normalisation of the Fourier transform
             # (in numpy the division by # happens only at the inverse transform)
         else:
@@ -500,7 +489,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         elif pot:
             kforce = self.evaluate_k_force(disp)
             potential = self.evaluate_elastic_energy_k_space(
-                kforce, self.fftengine.rfftn(disp)) # TODO: OPTIMISATION: here kdisp is computed twice, because it's needed in kforce
+                kforce, self.fftengine.fft(disp)) # TODO: OPTIMISATION: here kdisp is computed twice, because it's needed in kforce
         return potential, force
 
 
@@ -522,52 +511,55 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     name = "free_fft_elastic_halfspace"
     _periodic = False
 
-    def __init__(self, resolution, young, size=2*np.pi,fftengine=None, pnp = None):
+    def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi, fft="serial",
+                 comm=MPI.COMM_WORLD):
         """
         Keyword Arguments:
-        resolution  -- Tuple containing number of points in spatial directions.
+        nb_grid_pts  -- Tuple containing number of points in spatial directions.
                        The length of the tuple determines the spatial dimension
                        of the problem. Warning: internally, the free boundary
                        conditions require the system so store a system of
-                       2*resolution.x by 2*resolution.y. Keep in mind that if
+                       2*nb_grid_pts.x by 2*nb_grid_pts.y. Keep in mind that if
                        your surface is nx by ny, the forces and displacements
                        will still be 2nx by 2ny.
         young       -- Equiv. Young's modulus E'
                        1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
-        size        -- (default 2π) domain size. For multidimensional problems,
+        physical_sizes        -- (default 2π) domain physical_sizes. For multidimensional problems,
                        a tuple can be provided to specify the lenths per
                        dimension. If the tuple has less entries than
                        dimensions, the last value in repeated.
         """
-        self._comp_resolution = tuple((2 * r for r in resolution))
-        super().__init__(resolution, young, size, superclass=False,fftengine=fftengine,pnp=pnp)
+        self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
+        super().__init__(nb_grid_pts, young, physical_sizes, superclass=False,
+                         fft=fft,
+                         comm=comm)
         self._compute_fourier_coeffs()
         self._compute_i_fourier_coeffs()
 
 
-    def spawn_child(self, resolution):
+    def spawn_child(self, nb_grid_pts):
         """
         returns an instance with same physical properties with a smaller
         computational grid
         """
-        size = tuple((resolution[i]/float(self.resolution[i])*self.size[i] for
-                      i in range(self.dim)))
-        return type(self)(resolution, self.young, size)
+        size = tuple((nb_grid_pts[i] / float(self.nb_grid_pts[i])
+                      * self.physical_sizes[i] for i in range(self.dim)))
+        return type(self)(nb_grid_pts, self.young, size)
 
     @property
-    def domain_resolution(self, ):
+    def nb_domain_grid_pts(self, ):
         """
-        usually, the resolution of the system is equal to the geometric
-        resolution (of the surface). For example free boundary conditions,
-        require the computational resolution to differ from the geometric one,
+        usually, the nb_grid_pts of the system is equal to the geometric
+        nb_grid_pts (of the surface). For example free boundary conditions,
+        require the computational nb_grid_pts to differ from the geometric one,
         see FreeFFTElasticHalfSpace.
         """
-        return self._comp_resolution
+        return self._comp_nb_grid_pts
 
     @property
-    def topography_subdomain_resolution(self):
-        return tuple([max(0,min(self.resolution[i] - self.subdomain_location[i],
-                                self.subdomain_resolution[i]))
+    def topography_nb_subdomain_grid_pts(self):
+        return tuple([max(0,min(self.nb_grid_pts[i] - self.subdomain_locations[i],
+                                self.nb_subdomain_grid_pts[i]))
                   for i in range(self.dim)])
 
     def _compute_fourier_coeffs2(self):
@@ -580,19 +572,19 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
            matscipy implementation
         """
         # pylint: disable=too-many-locals
-        if self.fftengine.is_MPI:
+        if self.fftengine.communicator.size>1:
             raise NotImplementedError("This implementation of the computation of the fourier coeffs is not compatible with MPI FFTEngines")
 
         if self.dim == 1:
             pass
         else:
-            x_grid = np.arange(self.resolution[0] * 2)
-            x_grid = np.where(x_grid <= self.resolution[0], x_grid,
-                              x_grid - self.resolution[0] * 2) * self.steps[0]
+            x_grid = np.arange(self.nb_grid_pts[0] * 2)
+            x_grid = np.where(x_grid <= self.nb_grid_pts[0], x_grid,
+                              x_grid - self.nb_grid_pts[0] * 2) * self.steps[0]
             x_grid.shape = (-1, 1)
-            y_grid = np.arange(self.resolution[1] * 2)
-            y_grid = np.where(y_grid <= self.resolution[1], y_grid,
-                              y_grid - self.resolution[1] * 2) * self.steps[1]
+            y_grid = np.arange(self.nb_grid_pts[1] * 2)
+            y_grid = np.where(y_grid <= self.nb_grid_pts[1], y_grid,
+                              y_grid - self.nb_grid_pts[1] * 2) * self.steps[1]
             y_grid.shape = (1, -1)
             x_p = (x_grid + self.steps[0] * .5).reshape((-1, 1))
             x_m = (x_grid - self.steps[0] * .5).reshape((-1, 1))
@@ -616,7 +608,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                  (y_p + sqrt_yp_xm)) +
                     y_m * np.log((x_m + sqrt_ym_xm) /
                                  (x_p + sqrt_ym_xp)))
-        return self.fftengine.rfftn(facts), facts
+        return self.fftengine.fft(facts), facts
 
     def _compute_fourier_coeffs(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
@@ -626,23 +618,23 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
            concern
         """
         # pylint: disable=invalid-name
-        facts = np.zeros(self.subdomain_resolution)
+        facts = np.zeros(self.nb_subdomain_grid_pts)
         a = self.steps[0]*.5
         if self.dim == 1:
             pass
         else:
             b = self.steps[1]*.5
-            x_s = np.arange(self.subdomain_location[0],
-                              self.subdomain_location[0] +
-                              self.subdomain_resolution[0])
-            x_s = np.where(x_s <= self.resolution[0], x_s,
-                             x_s-self.resolution[0] * 2) * self.steps[0]
+            x_s = np.arange(self.subdomain_locations[0],
+                              self.subdomain_locations[0] +
+                              self.nb_subdomain_grid_pts[0])
+            x_s = np.where(x_s <= self.nb_grid_pts[0], x_s,
+                             x_s-self.nb_grid_pts[0] * 2) * self.steps[0]
             x_s.shape = (-1, 1)
-            y_s = np.arange(self.subdomain_location[1],
-                              self.subdomain_location[1] +
-                              self.subdomain_resolution[1])
-            y_s = np.where(y_s <= self.resolution[1], y_s,
-                             y_s-self.resolution[1]*2) * self.steps[1]
+            y_s = np.arange(self.subdomain_locations[1],
+                              self.subdomain_locations[1] +
+                              self.nb_subdomain_grid_pts[1])
+            y_s = np.where(y_s <= self.nb_grid_pts[1], y_s,
+                             y_s-self.nb_grid_pts[1]*2) * self.steps[1]
             y_s.shape = (1, -1)
             facts = 1/(np.pi*self.young) * (
                   (x_s+a)*np.log(((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
@@ -661,7 +653,10 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                                   (x_s-a)*(x_s-a))) /
                                  ((x_s+a)+np.sqrt((y_s-b)*(y_s-b) +
                                                   (x_s+a)*(x_s+a)))))
-            self.weights = self.fftengine.rfftn(facts)
+            self.weights = self.fftengine.fft(facts).copy()
+            # copy is needed because the output of fftengine.fft is only a view
+            # on the outputarray, that means it will be overwritten during the
+            # next fft
             return self.weights, facts
 
     def evaluate_disp(self, forces):
@@ -674,29 +669,29 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         if running in serial one can give the force array with or without the padded region
 
         """
-        if forces.shape == self.subdomain_resolution:
+        if forces.shape == self.nb_subdomain_grid_pts:
             return super().evaluate_disp(forces)
 
-        elif not self.fftengine.is_MPI:
-            if forces.shape == self.resolution:
+        elif self.nb_subdomain_grid_pts == self.nb_domain_grid_pts:
+            if forces.shape == self.nb_grid_pts:
                 # Automatically pad forces if force array is half of subdomain
-                # resolution
-                padded_forces = np.zeros(self.domain_resolution)
+                # nb_grid_pts
+                padded_forces = np.zeros(self.nb_domain_grid_pts)
                 s = [slice(0, forces.shape[i])
                      for i in range(len(forces.shape))]
                 padded_forces[s] = forces
                 return super().evaluate_disp(padded_forces)[s]
         else:
-            raise self.Error("forces should be of subdomain resolution when using MPI")
+            raise self.Error("forces should be of subdomain nb_grid_pts when using MPI")
 
         raise self.Error("force array has a different shape ({0}) "
-                         "than the subdomain resolution ({1}), this halfspace's resolution ({2}) or "
-                         "half of it.".format(forces.shape,self.subdomain_resolution,
-                                             self.domain_resolution))
+                         "than the subdomain nb_grid_pts ({1}), this halfspace's nb_grid_pts ({2}) or "
+                         "half of it.".format(forces.shape,self.nb_subdomain_grid_pts,
+                                             self.nb_domain_grid_pts))
 
         # possible implementation in parallel with adding gather
-        #padded_forces = np.zeros(self.domain_resolution)
-        #s = [slice(0, max(0, min(self.resolution[i] - self.subdomain_location[i], self.subdomain_resolution[i])))
+        #padded_forces = np.zeros(self.nb_domain_grid_pts)
+        #s = [slice(0, max(0, min(self.nb_grid_pts[i] - self.subdomain_locations[i], self.nb_subdomain_grid_pts[i])))
         #     for i in range(self.dim)]
         #padded_forces[s] = forces
         #return super().evaluate_disp(padded_forces)[s]
@@ -706,7 +701,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """
         called when the forces overlap into the padding region
         (i.e. the outer ring of the force array equals zero),
-        needing an increase of the resolution
+        needing an increase of the nb_grid_pts
         """
         def __init__(self, message):
             super().__init__(message)
@@ -736,18 +731,18 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 def check_vals(vals):
                     return (vals == 0.).all()
 
-            if self.subdomain_location[1]==0:
+            if self.subdomain_locations[1]==0:
                 is_ok &= check_vals(force[:,0])
 
-            maxiy = self.resolution[1] - 1 - self.topography_subdomain_location[1]
-            if 0 < maxiy < self.topography_subdomain_resolution[1]:
+            maxiy = self.nb_grid_pts[1] - 1 - self.topography_subdomain_locations[1]
+            if 0 < maxiy < self.topography_nb_subdomain_grid_pts[1]:
                 is_ok &= check_vals(force[:, maxiy])
 
-            if self.subdomain_location[0] == 0:
+            if self.subdomain_locations[0] == 0:
                 is_ok &= check_vals(force[0, :])
 
-            maxix = self.resolution[0] - 1 - self.topography_subdomain_location[0]
-            if 0 < maxix < self.topography_subdomain_resolution[0]:
+            maxix = self.nb_grid_pts[0] - 1 - self.topography_subdomain_locations[0]
+            if 0 < maxix < self.topography_nb_subdomain_grid_pts[0]:
                 is_ok &= check_vals(force[maxix, :])
 
         is_ok = self.pnp.all(is_ok)
@@ -755,7 +750,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         if not is_ok:
             raise self.FreeBoundaryError("forces not zero at the boundary of the "
                                          "active domain, "
-                                         "increase the size of your domain")
+                                         "increase the physical_sizes of your domain")
 
     def check(self, force=None):
         """

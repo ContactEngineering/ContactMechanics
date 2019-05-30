@@ -26,6 +26,7 @@ import pytest
 import os
 
 from runtests.mpi import MPITestFixture
+from muFFT import FFT
 
 @pytest.fixture(scope="session")
 def file_format_examples():
@@ -43,15 +44,13 @@ from NuMPI import MPI
 maxcomm= MPITestFixture([MPI.COMM_WORLD.Get_size()], scope="session")
 
 @pytest.fixture(scope="session")
-def fftengine_class(comm):
+def fftengine_type(comm):
     try:
-        from FFTEngine import PFFTEngine as engine
-    except Exception as err:
+        fftname="mpi"
+        engine = FFT((2*comm.Get_size(), 3*comm.Get_size()), fft="mpi", communicator=comm)
+    except:
         if comm.Get_size() == 1:
-            try:
-                from FFTEngine import FFTWEngine as engine
-            except:
-                from FFTEngine import NumpyFFTEngine as engine
+            fftname = "fftw"
         else:
-            raise err
-    return engine
+            raise ValueError("No appropriate fft library detected")
+    return fftname

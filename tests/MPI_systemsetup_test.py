@@ -54,7 +54,7 @@ DATADIR = os.path.dirname(os.path.realpath(__file__))
 
 @pytest.mark.parametrize("HS", [PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace])
 @pytest.mark.parametrize("loader", [open_topography, NPYReader])
-def test_LoadTopoFromFile(comm, fftengine_class,  HS, loader):
+def test_LoadTopoFromFile(comm, fftengine_type, HS, loader):
 
     fn = DATADIR + "/worflowtest.npy"
     res = (128, 64)
@@ -73,30 +73,30 @@ def test_LoadTopoFromFile(comm, fftengine_class,  HS, loader):
 
     #pdb.set_trace()
 
-    assert fileReader.resolution == res
+    assert fileReader.nb_grid_pts == res
 
     # create a substrate according to the topography
-    fftengine = fftengine_class(fileReader.resolution, comm = comm)
+    fftengine = fftengine_type(fileReader.nb_grid_pts, comm = comm)
     Es = 1
-    if fileReader.size is not None:
-        substrate = HS(resolution=fileReader.resolution, size=fileReader.size, young=Es, fftengine=fftengine )
+    if fileReader.physical_sizes is not None:
+        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts, size=fileReader.physical_sizes, young=Es, fftengine=fftengine)
     else:
-        substrate = HS(resolution=fileReader.resolution,size=fileReader.resolution, young = Es, fftengine=fftengine )
+        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,size=fileReader.nb_grid_pts, young = Es, fftengine=fftengine )
 
     top = fileReader.topography(substrate)
 
-    assert top.resolution == substrate.resolution
-    assert top.subdomain_resolution == substrate.topography_subdomain_resolution
-          # or top.subdomain_resolution == (0,0) # for FreeFFTElHS
-    assert top.subdomain_location == substrate.topography_subdomain_location
+    assert top.nb_grid_pts == substrate.nb_grid_pts
+    assert top.nb_subdomain_grid_pts == substrate.topography_nb_subdomain_grid_pts
+          # or top.nb_subdomain_grid_pts == (0,0) # for FreeFFTElHS
+    assert top.subdomain_locations == substrate.topography_subdomain_locations
 
-    np.testing.assert_array_equal(top.heights(),data[top.subdomain_slice])
+    np.testing.assert_array_equal(top.heights(),data[top.subdomain_slices])
 
     # test that the slicing is what is expected
 
-    fulldomain_field = np.arange(np.prod(substrate.domain_resolution)).reshape(substrate.domain_resolution)
+    fulldomain_field = np.arange(np.prod(substrate.nb_domain_grid_pts)).reshape(substrate.nb_domain_grid_pts)
 
-    np.testing.assert_array_equal(fulldomain_field[top.subdomain_slice],fulldomain_field[tuple([slice(substrate.subdomain_location[i],substrate.subdomain_location[i]+max(0,min(substrate.resolution[i] - substrate.subdomain_location[i],substrate.subdomain_resolution[i]))) for i in range(substrate.dim)])])
+    np.testing.assert_array_equal(fulldomain_field[top.subdomain_slices],fulldomain_field[tuple([slice(substrate.subdomain_locations[i],substrate.subdomain_locations[i]+max(0,min(substrate.nb_grid_pts[i] - substrate.subdomain_locations[i],substrate.nb_subdomain_grid_pts[i]))) for i in range(substrate.dim)])])
 
     # Test Computation of the rms_height
     # Sq

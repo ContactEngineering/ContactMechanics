@@ -46,24 +46,26 @@ def pnp(comm):
 
 @pytest.fixture
 def basenpoints(comm):
-    return (comm.Get_size() -1)* 4 # Base number of points in order to avoid empty subdomains when using a lot of processors
+    return (comm.Get_size() -1)* 8
+    # Base number of points in order to avoid
+    # empty subdomains when using a lot of processors
 
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
-def test_resolutions(comm, pnp, fftengine_class, nx,ny, basenpoints):
+def test_nb_grid_ptss(comm, pnp, fftengine_type, nx, ny, basenpoints):
     nx += basenpoints
     ny += basenpoints
     sx, sy = 100, 200
     E_s = 3
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
-    assert substrate.resolution == (nx, ny)
-    assert substrate.domain_resolution == (2 * nx, 2 * ny)
-    assert pnp.sum(np.array(np.prod(substrate.subdomain_resolution))) == 4 * nx * ny
+                                        fft=fftengine_type, comm=comm)
+    assert substrate.nb_grid_pts == (nx, ny)
+    assert substrate.nb_domain_grid_pts == (2 * nx, 2 * ny)
+    assert pnp.sum(np.array(np.prod(substrate.nb_subdomain_grid_pts))) == 4 * nx * ny
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
-def test_weights(comm, pnp, fftengine_class,nx,ny, basenpoints):
+def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints):
     """
     Compare with the old serial Implementation
     """
@@ -79,19 +81,19 @@ def test_weights(comm, pnp, fftengine_class,nx,ny, basenpoints):
            concern
         """
         # pylint: disable=invalid-name
-        facts = np.zeros(tuple((res * 2 for res in hs.resolution)))
+        facts = np.zeros(tuple((res * 2 for res in hs.nb_grid_pts)))
         a = hs.steps[0] * .5
         if hs.dim == 1:
             pass
         else:
             b = hs.steps[1] * .5
-            x_s = np.arange(hs.resolution[0] * 2)
-            x_s = np.where(x_s <= hs.resolution[0], x_s,
-                           x_s - hs.resolution[0] * 2) * hs.steps[0]
+            x_s = np.arange(hs.nb_grid_pts[0] * 2)
+            x_s = np.where(x_s <= hs.nb_grid_pts[0], x_s,
+                           x_s - hs.nb_grid_pts[0] * 2) * hs.steps[0]
             x_s.shape = (-1, 1)
-            y_s = np.arange(hs.resolution[1] * 2)
-            y_s = np.where(y_s <= hs.resolution[1], y_s,
-                           y_s - hs.resolution[1] * 2) * hs.steps[1]
+            y_s = np.arange(hs.nb_grid_pts[1] * 2)
+            y_s = np.where(y_s <= hs.nb_grid_pts[1], y_s,
+                           y_s - hs.nb_grid_pts[1] * 2) * hs.steps[1]
             y_s.shape = (1, -1)
             facts = 1 / (np.pi * hs.young) * (
                     (x_s + a) * np.log(((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
@@ -117,16 +119,16 @@ def test_weights(comm, pnp, fftengine_class,nx,ny, basenpoints):
 
     ref_weights, ref_facts = _compute_fourier_coeffs_serial_impl(
         FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                fftengine=NumpyFFTEngine((2 * nx, 2 * ny), comm)))
+                                fft="serial"))
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
+                                        fft=fftengine_type, comm=comm)
     local_weights, local_facts = substrate._compute_fourier_coeffs()
-    np.testing.assert_allclose(local_weights, ref_weights[substrate.fourier_slice], 1e-12)
-    np.testing.assert_allclose(local_facts, ref_facts[substrate.subdomain_slice], 1e-12)
+    np.testing.assert_allclose(local_weights, ref_weights[substrate.fourier_slices], 1e-12)
+    np.testing.assert_allclose(local_facts, ref_facts[substrate.subdomain_slices], 1e-12)
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
-def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basenpoints):
+def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_type, nx, ny, basenpoints):
     nx += basenpoints
     ny += basenpoints
 
@@ -161,7 +163,7 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basen
 
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
+                                        fft=fftengine_type, comm=comm)
 
     if comm.Get_size() > 1:
         with pytest.raises(FreeFFTElasticHalfSpace.Error):
@@ -169,16 +171,16 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basen
         with pytest.raises(FreeFFTElasticHalfSpace.Error):
             substrate.evaluate_disp(forces[nx, ny])
 
-    # print(forces[substrate.subdomain_slice])
-    computed_disp = substrate.evaluate_disp(forces[substrate.subdomain_slice])
+    # print(forces[substrate.subdomain_slices])
+    computed_disp = substrate.evaluate_disp(forces[substrate.subdomain_slices])
     # print(computed_disp)
     # make the comparison only on the nonpadded domain
-    s_c = tuple([slice(1, max(0, min(substrate.resolution[i] - 1 - substrate.subdomain_location[i],
-                                     substrate.subdomain_resolution[i])))
+    s_c = tuple([slice(1, max(0, min(substrate.nb_grid_pts[i] - 1 - substrate.subdomain_locations[i],
+                                     substrate.nb_subdomain_grid_pts[i])))
                  for i in range(substrate.dim)])
 
-    s_refdisp = tuple([slice(s_c[i].start + substrate.subdomain_location[i],
-                             s_c[i].stop + substrate.subdomain_location[i]) for i in range(substrate.dim)])
+    s_refdisp = tuple([slice(s_c[i].start + substrate.subdomain_locations[i],
+                             s_c[i].stop + substrate.subdomain_locations[i]) for i in range(substrate.dim)])
     # print(s_c)
     # print(s_refdisp)
     np.testing.assert_allclose(computed_disp[s_c], refdisp[s_refdisp])
@@ -191,7 +193,7 @@ if __name__ in ['__main__', 'builtins']:
     for fftengine_class in fftengineList:
         for res in [(64, 32), (65, 33)]:
             print("Testing Resolution {}".format(res))
-            test_resolutions(comm, pnp, fftengine_class, *res,0)
+            test_nb_grid_ptss(comm, pnp, fftengine_class, *res,0)
             print("test weights")
             test_weights(comm, pnp, fftengine_class, *res,0 )
             print("test evaluate_distest evaluate_disp")

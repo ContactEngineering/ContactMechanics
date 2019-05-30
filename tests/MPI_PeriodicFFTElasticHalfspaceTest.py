@@ -48,28 +48,30 @@ def pnp(comm):
 
 @pytest.fixture
 def basenpoints(comm):
-    return (comm.Get_size()-1) * 4 # Base number of points in order to avoid empty subdomains when using a lot of processors
+    return (comm.Get_size()-1) * 8
+    # Base number of points in order to avoid empty subdomains
+    # when using a lot of processors
 
 
 @pytest.mark.skip("just an alternative implementation of test_weights")
-def test_weights_gather(comm,pnp, fftengine_class, nx, ny, basenpoints):
+def test_weights_gather(comm, pnp, fftengine_type, nx, ny, basenpoints):
     """
     compares the MPI-Implemtation of the halfspace with the serial one
     """
-    nx+=basenpoints
-    ny+=basenpoints
+    nx += basenpoints
+    ny += basenpoints
     sx = 30.0
     sy = 1.0
     # equivalent Young's modulus
     E_s = 1.0
-    substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                            fftengine=fftengine_class((nx, ny), comm), pnp=pnp)
-    fourres = (substrate.domain_resolution[0], substrate.domain_resolution[1] // 2 + 1)
-    weights = gather(substrate.weights, substrate.fourier_slice, fourres, comm, root=0)
-    iweights = gather(substrate.iweights, substrate.fourier_slice, fourres, comm, root=0)
+    substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy), fft=fftengine_type,
+                                            comm=comm)
+    fourres = (substrate.nb_domain_grid_pts[0], substrate.nb_domain_grid_pts[1] // 2 + 1)
+    weights = gather(substrate.weights, substrate.fourier_slices, fourres, comm, root=0)
+    iweights = gather(substrate.iweights, substrate.fourier_slices, fourres, comm, root=0)
     if comm.Get_rank() == 0:
         reference = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                                fftengine=DEFAULTFFTENGINE((nx, ny), comm=comm))
+                                                comm=MPI.COMM_SELF)
         np.testing.assert_allclose(reference.weights, weights, rtol=0, atol=1e-16,
                                    err_msg="weights are different after gather")
         np.testing.assert_allclose(reference.iweights, iweights, rtol=0, atol=1e-16,
@@ -78,7 +80,7 @@ def test_weights_gather(comm,pnp, fftengine_class, nx, ny, basenpoints):
 @pytest.mark.parametrize("nx, ny", [(64, 33),
                                     (65,32),
                                     (64,64)])
-def test_weights(comm,pnp, fftengine_class, nx, ny, basenpoints): # TODO: merge the serial test of the weights into this
+def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints): # TODO: merge the serial test of the weights into this
     """
         compares the MPI-Implemtation of the halfspace with the serial one
     """
@@ -90,19 +92,21 @@ def test_weights(comm,pnp, fftengine_class, nx, ny, basenpoints): # TODO: merge 
     E_s = 1.0
 
     substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                            fftengine=fftengine_class((nx, ny), comm), pnp=pnp)
+                                            fft=fftengine_type, comm=comm)
     reference = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                            fftengine=DEFAULTFFTENGINE((nx, ny), comm=comm))
-    np.testing.assert_allclose(reference.weights[substrate.fourier_slice], substrate.weights, rtol=0, atol=1e-16,
+                                            fft="fftw", comm=MPI.COMM_SELF)
+    np.testing.assert_allclose(reference.weights[substrate.fourier_slices],
+                               substrate.weights, rtol=0, atol=1e-16,
                                err_msg="weights are different")
-    np.testing.assert_allclose(reference.iweights[substrate.fourier_slice], substrate.iweights, rtol=0, atol=1e-16,
+    np.testing.assert_allclose(reference.iweights[substrate.fourier_slices],
+                               substrate.iweights, rtol=0, atol=1e-16,
                                err_msg="iweights are different")
 
 @pytest.mark.parametrize("nx, ny", [(8, 15),
                                     (8,4),
                                     (9,4),
                                     (113,765)])
-def test_sineWave_disp(comm,pnp, fftengine_class, nx, ny, basenpoints):
+def test_sineWave_disp(comm, pnp, fftengine_type, nx, ny, basenpoints):
     """
     for given sinusoidal displacements, compares the pressures and the energies
     to the analytical solutions
@@ -152,9 +156,9 @@ def test_sineWave_disp(comm,pnp, fftengine_class, nx, ny, basenpoints):
         #    fftengine=NumpyFFTEngine((nx,ny))).evaluate_force(disp) / (sx*sy / (nx*ny)))
 
         substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                                     fftengine=fftengine_class((nx, ny), comm), pnp=pnp)
+                                                fft=fftengine_type, comm=comm)
 
-        kpressure = substrate.evaluate_k_force(disp[substrate.subdomain_slice]) / substrate.area_per_pt / (nx*ny)
+        kpressure = substrate.evaluate_k_force(disp[substrate.subdomain_slices]) / substrate.area_per_pt / (nx*ny)
         expected_k_disp = np.zeros((nx, ny//2 + 1), dtype=complex)
         expected_k_disp[k[0], k[1]] += .5 - .5j
 
@@ -164,35 +168,35 @@ def test_sineWave_disp(comm,pnp, fftengine_class, nx, ny, basenpoints):
         if k[1] == ny//2 and ny%2 == 0 :
             expected_k_disp[-k[0], k[1]] += .5 + .5j
 
-        np.testing.assert_allclose(substrate.fftengine.rfftn(disp[substrate.subdomain_slice]) / (nx*ny),
-                                   expected_k_disp[substrate.fourier_slice], rtol=1e-7, atol=1e-10)
+        np.testing.assert_allclose(substrate.fftengine.fft(disp[substrate.subdomain_slices]) / (nx*ny),
+                                   expected_k_disp[substrate.fourier_slices], rtol=1e-7, atol=1e-10)
 
         expected_k_pressure = - E_s / 2 * q * expected_k_disp
-        np.testing.assert_allclose(kpressure, expected_k_pressure[substrate.fourier_slice], rtol=1e-7, atol=1e-10)
+        np.testing.assert_allclose(kpressure, expected_k_pressure[substrate.fourier_slices], rtol=1e-7, atol=1e-10)
 
-        computedpressure = substrate.evaluate_force(disp[substrate.subdomain_slice]) / substrate.area_per_pt
-        np.testing.assert_allclose(computedpressure, refpressure[substrate.subdomain_slice], atol=1e-10, rtol=1e-7)
+        computedpressure = substrate.evaluate_force(disp[substrate.subdomain_slices]) / substrate.area_per_pt
+        np.testing.assert_allclose(computedpressure, refpressure[substrate.subdomain_slices], atol=1e-10, rtol=1e-7)
 
-        computedenergy_kspace = substrate.evaluate(disp[substrate.subdomain_slice], pot=True, forces=False)[0]
-        computedenergy = substrate.evaluate(disp[substrate.subdomain_slice], pot=True, forces=True)[0]
+        computedenergy_kspace = substrate.evaluate(disp[substrate.subdomain_slices], pot=True, forces=False)[0]
+        computedenergy = substrate.evaluate(disp[substrate.subdomain_slices], pot=True, forces=True)[0]
         refenergy = E_s / 8 * 2 * q * sx * sy
 
-        #print(substrate.domain_resolution[-1] % 2)
-        #print(substrate.fourier_resolution)
-        #print(substrate.fourier_location[-1] + substrate.fourier_resolution[-1] - 1)
-        #print(substrate.domain_resolution[-1] // 2 )
+        #print(substrate.nb_domain_grid_pts[-1] % 2)
+        #print(substrate.nb_fourier_grid_pts)
+        #print(substrate.fourier_locations[-1] + substrate.nb_fourier_grid_pts[-1] - 1)
+        #print(substrate.nb_domain_grid_pts[-1] // 2 )
         #print(computedenergy)
         #print(computedenergy_kspace)
         #print(refenergy)
         np.testing.assert_allclose(computedenergy, refenergy, rtol=1e-10,
-                                   err_msg="wavevektor {} for domain_resolution {}, subdomain resolution {}, fourier_resolution {}".format(k, substrate.domain_resolution, substrate.subdomain_resolution, substrate.fourier_resolution))
+                                   err_msg="wavevektor {} for nb_domain_grid_pts {}, subdomain nb_grid_pts {}, nb_fourier_grid_pts {}".format(k, substrate.nb_domain_grid_pts, substrate.nb_subdomain_grid_pts, substrate.nb_fourier_grid_pts))
         np.testing.assert_allclose(computedenergy_kspace, refenergy, rtol=1e-10,
-                                   err_msg="wavevektor {} for domain_resolution {}, subdomain resolution {}, fourier_resolution {}".format(k, substrate.domain_resolution, substrate.subdomain_resolution, substrate.fourier_resolution))
+                                   err_msg="wavevektor {} for nb_domain_grid_pts {}, subdomain nb_grid_pts {}, nb_fourier_grid_pts {}".format(k, substrate.nb_domain_grid_pts, substrate.nb_subdomain_grid_pts, substrate.nb_fourier_grid_pts))
 
 @pytest.mark.parametrize("nx, ny", [(8, 8),
                                     (17,128),
                                     (3,128)])
-def test_sineWave_disp_rotation_invariance(comm,pnp, fftengine_class, nx, ny, basenpoints):
+def test_sineWave_disp_rotation_invariance(comm, pnp, fftengine_type, nx, ny, basenpoints):
     """
     for a sinusoidal displacement, tests if the energy depends on if the wave is
     oriented in x or y direction
@@ -234,10 +238,10 @@ def test_sineWave_disp_rotation_invariance(comm,pnp, fftengine_class, nx, ny, ba
         #    fftengine=NumpyFFTEngine((nx,ny))).evaluate_force(disp) / (sx*sy / (nx*ny)))
 
         substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                                     fftengine=fftengine_class((nx, ny), comm), pnp=pnp)
+                                                fft=fftengine_type, comm=comm)
 
-        computedenergies_kspace +=[substrate.evaluate(disp[substrate.subdomain_slice], pot=True, forces=False)[0]]
-        computedenergies += [substrate.evaluate(disp[substrate.subdomain_slice], pot=True, forces=True)[0]]
+        computedenergies_kspace +=[substrate.evaluate(disp[substrate.subdomain_slices], pot=True, forces=False)[0]]
+        computedenergies += [substrate.evaluate(disp[substrate.subdomain_slices], pot=True, forces=True)[0]]
 
         refenergy = E_s / 8 * 1 * q * sx * sy
 
@@ -248,7 +252,7 @@ def test_sineWave_disp_rotation_invariance(comm,pnp, fftengine_class, nx, ny, ba
 @pytest.mark.parametrize("nx, ny", [(64, 33),
                                     (65,32),
                                     (64,64)])
-def test_sineWave_force(comm,pnp, fftengine_class,nx, ny, basenpoints):
+def test_sineWave_force(comm, pnp, fftengine_type, nx, ny, basenpoints):
     """
     for  a given sinusoidal force, compares displacement with a reference solution
     Parameters
@@ -284,11 +288,11 @@ def test_sineWave_force(comm,pnp, fftengine_class,nx, ny, basenpoints):
     # refpressure = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy), fftengine=NumpyFFTEngine).evaluate_force(p)
 
     substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                            fftengine=fftengine_class((nx, ny), comm), pnp=pnp)
-    computeddisp = substrate.evaluate_disp(p[substrate.subdomain_slice] * substrate.area_per_pt)
-    np.testing.assert_allclose(computeddisp, refdisp[substrate.subdomain_slice], atol=1e-7, rtol=1e-10)
+                                            fft=fftengine_type,comm=comm)
+    computeddisp = substrate.evaluate_disp(p[substrate.subdomain_slices] * substrate.area_per_pt)
+    np.testing.assert_allclose(computeddisp, refdisp[substrate.subdomain_slices], atol=1e-7, rtol=1e-10)
 
-    # computedenergy = substrate.evaluate(p[substrate.subdomain_slice]*substrate.area_per_pt)
+    # computedenergy = substrate.evaluate(p[substrate.subdomain_slices]*substrate.area_per_pt)
 
     # refenergy = sx * sy/(2 * q * E_s) * 1
     # np.testing.assert_allclose(computedenergy,refenergy,rtol = 1e-4)
@@ -309,7 +313,7 @@ def test_sineWave_force(comm,pnp, fftengine_class,nx, ny, basenpoints):
 @pytest.mark.parametrize("nx, ny", [(64, 33),
                                     (65,32),
                                     (64,64)])
-def test_multipleSineWaves_evaluate(comm,pnp, fftengine_class,nx, ny, basenpoints):
+def test_multipleSineWaves_evaluate(comm, pnp, fftengine_type, nx, ny, basenpoints):
     """
     displacements: superposition of sinwaves, compares forces and energes with
     analytical solution
@@ -371,10 +375,11 @@ def test_multipleSineWaves_evaluate(comm,pnp, fftengine_class,nx, ny, basenpoint
     refForce *= -sx * sy / (nx * ny)
 
     substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                            fftengine=fftengine_class((nx, ny), comm), pnp=pnp)
-    computed_E_k_space = substrate.evaluate(disp[substrate.subdomain_slice], pot=True, forces=False)[0]
+                                            fft=fftengine_type, comm=comm)
+    computed_E_k_space = substrate.evaluate(disp[substrate.subdomain_slices],
+                                            pot=True, forces=False)[0]
     # If force is not queried this computes the energy using kspace
-    computed_E_realspace, computed_force = substrate.evaluate(disp[substrate.subdomain_slice], pot=True,
+    computed_E_realspace, computed_force = substrate.evaluate(disp[substrate.subdomain_slices], pot=True,
                                                               forces=True)
 
     # print("{}: Local: E_kspace: {}, E_realspace: {}".format(substrate.fftengine.comm.Get_rank(),computed_E_k_space,computed_E_realspace))
@@ -398,7 +403,7 @@ def test_multipleSineWaves_evaluate(comm,pnp, fftengine_class,nx, ny, basenpoint
 
     np.testing.assert_almost_equal(computed_E_k_space, refEnergy)
     np.testing.assert_almost_equal(computed_E_realspace, refEnergy)
-    np.testing.assert_allclose(computed_force, refForce[substrate.subdomain_slice], atol=1e-7, rtol=1e-10)
+    np.testing.assert_allclose(computed_force, refForce[substrate.subdomain_slices], atol=1e-7, rtol=1e-10)
 
 
 if __name__ in ['__main__', 'builtins']:
@@ -426,7 +431,7 @@ if __name__ in ['__main__', 'builtins']:
 
         print("Testing Free FFTElastic Halfspace computation")
         for res in [(64, 32), (65, 33)]:
-            print("testing resolution {}".format(res))
+            print("testing nb_grid_pts {}".format(res))
             test_sineWave_disp(comm, pnp, fftengine_class, *res, basenpoints)
             test_sineWave_force(comm, pnp, fftengine_class, *res, basenpoints)
             test_multipleSineWaves_evaluate(comm, pnp, fftengine_class, *res, basenpoints)

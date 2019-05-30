@@ -86,32 +86,28 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         True if iteration stopped due to convergence criterion.
     """
 
-    if substrate.fftengine.is_MPI:
-        from NuMPI.Tools.Reduction import Reduction
-        pnp = Reduction(comm = substrate.fftengine.comm)
-
+    if substrate.nb_subdomain_grid_pts != substrate.nb_domain_grid_pts:
         # check that a topography instance is provided and not only a numpy array
-        if not hasattr(topography, "resolution"): raise ValueError(
+        if not hasattr(topography, "nb_grid_pts"): raise ValueError(
             "You should provide a topography object when working with MPI")
         #print("Parallel fftengine")
-    else:
-        pnp=np
+    pnp= substrate.pnp
 
     # surface is the array holding the data assigned to the processsor
-    if not hasattr(topography, "resolution"):
+    if not hasattr(topography, "nb_grid_pts"):
         surface = topography
-        topography = Topography(surface, size=substrate.size)
+        topography = Topography(surface, size=substrate.physical_sizes)
     else :
         surface = topography.heights()  # Local data
 
     # Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays
 
-    nb_surface_pts = np.prod(topography.resolution)
+    nb_surface_pts = np.prod(topography.nb_grid_pts)
     if pentol is None:
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = topography.rms_height() / (10 * np.mean(topography.resolution))
+        pentol = topography.rms_height() / (10 * np.mean(topography.nb_grid_pts))
         # If pentol is zero, then this is a flat surface. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
@@ -136,14 +132,14 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         offset = 0
 
     if disp0 is None:
-        u_r = np.zeros(substrate.subdomain_resolution)
+        u_r = np.zeros(substrate.nb_subdomain_grid_pts)
     else:
         u_r = disp0.copy()
 
     # slice of the local data of the computation subdomain corresponding to the topography subdomain.
     # It's typically the first half of the computation subdomain (along the non-parallelized dimension) for FreeFFTElHS
     # It's the same for PeriodicFFTElHS
-    comp_slice = [slice(0,max(0,min(substrate.resolution[i] - substrate.subdomain_location[i],substrate.subdomain_resolution[i])))
+    comp_slice = [slice(0, max(0, min(substrate.nb_grid_pts[i] - substrate.subdomain_locations[i], substrate.nb_subdomain_grid_pts[i])))
                   for i in range(substrate.dim)]
     if substrate.dim not in (1, 2):
         raise Exception(
@@ -151,12 +147,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
              "or 2 dimensions (Your substrate has {}.).").format(
                  substrate.dim))
 
-    comp_mask = np.zeros(substrate.subdomain_resolution, dtype=bool)
+    comp_mask = np.zeros(substrate.nb_subdomain_grid_pts, dtype=bool)
     comp_mask[tuple(comp_slice)] = True
 
     surf_mask = np.ma.getmask(surface)
     if surf_mask is np.ma.nomask:
-        surf_mask = np.ones(topography.subdomain_resolution, dtype=bool)
+        surf_mask = np.ones(topography.nb_subdomain_grid_pts, dtype=bool)
     else:
         comp_mask[tuple(comp_slice)][surf_mask] = False
         surf_mask = np.logical_not(surf_mask)

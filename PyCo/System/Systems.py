@@ -74,8 +74,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
         #TODO: assert that the interaction pnp is the same
 
-        self.comp_slice = tuple([slice(0, max(0, min(substrate.resolution[i] - substrate.subdomain_location[i],
-                                          substrate.subdomain_resolution[i])))
+        self.comp_slice = tuple([slice(0, max(0, min(substrate.nb_grid_pts[i] - substrate.subdomain_locations[i],
+                                                     substrate.nb_subdomain_grid_pts[i])))
                       for i in range(substrate.dim)])# For FreeElasticHalfspace: slice of the subdomain that is not in the padding area
 
 
@@ -104,8 +104,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         return cls._proxyclass
 
     @property
-    def resolution(self):
-        "For systems, resolution can become non-trivial"
+    def nb_grid_pts(self):
+        "For systems, nb_grid_pts can become non-trivial"
         # pylint: disable=no-self-use
         return None
 
@@ -158,12 +158,12 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         Aᵣ = ──
              A₀
         """
-        return self.compute_contact_area()/np.prod(self.substrate.size)
+        return self.compute_contact_area()/np.prod(self.substrate.physical_sizes)
 
     def shape_minimisation_input(self, in_array):
         """
         For minimisation of smart systems, the initial guess array (e.g.
-        displacement) may have a non-intuitive shape and size (The problem size
+        displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes
         may be decreased, as for free, non-periodic systems, or increased as
         with augmented-lagrangian-type issues). Use the output of this function
         as argument x0 for scipy minimisation functions. Also, if you initial
@@ -174,14 +174,14 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         in_array -- array with the initial guess. has the intuitive shape you
                     think it has
         """
-        if np.prod(self.substrate.subdomain_resolution) == in_array.size:
+        if np.prod(self.substrate.nb_subdomain_grid_pts) == in_array.size:
             return in_array.reshape(-1)
         raise IncompatibleResolutionError()
 
     def shape_minimisation_output(self, in_array):
         """
         For minimisation of smart systems, the output array (e.g.
-        displacement) may have a non-intuitive shape and size (The problem size
+        displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes
         may be decreased, as for free, non-periodic systems, or increased as
         with augmented-lagrangian-type issues). Use  this function
         to get the array shape you expect to have
@@ -190,8 +190,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         in_array -- array with the initial guess. has the intuitive shape you
                     think it has
         """
-        if np.prod(self.substrate.subdomain_resolution) == in_array.size:
-            return in_array.reshape(self.substrate.subdomain_resolution)
+        if np.prod(self.substrate.nb_subdomain_grid_pts) == in_array.size:
+            return in_array.reshape(self.substrate.nb_subdomain_grid_pts)
         raise IncompatibleResolutionError()
 
     def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
@@ -229,7 +229,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
                              logger=logger)
         if disp0 is None:
-            disp0 = np.zeros(self.substrate.subdomain_resolution)
+            disp0 = np.zeros(self.substrate.nb_subdomain_grid_pts)
         disp0 = self.shape_minimisation_input(disp0)
         if callback is True:
             callback = self.callback(force=gradient)
@@ -285,7 +285,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         interface. Returns a function of only disp
         Keyword Arguments:
         offset     -- determines indentation depth
-        disp0      -- preexisting displacement. influences e.g., the size of
+        disp0      -- preexisting displacement. influences e.g., the physical_sizes of
                       the proxy system in some 'smart' system subclasses
         gradient   -- (default False) whether the gradient is supposed to be
                       used
@@ -324,19 +324,19 @@ class SmoothContactSystem(SystemBase):
         surface     -- An instance of Topography, defines the profile.
         """
         super().__init__(substrate, interaction, surface)
-        if not compare_containers(surface.resolution, substrate.resolution):
+        if not compare_containers(surface.nb_grid_pts, substrate.nb_grid_pts):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
-                 "resolutions.").format(
-                     substrate.resolution, surface.resolution))  # nopep8
-        self.dim = len(self.substrate.resolution)
+                 "nb_grid_ptss.").format(
+                     substrate.nb_grid_pts, surface.nb_grid_pts))  # nopep8
+        self.dim = len(self.substrate.nb_grid_pts)
         self.energy = None
         self.force = None
 
     @property
-    def resolution(self):
+    def nb_grid_pts(self):
         # pylint: disable=missing-docstring
-        return self.surface.resolution
+        return self.surface.nb_grid_pts
 
     @staticmethod
     def handles(substrate_type, interaction_type, surface_type):
@@ -421,7 +421,7 @@ class SmoothContactSystem(SystemBase):
         Compute the energies and forces in the system for a given displacement
         field
         """
-        # attention: the substrate may have a higher resolution than the gap
+        # attention: the substrate may have a higher nb_grid_pts than the gap
         # and the interaction (e.g. FreeElasticHalfSpace)
         self.gap = self.compute_gap(disp, offset)
         self.interaction.compute(self.gap, pot=pot, forces=forces, curb=False,
@@ -466,7 +466,7 @@ class SmoothContactSystem(SystemBase):
         logger     -- (default None) log information at every iteration.
         """
         dummy = disp0
-        res = self.substrate.subdomain_resolution
+        res = self.substrate.nb_subdomain_grid_pts
         if gradient:
             def fun(disp):
                 # pylint: disable=missing-docstring
@@ -538,12 +538,12 @@ class NonSmoothContactSystem(SystemBase):
         surface     -- An instance of Topography, defines the profile.
         """
         super().__init__(substrate, interaction, surface)
-        if not compare_containers(surface.resolution, substrate.resolution):
+        if not compare_containers(surface.nb_grid_pts, substrate.nb_grid_pts):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
-                 "resolutions.").format(
-                     substrate.resolution, surface.resolution))  # nopep8
-        self.dim = len(self.substrate.resolution)
+                 "nb_grid_ptss.").format(
+                     substrate.nb_grid_pts, surface.nb_grid_pts))  # nopep8
+        self.dim = len(self.substrate.nb_grid_pts)
         self.energy = None
         self.force = None
         self.contact_zone = None
@@ -572,9 +572,9 @@ class NonSmoothContactSystem(SystemBase):
         return is_ok
 
     @property
-    def resolution(self):
+    def nb_grid_pts(self):
         # pylint: disable=missing-docstring
-        return self.surface.resolution
+        return self.surface.nb_grid_pts
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
@@ -599,7 +599,7 @@ class NonSmoothContactSystem(SystemBase):
         Compute the energies and forces in the system for a given displacement
         field
         """
-        # attention: the substrate may have a higher resolution than the gap
+        # attention: the substrate may have a higher nb_grid_pts than the gap
         # and the interaction (e.g. FreeElasticHalfSpace)
         self.gap = self.compute_gap(disp, offset)
         self.interaction.compute(self.gap,
@@ -633,7 +633,7 @@ class NonSmoothContactSystem(SystemBase):
         """
         # pylint: disable=arguments-differ
         dummy = disp0
-        res = self.substrate.domain_resolution
+        res = self.substrate.nb_domain_grid_pts
         if gradient:
             def fun(disp):
                 # pylint: disable=missing-docstring
@@ -664,7 +664,7 @@ class NonSmoothContactSystem(SystemBase):
         offset     -- determines indentation depth
         disp0      -- initial guess for surface displacement. If not set, zero
                       displacement of shape
-                      self.substrate.domain_resolution is used
+                      self.substrate.nb_domain_grid_pts is used
         pentol     -- maximum penetration of contacting regions required for
                       convergence
         prestol    -- maximum pressure outside the contact region allowed for
@@ -677,16 +677,16 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        if self.substrate.fftengine.is_MPI:
-            result = constrained_conjugate_gradients(
-                self.substrate,
-                self.surface,
-                **kwargs)
-        else :
-            result = solver(
-                self.substrate,
-                self.surface.heights(),
-                **kwargs)
+        #if self.substrate.fftengine.is_MPI: # TODO: this can be thrown away
+        result = constrained_conjugate_gradients(
+            self.substrate,
+            self.surface,
+            **kwargs)
+        #else :
+        #    result = solver(
+        #        self.substrate,
+        #        self.surface.heights(),
+        #        **kwargs)
         if result.success:
             self.offset = result.offset
             self.disp = result.x

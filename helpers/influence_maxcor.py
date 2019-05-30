@@ -83,20 +83,20 @@ for n in [128,256,512]:
 
     # Parallel Topography Patch
 
-    substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, size=(sx,sx), fftengine=fftengine, pnp=pnp)
-    #print(substrate._comp_resolution)
-    #print(fftengine.domain_resolution)
+    substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx), fft=fftengine, pnp=pnp)
+    #print(substrate._comp_nb_grid_pts)
+    #print(fftengine.nb_domain_grid_pts)
 
 
-    surface = make_sphere(radius=r_s, resolution=(nx, ny), size=(sx, sx),
-                          subdomain_location=substrate.topography_subdomain_location,
-                          subdomain_resolution=substrate.topography_subdomain_resolution,
+    surface = make_sphere(radius=r_s, nb_grid_pts=(nx, ny), size=(sx, sx),
+                          subdomain_locations=substrate.topography_subdomain_locations,
+                          nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                           pnp=pnp,
                           standoff=float('inf'))
     ext_surface = make_sphere(r_s, (2 * nx, 2 * ny), (2 * sx, 2 * sx),
                               centre=(sx / 2, sx / 2),
-                              subdomain_location=substrate.subdomain_location,
-                              subdomain_resolution=substrate.subdomain_resolution,
+                              subdomain_locations=substrate.subdomain_locations,
+                              nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts,
                               pnp=pnp,
                               standoff=float('inf'))
     system = SmoothContactSystem(substrate, inter, surface)

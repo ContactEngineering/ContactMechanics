@@ -57,11 +57,11 @@ def main():
     h_rms = 13.8e-9
     lambda_max= 4e-9
     surf_dict = dict()
-    surf_dict["Topo1_Fit"] = Surf.read_matrix("SurfaceExample.asc", size=size, factor=1e-9)
-    surf_dict["Topo1_NoFit"] = Surf.read_matrix("SurfaceExampleUnfiltered.asc", size=size, factor=1e-9)
-    resolution = surf_dict["Topo1_NoFit"].resolution
-    surf_dict["exact"] = Tools.RandomSurfaceExact(resolution, size, hurst, h_rms).get_surface()
-    surf_dict["Gauss"] = Tools.RandomSurfaceGaussian(resolution, size, hurst, h_rms).get_surface()
+    surf_dict["Topo1_Fit"] = Surf.read_matrix("SurfaceExample.asc", physical_sizes=size, factor=1e-9)
+    surf_dict["Topo1_NoFit"] = Surf.read_matrix("SurfaceExampleUnfiltered.asc", physical_sizes=size, factor=1e-9)
+    nb_grid_pts = surf_dict["Topo1_NoFit"].nb_grid_pts
+    surf_dict["exact"] = Tools.RandomSurfaceExact(nb_grid_pts, size, hurst, h_rms).get_surface()
+    surf_dict["Gauss"] = Tools.RandomSurfaceGaussian(nb_grid_pts, size, hurst, h_rms).get_surface()
 
     for name, surf in surf_dict.items():
         test_surf_analysis(surf, name)

@@ -128,7 +128,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     u = opt.x[:f.shape[0], :f.shape[1]]
     disp = np.append(disp, [disp0])
     gap = np.append(gap, [np.mean(u)-middle-disp0])
-    current_load = f.sum()/np.prod(surface.size)
+    current_load = f.sum()/np.prod(surface.physical_sizes)
     load = np.append(load, [current_load])
     current_area = (f>0).sum()/np.prod(surface.shape)
     area = np.append(area, [current_area])
@@ -149,7 +149,7 @@ def dump(txt, surface, u, f, offset=0):
     mean_elastic = np.mean(u)
     mean_rigid = np.mean(surface[...])+offset
     load = f.sum()
-    mean_pressure = load/np.prod(surface.size)
+    mean_pressure = load/np.prod(surface.physical_sizes)
     area = (f>0).sum()
     fractional_area = area/np.prod(surface.shape)
     area *= surface.area_per_pt
@@ -260,11 +260,11 @@ parser.add_argument('--pressure-from-file', dest='pressure_from_fn', type=str,
                     help='compute contact area at external pressures given in '
                          'the file PRESSUREFN',
                     metavar='PRESSUREFN')
-parser.add_argument('--size', dest='size', type=tuple2,
-                    help='size of surface is SIZE',
+parser.add_argument('--physical_sizes', dest='physical_sizes', type=tuple2,
+                    help='physical_sizes of surface is SIZE',
                     metavar='SIZE')
-parser.add_argument('--size-unit', dest='size_unit', type=str,
-                    help='size unit UNIT',
+parser.add_argument('--physical_sizes-unit', dest='size_unit', type=str,
+                    help='physical_sizes unit UNIT',
                     metavar='UNIT')
 parser.add_argument('--height-fac', dest='height_fac', type=float,
                     help='scale all height by factor FAC',
@@ -308,7 +308,7 @@ logger.pr('maxiter = {}'.format(arguments.maxiter))
 logger.pr('displacement = {}'.format(arguments.displacement))
 logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('pressure-from-file = {}'.format(arguments.pressure_from_fn))
-logger.pr('size = {}'.format(arguments.size))
+logger.pr('physical_sizes = {}'.format(arguments.size))
 logger.pr('size_unit = {}'.format(arguments.size_unit))
 logger.pr('height_fac = {}'.format(arguments.height_fac))
 logger.pr('height_unit = {}'.format(arguments.height_unit))
@@ -324,13 +324,13 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 # Read a surface topography from a text file. Returns a PyCo.Topography.Topography
 # object.
 surface = open_topography(arguments.filename)
-# Set the *physical* size of the surface. We here set it to equal the shape,
-# i.e. the resolution of the surface just open_topography. Size is returned by surface.size
+# Set the *physical* physical_sizes of the surface. We here set it to equal the shape,
+# i.e. the nb_grid_pts of the surface just open_topography. Size is returned by surface.physical_sizes
 # and can be unknown, i.e. *None*.
 if arguments.size is not None:
-    surface.size = arguments.size
-if surface.size is None:
-    surface.size = surface.shape
+    surface.physical_sizes = arguments.size
+if surface.physical_sizes is None:
+    surface.physical_sizes = surface.shape
 if arguments.size_unit is not None:
     surface.unit = arguments.size_unit
 if arguments.height_fac is not None or arguments.height_unit is not None:
@@ -342,9 +342,9 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
     logger.pr('Rescaling surface heights by {}.'.format(fac))
     surface = ScaledTopography(surface, fac)
 
-logger.pr('Topography has dimension of {} and size of {} {}.'.format(surface.shape,
-                                                                  surface.size,
-                                                                  surface.unit))
+logger.pr('Topography has dimension of {} and physical_sizes of {} {}.'.format(surface.shape,
+                                                                     surface.physical_sizes,
+                                                                     surface.unit))
 logger.pr('RMS height = {}, RMS slope = {}'.format(surface.rms_height(),
                                                    surface.rms_slope()))
 if arguments.detrend is not None:
@@ -358,9 +358,9 @@ if arguments.hardness is not None:
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':
     substrate = PeriodicFFTElasticHalfSpace(surface.shape, arguments.modulus,
-                                            surface.size,
-                                            poisson=arguments.poisson,
-                                            thickness=arguments.thickness)
+                                            surface.physical_sizes,
+                                            thickness=arguments.thickness,
+                                            poisson=arguments.poisson)
 elif arguments.boundary == 'nonperiodic':
     if arguments.thickness is not None:
         raise ValueError('"thickness" arguments cannot be used with '
@@ -368,7 +368,7 @@ elif arguments.boundary == 'nonperiodic':
     substrate = FreeFFTElasticHalfSpace(
         surface.shape,
         arguments.modulus/(1-arguments.poisson**2),
-        surface.size
+        surface.physical_sizes
         )
 else:
     raise ValueError('Unknown boundary conditions: '
@@ -416,14 +416,14 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         if len(pressure) == 1:
             suffix = ''
         opt = system.minimize_proxy(
-            external_force=_pressure*np.prod(surface.size),
+            external_force=_pressure*np.prod(surface.physical_sizes),
             pentol=arguments.pentol,
             maxiter=arguments.maxiter, logger=logger,
             verbose=arguments.verbose)
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]
         logger.pr('displacement = {}'.format(opt.offset))
-        logger.pr('pressure = {} ({})'.format(f.sum()/np.prod(surface.size),
+        logger.pr('pressure = {} ({})'.format(f.sum() / np.prod(surface.physical_sizes),
                                               _pressure))
         logger.pr('energy = {}'.format(opt.fun))
         logger.pr('fractional contact area = {}' \
@@ -469,7 +469,7 @@ elif arguments.displacement is not None:
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]
         logger.pr('displacement = {} ({})'.format(opt.offset, _displacement))
-        logger.pr('pressure = {}'.format(f.sum()/np.prod(surface.size)))
+        logger.pr('pressure = {}'.format(f.sum() / np.prod(surface.physical_sizes)))
         logger.pr('energy = {}'.format(opt.fun))
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.shape)))

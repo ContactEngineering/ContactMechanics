@@ -123,10 +123,10 @@ for method, name in zip(["L-BFGS-B", LBFGS],
 
     # Parallel Topography Patch
 
-    substrate = PeriodicFFTElasticHalfSpace((nx, ny), young=E_s, size=(sx, sx),
-                                        fftengine=fftengine, pnp=pnp)
-    # print(substrate._comp_resolution)
-    # print(fftengine.domain_resolution)
+    substrate = PeriodicFFTElasticHalfSpace((nx, ny), young=E_s,
+                                            physical_sizes=(sx, sx), pnp=pnp)
+    # print(substrate._comp_nb_grid_pts)
+    # print(fftengine.nb_domain_grid_pts)
 
 
     surface = fourier_synthesis((nx, ny), (sx, sy), hurst=0.8, rms_height=1, short_cutoff=8, long_cutoff=sx / 2)

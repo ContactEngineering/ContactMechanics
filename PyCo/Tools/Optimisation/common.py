@@ -220,7 +220,7 @@ def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
     x0          -- initial guess for solution
     fprime      -- Jacobian (gradient)
     direction   -- search direction (column vec)
-    alpha       -- step size
+    alpha       -- step physical_sizes
     beta1       -- lower wolfe bound
     """
     return float(fun(x0+alpha*direction)) <= float(fun(x0)) + \
@@ -236,7 +236,7 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     x0        -- initial guess for solution
     fprime    -- Jacobian (gradient) of objective function
     direction -- search direction
-    alpha     -- step size
+    alpha     -- step physical_sizes
     beta2     -- upper wolfe bound
     """
     return (float(fprime(x0 + alpha*direction).T @ direction) >=
@@ -248,13 +248,13 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
 def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
                 step_factor=3., store_iterates=None, maxiter=40):
     """
-    find a step size alpha that satisfies both conditions of Wolfe
+    find a step physical_sizes alpha that satisfies both conditions of Wolfe
     Keyword Arguments:
     fun         -- objective function to minimize
     x0          -- initial guess for solution
     fprime      -- Jacobian (gradient) of objective function
     direction   -- search direction
-    alpha0      -- Initial guess for step size
+    alpha0      -- Initial guess for step physical_sizes
     beta1       -- (default 1e-4)
     beta2       -- (default 0.99)
     step_factor -- (default 3.) step increase when too short
@@ -423,7 +423,7 @@ def construct_augm_lag_hess(fun_hess, constraints_hess,
         constraints_hess_eval = constraints_hess(x, *args)
         return_hess = fun_hess(x, *args) + c_pen * constraints_jac_eval.T * \
             constraints_jac_eval
-        for i in range(lam.size):
+        for i in range(lam.physical_sizes):
             return_hess += (lam[i] * constraints_hess_eval[i] +
                             c_pen*constraints_jac_eval *
                             constraints_jac_eval.T)

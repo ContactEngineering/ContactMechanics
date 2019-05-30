@@ -58,7 +58,7 @@ for base_res in (64, ):#128, 256, 512, 1024):
         pullof_forces = list()
         offsets = list()
         contact_area = list()
-        disp = np.zeros(substrate.domain_resolution)
+        disp = np.zeros(substrate.nb_domain_grid_pts)
         force = -1.
         while force < 0:
             result = system.minimize_proxy(offset, disp)
@@ -76,7 +76,7 @@ for base_res in (64, ):#128, 256, 512, 1024):
         ax2 = ax1.twinx()
         ax2.plot(offsets, contact_area, color='r')
         ax2.set_ylabel("# contact_pts", color='r')
-        ax1.set_title("factor = {}, resolution = {}".format(factor, res))
+        ax1.set_title("factor = {}, nb_grid_pts = {}".format(factor, res))
         plt.draw()
 
 plt.ioff()

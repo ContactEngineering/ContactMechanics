@@ -118,7 +118,7 @@ def main():
     siz = 2000e-9
     size = (siz, siz)
     path = os.path.join(os.path.dirname(__file__), "SurfaceExampleUnfiltered.asc")
-    surface = Surf.read_matrix(path, size=size, factor=1e-9)
+    surface = Surf.read_matrix(path, physical_sizes=size, factor=1e-9)
     surfs = []
     surfs.append(('Topo1', surface))
     arr, x, residual = Tools.shift_and_tilt(surface.heights(), full_output=True)
@@ -131,7 +131,7 @@ def main():
     surfs.append(('Topo1_corr', surface))
 
     hurst = .85
-    res = surface.resolution
+    res = surface.nb_grid_pts
     h_rms = 2.11e-8
 
     surface = Tools.RandomSurfaceGaussian(res, size, hurst, h_rms).get_surface()

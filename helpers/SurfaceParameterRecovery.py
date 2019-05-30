@@ -40,10 +40,10 @@ def main():
     hurst = .9
     h_rms = 1
     res = 500
-    resolution = (res, res)
+    nb_grid_pts = (res, res)
     lam_max = .5
     for i in range(1):
-        surf_gen = Tools.RandomSurfaceExact(resolution, size, hurst, h_rms, seed = i, lambda_max=lam_max)
+        surf_gen = Tools.RandomSurfaceExact(nb_grid_pts, size, hurst, h_rms, seed = i, lambda_max=lam_max)
         surf = surf_gen.get_surface(roll_off=0, lambda_max=lam_max)
         print("q_min = {}".format(2*np.pi/lam_max))
         h_rms_fromC_in = surf.compute_h_rms_fromReciprocSpace()

@@ -54,14 +54,15 @@ rho = 1.0
 # Read a surface topography from a text file. Returns a PyCo.Topography.Topography
 # object.
 surface = read_matrix('surface1.out')
-# Set the *physical* size of the surface. We here set it to equal the shape,
-# i.e. the resolution of the surface just read. Size is returned by surface.size
+# Set the *physical* physical_sizes of the surface. We here set it to equal the shape,
+# i.e. the nb_grid_pts of the surface just read. Size is returned by surface.physical_sizes
 # and can be unknown, i.e. *None*.
 surface.set_size(surface.shape)
 
 # Initialize elastic half-space. This one is periodic with contact modulus
-# E*=1.0 and physical size equal to the surface.
-substrate = PeriodicFFTElasticHalfSpace(surface.shape, 1.0, surface.size,
+# E*=1.0 and physical physical_sizes equal to the surface.
+substrate = PeriodicFFTElasticHalfSpace(surface.shape, 1.0,
+                                        surface.physical_sizes,
                                         stiffness_q0=None)
 
 interaction = ExpPotential(gamma, rho)
@@ -93,7 +94,7 @@ for disp0 in np.linspace(-10, 10, 11):
 
     gap = u - surface.heights() - disp0
     mean_gap = np.mean(gap)
-    load = -f.sum()/np.prod(surface.size)
+    load = -f.sum()/np.prod(surface.physical_sizes)
     #area = (f>0).sum()/np.prod(surface.shape)
     area = (gap<tol).sum()/np.prod(surface.shape)
     if not opt.success:

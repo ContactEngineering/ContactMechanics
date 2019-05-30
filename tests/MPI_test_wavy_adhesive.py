@@ -47,7 +47,7 @@ except ImportError as err:
     sys.exit(-1)
 
 _toplot=False
-def test_wavy(comm, fftengine_class):
+def test_wavy(comm, fftengine_type):
 
     n=32
     surf_res = (n,n)
@@ -59,7 +59,7 @@ def test_wavy(comm, fftengine_class):
     R = 100
     w = 0.01*z0 * Es
 
-    fftengine = fftengine_class((n,n),comm=comm)
+    fftengine = fftengine_type((n, n), comm=comm)
 
     pnp = Reduction(comm=comm)
 
@@ -67,16 +67,16 @@ def test_wavy(comm, fftengine_class):
 
     # Parallel Topography Patch
 
-    substrate = PeriodicFFTElasticHalfSpace(surf_res, young=Es, size=surf_size,
-                                            fftengine=fftengine, pnp=pnp)
+    substrate = PeriodicFFTElasticHalfSpace(surf_res, young=Es,
+                                            physical_sizes=surf_size, pnp=pnp)
 
     surface = Topography(
         np.cos(np.arange(0, n) * np.pi * 2. / n) * np.ones((n, 1)),
         size=surf_size)
 
-    psurface = Topography(surface.heights(), size=surface.size,
-                          subdomain_location=substrate.topography_subdomain_location,
-                          subdomain_resolution=substrate.subdomain_resolution,
+    psurface = Topography(surface.heights(), size=surface.physical_sizes,
+                          subdomain_locations=substrate.topography_subdomain_locations,
+                          nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts,
                           periodic=True, pnp=pnp)
 
     system = SmoothContactSystem(substrate, inter, psurface)

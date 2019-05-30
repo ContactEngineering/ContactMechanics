@@ -48,27 +48,27 @@ from PyCo.Tools.Logger import Logger
 
 
 # -----------------------------------------------------------------------------
-def test_constrained_conjugate_gradients(comm, fftengine_class):
+def test_constrained_conjugate_gradients(comm, fftengine_type):
     sx = 30.0
     sy = 1.0
     # equivalent Young's modulus
     E_s = 3.56
     pnp = Reduction(comm)
 
-    for nx, ny in [(16384, 4 * comm.Get_size())]:  # , (256, 15), (255, 16)]: #256,16
+    for nx, ny in [(16384, 8 * comm.Get_size())]:  # , (256, 15), (255, 16)]: #256,16
         # if ny is too small, one processor will end
         # with one empty fourier subdomain, what is not supported
         # 16384 points are indeed needed to reach the relative error of 1e-2
 
         for disp0, normal_force in [(-0.9, None), (-0.1, None)]:  # (0.1, None),
-            substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s,
-                                                    (sx, sy), fftengine=fftengine_class((nx, ny), comm))
+            substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
+                                                    fft="mpi", comm=comm)
             interaction = HardWall()
             profile = np.resize(np.cos(2 * np.pi * np.arange(nx) / nx), (ny, nx))
             surface = Topography(profile.T, size=(sx, sy),
-                                 # resolution=substrate.resolution,
-                                 subdomain_location=substrate.topography_subdomain_location,
-                                 subdomain_resolution=substrate.topography_subdomain_resolution,
+                                 # nb_grid_pts=substrate.nb_grid_pts,
+                                 subdomain_locations=substrate.topography_subdomain_locations,
+                                 nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                                  pnp=substrate.pnp)
             system = make_system(substrate, interaction, surface)
 
@@ -85,7 +85,7 @@ def test_constrained_conjugate_gradients(comm, fftengine_class):
             # print(displ)
 
             x = np.arange(nx) * sx / nx
-            mean_pressure = pnp.sum(forces) / np.prod(substrate.size)
+            mean_pressure = pnp.sum(forces) / np.prod(substrate.physical_sizes)
             pth = mean_pressure * _pressure(x / sx, mean_pressure=sx * mean_pressure / E_s)
 
             # symetrize the Profile
@@ -101,11 +101,11 @@ def test_constrained_conjugate_gradients(comm, fftengine_class):
             # plt.plot(x, pth, 'r-')
             # plt.show()
             error_mask = np.abs(
-                (forces[:, 0] / substrate.area_per_pt - pth[substrate.subdomain_slice[0]]) >= 1e-12 + 1e-2 * np.abs(
-                    pth[substrate.subdomain_slice[0]]))
+                (forces[:, 0] / substrate.area_per_pt - pth[substrate.subdomain_slices[0]]) >= 1e-12 + 1e-2 * np.abs(
+                    pth[substrate.subdomain_slices[0]]))
 
-            # np.testing.assert_allclose(forces[:, 0]/substrate.area_per_ pth[substrate.subdomain_slice[0]], rtol=1e-2, atol = 1e-12)
+            # np.testing.assert_allclose(forces[:, 0]/substrate.area_per_ pth[substrate.subdomain_slices[0]], rtol=1e-2, atol = 1e-12)
             assert np.count_nonzero(
                 error_mask) == 0, "max relative diff at index {} with ref = {}, computed= {}".format(
-                np.arange(substrate.subdomain_resolution[0])[error_mask], pth[substrate.subdomain_slice[0]][error_mask],
+                np.arange(substrate.nb_subdomain_grid_pts[0])[error_mask], pth[substrate.subdomain_slices[0]][error_mask],
                 forces[:, 0][error_mask] / substrate.area_per_pt)

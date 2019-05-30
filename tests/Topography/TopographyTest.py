@@ -30,22 +30,22 @@ import pickle
 from PyCo.Topography import Topography
 from ..PyCoTest import PyCoTestCase
 from NuMPI.Tools import Reduction
+from muFFT import FFT
 
-
-def test_positions(comm, fftengine_class):
+def test_positions(comm, fftengine_type):
     nx, ny = (12*comm.Get_size(), 10 * comm.Get_size() +1)
     sx = 33.
     sy = 54.
-    fftengine=fftengine_class((nx, ny), comm)
+    fftengine=FFT((nx, ny), fft=fftengine_type, communicator=comm)
     pnp = Reduction(comm)
 
-    surf = Topography(np.zeros(fftengine.subdomain_resolution), resolution=(nx, ny),
+    surf = Topography(np.zeros(fftengine.nb_subdomain_grid_pts), nb_grid_pts=(nx, ny),
                       size = (sx, sy),
-                      subdomain_location=fftengine.subdomain_location, pnp=pnp)
+                      subdomain_locations=fftengine.subdomain_locations, pnp=pnp)
 
     x, y = surf.positions()
-    assert x.shape == fftengine.subdomain_resolution
-    assert y.shape == fftengine.subdomain_resolution
+    assert x.shape == fftengine.nb_subdomain_grid_pts
+    assert y.shape == fftengine.nb_subdomain_grid_pts
 
     assert pnp.min(x) == 0
     assert abs(pnp.max(x) - sx * (1-1./nx)) < 1e-8 * sx/ nx, "{}".format(x)
@@ -63,7 +63,7 @@ class TopographyTest(PyCoTestCase):
 
         t = Topography(h, (8,6))
 
-        self.assertEqual(t.resolution, (4,3))
+        self.assertEqual(t.nb_grid_pts, (4, 3))
 
         assert_array_equal(t.heights(), h)
         X2, Y2, h2 = t.positions_and_heights()
