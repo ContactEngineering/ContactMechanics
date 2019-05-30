@@ -83,9 +83,9 @@ for n in [128,256,512]:
 
     # Parallel Topography Patch
 
-    substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx), fftengine=fftengine, pnp=pnp)
+    substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx), fft=fftengine, pnp=pnp)
     #print(substrate._comp_resolution)
-    #print(fftengine.domain_resolution)
+    #print(fftengine.nb_domain_grid_pts)
 
 
     surface = make_sphere(radius=r_s, resolution=(nx, ny), size=(sx, sx),

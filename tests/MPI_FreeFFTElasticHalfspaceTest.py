@@ -46,24 +46,26 @@ def pnp(comm):
 
 @pytest.fixture
 def basenpoints(comm):
-    return (comm.Get_size() -1)* 4 # Base number of points in order to avoid empty subdomains when using a lot of processors
+    return (comm.Get_size() -1)* 8
+    # Base number of points in order to avoid
+    # empty subdomains when using a lot of processors
 
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
-def test_resolutions(comm, pnp, fftengine_class, nx,ny, basenpoints):
+def test_resolutions(comm, pnp, fftengine_type, nx, ny, basenpoints):
     nx += basenpoints
     ny += basenpoints
     sx, sy = 100, 200
     E_s = 3
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
+                                        fft=fftengine_type, comm=comm)
     assert substrate.resolution == (nx, ny)
     assert substrate.domain_resolution == (2 * nx, 2 * ny)
     assert pnp.sum(np.array(np.prod(substrate.subdomain_resolution))) == 4 * nx * ny
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
-def test_weights(comm, pnp, fftengine_class,nx,ny, basenpoints):
+def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints):
     """
     Compare with the old serial Implementation
     """
@@ -117,16 +119,16 @@ def test_weights(comm, pnp, fftengine_class,nx,ny, basenpoints):
 
     ref_weights, ref_facts = _compute_fourier_coeffs_serial_impl(
         FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                fftengine=NumpyFFTEngine((2 * nx, 2 * ny), comm)))
+                                fft="serial"))
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
+                                        fft=fftengine_type, comm=comm)
     local_weights, local_facts = substrate._compute_fourier_coeffs()
-    np.testing.assert_allclose(local_weights, ref_weights[substrate.fourier_slice], 1e-12)
-    np.testing.assert_allclose(local_facts, ref_facts[substrate.subdomain_slice], 1e-12)
+    np.testing.assert_allclose(local_weights, ref_weights[substrate.fourier_slices], 1e-12)
+    np.testing.assert_allclose(local_facts, ref_facts[substrate.subdomain_slices], 1e-12)
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
-def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basenpoints):
+def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_type, nx, ny, basenpoints):
     nx += basenpoints
     ny += basenpoints
 
@@ -161,7 +163,7 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basen
 
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fftengine=fftengine_class((2 * nx, 2 * ny), comm), pnp=pnp)
+                                        fft=fftengine_type, comm=comm)
 
     if comm.Get_size() > 1:
         with pytest.raises(FreeFFTElasticHalfSpace.Error):
@@ -169,8 +171,8 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, nx,ny, basen
         with pytest.raises(FreeFFTElasticHalfSpace.Error):
             substrate.evaluate_disp(forces[nx, ny])
 
-    # print(forces[substrate.subdomain_slice])
-    computed_disp = substrate.evaluate_disp(forces[substrate.subdomain_slice])
+    # print(forces[substrate.subdomain_slices])
+    computed_disp = substrate.evaluate_disp(forces[substrate.subdomain_slices])
     # print(computed_disp)
     # make the comparison only on the nonpadded domain
     s_c = tuple([slice(1, max(0, min(substrate.resolution[i] - 1 - substrate.subdomain_location[i],

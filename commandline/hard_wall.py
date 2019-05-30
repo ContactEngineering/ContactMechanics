@@ -359,8 +359,8 @@ if arguments.hardness is not None:
 if arguments.boundary == 'periodic':
     substrate = PeriodicFFTElasticHalfSpace(surface.shape, arguments.modulus,
                                             surface.physical_sizes,
-                                            poisson=arguments.poisson,
-                                            thickness=arguments.thickness)
+                                            thickness=arguments.thickness,
+                                            poisson=arguments.poisson)
 elif arguments.boundary == 'nonperiodic':
     if arguments.thickness is not None:
         raise ValueError('"thickness" arguments cannot be used with '

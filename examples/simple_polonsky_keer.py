@@ -364,9 +364,8 @@ print('RMS slope of topography = {}'.format(topography.rms_slope()))
 nx, ny = topography.resolution
 
 # Periodic substrate, i.e. the elastic half-space.
-substrate = PeriodicFFTElasticHalfSpace((nx, ny), # resolution
-                                        E_s, # contact modulus
-                                        (sx, sx)) # physical physical_sizes
+substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s,
+                                        (sx, sx))  # physical physical_sizes
 
 # Contact pressure: 0.05 h_rms' E_s / kappa with kappa = 2, which means ~ 5% contact area
 res = constrained_conjugate_gradients(substrate, topography.heights(),

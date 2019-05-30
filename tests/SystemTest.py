@@ -50,6 +50,11 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+import pytest
+from NuMPI import MPI
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 
 BASEDIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -61,8 +66,8 @@ class SystemTest(unittest.TestCase):
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
-        self.substrate = Solid.PeriodicFFTElasticHalfSpace(
-            self.res, self.young, self.physical_sizes)
+        self.substrate = Solid.PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                                           self.physical_sizes)
 
         self.eps = 1+np.random.rand()
         self.sig = 3+np.random.rand()
@@ -91,8 +96,8 @@ class SystemTest(unittest.TestCase):
     def test_SystemGradient(self):
         res = self.res##[0]
         size = [r*1.28 for r in self.res]##[0]
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, size)
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      size)
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         disp = random(res)*self.sig/10
@@ -195,8 +200,8 @@ class SystemTest(unittest.TestCase):
         ## the plausibility of the result is not verified
         res = self.res[0]
         size = self.physical_sizes[0]
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.physical_sizes[0])
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -234,8 +239,8 @@ class SystemTest(unittest.TestCase):
     def test_minimize_proxy(self):
         res = self.res
         size = self.physical_sizes
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.physical_sizes[0])
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -255,8 +260,8 @@ class SystemTest(unittest.TestCase):
     def test_minimize_proxy_tol(self):
         res = self.res
         size = self.physical_sizes
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.physical_sizes[0])
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -320,8 +325,8 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ## the plausibility of the result is not verified
         res = self.res[0]
         size = self.physical_sizes[0]
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.physical_sizes[0])
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         # here, i deliberately avoid using the make_system, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a

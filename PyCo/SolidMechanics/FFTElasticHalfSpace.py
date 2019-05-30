@@ -32,7 +32,6 @@ Implement the FFT-based elasticity solver of pycontact
 from collections import namedtuple
 import numpy as np
 import sys
-#from ..Tools.fftext import rfftn, irfftn
 
 
 from .Substrates import ElasticSubstrate
@@ -46,9 +45,8 @@ except:
 
 # I will never take the parallel as default because most of the tests will fail because of this
 
-
-from FFTEngine import NumpyFFTEngine
-DEFAULTENGINE = NumpyFFTEngine
+from muFFT import FFT
+from NuMPI.Tools import Reduction
 
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """ Uses the FFT to solve the displacements and stresses in an elastic
@@ -65,7 +63,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     _periodic = True
 
     def __init__(self, resolution, young, physical_sizes=2 * np.pi, stiffness_q0=None,
-                 thickness=None, poisson=0.0, superclass=True, fftengine=None, pnp = None):
+                 thickness=None, poisson=0.0, superclass=True, fft="serial", comm=MPI.COMM_SELF):
         """
         Keyword Arguments:
         resolution   -- Tuple containing number of points in spatial directions.
@@ -88,6 +86,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                         modulus.
         superclass   -- (default True) client software never uses this. Only
                         inheriting subclasses use this.
+        fft: string
+        FFT engine to use. Options are 'fftw', 'fftwmpi', 'pfft' and 'p3dfft'.
+            Default: 'fftw'.
         """
         super().__init__()
         if not hasattr(resolution, "__iter__"):
@@ -127,26 +128,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
 
-        if fftengine is not None:
-            self.fftengine = fftengine
-        else:
-            self.fftengine = DEFAULTENGINE(self.domain_resolution)
+        self.fftengine = FFT(self.domain_resolution, fft=fft, communicator=comm)
 
-        if pnp is None:
-            if self.fftengine.is_MPI:
-                from NuMPI.Tools.Reduction import Reduction
-                self.pnp = Reduction(self.fftengine.comm)
-            else:
-                self.pnp = np
-        #TODO: test the choice of parallelnumpy and FFTEngine, automatically use ParallelNuzmpy if fftengine is parallel ?
-        else:
-            self.pnp = pnp
-            #if self.fftengine.is_MPI:
-                #from NuMPI.Tools.Reduction import Reduction
-                #if isinstance(self.pnp,Reduction): raise ValueError("fftengine is parallel but you provided a computation tool ({}) different from ({})".format(self.pnp.__class__,Reduction.__))
+        self.pnp = Reduction(comm)
 
-        #self.fftengine = fftengine(self.domain_resolution)  # because when called in subclass,
-                                                            # the computational resolution isn't known already
         if superclass:
             self._compute_fourier_coeffs()
             self._compute_i_fourier_coeffs()
@@ -173,7 +158,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.subdomain_resolution
+        return self.fftengine.nb_subdomain_grid_pts
 
     @property
     def topography_subdomain_resolution(self):
@@ -186,20 +171,20 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.subdomain_location
+        return self.fftengine.subdomain_locations
 
     @property
     def topography_subdomain_location(self):
         return self.subdomain_location
 
     @property
-    def subdomain_slice(self):
+    def subdomain_slices(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.fftengine.subdomain_slice
+        return self.fftengine.subdomain_slices
 
     @property
     def fourier_resolution(self):
@@ -208,7 +193,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.fourier_resolution
+        return self.fftengine.nb_fourier_grid_pts
 
     @property
     def fourier_location(self):
@@ -217,16 +202,16 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.fourier_location
+        return self.  fftengine.fourier_locations
 
     @property
-    def fourier_slice(self):
+    def fourier_slices(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.fftengine.fourier_slice
+        return self.fftengine.fourier_slices
 
 
     def __repr__(self):
@@ -326,7 +311,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      forces.shape, self.subdomain_resolution))  # nopep8
-        return self.fftengine.irfftn(self.weights * self.fftengine.rfftn(-forces)).real / self.area_per_pt
+        return self.fftengine.ifft(
+            self.weights * self.fftengine.fft(-forces)).real \
+            / self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_force(self, disp):
         """ Computes the force (*not* pressures) due to a given displacement array
@@ -338,7 +325,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
                      disp.shape, self.subdomain_resolution))  # nopep8
-        return -self.fftengine.irfftn(self.iweights * self.fftengine.rfftn(disp)).real * self.area_per_pt
+        return -self.fftengine.ifft(
+            self.iweights * self.fftengine.fft(disp)).real \
+            * self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
@@ -350,7 +339,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s resolution ({1})").format(
                      forces.shape, self.subdomain_resolution))  # nopep8
-        return self.weights * self.fftengine.rfftn(-forces)/self.area_per_pt
+        return self.weights * self.fftengine.fft(-forces)/self.area_per_pt
 
     def evaluate_k_force(self, disp):
         """ Computes the K-space forces (*not* pressures) due to a given displacement array
@@ -362,7 +351,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's resolution ({1})").format(
                      disp.shape, self.subdomain_resolution))  # nopep8
-        return -self.iweights*self.fftengine.rfftn(disp)*self.area_per_pt
+        return -self.iweights*self.fftengine.fft(disp)*self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
         """
@@ -500,7 +489,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         elif pot:
             kforce = self.evaluate_k_force(disp)
             potential = self.evaluate_elastic_energy_k_space(
-                kforce, self.fftengine.rfftn(disp)) # TODO: OPTIMISATION: here kdisp is computed twice, because it's needed in kforce
+                kforce, self.fftengine.fft(disp)) # TODO: OPTIMISATION: here kdisp is computed twice, because it's needed in kforce
         return potential, force
 
 
@@ -522,7 +511,8 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     name = "free_fft_elastic_halfspace"
     _periodic = False
 
-    def __init__(self, resolution, young, physical_sizes=2 * np.pi, fftengine=None, pnp = None):
+    def __init__(self, resolution, young, physical_sizes=2 * np.pi, fft="serial",
+                 comm=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         resolution  -- Tuple containing number of points in spatial directions.
@@ -540,7 +530,9 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                        dimensions, the last value in repeated.
         """
         self._comp_resolution = tuple((2 * r for r in resolution))
-        super().__init__(resolution, young, physical_sizes, superclass=False, fftengine=fftengine, pnp=pnp)
+        super().__init__(resolution, young, physical_sizes, superclass=False,
+                         fft=fft,
+                         comm=comm)
         self._compute_fourier_coeffs()
         self._compute_i_fourier_coeffs()
 
@@ -550,8 +542,8 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         returns an instance with same physical properties with a smaller
         computational grid
         """
-        size = tuple((resolution[i] / float(self.resolution[i]) * self.physical_sizes[i] for
-                      i in range(self.dim)))
+        size = tuple((resolution[i] / float(self.resolution[i])
+                      * self.physical_sizes[i] for i in range(self.dim)))
         return type(self)(resolution, self.young, size)
 
     @property
@@ -580,7 +572,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
            matscipy implementation
         """
         # pylint: disable=too-many-locals
-        if self.fftengine.is_MPI:
+        if self.fftengine.communicator.size>1:
             raise NotImplementedError("This implementation of the computation of the fourier coeffs is not compatible with MPI FFTEngines")
 
         if self.dim == 1:
@@ -616,7 +608,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                  (y_p + sqrt_yp_xm)) +
                     y_m * np.log((x_m + sqrt_ym_xm) /
                                  (x_p + sqrt_ym_xp)))
-        return self.fftengine.rfftn(facts), facts
+        return self.fftengine.fft(facts), facts
 
     def _compute_fourier_coeffs(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
@@ -661,7 +653,10 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                                   (x_s-a)*(x_s-a))) /
                                  ((x_s+a)+np.sqrt((y_s-b)*(y_s-b) +
                                                   (x_s+a)*(x_s+a)))))
-            self.weights = self.fftengine.rfftn(facts)
+            self.weights = self.fftengine.fft(facts).copy()
+            # copy is needed because the output of fftengine.fft is only a view
+            # on the outputarray, that means it will be overwritten during the
+            # next fft
             return self.weights, facts
 
     def evaluate_disp(self, forces):
@@ -677,7 +672,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         if forces.shape == self.subdomain_resolution:
             return super().evaluate_disp(forces)
 
-        elif not self.fftengine.is_MPI:
+        elif self.subdomain_resolution == self.domain_resolution:
             if forces.shape == self.resolution:
                 # Automatically pad forces if force array is half of subdomain
                 # resolution

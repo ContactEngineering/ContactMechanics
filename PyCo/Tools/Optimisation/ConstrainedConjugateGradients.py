@@ -86,16 +86,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         True if iteration stopped due to convergence criterion.
     """
 
-    if substrate.fftengine.is_MPI:
-        from NuMPI.Tools.Reduction import Reduction
-        pnp = Reduction(comm = substrate.fftengine.comm)
-
+    if substrate.subdomain_resolution != substrate.domain_resolution:
         # check that a topography instance is provided and not only a numpy array
         if not hasattr(topography, "resolution"): raise ValueError(
             "You should provide a topography object when working with MPI")
         #print("Parallel fftengine")
-    else:
-        pnp=np
+    pnp= substrate.pnp
 
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "resolution"):

@@ -48,15 +48,13 @@ FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'file_format_examples')
 
-def test_hard_wall_bearing_area(comm, fftengine_class):
+def test_hard_wall_bearing_area(comm, fftengine_type):
     # Test that at very low hardness we converge to (almost) the bearing
     # area geometry
     pnp = Reduction(comm)
     fullsurface = open_topography(os.path.join(FIXTURE_DIR, 'surface1.out')).topography()
     domain_resolution = fullsurface.resolution
-    substrate = PeriodicFFTElasticHalfSpace(
-        domain_resolution, 1.0,
-        fftengine=fftengine_class(domain_resolution, comm), pnp=pnp)
+    substrate = PeriodicFFTElasticHalfSpace(domain_resolution, 1.0, fft="mpi",comm=comm)
     surface = Topography(fullsurface.heights(), size=domain_resolution,
                          subdomain_location=substrate.topography_subdomain_location,
                          subdomain_resolution=substrate.topography_subdomain_resolution,

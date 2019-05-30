@@ -46,6 +46,12 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+import pytest
+from NuMPI import MPI
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
+
 #class SmoothSystemTest(unittest.TestCase):
 import pytest
 
@@ -70,7 +76,7 @@ def test_minimization_simplesmoothmin(young, r_c):
                                  centre=[ s/2 for s in size], standoff=float('inf'))
 
     substrate = Solid.FreeFFTElasticHalfSpace(
-        res, young, size)
+        res, young, size, fft="serial")
 
     pot = Contact.LJ93SimpleSmoothMin(eps, sig, r_c=r_c, r_ti=0.5)
 
@@ -116,29 +122,30 @@ def test_minimization_simplesmoothmin(young, r_c):
         plt.show(block=True)
     assert result.success, "{}".format(result)
 
-@pytest.mark.parametrize("young", [3., 100.]) # mit young = 100 geht auch LJ93smoothMin durch
-@pytest.mark.parametrize("pot_class",[pytest.param(Contact.LJ93smooth, marks=pytest.mark.xfail), Contact.LJ93smoothMin])
-def test_minimization(pot_class, young):
+@pytest.mark.parametrize("base_res",[pytest.param(128, marks=pytest.mark.xfail),
+                                     256])
+@pytest.mark.parametrize("young", [3.,100.]) # mit young = 100 geht auch LJ93smoothMin durch
+@pytest.mark.parametrize("pot_class",[pytest.param(Contact.LJ93smooth, marks=pytest.mark.xfail),
+                                      Contact.LJ93smoothMin])
+def test_minimization(pot_class, young, base_res):
 
     eps=1
     sig=2
     gam=5
 
-    radius=4.
+    radius= 4.
 
-    base_res = 128
     res = (base_res, base_res)
 
     size= (15.,15.)
     surface = Topography.make_sphere(radius, res, size,
                                      standoff=float("inf"))
     ext_surface = Topography.make_sphere(radius, [2 * r for r in res], [2 * s for s in size],
-                                 centre=[ s/2 for s in size], standoff=float('inf'))
+                                 centre=[ s/2 for s in size], standoff=float("inf"))
 
-    substrate = Solid.FreeFFTElasticHalfSpace(
-        res, young, size)
+    substrate = Solid.FreeFFTElasticHalfSpace(res, young, size)
 
-    pot = pot_class(eps, sig, gam)
+    pot = pot_class(eps, sig, gam, )
     if hasattr(pot, "r_ti"):
         assert pot.r_ti < pot.r_t
 
@@ -189,12 +196,12 @@ class FastSystemTest(unittest.TestCase):
     def setUp(self):
         self.physical_sizes = (15, 15)#(7.5+5*rand(), 7.5+5*rand())
         self.radius = 4
-        base_res = 32
+        base_res = 64 # TODO: put this back on 32, see issue #139
         self.res = (base_res, base_res)
         self.young = 3#+2*random()
 
         self.substrate = Solid.FreeFFTElasticHalfSpace(
-            self.res, self.young, self.physical_sizes)
+            self.res, self.young, self.physical_sizes, fft="serial")
 
         self.eps = 1# +np.random.rand()
         self.sig = 2# +np.random.rand()
@@ -406,8 +413,8 @@ class FastSystemTest(unittest.TestCase):
         energy_rc = (1., 1./energy_c)
 
         for i in range(2):
-            substrate = Solid.PeriodicFFTElasticHalfSpace(
-                res, young[i], size[i])
+            substrate = Solid.PeriodicFFTElasticHalfSpace(res, young[i],
+                                                          size[i])
             interaction = Contact.LJ93smoothMin(
                 eps[i], sig[i], gam[i])
             surface = Topography.make_sphere(radius[i], res, size[i], standoff=float(sig[i]*1000))

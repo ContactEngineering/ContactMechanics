@@ -76,16 +76,14 @@ def test_elastic_solution(self):
 
 
 @pytest.mark.parametrize("resolution", [(512, 512), (512, 511), (511, 512)])
-def test_constrained_conjugate_gradients(self, resolution, comm,
-                                         fftengine_class):
+def test_constrained_conjugate_gradients(self, resolution, comm,fftengine_type):
     pnp = Reduction(comm)
     nx, ny = resolution
     for disp0, normal_force in [(0.1, None), (0, 15.0)]:
         sx = 5.0
 
-        substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
-                                            (sx, sx), fftengine=fftengine_class(
-                (2 * nx, 2 * ny), comm=comm), pnp=pnp)
+        substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,(sx, sx),
+                                            fft=fftengine_type, comm=comm)
 
         interaction = HardWall()
         surface = make_sphere(self.r_s, (nx, ny), (sx, sx),
@@ -167,9 +165,9 @@ def test_constrained_conjugate_gradients(self, resolution, comm,
 
         if np.prod(substrate.subdomain_resolution) > 0:
             x = ((np.arange(nx) - nx / 2) * sx / nx).reshape(-1, 1)[
-                substrate.subdomain_slice[0], :]
+                substrate.subdomain_slices[0], :]
             y = ((np.arange(ny) - ny / 2) * sx / ny).reshape(1, -1)[:,
-                substrate.subdomain_slice[1]]
+                substrate.subdomain_slices[1]]
             r = np.sqrt(x ** 2 + y ** 2)
             p_analytical[r < a] = p0 * np.sqrt(1 - (r[r < a] / a) ** 2)
         else:

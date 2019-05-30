@@ -25,6 +25,10 @@
 """
 Tests the fft elastic halfspace implementation
 """
+import pytest
+from NuMPI import MPI
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 
 try:
     import unittest
@@ -43,6 +47,8 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+
+
 class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
     def setUp(self):
         self.physical_sizes = (7.5+5*rand(), 7.5+5*rand())
@@ -58,19 +64,20 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         for i in (1, 2):
             s_res = base_res*i
             test_res = (s_res, s_res)
-            hs = PeriodicFFTElasticHalfSpace(test_res, self.young, self.physical_sizes)
+            hs = PeriodicFFTElasticHalfSpace(test_res, self.young,
+                                             self.physical_sizes)
             forces = np.zeros(test_res)
             forces[:s_res//2,:s_res//2] = 1.
 
-            pressure.append(hs.evaluate_disp(forces)[::i,::i]*hs.area_per_pt)
+            pressure.append(hs.evaluate_disp(forces)[::i, ::i]*hs.area_per_pt)
         error = ((pressure[0]-pressure[1])**2).sum().sum()/base_res**2
         self.assertTrue(error < tol, "error = {}".format(error))
-
 
     def test_parabolic_shape_force(self):
         """ tests whether the Elastic energy is a quadratic function of the
             applied force"""
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                         self.physical_sizes)
         force = random(self.res)
         force -= force.mean()
         nb_tests = 4
@@ -85,7 +92,8 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
     def test_parabolic_shape_disp(self):
         """ tests whether the Elastic energy is a quadratic function of the
             applied displacement"""
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                         self.physical_sizes)
         disp = random(self.res)
         disp -= disp.mean()
         nb_tests = 4
@@ -125,7 +133,8 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         tol = 1e-10
         for res in ((self.res[0],), self.res, (self.res[0]+1, self.res[1]),
                     (self.res[0], self.res[1]+1)):
-            hs = PeriodicFFTElasticHalfSpace(res, self.young, self.physical_sizes)
+            hs = PeriodicFFTElasticHalfSpace(res, self.young,
+                                             self.physical_sizes)
             disp = random(res)
             disp -= disp.mean()
 
@@ -144,6 +153,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
                 "for resolution = {}, error = {} > tol = {}".format(
                     res, error, tol))
 
+    #@unittest.skip("wait on 1d support")
     def test_energy(self):
         tol = 1e-10
         l = 2 + rand() # domain length
@@ -197,7 +207,8 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         for res in [(16, 16), (16, 15), (15, 16), (15, 9)]:
 
             disp = np.random.normal(size=res)
-            hs = PeriodicFFTElasticHalfSpace(res, self.young, self.physical_sizes)
+            hs = PeriodicFFTElasticHalfSpace(res, self.young,
+                                             self.physical_sizes)
             np.testing.assert_allclose(
                 hs.evaluate(disp, pot=True, forces=True)[0],
                 hs.evaluate(disp, pot=True, forces=False)[0])
@@ -274,35 +285,40 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
     def test_uniform_displacement(self):
         """ tests whether uniform displacement returns stiffness_q0"""
         sq0 = 1.43
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
-                                         stiffness_q0=sq0)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                         self.physical_sizes, stiffness_q0=sq0)
         force = hs.evaluate_force(-np.ones(self.res))
         self.assertAlmostEqual(force.sum() / np.prod(self.physical_sizes), sq0)
 
     def test_uniform_displacement_finite_height(self):
         """ tests whether uniform displacement returns stiffness_q0"""
         h0 = 3.45
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
-                                         poisson=self.poisson, thickness=h0)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                         self.physical_sizes, thickness=h0,
+                                         poisson=self.poisson)
         force = hs.evaluate_force(-np.ones(self.res))
         M = (1-self.poisson)/((1-2*self.poisson)*(1+self.poisson))*self.young
         self.assertAlmostEqual(force.sum() / np.prod(self.physical_sizes), M / h0)
 
     def test_limit_of_large_thickness(self):
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                         self.physical_sizes,
                                          poisson=self.poisson)
-        hsf = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
-                                          poisson=self.poisson, thickness=20)
+        hsf = PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                          self.physical_sizes, thickness=20,
+                                          poisson=self.poisson)
         diff = hs.weights-hsf.weights
         self.assertArrayAlmostEqual(hs.weights.ravel()[1:],
                                     hsf.weights.ravel()[1:], tol=1e-6)
 
     def test_no_nans(self):
-        hs = PeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes,
-                                         poisson=self.poisson, thickness=100)
+        hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                         self.physical_sizes, thickness=100,
+                                         poisson=self.poisson)
         self.assertTrue(np.count_nonzero(np.isnan(hs.weights)) == 0)
 
-    #TODO: Test independence of result of x and y Direction
+    #TODO: Test independence of result of x and y Direction,
+    # this is already in the MPI variant
 
 class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
@@ -346,6 +362,57 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
                     res, duration2*1e3, duration3*1e3, 1e2*(1-duration3/duration2)))
             error = Tools.mean_err(w2, w3)
             self.assertTrue(error == 0)
+
+    def test_rfftn(self):
+        force = np.zeros([2*r for r in self.res])
+
+        force[:self.res[0], :self.res[1]] = np.random.random(self.res)
+        from muFFT import FFT
+        ref = rfftn(force)
+        tested = FFT([2*r for r in self.res], fft="serial").fft(force)
+        np.testing.assert_allclose(ref.real,
+                                    tested.real)
+        np.testing.assert_allclose(ref.imag,
+                                   tested.imag)
+
+    def test_fftengine_nb_grid_pts(self):
+        hs = FreeFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
+        assert hs.fftengine.nb_domain_grid_pts == tuple([2*r for r in self.res])
+
+
+    def test_temp(self):
+        hs = FreeFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
+        force = np.zeros(hs.domain_resolution)
+        assert hs.domain_resolution == tuple([2*r for r in self.res ])
+        force[:self.res[0], :self.res[1]] = np.random.random(self.res)
+        force[:self.res[0], :self.res[1]] -= force[:self.res[0],
+                                             :self.res[1]].mean()
+
+        #np.testing.assert_allclose(rfftn(-force), hs.fftengine.fft(-force))
+        #hs.fftengine.fft(-force)
+        kdisp_hs = hs.weights * rfftn(-force) / hs.area_per_pt
+        kdisp = hs.evaluate_k_disp(force)
+
+        np.testing.assert_allclose(kdisp_hs, kdisp, rtol=1e-10)
+        np.testing.assert_allclose(kdisp_hs.real, kdisp.real)
+        np.testing.assert_allclose(kdisp_hs.imag, kdisp.imag)
+
+        kforce = rfftn(force)
+        np_pts = np.prod(hs.domain_resolution)
+        area_per_pt = np.prod(self.physical_sizes) / np_pts
+        energy = .5 * (np.vdot(-kforce, kdisp) +
+                       np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
+        error = abs(energy.imag)
+        tol = 1e-10
+        self.assertTrue(error < tol,
+                        "error (imaginary part) = {}, tol = {}".format(
+                            error, tol))
+        error = abs(energy - hs.evaluate_elastic_energy_k_space(kforce, kdisp))
+        self.assertTrue(error < tol,
+                        ("error (comparison) = {}, tol = {}, energy = {}, "
+                         "kenergy = {}").format(
+                            error, tol, energy,
+                            hs.evaluate_elastic_energy_k_space(kforce, kdisp)))
 
     def test_realnessEnergy(self):
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)

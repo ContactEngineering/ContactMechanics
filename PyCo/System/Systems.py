@@ -677,16 +677,16 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        if self.substrate.fftengine.is_MPI:
-            result = constrained_conjugate_gradients(
-                self.substrate,
-                self.surface,
-                **kwargs)
-        else :
-            result = solver(
-                self.substrate,
-                self.surface.heights(),
-                **kwargs)
+        #if self.substrate.fftengine.is_MPI: # TODO: this can be thrown away
+        result = constrained_conjugate_gradients(
+            self.substrate,
+            self.surface,
+            **kwargs)
+        #else :
+        #    result = solver(
+        #        self.substrate,
+        #        self.surface.heights(),
+        #        **kwargs)
         if result.success:
             self.offset = result.offset
             self.disp = result.x

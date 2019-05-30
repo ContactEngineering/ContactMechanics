@@ -61,7 +61,8 @@ surface.set_size(surface.shape)
 
 # Initialize elastic half-space. This one is periodic with contact modulus
 # E*=1.0 and physical physical_sizes equal to the surface.
-substrate = PeriodicFFTElasticHalfSpace(surface.shape, 1.0, surface.physical_sizes,
+substrate = PeriodicFFTElasticHalfSpace(surface.shape, 1.0,
+                                        surface.physical_sizes,
                                         stiffness_q0=None)
 
 interaction = ExpPotential(gamma, rho)

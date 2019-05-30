@@ -27,7 +27,7 @@ import numpy as np
 from PyCo.Topography import make_sphere
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
 
-def test_sphere(comm, fftengine_class):
+def test_sphere(comm, fftengine_type):
     nx = 8
     ny = 5
     sx = 6.
@@ -36,8 +36,8 @@ def test_sphere(comm, fftengine_class):
     center = (3.,3.)
     substrate = FreeFFTElasticHalfSpace(resolution=(nx, ny), young=1.,
                                         physical_sizes=(sx, sy),
-                                        fftengine=fftengine_class((2*nx, 2*ny),
-                                                                  comm=comm))
+                                        fft=fftengine_type((2 * nx, 2 * ny),
+                                                           comm=comm))
     extended_topography = make_sphere(R, (2*nx, 2*ny), (sx, sy), centre=center,
                                       subdomain_resolution=substrate.subdomain_resolution,
                                       subdomain_location=substrate.subdomain_location,
@@ -47,7 +47,7 @@ def test_sphere(comm, fftengine_class):
     np.testing.assert_allclose((X-center[0])**2 + (Y-center[1])**2 + (R+Z)**2,  R**2)
 
 
-def test_sphere_periodic(comm, fftengine_class):
+def test_sphere_periodic(comm, fftengine_type):
     nx = 8
     ny = 5
     sx = 6.
@@ -55,10 +55,7 @@ def test_sphere_periodic(comm, fftengine_class):
     R = 20.
     center = (1., 1.5)
     substrate = PeriodicFFTElasticHalfSpace(resolution=(nx, ny), young=1.,
-                                            physical_sizes=(sx, sy),
-                                            fftengine=fftengine_class(
-                                            (nx, ny),
-                                            comm=comm))
+                                            physical_sizes=(sx, sy))
 
     extended_topography = make_sphere(R, (nx, ny), (sx, sy),
                                       centre=center,
@@ -73,7 +70,7 @@ def test_sphere_periodic(comm, fftengine_class):
                 + (Y - np.where(Y < center[1] + sy/2 , center[1], center[1] + sy) ) ** 2
                   + (R + Z) ** 2, R**2)
 
-def test_sphere_standoff(comm, fftengine_class):
+def test_sphere_standoff(comm, fftengine_type):
     nx = 8
     ny = 5
     sx = 6.
@@ -85,7 +82,7 @@ def test_sphere_standoff(comm, fftengine_class):
 
     substrate = FreeFFTElasticHalfSpace(resolution=(nx, ny), young=1.,
                                         physical_sizes=(sx, sy),
-                                        fftengine=fftengine_class(
+                                        fft=fftengine_type(
                                             (2 * nx, 2 * ny),
                                             comm=comm))
     extended_topography = make_sphere(R, (2 * nx, 2 * ny), (sx, sy),

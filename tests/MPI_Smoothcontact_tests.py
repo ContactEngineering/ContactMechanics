@@ -58,7 +58,7 @@ except ImportError as err:
 _toplot =True
 
 @pytest.mark.skip("is very slow, call it explicitely")
-def test_smoothsphere(maxcomm, fftengine_class): # TODO problem: difficult to compare contact_area with MD Model,
+def test_smoothsphere(maxcomm, fftengine_type): # TODO problem: difficult to compare contact_area with MD Model,
     """
     This test needs a lot of computational effort
     Parameters
@@ -89,8 +89,6 @@ def test_smoothsphere(maxcomm, fftengine_class): # TODO problem: difficult to co
     sx = 21.0
 
     z0 = 0.05 # needed to get small tolerance, but very very slow
-
-    fftengine = fftengine_class((2*nx, 2*ny), comm=comm)
     pnp =Reduction(comm=comm)
 
     # the "Min" part of the potential (linear for small z) is needed for the LBFGS without bounds
@@ -98,9 +96,11 @@ def test_smoothsphere(maxcomm, fftengine_class): # TODO problem: difficult to co
 
     # Parallel Topography Patch
 
-    substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx), fftengine=fftengine, pnp=pnp)
+    substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx),
+                                        fft=fftengine_type,
+                                        comm=comm)
     print(substrate._comp_resolution)
-    print(fftengine.domain_resolution)
+    print(substrate.fftengine.nb_domain_grid_pts)
 
 
     surface = make_sphere(radius=r_s, resolution=(nx, ny), size=(sx, sx),
