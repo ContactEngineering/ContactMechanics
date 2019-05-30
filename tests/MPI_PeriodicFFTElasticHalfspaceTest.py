@@ -183,7 +183,7 @@ def test_sineWave_disp(comm, pnp, fftengine_type, nx, ny, basenpoints):
 
         #print(substrate.domain_resolution[-1] % 2)
         #print(substrate.fourier_resolution)
-        #print(substrate.fourier_location[-1] + substrate.fourier_resolution[-1] - 1)
+        #print(substrate.fourier_locations[-1] + substrate.fourier_resolution[-1] - 1)
         #print(substrate.domain_resolution[-1] // 2 )
         #print(computedenergy)
         #print(computedenergy_kspace)

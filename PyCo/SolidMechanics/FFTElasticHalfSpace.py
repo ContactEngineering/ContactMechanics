@@ -196,13 +196,13 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return self.fftengine.nb_fourier_grid_pts
 
     @property
-    def fourier_location(self):
+    def fourier_locations(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
-        return self.  fftengine.fourier_locations
+        return self.fftengine.fourier_locations
 
     @property
     def fourier_slices(self):
@@ -241,7 +241,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """
         if self.dim == 1:
             facts = np.zeros(self.fourier_resolution)
-            for index in range(self.fourier_location[0]+2, self.fourier_resolution[0]+1):
+            for index in range(self.fourier_locations[0] + 2, self.fourier_resolution[0] + 1):
                  facts[index - 1] = \
                      self.physical_sizes[0] / (self.contact_modulus * index * np.pi)
             self.weights= facts
@@ -252,19 +252,19 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 nx, ny = self.resolution
                 sx, sy = self.physical_sizes
                 # Note: q-values from 0 to 1, not from 0 to 2*pi
-                qx = np.arange(self.fourier_location[0],
-                               self.fourier_location[0] +
+                qx = np.arange(self.fourier_locations[0],
+                               self.fourier_locations[0] +
                                self.fourier_resolution[0], dtype=np.float64)
                 qx = np.where(qx <= nx//2, qx/sx, (nx-qx)/sx)
-                qy = np.arange(self.fourier_location[1],
-                               self.fourier_location[1] +
+                qy = np.arange(self.fourier_locations[1],
+                               self.fourier_locations[1] +
                                self.fourier_resolution[1], dtype=np.float64)
                 qy = np.where(qy <= ny//2, qy/sy, (ny-qy)/sy)
                 q = np.sqrt((qx*qx).reshape(-1, 1) + (qy*qy).reshape(1, -1))
-                if self.fourier_location == (0, 0):
+                if self.fourier_locations == (0, 0):
                     q[0, 0] = np.NaN;  # q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
                 facts = np.pi*self.contact_modulus*q
-                if self.thickness is not None: #TODO: parallel test for this case
+                if self.thickness is not None:
                     # Compute correction for finite thickness
                     q *= 2*np.pi*self.thickness
                     fac = 3 - 4*self.poisson
@@ -276,13 +276,13 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     # q-values that are converged to the infinite system expression.
                     corr[np.isnan(corr)] = 1.0
                     facts *= corr
-                    if self.fourier_location == (0, 0):
+                    if self.fourier_locations == (0, 0):
                         facts[0, 0] = self.young / self.thickness * \
                                       (1 - self.poisson) / (
                                                   (1 - 2 * self.poisson) * (
                                                       1 + self.poisson))
                 else:
-                    if self.fourier_location == (0, 0):
+                    if self.fourier_locations == (0, 0):
                         if self.stiffness_q0 is None:
                             facts[0, 0] = (facts[1, 0].real + facts[0, 1].real) / 2
                         elif self.stiffness_q0 == 0.0:
@@ -291,7 +291,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                             facts[0, 0] = self.stiffness_q0
 
                 self.weights = 1 / facts
-                if self.fourier_location == (0, 0):
+                if self.fourier_locations == (0, 0):
                     if self.stiffness_q0 == 0.0:
                         self.weights[0, 0] = 0.0
 
@@ -429,7 +429,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         #FIXME: why this test was done in earlier versions
         # if kdisp.shape[-1] > 0:
         if kdisp.size > 0:
-            if self.fourier_location[-1] == 0: # First column of this fourier data is first of global data
+            if self.fourier_locations[-1] == 0: # First column of this fourier data is first of global data
                 #print("First column of this fourier data is first of global data")
                 fact0 = 1
             elif self.fourier_resolution[-1] > 1:
@@ -438,12 +438,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             else:
                 fact0 = 0
 
-            if self.fourier_location[-1] == 0 and self.fourier_resolution[-1] ==1 :
+            if self.fourier_locations[-1] == 0 and self.fourier_resolution[-1] ==1 :
                 factend = 0
             elif (self.domain_resolution[-1] % 2 == 1):
                 # odd number of points, last column have always to be symetrized
                 factend = 2
-            elif self.fourier_location[-1] + self.fourier_resolution[-1] - 1 == self.domain_resolution[-1] // 2:
+            elif self.fourier_locations[-1] + self.fourier_resolution[-1] - 1 == self.domain_resolution[-1] // 2:
                 # last column of the global rfftn already contains it's symetric
                 factend = 1
                 # print("last Element of the even data has to be accounted only once")
