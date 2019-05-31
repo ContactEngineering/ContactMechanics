@@ -380,7 +380,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         assert hs.fftengine.nb_domain_grid_pts == tuple([2*r for r in self.res])
 
 
-    def test_temp(self):
+    def test_temp(self): #TODO: Remove me
         hs = FreeFFTElasticHalfSpace(self.res, self.young, self.physical_sizes)
         force = np.zeros(hs.nb_domain_grid_pts)
         assert hs.nb_domain_grid_pts == tuple([2*r for r in self.res ])

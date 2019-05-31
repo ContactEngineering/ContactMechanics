@@ -129,7 +129,45 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
 
-        self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft, communicator=comm)
+        if fft=="numpy":
+            class numpyEngine:
+                def __init__(self, nb_domain_grid_pts):
+
+                    self.nb_domain_grid_pts = nb_domain_grid_pts
+                    self.nb_subdomain_grid_pts = nb_domain_grid_pts
+                    self.subdomain_locations = (0, 0)  # readonly
+
+                    self.nb_fourier_grid_pts = (
+                    *nb_domain_grid_pts[:-1], nb_domain_grid_pts[-1] // 2 + 1)
+                    self.fourier_locations = (0, 0)
+
+                @property
+                def subdomain_slices(self):
+                    return tuple(
+                        (slice(start, start + length) for start, length in
+                         zip(self.subdomain_locations,
+                             self.nb_subdomain_grid_pts)))
+
+
+                @property
+                def fourier_slice(self):
+                    return tuple(
+                        (slice(start, start + length) for start, length in
+                         zip(self.fourier_locations, self.nb_fourier_grid_pts)))
+
+                def fft(self, arr):
+                    return np.fft.rfftn(arr)
+
+                def ifft(self, arr):
+                    return np.fft.irfftn(arr, self.nb_subdomain_grid_pts) #* np.prod(self.nb_domain_grid_pts)
+
+                @property
+                def normalisation(self):
+                    return 1.
+            self.fftengine=numpyEngine(self.nb_domain_grid_pts)
+
+        else:
+            self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft, communicator=comm)
 
         self.pnp = Reduction(comm)
 

@@ -56,7 +56,7 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
 import pytest
 
 @pytest.mark.parametrize("r_c",[2., 6.])
-@pytest.mark.parametrize("young",[3.]) # ,10.,100.
+@pytest.mark.parametrize("young",[3., 10, 100.]) # ,10.,100.
 def test_minimization_simplesmoothmin(young, r_c):
 
 
@@ -76,7 +76,7 @@ def test_minimization_simplesmoothmin(young, r_c):
                                  centre=[ s/2 for s in size], standoff=float('inf'))
 
     substrate = Solid.FreeFFTElasticHalfSpace(
-        res, young, size, fft="serial")
+        res, young, size, fft="numpy")
 
     pot = Contact.LJ93SimpleSmoothMin(eps, sig, r_c=r_c, r_ti=0.5)
 
@@ -98,7 +98,7 @@ def test_minimization_simplesmoothmin(young, r_c):
     offset = .8 * S.interaction.r_c
     fun = S.objective(offset, gradient=True)
 
-    options = dict(ftol=1e-18, gtol=1e-10)
+    options = dict(ftol=1e-18, gtol=1e-10, maxcor=5)
     disp = S.shape_minimisation_input(
         np.zeros(substrate.nb_domain_grid_pts))
 
@@ -106,7 +106,7 @@ def test_minimization_simplesmoothmin(young, r_c):
     bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
     result = minimize(fun, disp, jac=True,
                       method='L-BFGS-B', options=options)#, bounds=bnds)
-    if False:
+    if True:
         import matplotlib.pyplot as plt
         fig,ax = plt.subplots()
 
@@ -126,7 +126,9 @@ def test_minimization_simplesmoothmin(young, r_c):
                                      256])
 @pytest.mark.parametrize("young", [3.,100.]) # mit young = 100 geht auch LJ93smoothMin durch
 @pytest.mark.parametrize("pot_class",[pytest.param(Contact.LJ93smooth, marks=pytest.mark.xfail),
-                                      Contact.LJ93smoothMin])
+                                      Contact.LJ93smoothMin,
+                                      Contact.LJ93SimpleSmoothMin,
+                                      Contact.VDW82smoothMin])
 def test_minimization(pot_class, young, base_res):
 
     eps=1
@@ -143,9 +145,14 @@ def test_minimization(pot_class, young, base_res):
     ext_surface = Topography.make_sphere(radius, [2 * r for r in res], [2 * s for s in size],
                                  centre=[ s/2 for s in size], standoff=float("inf"))
 
-    substrate = Solid.FreeFFTElasticHalfSpace(res, young, size)
+    substrate = Solid.FreeFFTElasticHalfSpace(res, young, size, fft="numpy")
 
-    pot = pot_class(eps, sig, gam, )
+    if pot_class==Contact.VDW82smoothMin:
+        pot = pot_class(gam * eps **8 / 3, 16 * np.pi * gam * eps**2,gamma=gam)
+    elif pot_class== Contact.LJ93SimpleSmoothMin :
+        pot = pot_class(eps, sig, r_c = 10., r_ti=0.5)
+    else:
+        pot = pot_class(eps, sig, gam, )
     if hasattr(pot, "r_ti"):
         assert pot.r_ti < pot.r_t
 
