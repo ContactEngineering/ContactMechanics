@@ -30,7 +30,7 @@ Defines all interaction modes used in PyCo
 
 from .Interactions import Interaction, HardWall, SoftWall
 from .Potentials import Potential, SmoothPotential
-from .Potentials import LinearCorePotential, ParabolicCutoffPotential, MinimisationPotential
+from .Potentials import LinearCorePotential, ParabolicCutoffPotential
 
 from .Adhesion import ExpPotential
 from .Harmonic import HarmonicPotential
