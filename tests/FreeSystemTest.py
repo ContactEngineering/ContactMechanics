@@ -98,7 +98,7 @@ def test_minimization_simplesmoothmin(young, r_c):
     offset = .8 * S.interaction.r_c
     fun = S.objective(offset, gradient=True)
 
-    options = dict(ftol=1e-18, gtol=1e-10, maxcor=5)
+    options = dict(ftol=1e-18, gtol=1e-10)
     disp = S.shape_minimisation_input(
         np.zeros(substrate.nb_domain_grid_pts))
 
@@ -106,7 +106,7 @@ def test_minimization_simplesmoothmin(young, r_c):
     bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
     result = minimize(fun, disp, jac=True,
                       method='L-BFGS-B', options=options)#, bounds=bnds)
-    if True:
+    if False:
         import matplotlib.pyplot as plt
         fig,ax = plt.subplots()
 
