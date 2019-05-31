@@ -88,7 +88,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                         inheriting subclasses use this.
         fft: string
         FFT engine to use. Options are 'fftw', 'fftwmpi', 'pfft' and 'p3dfft'.
-            Default: 'fftw'.
+            'serial' and 'mpi' can also be specified, where the choice of the
+            appropriate fft is made by muFFT
+            Default: 'serial'.
         """
         super().__init__()
         if not hasattr(nb_grid_pts, "__iter__"):
@@ -103,21 +105,20 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         if stiffness_q0 is not None and thickness is not None:
             raise self.Error("Please specify either stiffness_q0 or thickness "
                              "or neither.")
-        self.nb_grid_pts = nb_grid_pts
+        self._nb_grid_pts = nb_grid_pts
         tmpsize = list()
         for i in range(self.dim):
             tmpsize.append(physical_sizes[min(i, len(physical_sizes) - 1)])
-        self.physical_sizes = tuple(tmpsize)
-        self.nb_pts = np.prod(self.nb_grid_pts)
-        self.area_per_pt = np.prod(self.physical_sizes) / self.nb_pts
+        self._physical_sizes = tuple(tmpsize)
+
         try:
-            self.steps = tuple(
+            self._steps = tuple(
                 float(size)/res for size, res in
                 zip(self.physical_sizes, self.nb_grid_pts))
         except ZeroDivisionError as err:
             raise ZeroDivisionError(
                 ("{}, when trying to handle "
-                 "    self.steps = tuple("
+                 "    self._steps = tuple("
                  "        float(physical_sizes)/res for physical_sizes, res in"
                  "        zip(self.physical_sizes, self.nb_grid_pts))"
                  "Parameters: self.physical_sizes = {}, self.nb_grid_pts = {}"
@@ -140,6 +141,18 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     def dim(self, ):
         "return the substrate's physical dimension"
         return self.__dim
+
+    @property
+    def nb_grid_pts(self):
+        return self._nb_grid_pts
+
+    @property
+    def area_per_pt(self):
+        return np.prod(self.physical_sizes) / np.prod(self.nb_grid_pts)
+
+    @property
+    def physical_sizes(self):
+        return self._physical_sizes
 
     @property
     def nb_domain_grid_pts(self, ):
@@ -580,19 +593,19 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         else:
             x_grid = np.arange(self.nb_grid_pts[0] * 2)
             x_grid = np.where(x_grid <= self.nb_grid_pts[0], x_grid,
-                              x_grid - self.nb_grid_pts[0] * 2) * self.steps[0]
+                              x_grid - self.nb_grid_pts[0] * 2) * self._steps[0]
             x_grid.shape = (-1, 1)
             y_grid = np.arange(self.nb_grid_pts[1] * 2)
             y_grid = np.where(y_grid <= self.nb_grid_pts[1], y_grid,
-                              y_grid - self.nb_grid_pts[1] * 2) * self.steps[1]
+                              y_grid - self.nb_grid_pts[1] * 2) * self._steps[1]
             y_grid.shape = (1, -1)
-            x_p = (x_grid + self.steps[0] * .5).reshape((-1, 1))
-            x_m = (x_grid - self.steps[0] * .5).reshape((-1, 1))
+            x_p = (x_grid + self._steps[0] * .5).reshape((-1, 1))
+            x_m = (x_grid - self._steps[0] * .5).reshape((-1, 1))
             xp2 = x_p * x_p
             xm2 = x_m * x_m
 
-            y_p = y_grid + self.steps[1] * .5
-            y_m = y_grid - self.steps[1] * .5
+            y_p = y_grid + self._steps[1] * .5
+            y_m = y_grid - self._steps[1] * .5
             yp2 = y_p * y_p
             ym2 = y_m * y_m
             sqrt_yp_xp = np.sqrt(yp2 + xp2)
@@ -608,7 +621,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                  (y_p + sqrt_yp_xm)) +
                     y_m * np.log((x_m + sqrt_ym_xm) /
                                  (x_p + sqrt_ym_xp)))
-        return self.fftengine.fft(facts), facts
+        return self.fftengine.fft(facts).copy(), facts
 
     def _compute_fourier_coeffs(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
@@ -619,22 +632,22 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """
         # pylint: disable=invalid-name
         facts = np.zeros(self.nb_subdomain_grid_pts)
-        a = self.steps[0]*.5
+        a = self._steps[0] * .5
         if self.dim == 1:
             pass
         else:
-            b = self.steps[1]*.5
+            b = self._steps[1] * .5
             x_s = np.arange(self.subdomain_locations[0],
                               self.subdomain_locations[0] +
                               self.nb_subdomain_grid_pts[0])
             x_s = np.where(x_s <= self.nb_grid_pts[0], x_s,
-                             x_s-self.nb_grid_pts[0] * 2) * self.steps[0]
+                             x_s-self.nb_grid_pts[0] * 2) * self._steps[0]
             x_s.shape = (-1, 1)
             y_s = np.arange(self.subdomain_locations[1],
                               self.subdomain_locations[1] +
                               self.nb_subdomain_grid_pts[1])
             y_s = np.where(y_s <= self.nb_grid_pts[1], y_s,
-                             y_s-self.nb_grid_pts[1]*2) * self.steps[1]
+                             y_s-self.nb_grid_pts[1]*2) * self._steps[1]
             y_s.shape = (1, -1)
             facts = 1/(np.pi*self.young) * (
                   (x_s+a)*np.log(((y_s+b)+np.sqrt((y_s+b)*(y_s+b) +
