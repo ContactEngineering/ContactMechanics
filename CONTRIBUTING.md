@@ -31,3 +31,9 @@ Examples:
 - use TST when your changes only deal with the testing environment. If you fix a bug and implement the test for it, use BUG.
 - minor changes that doesn't change the codes behaviour (for example rewrite file in a cleaner or slightly efficienter way) belong to the tag MAINT
 - if you change documentation files without changing the code, use DOC; if you also change code in the same commit, use another shortcut
+
+Authors
+-------
+Add yourself to the AUTHORS file using the email address that you are using for your
+commits. We use this information to automatically generate copyright statements for
+all files from the commit log.
