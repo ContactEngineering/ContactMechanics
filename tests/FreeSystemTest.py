@@ -126,9 +126,7 @@ def test_minimization_simplesmoothmin(young, r_c):
                                      256])
 @pytest.mark.parametrize("young", [3.,100.]) # mit young = 100 geht auch LJ93smoothMin durch
 @pytest.mark.parametrize("pot_class",[pytest.param(Contact.LJ93smooth, marks=pytest.mark.xfail),
-                                      Contact.LJ93smoothMin,
-                                      Contact.LJ93SimpleSmoothMin,
-                                      Contact.VDW82smoothMin])
+                                      Contact.LJ93smoothMin])
 def test_minimization(pot_class, young, base_res):
 
     eps=1

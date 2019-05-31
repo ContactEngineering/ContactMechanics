@@ -82,18 +82,18 @@ def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints):
         """
         # pylint: disable=invalid-name
         facts = np.zeros(tuple((res * 2 for res in hs.nb_grid_pts)))
-        a = hs.steps[0] * .5
+        a = hs._steps[0] * .5
         if hs.dim == 1:
             pass
         else:
-            b = hs.steps[1] * .5
+            b = hs._steps[1] * .5
             x_s = np.arange(hs.nb_grid_pts[0] * 2)
             x_s = np.where(x_s <= hs.nb_grid_pts[0], x_s,
-                           x_s - hs.nb_grid_pts[0] * 2) * hs.steps[0]
+                           x_s - hs.nb_grid_pts[0] * 2) * hs._steps[0]
             x_s.shape = (-1, 1)
             y_s = np.arange(hs.nb_grid_pts[1] * 2)
             y_s = np.where(y_s <= hs.nb_grid_pts[1], y_s,
-                           y_s - hs.nb_grid_pts[1] * 2) * hs.steps[1]
+                           y_s - hs.nb_grid_pts[1] * 2) * hs._steps[1]
             y_s.shape = (1, -1)
             facts = 1 / (np.pi * hs.young) * (
                     (x_s + a) * np.log(((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
