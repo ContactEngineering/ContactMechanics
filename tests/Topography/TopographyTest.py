@@ -206,3 +206,22 @@ class TopographyTest(PyCoTestCase):
         q1, C1 = t.power_spectrum_1D(window='hann')
 
         # TODO add check for values
+
+def test_translate(comm_self):
+    topography=Topography(np.array([[0,1,0],[0,0,0]]), physical_sizes=(4., 3.))
+    print(topography.heights().shape)
+
+    assert (topography.translate(offset=(1, 0)).heights()
+            ==
+           np.array([[0,0,0],
+                     [0,1,0]])).all()
+
+    assert (topography.translate(offset=(2, 0)).heights()
+            ==
+            np.array([[0, 1, 0],
+                      [0, 0, 0]])).all()
+
+    assert (topography.translate(offset=(0, -1)).heights()
+            ==
+            np.array([[1, 0, 0],
+                      [0, 0, 0]])).all()
