@@ -757,7 +757,7 @@ class matSurfaceTest(unittest.TestCase):
 
     def test_read(self):
         from PyCo.Topography.IO import MatReader
-        surface = MatReader(os.path.join(DATADIR,  'example1.mat')).topography(size=[1.,1.])
+        surface = MatReader(os.path.join(DATADIR,  'example1.mat')).topography(physical_sizes=[1.,1.])
         nx, ny = surface.nb_grid_pts
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
@@ -1057,8 +1057,9 @@ class IOTest(unittest.TestCase):
         file_list = self.text_example_file_list + self.binary_example_file_list
 
         for fn in file_list:
+            print(fn)
             reader = open_topography(fn)
-            t = reader.topography(size=reader.physical_sizes if reader.physical_sizes is not None else [1., ] * len(reader.nb_grid_pts))
+            t = reader.topography(physical_sizes=reader.physical_sizes if reader.physical_sizes is not None else [1., ] * len(reader.nb_grid_pts))
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
 

@@ -122,6 +122,7 @@ def test_minimization_simplesmoothmin(young, r_c):
         plt.show(block=True)
     assert result.success, "{}".format(result)
 
+@pytest.mark.skip(reason="Strange problem see issue #139 work on this in the mufft branch")
 @pytest.mark.parametrize("base_res",[pytest.param(128, marks=pytest.mark.xfail),
                                      256])
 @pytest.mark.parametrize("young", [3.,100.]) # mit young = 100 geht auch LJ93smoothMin durch

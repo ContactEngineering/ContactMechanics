@@ -32,7 +32,6 @@ except ImportError:
     _withMPI =False
 
 if _withMPI:
-    from FFTEngine.helpers import gather
     from NuMPI.Tools.Reduction import Reduction
 
 import numpy as np

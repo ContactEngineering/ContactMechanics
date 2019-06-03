@@ -32,13 +32,9 @@ except ImportError:
     _withMPI = False
 
 
-from FFTEngine import NumpyFFTEngine
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from NuMPI.Tools import Reduction
 
-
-
-DEFAULTFFTENGINE = NumpyFFTEngine
 
 @pytest.fixture
 def pnp(comm):
@@ -185,16 +181,3 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_type, nx, ny, basen
     # print(s_refdisp)
     np.testing.assert_allclose(computed_disp[s_c], refdisp[s_refdisp])
 
-if __name__ in ['__main__', 'builtins']:
-    from FFTEngine import PFFTEngine
-    comm = MPI.COMM_WORLD
-    pnp = Reduction(comm=comm)
-    fftengineList = [PFFTEngine]
-    for fftengine_class in fftengineList:
-        for res in [(64, 32), (65, 33)]:
-            print("Testing Resolution {}".format(res))
-            test_nb_grid_ptss(comm, pnp, fftengine_class, *res,0)
-            print("test weights")
-            test_weights(comm, pnp, fftengine_class, *res,0 )
-            print("test evaluate_distest evaluate_disp")
-            test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_class, *res, 0)

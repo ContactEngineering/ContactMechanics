@@ -24,20 +24,7 @@
 import numpy as np
 import pytest
 
-try:
-    from mpi4py import MPI
-
-    _withMPI = True
-except ImportError:
-    print("No MPI")
-    _withMPI = False
-
-if _withMPI:
-
-    from FFTEngine.helpers import gather
-from FFTEngine import NumpyFFTEngine
-
-DEFAULTFFTENGINE = NumpyFFTEngine
+from NuMPI import MPI
 
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 
@@ -52,30 +39,6 @@ def basenpoints(comm):
     # Base number of points in order to avoid empty subdomains
     # when using a lot of processors
 
-
-@pytest.mark.skip("just an alternative implementation of test_weights")
-def test_weights_gather(comm, pnp, fftengine_type, nx, ny, basenpoints):
-    """
-    compares the MPI-Implemtation of the halfspace with the serial one
-    """
-    nx += basenpoints
-    ny += basenpoints
-    sx = 30.0
-    sy = 1.0
-    # equivalent Young's modulus
-    E_s = 1.0
-    substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy), fft=fftengine_type,
-                                            comm=comm)
-    fourres = (substrate.nb_domain_grid_pts[0], substrate.nb_domain_grid_pts[1] // 2 + 1)
-    weights = gather(substrate.weights, substrate.fourier_slices, fourres, comm, root=0)
-    iweights = gather(substrate.iweights, substrate.fourier_slices, fourres, comm, root=0)
-    if comm.Get_rank() == 0:
-        reference = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                                comm=MPI.COMM_SELF)
-        np.testing.assert_allclose(reference.weights, weights, rtol=0, atol=1e-16,
-                                   err_msg="weights are different after gather")
-        np.testing.assert_allclose(reference.iweights, iweights, rtol=0, atol=1e-16,
-                                   err_msg="iweights are different after gather")
 
 @pytest.mark.parametrize("nx, ny", [(64, 33),
                                     (65,32),
@@ -151,9 +114,6 @@ def test_sineWave_disp(comm, pnp, fftengine_type, nx, ny, basenpoints):
         disp = np.cos(qx * X + qy * Y) + np.sin(qx * X + qy * Y)
 
         refpressure = - disp * E_s / 2 * q
-        #np.testing.assert_allclose(refpressure,
-        #    PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-        #    fftengine=NumpyFFTEngine((nx,ny))).evaluate_force(disp) / (sx*sy / (nx*ny)))
 
         substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                                 fft=fftengine_type, comm=comm)
@@ -233,9 +193,6 @@ def test_sineWave_disp_rotation_invariance(comm, pnp, fftengine_type, nx, ny, ba
         disp = np.cos(qx * X + qy * Y) + np.sin(qx * X + qy * Y)  # At the Nyquist frequency for even nuimber of points, the energy computation can only be exact for this point
 
         refpressure = - disp * E_s / 2 * q
-        #np.testing.assert_allclose(refpressure,
-        #    PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-        #    fftengine=NumpyFFTEngine((nx,ny))).evaluate_force(disp) / (sx*sy / (nx*ny)))
 
         substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                                 fft=fftengine_type, comm=comm)
@@ -285,7 +242,6 @@ def test_sineWave_force(comm, pnp, fftengine_type, nx, ny, basenpoints):
     p = np.cos(qx * X + qy * Y)
 
     refdisp = - p / E_s * 2 / q
-    # refpressure = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy), fftengine=NumpyFFTEngine).evaluate_force(p)
 
     substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                             fft=fftengine_type,comm=comm)
@@ -405,33 +361,3 @@ def test_multipleSineWaves_evaluate(comm, pnp, fftengine_type, nx, ny, basenpoin
     np.testing.assert_almost_equal(computed_E_realspace, refEnergy)
     np.testing.assert_allclose(computed_force, refForce[substrate.subdomain_slices], atol=1e-7, rtol=1e-10)
 
-
-if __name__ in ['__main__', 'builtins']:
-    comm = MPI.COMM_WORLD
-    from FFTEngine import PFFTEngine
-    fftengineList = [PFFTEngine]
-    basenpoints = comm.Get_size() * 4 # Base number of points in order to avoid empty subdomains when using a lot of processors 
-    for fftengine_class in fftengineList:
-        print("Testing rotational invartiance of energy")
-        test_sineWave_disp_rotation_invariance(comm, pnp, fftengine_class, 8, 8, basenpoints)
-        test_sineWave_disp_rotation_invariance(comm, pnp, fftengine_class, 17, 128, basenpoints)
-        test_sineWave_disp_rotation_invariance(comm, pnp, fftengine_class, 16, 128, basenpoints)
-        print("rotation invariance ok")
-
-        test_sineWave_disp(comm, pnp, fftengine_class, 8, 15, basenpoints)
-        test_sineWave_disp(comm, pnp, fftengine_class, 8, 4, basenpoints)
-        test_sineWave_disp(comm, pnp, fftengine_class, 9, 4, basenpoints)
-        test_sineWave_disp(comm, pnp, fftengine_class, 113, 765, basenpoints)
-
-        print("Testing Periodic FFTElastic Halfspace weights")
-        test_weights_gather(comm, pnp, fftengine_class, 64, 33, basenpoints)
-        test_weights(comm, pnp, fftengine_class, 64, 33, basenpoints)
-        test_weights(comm, pnp, fftengine_class, 65, 33, basenpoints)
-        test_weights(comm, pnp, fftengine_class, 64, 32, basenpoints)
-
-        print("Testing Free FFTElastic Halfspace computation")
-        for res in [(64, 32), (65, 33)]:
-            print("testing nb_grid_pts {}".format(res))
-            test_sineWave_disp(comm, pnp, fftengine_class, *res, basenpoints)
-            test_sineWave_force(comm, pnp, fftengine_class, *res, basenpoints)
-            test_multipleSineWaves_evaluate(comm, pnp, fftengine_class, *res, basenpoints)
