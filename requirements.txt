@@ -8,7 +8,6 @@ netCDF4>=1.0.0
 h5py
 pandas
 sphinx==1.8.2
-pfft-python
 git+https://github.com/IMTEK-Simulation/NuMPI.git
 pytest>=4
 git+https://gitlab.com/muspectre/muspectre.git#egg=mufft
