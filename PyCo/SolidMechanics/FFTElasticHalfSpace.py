@@ -32,16 +32,9 @@ Implement the FFT-based elasticity solver of pycontact
 from collections import namedtuple
 import numpy as np
 import sys
-
+from NuMPI import MPI
 
 from .Substrates import ElasticSubstrate
-
-# Decide what is default FFTEngine:
-try:
-    from mpi4py import MPI
-    _with_MPI = MPI.COMM_WORLD.Get_size() > 1
-except:
-    _with_MPI = False #TODO: This maybe uselesss
 
 # I will never take the parallel as default because most of the tests will fail because of this
 
