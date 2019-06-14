@@ -231,6 +231,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return self.fftengine.subdomain_slices
 
     @property
+    def topography_subdomain_slices(self):
+        return tuple([slice(s, s + n) for s, n in
+                      zip(self.topography_subdomain_locations,
+                          self.topography_nb_subdomain_grid_pts)])
+
+    @property
     def nb_fourier_grid_pts(self):
         """
         When working in Parallel one processor holds only Part of the Data
