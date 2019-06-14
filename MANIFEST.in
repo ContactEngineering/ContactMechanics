@@ -6,3 +6,4 @@ include tests/ref_smooth_sphere.nc
 include tests/ref_smooth_sphere.out
 include examples/*.py
 include examples/*.out
+include c/*.h
