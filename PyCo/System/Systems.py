@@ -205,26 +205,44 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         results onto the proxied system, etc.
 
         Parameters:
-        offset     -- determines indentation depth
-        disp0      -- (default zero) initial guess for displacement field. If
-                      not chosen appropriately, results may be unreliable.
-        method     -- (defaults to L-BFGS-B, see scipy documentation). Be sure
-                      to choose method that can handle high-dimensional
-                      parameter spaces.
-        options    -- (default None) options to be passed to the minimizer
-                      method
-        gradient   -- (default True) whether to use the gradient or not
-        bounds     -- (default None) nodal ceiling/floor
-        tol        -- (default None) tolerance for termination. For detailed
-                      control, use solver-specific options.
-        callback   -- (default None) callback function to be at each iteration
-                      as callback(disp_k) where disp_k is the current
-                      displacement vector. Instead of a callable, it can be set
-                      to 'True', in which case the system's default callback
-                      function is called.
-        disp_scale -- (default 1.) allows to specify a scaling of the
-                      dislacement before evaluation.
-        logger     -- (default None) log information at every iteration.
+        offset : float
+                 determines indentation depth
+        disp0  : (default zero)
+                 initial guess for displacement field. If
+                 not chosen appropriately, results may be unreliable.
+        method : string or callable
+                (defaults to L-BFGS-B, see scipy documentation).
+                Be sure to choose method that can handle high-dimensional
+                parameter spaces.
+        options : dict
+                  (default None)
+                  options to be passed to the minimizer method
+        gradient : bool
+                   (default True)
+                   whether to use the gradient or not
+        lbounds : array of shape substrate.subdomain_nb_grid_pts or
+                      substrate.topography_subdomain_nb_grid_pts or "auto"
+                   (default None)
+                    nodal ceiling/floor
+        ubounds : array of shape substrate.subdomain_nb_grid_pts or
+                      substrate.topography_subdomain_nb_grid_pts
+                  (default None)
+        tol : float
+              (default None)
+              tolerance for termination. For detailed control, use solver-specific options.
+        callback : callable
+                   (default None)
+                   callback function to be at each iteration
+                    as callback(disp_k) where disp_k is the current
+                    displacement vector. Instead of a callable, it can be set
+                    to 'True', in which case the system's default callback
+                    function is called.
+        disp_scale : float
+                     (default 1.)
+                     allows to specify a scaling of the dislacement before evaluation.
+        logger :
+                 (default None)
+                 log information at every iteration.
         """
         fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
                              logger=logger)
@@ -233,6 +251,17 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         disp0 = self.shape_minimisation_input(disp0)
         if callback is True:
             callback = self.callback(force=gradient)
+
+        # convenience automatic choose of the lower bound
+        if isinstance(lbounds, str):
+            if lbounds == "auto":
+                lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
+                lbounds.mask[self.substrate.topography_subdomain_slices] = False
+                lbounds[self.substrate.topography_subdomain_slices] \
+                    = self.surface.heights() + offset
+                lbounds.set_fill_value(-np.inf)
+            else:
+                raise ValueError()
 
         bnds = None
         if lbounds is not None and ubounds is not None:
@@ -269,7 +298,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         # norm(Grad(objective))< numerical tolerance
         # We can ensure that interaction.force is zero at the boundary by
         # adapting the geometry and the potential (cutoff)
-        # interaction.force will still be nonzero within the numerical tolerance
+        # substrate.force will still be nonzero within the numerical tolerance
         # given by the convergence criterion.
 
         return result

@@ -301,6 +301,69 @@ class SystemTest(unittest.TestCase):
         self.assertTrue(error < 1e-5, "error = {}".format(error))
 
 
+def test_LBFGSB_Hertz():
+    """
+    goal is that this test run the hertzian contact unsing L-BFGS-B
+
+    For some reason it is difficult to reach the gradient tolerance
+
+    """
+    nx, ny = 64,64
+    sx, sy = 20., 20.
+    R = 11.
+
+    surface =Topography.make_sphere( R,(nx,ny), (sx,sy), kind="paraboloid")
+    Es=50.
+    substrate = Solid.FreeFFTElasticHalfSpace((nx,ny), young=Es,
+                                              physical_sizes=(sx, sy),
+                                              fft="serial",
+                                              comm=MPI.COMM_SELF)
+
+    interaction = Contact.ExpPotential(0., 0.0001)
+    system = SmoothContactSystem(substrate, interaction,surface)
+
+    gtol=1e-7 # 1e-8 is not reachable for some reason #FIXME
+    offset=1.
+    res = system.minimize_proxy(offset=offset, lbounds="auto",
+                                options=dict(gtol=gtol, ftol=0))
+
+    assert res.success, res.message
+    print(res.message)
+    print(np.max(abs(res.jac))) # This far beyond the tolerance because
+    # at the points where the constraint act the gradient is allowed to not be zero
+
+    padding_mask = np.full(substrate.nb_subdomain_grid_pts , True)
+    padding_mask[substrate.topography_subdomain_slices] = False
+
+    print(np.max(abs(res.jac[padding_mask])))
+    #ä no force in padding area
+    np.testing.assert_allclose(
+        system.substrate.force[padding_mask],0, rtol=0, atol=gtol)
+    comp_contact_area = np.sum(
+        np.where(system.compute_gap(res.x, offset) == 0, 1.,0.)) \
+                        * system.area_per_pt
+
+    comp_normal_force= np.sum(-substrate.evaluate_force(res.x))
+    from PyCo.ReferenceSolutions import Hertz as Hz
+    a, p0 = Hz.radius_and_pressure(Hz.normal_load(offset, R, Es), R, Es)
+
+    np.testing.assert_allclose(comp_normal_force,
+                        Hz.normal_load(offset, R, Es),
+                        rtol=1e-3,
+                        err_msg="computed normal force doesn't match with hertz "
+                                "theory for imposed Penetration {}".format(
+                            offset))
+
+    np.testing.assert_allclose(comp_contact_area, np.pi * a ** 2,
+                        rtol=1e-2,
+                        err_msg="Computed area doesn't match Hertz Theory")
+
+    if False:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        plt.colorbar(ax.pcolormesh(- system.substrate.force), label="pressure")
+        plt.show(block=True)
+
 class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
     def setUp(self):
         self.physical_sizes = (7.5+5*rand(), 7.5+5*rand())
