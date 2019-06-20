@@ -58,32 +58,44 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi, stiffness_q0=None,
                  thickness=None, poisson=0.0, superclass=True, fft="serial", comm=MPI.COMM_SELF):
         """
-        Keyword Arguments:
-        nb_grid_pts   -- Tuple containing number of points in spatial directions.
-                        The length of the tuple determines the spatial dimension
-                        of the problem.
-        young        -- Young's modulus
-        physical_sizes         -- (default 2π) domain physical_sizes. For multidimensional problems,
-                        a tuple can be provided to specify the lenths per
-                        dimension. If the tuple has less entries than dimensions,
-                        the last value in repeated.
-        stiffness_q0 -- Substrate stiffness at the Gamma-point (wavevector q=0).
-                        If None, this is taken equal to the lowest nonvanishing
-                        stiffness. Cannot be used in combination with height.
-        thickness    -- Thickness of the elastic half-space. If None, this
-                        models an infinitely deep half-space. Cannot be used in
-                        combination with stiffness_q0.
-        poisson      -- Poisson number. Need only be specified for substrates
-                        of finite thickness. If left unspecified for substrates
-                        of infinite thickness, then young is the contact
-                        modulus.
-        superclass   -- (default True) client software never uses this. Only
-                        inheriting subclasses use this.
+        Parameters
+        ----------
+        nb_grid_pts : int tuple
+            containing number of points in spatial directions.
+            The length of the tuple determines the spatial dimension
+            of the problem.
+        young : float
+            Young's modulus, if poisson is not specified it is the
+            contact modulus as defined in Johnson, Contact Mechanics
+        physical_sizes : float or float tuple
+            (default 2π) domain size.
+            For multidimensional problems,
+            a tuple can be provided to specify the lengths per
+            dimension. If the tuple has less entries than dimensions,
+            the last value in repeated.
+        stiffness_q0 : float, optional
+            Substrate stiffness at the Gamma-point (wavevector q=0).
+            If None, this is taken equal to the lowest nonvanishing
+            stiffness. Cannot be used in combination with thickness.
+        thickness : float, optional
+            Thickness of the elastic half-space. If None, this
+            models an infinitely deep half-space. Cannot be used in
+            combination with stiffness_q0.
+        poisson : float
+            Default 0
+             Poisson number. Need only be specified for substrates
+             of finite thickness. If left unspecified for substrates
+             of infinite thickness, then young is the contact
+             modulus.
+        superclass : bool
+            (default True)
+            client software never uses this.
+            Only inheriting subclasses use this.
         fft: string
-        FFT engine to use. Options are 'fftw', 'fftwmpi', 'pfft' and 'p3dfft'.
+            Default: 'serial'
+            FFT engine to use. Options are 'fftw', 'fftwmpi', 'pfft' and 'p3dfft'.
             'serial' and 'mpi' can also be specified, where the choice of the
             appropriate fft is made by muFFT
-            Default: 'serial'.
         """
         super().__init__()
         if not hasattr(nb_grid_pts, "__iter__"):
