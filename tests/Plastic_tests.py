@@ -61,7 +61,7 @@ def test_hard_wall_bearing_area(comm, fftengine_type):
                          pnp=substrate.pnp)
 
     system = make_system(substrate,
-                         HardWall(), PlasticTopography(surface, 0.0000000001))
+                         HardWall(), PlasticTopography(surface, 0.0))
     offset = -0.002
     if comm.rank == 0:
         def cb(it, p_r, d):
@@ -79,3 +79,5 @@ def test_hard_wall_bearing_area(comm, fftengine_type):
     cba = surface.heights() > bearing_area
     # print(comm.Get_rank())
     assert pnp.sum(np.logical_not(c == cba)) < 25
+
+
