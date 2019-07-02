@@ -14,7 +14,7 @@ from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfS
 from PyCo.Topography import Topography
 from PyCo.System import make_system
 
-def Load_and_Mean_pressure(R,angle,v):
+def load_and_mean_pressure(R,angle,v):
     """
     Given contact radius, angle and v
 
@@ -33,7 +33,7 @@ def Load_and_Mean_pressure(R,angle,v):
     mean_Pressure=exter_load/(np.pi*Contact_R**2)
     return external_load,mean_Pressure
 
-def contact_R_and_Area(penetration,angle):
+def contact_radius_and_area(penetration,angle):
     """
     Given penetration and angle
 
@@ -80,19 +80,21 @@ def deformation(penetration,contact_radius,angle):
     
     return Deformation
 
-def pressure(penetration,mean_pressure,contact_radius,angle):
+def pressure(penetration,mean_pressure,contact_radius,angle,X):
     """
-    Given penetration, mean pressure, contact radius and angle
+    Given penetration, mean pressure, contact radius, angle and X
 
     Parameters
     ----------
     Penetration : float
         object penetration depth
     mean pressure : float
-         mean pressure = external load / working area
+        mean pressure = external load / working area
     contact radius : float
     angle : float
-         half of cone angle
+        half of cone angle
+    X : float
+        X is matrix of coordinates ( N * M )
     """
     pressure=np.zeros_like(X)
     R=np.sqrt(x**2 + y**2 )
