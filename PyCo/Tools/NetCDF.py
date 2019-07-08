@@ -30,7 +30,6 @@ database.
 from __future__ import print_function
 
 import numbers
-import os
 from math import sqrt
 
 import numpy as np
@@ -362,7 +361,7 @@ class NetCDFContainer(object):
             return self.__dict__[name]
 
         if name in self._data.variables:
-            return self._data.variables[name]
+            return self._data.variables[name][...]
 
         return self._data.__getattr__(name)
 
