@@ -12,61 +12,61 @@ from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfS
 from PyCo.Topography import Topography
 from PyCo.System import make_system
 
-def load_and_mean_pressure(angle):
+def load_and_mean_pressure(alpha):
     """
     Parameters
     ----------
-    angle : float
+    alpha : float
         half of Cone_angle
-
+        References" K.L.Johnson, Contact Mechanics, Cambridge University Press. Chapter 5, page 112, fig(a)"
     Returns
-    ----------
-        Ratio_ExternalForece : float
-            External Force / (Young's module * contact area) --> F/(E*A)
+    -------
+    Ratio_ExternalForece : float
+        External Force / (Young's module * contact area) --> F/(E*A)
 
-        Ratio_Mean_Pressure : float
-            Mean Pressure / Young's module --> P/E
+    Ratio_Mean_Pressure : float
+        Mean Pressure / Young's module --> P/E
     """
-    beta = np.pi / 2 - angle
+    beta = np.pi / 2 - alpha
     Ratio_ExternalForece =np.tan(beta)/2
     Ratio_Mean_Pressure = Ratio_ExternalForece
     return Ratio_ExternalForece, Ratio_Mean_Pressure
 
-def contact_radius_and_area(angle):
+def contact_radius_and_area(alpha):
     """
     Parameters
     ----------
-    angle : float
+    alpha : float
         half of Cone_angle
-
+        References" K.L.Johnson, Contact Mechanics, Cambridge University Press. Chapter 5, page 112, fig(a)"
     Returns
     -------
-        Ratio_contact_radius : float
-            Contact Radius / penetration  -->  R/D
+    Ratio_contact_radius : float
+        Contact Radius / penetration  -->  R/D
 
-        Ratio_Area : float
-            Contact Area / Penetration**2  -->  A/D**2
+    Ratio_Area : float
+        Contact Area / Penetration**2  -->  A/D**2
     """
-    beta = np.pi / 2 - angle
+    beta = np.pi / 2 - alpha
     Ratio_contact_radius = 2/(np.pi*np.tan(beta))
     Ratio_Area = np.pi*Ratio_contact_radius
     return Ratio_contact_radius,Ratio_Area
 
-def deformation(penetration, angle):
+def deformation(penetration, alpha):
     """
     Parameters
     ----------
     penetration : float
         Radius / Penetration --> R / P
-    angle : scale & float
+    alpha : float
         half of Cone angle
-
+        References" K.L.Johnson, Contact Mechanics, Cambridge University Press. Chapter 5, page 112, fig(a)"
     Returns
-    ----------
-        Ratio_Deformation : float
-          Ratio Deformation --> Deformation / Penetration
+    -------
+    Ratio_Deformation : float
+      Ratio Deformation --> Deformation / Penetration
     """
-    beta = np.pi/2-angle
+    beta = np.pi/2-alpha
     Ratio_contact_radius = 2/(np.pi*np.tan(beta))
     Ratio_Deformation = np.zeros_like(penetration)
 
@@ -81,23 +81,23 @@ def deformation(penetration, angle):
     
     return Ratio_Deformation
 
-def pressure(mean_pressure, angle):
+def pressure(mean_pressure, alpha):
     """
     Parameters
     ----------
     mean_pressure : float
          Ratio of Pressure and Mean Pressure --> Pressure / Mean Pressure
-    angle : float
+    alpha : float
         half of cone angle
-
+        References" K.L.Johnson, Contact Mechanics, Cambridge University Press. Chapter 5, page 112, fig(a)"
     Returns
-        Ratio_Pressure : float
-           Ratio Pressure / Mean Pressure
+    -------
+    Ratio_Pressure : float
+       Ratio Pressure / Mean Pressure
     """
     Ratio_Pressure = np.zeros_like(mean_pressure)
-    beta = np.pi / 2 - angle
+    beta = np.pi / 2 - alpha
     Ratio_contact_radius = 2/(np.pi*np.tan(beta)) # Contact Radius / Penetration
-    #R_0 = Ratio != 0
     R_scale = (mean_pressure <= Ratio_contact_radius)
     Ratio_Pressure[R_scale]=np.arccosh(Ratio_contact_radius / mean_pressure[R_scale])
     return Ratio_Pressure
@@ -116,7 +116,7 @@ if __name__=='__main__':
     topography = Topography(- np.sqrt(x ** 2 + y ** 2) * 0.1, physical_sizes=(sx, sy))
     Max_Height = (-1) * np.min(topography.heights())
 
-    angle = np.arctan(10)
+    alpha = np.arctan(10)
 
     fig, ax = plt.subplots()
     plt.colorbar(ax.pcolormesh(X, Y, topography.heights()), label="heights")
@@ -163,13 +163,13 @@ if __name__=='__main__':
 
     # based on Formulars
         # Contact Radius and Area Computation
-        Ratio_contact_radius, Ratio_Area = contact_radius_and_area(angle)
+        Ratio_contact_radius, Ratio_Area = contact_radius_and_area(alpha)
         contact_radius = Ratio_contact_radius * penetration[Times]
         Area = Ratio_Area * penetration[Times]**2
         F_Contact_Area.append(Area)
 
         # External Load and Mean Pressure Computation
-        Ratio_External_load, Ratio_Mean_pressure = load_and_mean_pressure(angle)
+        Ratio_External_load, Ratio_Mean_pressure = load_and_mean_pressure(alpha)
         External_load = Ratio_External_load * E * Area
         Mean_pressure = Ratio_Mean_pressure * E
         F_External_load.append(External_load)
@@ -177,17 +177,17 @@ if __name__=='__main__':
         # Deformation Computation
         R = np.sqrt(x ** 2 + y ** 2)
         if penetration[Times] == 0:
-            Deformation = np.zeros_like(deformation(R, angle))
+            Deformation = np.zeros_like(deformation(R, alpha))
         else:
             Ratio = R / penetration[Times]
-            Deformation = deformation(Ratio, angle) * penetration[Times]
+            Deformation = deformation(Ratio, alpha) * penetration[Times]
 
         # Pressure Computation
         if penetration[Times] == 0:
-            Pressure = np.zeros_like(pressure(R, angle))
+            Pressure = np.zeros_like(pressure(R, alpha))
         else:
             Ratio = R / penetration[Times]
-            Pressure = pressure(Ratio, angle) * Mean_pressure
+            Pressure = pressure(Ratio, alpha) * Mean_pressure
         F_Max_Pressure.append(np.max(Pressure))
 
         plt.figure(figsize=(20, 15))
