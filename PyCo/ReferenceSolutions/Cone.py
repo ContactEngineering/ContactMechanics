@@ -14,7 +14,7 @@ from PyCo.System import make_system
 
 def load_and_mean_pressure(angle):
     """
-    Given Parameters
+    Parameters
     ----------
     angle : float
         half of Cone_angle
@@ -34,13 +34,13 @@ def load_and_mean_pressure(angle):
 
 def contact_radius_and_area(angle):
     """
-    Given Parameters
+    Parameters
     ----------
     angle : float
         half of Cone_angle
 
     Returns
-    ----------
+    -------
         Ratio_contact_radius : float
             Contact Radius / penetration  -->  R/D
 
@@ -52,11 +52,11 @@ def contact_radius_and_area(angle):
     Ratio_Area = np.pi*Ratio_contact_radius
     return Ratio_contact_radius,Ratio_Area
 
-def deformation(Ratio,angle):
+def deformation(penetration, angle):
     """
-    Given Parameters
+    Parameters
     ----------
-    Ratio : float
+    penetration : float
         Radius / Penetration --> R / P
     angle : scale & float
         half of Cone angle
@@ -68,24 +68,24 @@ def deformation(Ratio,angle):
     """
     beta = np.pi/2-angle
     Ratio_contact_radius = 2/(np.pi*np.tan(beta))
-    Ratio_Deformation = np.zeros_like(Ratio)
+    Ratio_Deformation = np.zeros_like(penetration)
 
-    R_scale_0 = (Ratio<=Ratio_contact_radius)
-    Ratio_Deformation[R_scale_0] = (np.max(Ratio[R_scale_0])-Ratio[R_scale_0])*np.tan(beta)+(1-2/np.pi)
+    R_scale_0 = (penetration <= Ratio_contact_radius)
+    Ratio_Deformation[R_scale_0] = (np.max(penetration[R_scale_0]) - penetration[R_scale_0]) * np.tan(beta) + (1 - 2 / np.pi)
 
-    R_scale_1 = (Ratio==Ratio_contact_radius)
+    R_scale_1 = (penetration == Ratio_contact_radius)
     Ratio_Deformation[R_scale_1] = (1-2/np.pi)
 
-    R_scale_2 = (Ratio>=Ratio_contact_radius)
-    Ratio_Deformation[R_scale_2] = 2*(np.arcsin(Ratio_contact_radius/Ratio[R_scale_2])-Ratio[R_scale_2]/Ratio_contact_radius+np.sqrt((Ratio[R_scale_2]/Ratio_contact_radius)**2-1))/np.pi
+    R_scale_2 = (penetration >= Ratio_contact_radius)
+    Ratio_Deformation[R_scale_2] = 2 * (np.arcsin(Ratio_contact_radius / penetration[R_scale_2]) - penetration[R_scale_2] / Ratio_contact_radius + np.sqrt((penetration[R_scale_2] / Ratio_contact_radius) ** 2 - 1)) / np.pi
     
     return Ratio_Deformation
 
-def pressure(Ratio,angle):
+def pressure(mean_pressure, angle):
     """
-    Given Parameters
+    Parameters
     ----------
-    Ratio : float
+    mean_pressure : float
          Ratio of Pressure and Mean Pressure --> Pressure / Mean Pressure
     angle : float
         half of cone angle
@@ -94,12 +94,12 @@ def pressure(Ratio,angle):
         Ratio_Pressure : float
            Ratio Pressure / Mean Pressure
     """
-    Ratio_Pressure = np.zeros_like(Ratio)
+    Ratio_Pressure = np.zeros_like(mean_pressure)
     beta = np.pi / 2 - angle
     Ratio_contact_radius = 2/(np.pi*np.tan(beta)) # Contact Radius / Penetration
     #R_0 = Ratio != 0
-    R_scale = ( Ratio<= Ratio_contact_radius)
-    Ratio_Pressure[R_scale]=np.arccosh(Ratio_contact_radius/Ratio[R_scale])
+    R_scale = (mean_pressure <= Ratio_contact_radius)
+    Ratio_Pressure[R_scale]=np.arccosh(Ratio_contact_radius / mean_pressure[R_scale])
     return Ratio_Pressure
 
 if __name__=='__main__':
@@ -177,7 +177,7 @@ if __name__=='__main__':
         # Deformation Computation
         R = np.sqrt(x ** 2 + y ** 2)
         if penetration[Times] == 0:
-            Deformation = np.zeros_like(deformation(R,angle))
+            Deformation = np.zeros_like(deformation(R, angle))
         else:
             Ratio = R / penetration[Times]
             Deformation = deformation(Ratio, angle) * penetration[Times]
@@ -187,7 +187,7 @@ if __name__=='__main__':
             Pressure = np.zeros_like(pressure(R, angle))
         else:
             Ratio = R / penetration[Times]
-            Pressure = pressure(Ratio,angle)*Mean_pressure
+            Pressure = pressure(Ratio, angle) * Mean_pressure
         F_Max_Pressure.append(np.max(Pressure))
 
         plt.figure(figsize=(20, 15))
