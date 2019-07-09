@@ -14,15 +14,18 @@ from PyCo.System import make_system
 
 def load_and_mean_pressure(angle):
     """
-    Given angle
-    Return result:
-        External Force / (Young's module * contact area) --> F/(E*A)
-        Mean Pressure / Young's module --> P/E
-
     Given Parameters
     ----------
-    angle : scale & float
+    angle : float
         half of Cone_angle
+
+    Returns
+    ----------
+        Ratio_ExternalForece : float
+            External Force / (Young's module * contact area) --> F/(E*A)
+
+        Ratio_Mean_Pressure : float
+            Mean Pressure / Young's module --> P/E
     """
     beta = np.pi / 2 - angle
     Ratio_ExternalForece =np.tan(beta)/2
@@ -31,15 +34,18 @@ def load_and_mean_pressure(angle):
 
 def contact_radius_and_area(angle):
     """
-    Given angle
-    Return result:
-        Contact Radius / penetration  -->  R/D
-        Contact Area / Penetration**2  -->  A/D**2
-
-    Parameters
+    Given Parameters
     ----------
-    angle : scale & float
+    angle : float
         half of Cone_angle
+
+    Returns
+    ----------
+        Ratio_contact_radius : float
+            Contact Radius / penetration  -->  R/D
+
+        Ratio_Area : float
+            Contact Area / Penetration**2  -->  A/D**2
     """
     beta = np.pi / 2 - angle
     Ratio_contact_radius = 2/(np.pi*np.tan(beta))
@@ -48,15 +54,17 @@ def contact_radius_and_area(angle):
 
 def deformation(Ratio,angle):
     """
-    Given Ratio of Radius / Pennetartion and angle
-    Return result:
-          Ratio Deformation --> Deformation / Penetration
-    Parameters
+    Given Parameters
     ----------
-    Ratio : matrix & float
+    Ratio : float
         Radius / Penetration --> R / P
     angle : scale & float
         half of Cone angle
+
+    Returns
+    ----------
+        Ratio_Deformation : float
+          Ratio Deformation --> Deformation / Penetration
     """
     beta = np.pi/2-angle
     Ratio_contact_radius = 2/(np.pi*np.tan(beta))
@@ -75,15 +83,16 @@ def deformation(Ratio,angle):
 
 def pressure(Ratio,angle):
     """
-    Given Ratio and angle
-    Return result:
-       Ratio Pressure / Mean Pressure
-    Parameters
+    Given Parameters
     ----------
-    Ratio : Matrix & float
+    Ratio : float
          Ratio of Pressure and Mean Pressure --> Pressure / Mean Pressure
-    angle : scale & float
+    angle : float
         half of cone angle
+
+    Returns
+        Ratio_Pressure : float
+           Ratio Pressure / Mean Pressure
     """
     Ratio_Pressure = np.zeros_like(Ratio)
     beta = np.pi / 2 - angle
