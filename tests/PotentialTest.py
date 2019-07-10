@@ -656,12 +656,12 @@ def test_lj93_masked(pot_class):
     z = np.array([0.5,1,2,3,4])
     pot.compute(z, True, True)
     en1 = pot.energy
-    print(en1)
+    #print(en1)
 
     z = np.ma.masked_array([0.5,0.7, 1, 2, 3, 4],mask=[0,1,0,0,0,0])
     pot.compute(z, True, True)
     en2=pot.energy
-    print("{}".format(en1))
-    print("{}".format(en2))
+    #print("{}".format(en1))
+    #print("{}".format(en2))
 
     assert en1 == en2
