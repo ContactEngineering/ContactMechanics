@@ -1162,3 +1162,34 @@ class ConvertersTest(PyCoTestCase):
         self.assertIn('detrend', dir(t1))
         self.assertIn('to_nonuniform', dir(t2))
         self.assertIn('to_uniform', dir(t3))
+
+
+class DerivativeTest(PyCoTestCase):
+    def test_uniform_vs_nonuniform(self):
+        t1 = fourier_synthesis([12], [6], 0.8, rms_slope=0.1)
+        t2 = t1.to_nonuniform()
+
+        d1 = t1.derivative(1)
+        d2 = t2.derivative(1)
+
+        self.assertArrayAlmostEqual(d1[:-1], d2)
+
+    def test_analytic(self):
+        nb_pts = 1488
+        s = 7
+        x = np.arange(nb_pts)*s/nb_pts
+        h = np.sin(x)
+        x += 0.5*s/nb_pts
+        dh = np.cos(x)
+        t1 = UniformLineScan(h, (s,))
+        t2 = UniformLineScan(h, (s,), periodic=True)
+        t3 = t1.to_nonuniform()
+
+        d1 = t1.derivative(1)
+        d2 = t2.derivative(1)
+        d3 = t3.derivative(1)
+
+        self.assertArrayAlmostEqual(d1, dh[:-1], tol=1e-6)
+        self.assertArrayAlmostEqual(d2[:-1], dh[:-1], tol=1e-6)
+        self.assertArrayAlmostEqual(d3, dh[:-1], tol=1e-6)
+
