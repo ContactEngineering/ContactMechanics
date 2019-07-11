@@ -43,7 +43,7 @@ except:
 
 ###
 
-class NetCDFContainerFrame(object):
+class NetCDFContainer_frame(object):
     def __init__(self, parent, i):
         self._parent = parent
         self._i = i
@@ -343,7 +343,7 @@ class NetCDFContainer(object):
 
 
     def get_next_frame(self):
-        frame = NetCDFContainerFrame(self, self._cur_frame)
+        frame = NetCDFContainer_frame(self, self._cur_frame)
         self._cur_frame += 1
         return frame
 
@@ -397,14 +397,14 @@ class NetCDFContainer(object):
         if isinstance(i, str):
             return self.__getattr__(i)
         if isinstance(i, slice):
-            return [NetCDFContainerFrame(self, j)
-                    for j in range(*i.indices(len(self)))]
-        return NetCDFContainerFrame(self, i)
+            return [ NetCDFContainer_frame(self, j)
+                     for j in range(*i.indices(len(self))) ]
+        return NetCDFContainer_frame(self, i)
 
 
     def __iter__(self):
         for i in range(len(self)):
-            yield NetCDFContainerFrame(self, i)
+            yield NetCDFContainer_frame(self, i)
 
 
     def get_size(self):
