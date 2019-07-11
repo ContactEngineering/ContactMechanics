@@ -25,16 +25,86 @@
 Tests for autocorrelation function analysis
 """
 
+import os
 import unittest
 
 import numpy as np
 
 from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
 from PyCo.Topography.Generation import fourier_synthesis
+from PyCo.Topography.IO import read_topography
 from PyCo.Topography.Nonuniform.Autocorrelation import height_height_autocorrelation_1D
 
 from tests.PyCoTest import PyCoTestCase
 
+DATADIR = os.path.join(os.path.dirname(__file__), 'datafiles')
+
+###
+
+def py_autocorrelation_1D(line_scan, distances=None):
+    r"""
+    Compute the one-dimensional height-difference autocorrelation function
+    (ACF).
+
+    This function treats the nonuniform line scan as a piece-wise function of
+    straight lines between the data points. The ACF is computed exactly for
+    this piece-wise linear interpolation of the data.
+
+    Parameters
+    ----------
+    line_scan : :obj:`NonuniformLineScan`
+        Container storing the nonuniform line scan.
+    r : array_like
+        Array containing distances for which to compute the ACF. If no array
+        is given, the function will automatically construct an array with
+        equally spaced distances. (Default: None)
+
+    Returns
+    -------
+    distances : array
+        Distances. (Units: length)
+    A : array
+        Autocorrelation function. (Units: length**2)
+    """
+    size, = line_scan.physical_sizes
+    if distances is None:
+        # FIXME!!! We need a better heuristics to decide on the distances
+        res, = line_scan.nb_grid_pts
+        distances = np.arange(res)*size/res
+    else:
+        distances = np.asarray(distances, dtype=float)
+    A = np.zeros_like(distances)
+
+    x, h = line_scan.positions_and_heights()
+    s = line_scan.derivative(1)
+    # FIXME!!! This is slow
+    for i in range(len(x)-1):
+        for j in range(len(x)-1):
+            # Determine lower and upper distance between segment i, i+1 and
+            # segment j, j+1
+            x1 = x[i]
+            x2 = x[j]
+            h1 = h[i]
+            h2 = h[j]
+            s1 = s[i]
+            s2 = s[j]
+            b1 = np.maximum(x1, x2 - distances)
+            b2 = np.minimum(x[i + 1], x[j + 1] - distances)
+            b = (b1 + b2) / 2
+            db = (b2 - b1) / 2
+            m = db > 0
+            if m.sum() > 0:
+                b = b[m]
+                db = db[m]
+                # f1[x_] := (h1 + s1*(x - x1))
+                # f2[x_] := (h2 + s2*(x - x2))
+                # FullSimplify[Integrate[f1[x]*f2[x + d], {x, b - db, b + db}]]
+                #   = 2 * f1[b] * f2[b + d] * db + 2 * s1 * s2 * db ** 3 / 3
+                A[m] += (db * (3 * (h2 - s2 * x2 + (b + distances[m]) * s2 - h1 + s1 * x1 - b * s1) ** 2 + (
+                            s1 - s2) ** 2 * db ** 2)) / 3
+    return distances, A / (size - distances)
+
+###
 
 class AutocorrelationTest(PyCoTestCase):
     def test_uniform_impulse_autocorrelation(self):
@@ -123,7 +193,6 @@ class AutocorrelationTest(PyCoTestCase):
         s, = t.physical_sizes
         self.assertAlmostEqual(A[0], t.rms_height() ** 2 * s)
 
-
     def test_nonuniform_triangle_autocorrelation(self):
         a = 0.7
         b = 3
@@ -160,6 +229,22 @@ class AutocorrelationTest(PyCoTestCase):
         b, a = np.polyfit(np.log(r[m]), np.log(A[m]), 1)
         self.assertTrue(abs(b/2 - H) < 0.1)
 
+    def test_c_vs_py_reference(self):
+        from _PyCo import nonuniform_autocorrelation_1D
+        r = 16
+        s = 1
+        H = 0.8
+        slope = 0.1
+        t = fourier_synthesis((r,), (s,), H, rms_slope=slope, amplitude_distribution=lambda n: 1.0).to_nonuniform()
+
+        r1, A1 = py_autocorrelation_1D(t)
+
+        s, = t.physical_sizes
+        r2, A2 = nonuniform_autocorrelation_1D(*t.positions_and_heights(), s)
+
+        self.assertArrayAlmostEqual(r1, r2)
+        self.assertArrayAlmostEqual(A1, A2)
+
     def test_nonuniform_rms_height(self):
         r = 128
         s = 1.3
@@ -185,3 +270,8 @@ class AutocorrelationTest(PyCoTestCase):
         r2, A2 = t.detrend(detrend_mode='center').to_nonuniform().autocorrelation_1D(distances=r)
 
         self.assertArrayAlmostEqual(A, A2, tol=1e-4)
+
+    @unittest.skip
+    def test_stylus(self):
+        t = read_topography(os.path.join(DATADIR, 'autocorrelation_test.txt'))
+        print(t.autocorrelation_1D())
