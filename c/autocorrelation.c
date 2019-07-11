@@ -73,7 +73,7 @@ PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
   double *h = (double *) PyArray_DATA(py_double_h);
 
   double *distances;
-  if (py_distances) {
+  if (py_distances && py_distances != Py_None) {
     py_double_distances = (PyObject*) PyArray_FROMANY((PyObject *) py_distances, NPY_DOUBLE, 1, 1, NPY_C_CONTIGUOUS);
     if (!py_double_distances)
       goto fail;
@@ -88,7 +88,9 @@ PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
     for (int i = 0; i < nb_grid_pts; ++i)  distances[i] = i*physical_size/nb_grid_pts;
   }
 
-  py_acf = PyArray_ZEROS(1, &nb_grid_pts, NPY_DOUBLE, 0);
+  npy_intp nb_distance_pts = PyArray_DIM(py_double_distances, 0);
+
+  py_acf = PyArray_ZEROS(1, &nb_distance_pts, NPY_DOUBLE, 0);
   double *acf = (double *) PyArray_DATA(py_acf);
 
   for (int i = 0; i < nb_grid_pts-1; ++i) {
@@ -100,7 +102,7 @@ PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
       double x2 = x[j];
       double h2 = h[j];
       double s2 = (h[j+1] - h[j])/(x[j+1] - x[j]);
-      for (int k = 0; k < nb_grid_pts; ++k) {
+      for (int k = 0; k < nb_distance_pts; ++k) {
         double b1 = MAX(x1, x2 - distances[k]);
         double b2 = MIN(x[i + 1], x[j + 1] - distances[k]);
         double b = (b1 + b2) / 2;
@@ -118,7 +120,7 @@ PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
     }
   }
 
-  for (int k = 0; k < nb_grid_pts; ++k)  acf[k] /= (physical_size - distances[k]);
+  for (int k = 0; k < nb_distance_pts; ++k)  acf[k] /= (physical_size - distances[k]);
 
   py_ret = Py_BuildValue("OO", py_double_distances, py_acf);
 

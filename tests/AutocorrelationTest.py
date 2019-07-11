@@ -270,8 +270,3 @@ class AutocorrelationTest(PyCoTestCase):
         r2, A2 = t.detrend(detrend_mode='center').to_nonuniform().autocorrelation_1D(distances=r)
 
         self.assertArrayAlmostEqual(A, A2, tol=1e-4)
-
-    @unittest.skip
-    def test_stylus(self):
-        t = read_topography(os.path.join(DATADIR, 'autocorrelation_test.txt'))
-        print(t.autocorrelation_1D())
