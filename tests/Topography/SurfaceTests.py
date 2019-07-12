@@ -35,6 +35,7 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
 
 import unittest
 import numpy as np
+import warnings
 
 from numpy.random import rand
 from numpy.testing import assert_array_equal
@@ -50,9 +51,10 @@ from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz
 
 from PyCo.Topography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
-from PyCo.Topography.IO import detect_format
+from PyCo.Topography.IO import detect_format, CannotDetectFileFormat
 
 import PyCo.Topography.IO
+from PyCo.Topography.IO import readers
 from PyCo.Topography.IO import NPYReader, H5Reader, IbwReader
 from PyCo.Topography.Generation import fourier_synthesis
 
@@ -990,6 +992,25 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(sy, sx2)
         self.assertTrue((surf.heights() == surf2.heights().T).all())
 
+@pytest.mark.parametrize("reader", readers.values())
+def test_closes_file_on_failure(reader):
+    """
+    Tests for each reader class that he doesn't raise a Resourcewarning
+    """
+    fn = os.path.join(DATADIR, "wrongnpyfile.npy")
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter(
+            "always")  # deactivate hiding of ResourceWarnings
+
+        try:
+            reader(fn)
+        except Exception:
+            pass
+        # assert no warning is a ResourceWarning
+        for wi in w:
+            assert not issubclass(wi.category, ResourceWarning)
+
 
 class IOTest(unittest.TestCase):
     def setUp(self):
@@ -1041,6 +1062,7 @@ class IOTest(unittest.TestCase):
                 open_topography(f)
                 self.assertFalse(f.closed, msg="binary memory stream for '{}' was closed".format(datastr))
 
+
     def test_is_binary_stream(self):
 
         # just grep a random existing file here
@@ -1059,7 +1081,9 @@ class IOTest(unittest.TestCase):
         for fn in file_list:
             print(fn)
             reader = open_topography(fn)
-            t = reader.topography(physical_sizes=reader.physical_sizes if reader.physical_sizes is not None else [1., ] * len(reader.nb_grid_pts))
+            t = reader.topography(physical_sizes=reader.physical_sizes
+            if reader.physical_sizes is not None
+            else [1., ] * len(reader.nb_grid_pts))
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
 
