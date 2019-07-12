@@ -782,7 +782,7 @@ class npySurfaceTest(unittest.TestCase):
         size = (2,4)
         loader = NPYReader(self.fn)
 
-        topo = loader.topography(size=size)
+        topo = loader.topography(physical_sizes=size)
 
         np.testing.assert_array_almost_equal(topo.heights(), self.data)
 

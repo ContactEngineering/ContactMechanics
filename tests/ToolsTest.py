@@ -36,6 +36,10 @@ from PyCo.Topography.Uniform.Detrending import tilt_from_height, shift_and_tilt
 
 from .PyCoTest import PyCoTestCase
 
+import pytest
+from NuMPI import MPI
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 
 class ToolTest(PyCoTestCase):
     def test_gradient(self):
