@@ -54,8 +54,8 @@ class LJ93(Potential):
         sigma   -- Lennard-Jones distance parameter σ
         r_cut   -- (default i) optional cutoff radius
         """
-        self.eps = epsilon
-        self.sig = sigma
+        self.eps = float(epsilon)
+        self.sig = float(sigma)
         Potential.__init__(self, r_cut,pnp=pnp)
 
     def __getstate__(self):
