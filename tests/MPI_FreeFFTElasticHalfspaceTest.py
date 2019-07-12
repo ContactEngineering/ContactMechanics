@@ -55,7 +55,7 @@ def test_nb_grid_ptss(comm, pnp, fftengine_type, nx, ny, basenpoints):
     E_s = 3
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fft=fftengine_type, comm=comm)
+                                        fft=fftengine_type, communicator=comm)
     assert substrate.nb_grid_pts == (nx, ny)
     assert substrate.nb_domain_grid_pts == (2 * nx, 2 * ny)
     assert pnp.sum(np.array(np.prod(substrate.nb_subdomain_grid_pts))) == 4 * nx * ny
@@ -118,7 +118,7 @@ def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints):
                                 fft="serial"))
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fft=fftengine_type, comm=comm)
+                                        fft=fftengine_type, communicator=comm)
     local_weights, local_facts = substrate._compute_fourier_coeffs()
     np.testing.assert_allclose(local_weights, ref_weights[substrate.fourier_slices], 1e-12)
     np.testing.assert_allclose(local_facts, ref_facts[substrate.subdomain_slices], 1e-12)
@@ -159,7 +159,7 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_type, nx, ny, basen
 
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                        fft=fftengine_type, comm=comm)
+                                        fft=fftengine_type, communicator=comm)
 
     if comm.Get_size() > 1:
         with pytest.raises(FreeFFTElasticHalfSpace.Error):
