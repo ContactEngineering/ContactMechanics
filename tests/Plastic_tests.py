@@ -58,7 +58,7 @@ def test_hard_wall_bearing_area(comm, fftengine_type):
     surface = Topography(fullsurface.heights(), physical_sizes=nb_domain_grid_pts,
                          subdomain_locations=substrate.topography_subdomain_locations,
                          nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
-                         pnp=substrate.pnp)
+                         communicator=substrate.communicator)
 
     system = make_system(substrate,
                          HardWall(), PlasticTopography(surface, 0.0))

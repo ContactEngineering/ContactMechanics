@@ -50,7 +50,7 @@ import pytest
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
         reason="tests only serial funcionalities, please execute with pytest")
 # -----------------------------------------------------------------------------
-#@unittest.skip("Skip because test is slow")
+@unittest.skip("Skip because test is slow")
 class AdhesionTest(unittest.TestCase):
     def setUp(self):
         # sphere radius:
