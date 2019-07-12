@@ -30,7 +30,7 @@ Base class for continuum mechanics models of halfspaces
 
 import abc
 
-class Substrate(object,metaclass=abc.ABCMeta):
+class Substrate(object, metaclass=abc.ABCMeta):
     """ Generic baseclass from which all substate classes derive
     """
     _periodic = None
@@ -82,6 +82,12 @@ class Substrate(object,metaclass=abc.ABCMeta):
         """
         pass
 
+    @property
+    @abc.abstractmethod
+    def communicator(self):
+        """Return the MPI communicator"""
+        pass
+
     #@property
     #@abc.abstractmethod
     #def dim(self, ):
@@ -104,7 +110,7 @@ class Substrate(object,metaclass=abc.ABCMeta):
         pass
 
 
-class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
+class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
     """ Generic baseclass for elastic substrates
     """
     name = 'generic_elastic_halfspace'

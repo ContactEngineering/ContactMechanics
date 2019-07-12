@@ -22,35 +22,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-try:
-    import pytest
-    import numpy as np
-    import numpy.testing as npt
-    import time
-    import math
-    from PyCo.ContactMechanics import HardWall
-    from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-    from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import make_sphere
-    from PyCo.System import NonSmoothContactSystem
-
-    # from PyCo.Tools.Logger import screen
-    from PyCo.ReferenceSolutions import Hertz as Hz
-
-    # (radius_and_pressure,
-    #  surface_displacements,
-    #  surface_stress,
-    #  penetration,
-    #  normal_load)
-
-    from mpi4py import MPI
-    from NuMPI.Tools.Reduction import Reduction
-
-except ImportError as err:
-    import sys
-
-    print(err)
-    sys.exit(-1)
+import pytest
+import numpy as np
+import numpy.testing as npt
+from NuMPI.Tools.Reduction import Reduction
+from PyCo.ContactMechanics import HardWall
+from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
+from PyCo.Topography import make_sphere
+from PyCo.System import NonSmoothContactSystem
+from PyCo.ReferenceSolutions import Hertz as Hz
 
 DEBUG = False
 
@@ -76,20 +56,19 @@ def test_elastic_solution(self):
 
 
 @pytest.mark.parametrize("nb_grid_pts", [(512, 512), (512, 511), (511, 512)])
-def test_constrained_conjugate_gradients(self, nb_grid_pts, comm,fftengine_type):
-    pnp = Reduction(comm)
+def test_constrained_conjugate_gradients(self, nb_grid_pts, comm, fftengine_type):
     nx, ny = nb_grid_pts
     for disp0, normal_force in [(0.1, None), (0, 15.0)]:
         sx = 5.0
 
-        substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,(sx, sx),
-                                            fft=fftengine_type, comm=comm)
+        substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sx),
+                                            fft=fftengine_type, communicator=comm)
 
         interaction = HardWall()
         surface = make_sphere(self.r_s, (nx, ny), (sx, sx),
                               nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                               subdomain_locations=substrate.topography_subdomain_locations,
-                              pnp=substrate.pnp)
+                              communicator=substrate.communicator)
         system = NonSmoothContactSystem(substrate, interaction, surface)
 
         result = system.minimize_proxy(offset=disp0,
@@ -99,7 +78,7 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm,fftengine_type)
         converged = result.success
         assert converged
 
-        comp_normal_force = -pnp.sum(forces)
+        comp_normal_force = -Reduction(comm).sum(forces)
         if normal_force is not None:
             npt.assert_allclose(normal_force, comp_normal_force, rtol=1e-7,
                                 err_msg="Convergence Problem: resultant normal Force doesn't match imposed normal force")
@@ -141,9 +120,9 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm,fftengine_type)
                             err_msg="Computed area doesn't match Hertz Theory")
 
         Eel_computed_kspace = \
-        system.substrate.evaluate(disp, pot=True, forces=False)[0]
+            system.substrate.evaluate(disp, pot=True, forces=False)[0]
         Eel_computed_rspace = \
-        system.substrate.evaluate(disp, pot=True, forces=True)[0]
+            system.substrate.evaluate(disp, pot=True, forces=True)[0]
 
         npt.assert_allclose(Eel_computed_kspace, Eel_ref, rtol=1e-2)
         npt.assert_allclose(Eel_computed_rspace, Eel_ref, rtol=1e-2)
@@ -191,14 +170,14 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm,fftengine_type)
         msg += "\np_numerical_type:  {}".format(type(p_numerical))
         msg += "\np_numerical_shape: {}".format(p_numerical.shape)
         msg += "\np_numerical_mean:  {}".format(
-            pnp.sum(p_numerical) / (nx * ny * 4))
+            Reduction(comm).sum(p_numerical) / (nx * ny * 4))
         msg += "\np_numerical_dtype: {}".format(p_numerical.dtype)
-        msg += "\np_numerical_max:   {}".format(pnp.max(p_numerical))
-        msg += "\np_analytical_max:  {}".format(pnp.max(p_analytical))
+        msg += "\np_numerical_max:   {}".format(Reduction(comm).max(p_numerical))
+        msg += "\np_analytical_max:  {}".format(Reduction(comm).max(p_analytical))
         msg += "\nslice_size:        {}".format((r < .99 * a).sum())
         msg += "\ncontact_radius a:  {}".format(a)
         msg += "\ncomputed normal_force:      {}".format(comp_normal_force)
-        msg += "\n{}".format(pnp.max(result.jac) - pnp.min(result.jac))
+        msg += "\n{}".format(Reduction(comm).max(result.jac) - Reduction(comm).min(result.jac))
 
         if DEBUG:
             import matplotlib
@@ -216,10 +195,10 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm,fftengine_type)
             for ai in ax:
                 ai.set_aspect("equal")
             # print(MPI.COMM_WORLD.Get_size())
-            fig.savefig("Hertz_plot_proc_%i.png" % pnp.comm.Get_rank())
+            fig.savefig("Hertz_plot_proc_%i.png" % Reduction(comm).comm.Get_rank())
 
         try:
-            assert pnp.max(np.abs(p_analytical[r < 0.99 * a] -
+            assert Reduction(comm).max(np.abs(p_analytical[r < 0.99 * a] -
                                   p_numerical[
                                       r < 0.99 * a])) / self.E_s < 1e-3, msg
             # TODO: assert the Contact area is OK

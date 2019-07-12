@@ -98,7 +98,7 @@ def test_smoothsphere(maxcomm, fftengine_type): # TODO problem: difficult to com
 
     substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx),
                                         fft=fftengine_type,
-                                        comm=comm)
+                                        communicator=comm)
     print(substrate._comp_nb_grid_pts)
     print(substrate.fftengine.nb_domain_grid_pts)
 
