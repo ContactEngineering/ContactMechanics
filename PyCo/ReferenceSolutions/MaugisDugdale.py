@@ -23,8 +23,8 @@
 #
 
 """
-Maugis-Dugdale cohesive zone model for a sphere contacting an elastic
-flat.
+Maugis-Dugdale cohesive zone model for a sphere (paraboloid) contacting an
+elastic flat.
 See: D. Maugis, J. Colloid Interf. Sci. 150, 243 (1992)
 """
 
