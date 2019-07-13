@@ -187,9 +187,9 @@ class TopographyTest(PyCoTestCase):
 
     def test_init_with_lists_calling_scale_and_detrend(self):
 
-        t = Topography([[1,1,1,1],
-                        [1,1,1,1],
-                        [1,1,1,1]], physical_sizes=(1, 1))
+        t = Topography(np.array([[1,1,1,1],
+                                 [1,1,1,1],
+                                 [1,1,1,1]]), physical_sizes=(1, 1))
 
         # the following commands should be possible without errors
         st = t.scale(1)
