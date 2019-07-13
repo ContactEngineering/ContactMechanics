@@ -17,8 +17,7 @@ def test_save_and_load(comm):
     size = (3, 3)
 
     np.random.seed(1)
-    t = fourier_synthesis(nb_grid_pts, size, 
-        0.8, rms_slope=0.1)
+    t = fourier_synthesis(nb_grid_pts, size, 0.8, rms_slope=0.1)
 
     substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, 1, fft='mpi', communicator=comm)
     dt = t.domain_decompose(substrate.subdomain_locations, substrate.nb_subdomain_grid_pts, comm)
@@ -37,6 +36,8 @@ def test_save_and_load(comm):
                       nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts)
 
     np.testing.assert_array_almost_equal(dt.heights(), t3.heights())
+
+    assert t3.is_periodic
 
 
 if __name__ == '__main__':
