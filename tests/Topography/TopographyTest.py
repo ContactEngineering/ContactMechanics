@@ -38,8 +38,10 @@ def test_positions(comm, fftengine_type):
     sy = 54.
     fftengine=FFT((nx, ny), fft=fftengine_type, communicator=comm)
 
-    surf = Topography(np.zeros(fftengine.nb_subdomain_grid_pts), nb_grid_pts=(nx, ny),
-                      physical_sizes= (sx, sy),
+    surf = Topography(np.zeros(fftengine.nb_subdomain_grid_pts),
+                      physical_sizes=(sx, sy),
+                      decomposition='subdomain',
+                      nb_grid_pts=(nx, ny),
                       subdomain_locations=fftengine.subdomain_locations,
                       communicator=comm)
 
