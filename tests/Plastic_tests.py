@@ -56,6 +56,7 @@ def test_hard_wall_bearing_area(comm, fftengine_type):
     nb_domain_grid_pts = fullsurface.nb_grid_pts
     substrate = PeriodicFFTElasticHalfSpace(nb_domain_grid_pts, 1.0, fft="mpi", communicator=comm)
     surface = Topography(fullsurface.heights(), physical_sizes=nb_domain_grid_pts,
+                         decomposition='domain',
                          subdomain_locations=substrate.topography_subdomain_locations,
                          nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                          communicator=substrate.communicator)
