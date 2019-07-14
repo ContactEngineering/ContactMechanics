@@ -66,7 +66,8 @@ class FlatPunchTest(unittest.TestCase):
                         fig, ax = plt.subplots()
 
                         # ax.pcolormesh(substrate.force / surface.area_per_pt,rasterized=True)
-                        ax.pcolormesh(surface.heights(), rasterized=True)
+                        plt.colorbar(ax.pcolormesh(surface.heights(),
+                                                   rasterized=True))
                         ax.set_xlabel("")
                         ax.set_ylabel("")
 
