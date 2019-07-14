@@ -75,7 +75,7 @@ class PowerSpectrumTest(PyCoTestCase):
                     qi, Ci = i.power_spectrum_1D(window='None')
                     Ci *= pad
 
-                    q, C = t.power_spectrum_1D(q=qi, window='None')
+                    q, C = t.power_spectrum_1D(wavevectors=qi, algorithm='brute-force', window='None')
 
                     import matplotlib.pyplot as plt
                     plt.plot(*t.positions_and_heights(), lw=4)
@@ -115,15 +115,15 @@ class PowerSpectrumTest(PyCoTestCase):
 
             x = np.array([-a, a])
             h = np.array([b, c])
-            _, C1 = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
+            _, C1 = NonuniformLineScan(x, h).power_spectrum_1D(wavevectors=q, algorithm='brute-force', window='None')
 
             x = np.array([-a, 0, a])
             h = np.array([b, (b+c)/2, c])
-            _, C2 = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
+            _, C2 = NonuniformLineScan(x, h).power_spectrum_1D(wavevectors=q, algorithm='brute-force', window='None')
 
             x = np.array([-a, 0, a/2, a])
             h = np.array([b, (b+c)/2, (3*c+b)/4, c])
-            _, C3 = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
+            _, C3 = NonuniformLineScan(x, h).power_spectrum_1D(wavevectors=q, algorithm='brute-force', window='None')
 
             self.assertArrayAlmostEqual(C1, C2)
             self.assertArrayAlmostEqual(C2, C3)
@@ -135,7 +135,7 @@ class PowerSpectrumTest(PyCoTestCase):
 
             q = np.linspace(0.01, 8 * np.pi / a, 101)
 
-            q, C = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
+            q, C = NonuniformLineScan(x, h).power_spectrum_1D(wavevectors=q, algorithm='brute-force', window='None')
 
             C_ana = (2 * b * np.sin(a * q) / q) ** 2
             C_ana /= 2 * a
@@ -149,7 +149,7 @@ class PowerSpectrumTest(PyCoTestCase):
 
             q = np.linspace(0.01, 8 * np.pi / a, 101)
 
-            _, C = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
+            _, C = NonuniformLineScan(x, h).power_spectrum_1D(wavevectors=q, algorithm='brute-force', window='None')
 
             C_ana = (2 * b * (a * q * np.cos(a * q) - np.sin(a * q)) / (a * q ** 2)) ** 2
             C_ana /= 2 * a
@@ -165,7 +165,7 @@ class PowerSpectrumTest(PyCoTestCase):
 
             q = np.linspace(0.01, 8 * np.pi / (b-a), 101)
 
-            q, C = NonuniformLineScan(x, h).power_spectrum_1D(q=q, window='None')
+            q, C = NonuniformLineScan(x, h).power_spectrum_1D(wavevectors=q, algorithm='brute-force', window='None')
 
             C_ana = np.exp(-1j * (a + b) * q) * (
                         np.exp(1j * a * q) * (c - d + 1j * (a - b) * d * q) +

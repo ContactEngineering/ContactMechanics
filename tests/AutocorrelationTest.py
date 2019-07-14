@@ -267,6 +267,6 @@ class AutocorrelationTest(PyCoTestCase):
         r, A = t.detrend(detrend_mode='center').autocorrelation_1D()
         r = r[1:-1] # Need to exclude final point because we cannot compute nonuniform ACF at that point
         A = A[1:-1]
-        r2, A2 = t.detrend(detrend_mode='center').to_nonuniform().autocorrelation_1D(distances=r)
+        r2, A2 = t.detrend(detrend_mode='center').to_nonuniform().autocorrelation_1D(algorithm='brute-force', distances=r)
 
         self.assertArrayAlmostEqual(A, A2, tol=1e-4)
