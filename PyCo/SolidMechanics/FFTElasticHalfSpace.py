@@ -97,7 +97,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             FFT engine to use. Options are 'fftw', 'fftwmpi', 'pfft' and 'p3dfft'.
             'serial' and 'mpi' can also be specified, where the choice of the
             appropriate fft is made by muFFT
-        communicator : mpi4py communicator NuMPI stub communicator
+        communicator : mpi4py communicator or NuMPI stub communicator
             MPI communicator object.
         """
         super().__init__()
