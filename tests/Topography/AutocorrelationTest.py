@@ -30,11 +30,11 @@ import os
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
-from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
+from PyCo.Topography import read_topography, Topography, UniformLineScan, NonuniformLineScan
 from PyCo.Topography.Generation import fourier_synthesis
 from PyCo.Topography.Nonuniform.Autocorrelation import height_height_autocorrelation_1D
 
-DATADIR = os.path.join(os.path.dirname(__file__), 'datafiles')
+DATADIR = os.path.join(os.path.dirname(__file__), '../file_format_examples')
 
 
 ###
@@ -276,3 +276,11 @@ def test_self_affine_nonuniform_autocorrelation():
     r2, A2 = t.detrend(detrend_mode='center').to_nonuniform().autocorrelation_1D(algorithm='brute-force', distances=r)
 
     assert_array_almost_equal(A, A2, decimal=5)
+
+
+def test_brute_force_vs_fft():
+    t = read_topography(os.path.join(DATADIR, 'example.asc'))
+    r, A = t.detrend().autocorrelation_1D()
+    r2, A2 = t.detrend().autocorrelation_1D(algorithm='brute-force', distances=r, ninterpolate=5)
+    x = A[1:] / A2[1:]
+    assert np.alltrue(np.logical_and(x > 0.98, x < 1.01))

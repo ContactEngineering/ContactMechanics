@@ -25,15 +25,20 @@
 Tests for power-spectral density analysis
 """
 
-import pytest
+import os
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
-from PyCo.Topography import UniformLineScan, NonuniformLineScan
+
+from PyCo.Topography import read_topography, UniformLineScan, NonuniformLineScan
 from PyCo.Topography.Generation import fourier_synthesis
 from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc
 
+DATADIR = os.path.join(os.path.dirname(__file__), '../file_format_examples')
+
+
+###
 
 def test_uniform():
     for periodic in [True, False]:
@@ -58,52 +63,6 @@ def test_uniform():
                         r = np.zeros_like(C)
                         r[k] = 1 / 4
                         assert_array_almost_equal(C, r)
-
-
-@pytest.mark.skip
-def test_nonuniform_on_uniform_grid():
-    for L in [1.3, 10.6]:
-        for k in [2, 8]:
-            for n in [64]:
-                x = np.arange(n + 1) * L / n
-                h = np.sin(2 * np.pi * k * x / L)
-                t = NonuniformLineScan(x, h)
-
-                pad = 64
-                i = t.interpolate(512, padding=4096)
-                qi, Ci = i.power_spectrum_1D(window='None')
-                Ci *= pad
-
-                q, C = t.power_spectrum_1D(wavevectors=qi, algorithm='brute-force', window='None')
-
-                import matplotlib.pyplot as plt
-                plt.plot(*t.positions_and_heights(), lw=4)
-                plt.plot(*i.positions_and_heights())
-                plt.show()
-
-                plt.plot(q[100:], C[100:], label='true')
-                plt.plot(qi[100:], Ci[100:], label='interpolated')
-                plt.xscale('log')
-                plt.yscale('log')
-                plt.legend(loc='best')
-                plt.show()
-
-                # Throw out the high frequency data points
-                maxi = len(q) // 8
-                qi = qi[:maxi]
-                Ci = Ci[:maxi]
-                q = q[:maxi]
-                C = C[:maxi]
-
-                # Throw out data points below a certain numerical threshold
-                m = C > 1e-5
-                qi = qi[m]
-                Ci = Ci[m]
-                q = q[m]
-                C = C[m]
-
-                assert_array_almost_equal(C, Ci, decimal=1)
-                assert_almost_equal(C.sum() / Ci.sum() - 1, 0, decimal=1)
 
 
 def test_invariance():
@@ -199,3 +158,12 @@ def test_NaNs():
     surf = fourier_synthesis([1024, 512], [2, 1], 0.8, rms_slope=0.1)
     q, C = surf.power_spectrum_2D(nbins=1000)
     assert np.isnan(C).sum() == 0
+
+
+def test_brute_force_vs_fft():
+    t = read_topography(os.path.join(DATADIR, 'example.asc'))
+    q, A = t.detrend().power_spectrum_1D()
+    q2, A2 = t.detrend().power_spectrum_1D(algorithm='brute-force', wavevectors=q, ninterpolate=5)
+    l = len(A2)
+    x = A[1:l // 16] / A2[1:l // 16]
+    assert np.alltrue(np.logical_and(x > 0.90, x < 1.35))
