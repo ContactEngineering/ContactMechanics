@@ -7,13 +7,14 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
 import unittest
 import warnings
 
+import numpy as np
 from numpy.testing import assert_array_equal
 
 import os
 import io
 import pickle
 
-from PyCo.Topography import open_topography
+from PyCo.Topography import open_topography, read_topography
 
 from PyCo.Topography.IO.FromFile import read_xyz
 
@@ -46,6 +47,11 @@ def test_closes_file_on_failure(reader):
         # assert no warning is a ResourceWarning
         for wi in w:
             assert not issubclass(wi.category, ResourceWarning)
+
+
+def test_uniform_stylus():
+    t = read_topography(os.path.join(DATADIR, 'example7.txt'))
+    assert t.is_uniform
 
 
 class IOTest(unittest.TestCase):
