@@ -582,7 +582,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     _periodic = False
 
     def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi, fft="serial",
-                 communicator=MPI.COMM_WORLD):
+                 communicator=MPI.COMM_WORLD, check_boundaries=True):
         """
         Parameters
         ----------
@@ -598,13 +598,17 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             lengths per dimension. If the tuple has less entries than dimensions, the last value in repeated.
         communicator : mpi4py communicator NuMPI stub communicator
             MPI communicator object.
+        check_boundaries: bool
+        if set to true, the function check will test that the pressures are
+        zero at the boundary of the topography-domain.
+        `check()` is called systematically at the end of system.minimize_proxy
         """
         self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
         super().__init__(nb_grid_pts, young, physical_sizes, superclass=False,
                          fft=fft, communicator=communicator)
         self._compute_fourier_coeffs()
         self._compute_i_fourier_coeffs()
-
+        self._check_boundaries = check_boundaries
 
     def spawn_child(self, nb_grid_pts):
         """
@@ -817,9 +821,13 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         is_ok = self.pnp.all(is_ok)
 
         if not is_ok:
-            raise self.FreeBoundaryError("forces not zero at the boundary of the "
-                                         "active domain, "
-                                         "increase the physical_sizes of your domain")
+            raise self.FreeBoundaryError(
+                "The forces not zero at the boundary of the active domain."
+                "This is typically an indication that the contact geometry "
+                "exceeds the bounds of the domain. Since this is a nonperiodic"
+                "calculation, you may want to increase the size of your domain."
+                " If you are sure that the calculation is correct,"
+                " set check_boundary to False")
 
     def check(self, force=None):
         """
@@ -832,7 +840,8 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         -------
 
         """
-        self.check_boundaries(force)
+        if self._check_boundaries:
+            self.check_boundaries(force)
 
 # convenient container for storing correspondences betwees small and large
 # system
