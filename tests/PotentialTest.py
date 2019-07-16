@@ -698,6 +698,5 @@ def test_max_tensile(pot_creation):
     en1=np.isscalar(pot.max_tensile)
 
     # print("{}".format(en1))
-    # print("{}".format(en2))
 
     assert en1
