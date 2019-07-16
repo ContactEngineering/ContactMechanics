@@ -317,7 +317,7 @@ def test_LBFGSB_Hertz():
     substrate = Solid.FreeFFTElasticHalfSpace((nx,ny), young=Es,
                                               physical_sizes=(sx, sy),
                                               fft="serial",
-                                              comm=MPI.COMM_SELF)
+                                              communicator=MPI.COMM_SELF)
 
     interaction = Contact.ExpPotential(0., 0.0001)
     system = SmoothContactSystem(substrate, interaction,surface)

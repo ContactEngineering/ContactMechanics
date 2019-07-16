@@ -31,10 +31,11 @@ from NuMPI import MPI
 import pytest
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
-        reason="tests only serial funcionalities, please execute with pytest")
+        reason="tests only serial functionalities, please execute with pytest")
 
 import unittest
 import numpy as np
+import warnings
 
 from numpy.random import rand
 from numpy.testing import assert_array_equal
@@ -50,9 +51,10 @@ from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz
 
 from PyCo.Topography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
-from PyCo.Topography.IO import detect_format
+from PyCo.Topography.IO import detect_format, CannotDetectFileFormat
 
 import PyCo.Topography.IO
+from PyCo.Topography.IO import readers
 from PyCo.Topography.IO import NPYReader, H5Reader, IbwReader
 from PyCo.Topography.Generation import fourier_synthesis
 
@@ -780,7 +782,7 @@ class npySurfaceTest(unittest.TestCase):
         size = (2,4)
         loader = NPYReader(self.fn)
 
-        topo = loader.topography(size=size)
+        topo = loader.topography(physical_sizes=size)
 
         np.testing.assert_array_almost_equal(topo.heights(), self.data)
 
@@ -952,24 +954,6 @@ class xyzSurfaceTest(unittest.TestCase):
         self.assertEqual(surface.dim, 1)
 
 
-class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def test_detect_format_then_read(self):
-        self.assertEqual(detect_format(os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc')), 'xyz')
-
-    def test_read(self):
-        surface = read_xyz(os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc'))
-
-        self.assertFalse(surface.is_uniform)
-        self.assertEqual(surface.dim, 1)
-
-        x, y = surface.positions_and_heights()
-        self.assertGreater(len(x), 0)
-        self.assertEqual(len(x), len(y))
-
-
 class PipelineTests(unittest.TestCase):
     def test_scaled_topography(self):
         surf = read_xyz(os.path.join(DATADIR,  'example.asc'))
@@ -989,110 +973,6 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(sx, sy2)
         self.assertEqual(sy, sx2)
         self.assertTrue((surf.heights() == surf2.heights().T).all())
-
-
-class IOTest(unittest.TestCase):
-    def setUp(self):
-        self.binary_example_file_list = [
-            os.path.join(DATADIR,  'example1.di'),
-            os.path.join(DATADIR,  'example.ibw'),
-            os.path.join(DATADIR,  'example1.mat'),
-            os.path.join(DATADIR,  'example.opd'),
-            os.path.join(DATADIR,  'example.x3p'),
-            os.path.join(DATADIR,  'example2.x3p'),
-        ]
-        self.text_example_file_list = [
-            os.path.join(DATADIR,  'example.asc'),
-            os.path.join(DATADIR,  'example1.txt'),
-            os.path.join(DATADIR,  'example2.txt'),
-            os.path.join(DATADIR,  'example3.txt'),
-            os.path.join(DATADIR,  'example4.txt'),
-            os.path.join(DATADIR,  'line_scan_1_minimal_spaces.asc'),
-        ]
-        self.text_example_memory_list = [
-            """
-            0 0
-            1 2
-            2 4
-            3 6
-            """
-        ]
-
-    def test_keep_file_open(self):
-        for fn in self.text_example_file_list:
-            # Text file can be opened as binary or text
-            with open(fn, 'rb') as f:
-                open_topography(f)
-                self.assertFalse(f.closed, msg=fn)
-            with open(fn, 'r') as f:
-                open_topography(f)
-                self.assertFalse(f.closed, msg=fn)
-        for fn in self.binary_example_file_list:
-            with open(fn, 'rb') as f:
-                open_topography(f)
-                self.assertFalse(f.closed, msg=fn)
-        for datastr in self.text_example_memory_list:
-            with io.StringIO(datastr) as f:
-                open_topography(f)
-                self.assertFalse(f.closed, msg="text memory stream for '{}' was closed".format(datastr))
-
-            # Doing the same when but only giving a binary stream
-            with io.BytesIO(datastr.encode(encoding='utf-8')) as f:
-                open_topography(f)
-                self.assertFalse(f.closed, msg="binary memory stream for '{}' was closed".format(datastr))
-
-    def test_is_binary_stream(self):
-
-        # just grep a random existing file here
-        fn = self.text_example_file_list[0]
-
-        self.assertTrue(is_binary_stream(open(fn, mode='rb')))
-        self.assertFalse(is_binary_stream(open(fn, mode='r')))  # opened as text file
-
-        # should also work with streams in memory
-        self.assertTrue(is_binary_stream(io.BytesIO(b"11111")))  # some bytes in memory
-        self.assertFalse(is_binary_stream(io.StringIO("11111")))  # some bytes in memory
-
-    def test_can_be_pickled(self):
-        file_list = self.text_example_file_list + self.binary_example_file_list
-
-        for fn in file_list:
-            print(fn)
-            reader = open_topography(fn)
-            t = reader.topography(physical_sizes=reader.physical_sizes if reader.physical_sizes is not None else [1., ] * len(reader.nb_grid_pts))
-            s = pickle.dumps(t)
-            pickled_t = pickle.loads(s)
-
-            #
-            # Compare some attributes after unpickling
-            #
-            # sometimes the result is a list of topographies
-            multiple = isinstance(t, list)
-            if not multiple:
-                t = [t]
-                pickled_t = [pickled_t]
-
-            for x, y in zip(t, pickled_t):
-                for attr in ['dim', 'physical_sizes']:
-                    assert getattr(x, attr) == getattr(y, attr)
-                if x.physical_sizes is not None:
-                    assert_array_equal(x.positions(), y.positions())
-                    assert_array_equal(x.heights(), y.heights())
-
-class UnknownFileFormatGivenTest(unittest.TestCase):
-
-    def test_read(self):
-        with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"), format='Nonexistentfileformat')
-
-    def test_detect_format(self):
-        with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"), format='Nonexistentfileformat')
-
-class FileFormatMismatchTest(unittest.TestCase):
-    def test_read(self):
-        with self.assertRaises(PyCo.Topography.IO.FileFormatMismatch):
-            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, 'surface.2048x2048.h5'), format="npy")
 
 class ScalarParametersTest(PyCoTestCase):
     @unittest.skip
@@ -1162,3 +1042,34 @@ class ConvertersTest(PyCoTestCase):
         self.assertIn('detrend', dir(t1))
         self.assertIn('to_nonuniform', dir(t2))
         self.assertIn('to_uniform', dir(t3))
+
+
+class DerivativeTest(PyCoTestCase):
+    def test_uniform_vs_nonuniform(self):
+        t1 = fourier_synthesis([12], [6], 0.8, rms_slope=0.1)
+        t2 = t1.to_nonuniform()
+
+        d1 = t1.derivative(1)
+        d2 = t2.derivative(1)
+
+        self.assertArrayAlmostEqual(d1[:-1], d2)
+
+    def test_analytic(self):
+        nb_pts = 1488
+        s = 7
+        x = np.arange(nb_pts)*s/nb_pts
+        h = np.sin(x)
+        x += 0.5*s/nb_pts
+        dh = np.cos(x)
+        t1 = UniformLineScan(h, (s,))
+        t2 = UniformLineScan(h, (s,), periodic=True)
+        t3 = t1.to_nonuniform()
+
+        d1 = t1.derivative(1)
+        d2 = t2.derivative(1)
+        d3 = t3.derivative(1)
+
+        self.assertArrayAlmostEqual(d1, dh[:-1], tol=1e-6)
+        self.assertArrayAlmostEqual(d2[:-1], dh[:-1], tol=1e-6)
+        self.assertArrayAlmostEqual(d3, dh[:-1], tol=1e-6)
+

@@ -25,4 +25,6 @@ dist
 /PyCo/Tools/fftext.cpp
 PyCo/Goodies/ScanningProbe.cpp
 PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.cpp
+*.pyc
+
 

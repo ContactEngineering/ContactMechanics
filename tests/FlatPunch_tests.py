@@ -26,19 +26,12 @@
 Tests adhesion-free flat punch results
 """
 
-try:
-    import unittest
-    import numpy as np
-    from PyCo.ContactMechanics import HardWall
-    from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import Topography
-    from PyCo.System import make_system
-except ImportError as err:
-    import sys
-
-    print(err)
-    sys.exit(-1)
-
+import unittest
+import numpy as np
+from PyCo.ContactMechanics import HardWall
+from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
+from PyCo.Topography import Topography
+from PyCo.System import make_system
 
 # -----------------------------------------------------------------------------
 class FlatPunchTest(unittest.TestCase):
@@ -73,7 +66,8 @@ class FlatPunchTest(unittest.TestCase):
                         fig, ax = plt.subplots()
 
                         # ax.pcolormesh(substrate.force / surface.area_per_pt,rasterized=True)
-                        ax.pcolormesh(surface.heights(), rasterized=True)
+                        plt.colorbar(ax.pcolormesh(surface.heights(),
+                                                   rasterized=True))
                         ax.set_xlabel("")
                         ax.set_ylabel("")
 

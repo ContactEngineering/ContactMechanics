@@ -15,7 +15,6 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
         reason="tests only serial funcionalities, please execute with pytest")
 
 def test_save_and_load(comm_self, file_format_examples):
-    print("Hello")
     # sometimes the surface isn't transposed the same way when
 
     topography = open_topography(
@@ -23,9 +22,6 @@ def test_save_and_load(comm_self, file_format_examples):
 
     npyfile = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                           "test_save_and_load.npy")
-    print(npyfile)
-    topography.pnp = Reduction(comm_self) # save_npy extracts the communicator
-    # from the pnp
     save_npy(npyfile, topography)
 
     class dummy_substrate:
@@ -33,10 +29,8 @@ def test_save_and_load(comm_self, file_format_examples):
         topography_nb_subdomain_grid_pts = topography.nb_grid_pts
         topography_subdomain_locations = (0,0)
         physical_sizes= (1., 1.)
-        pnp = topography.pnp
 
-    loaded_topography = NPYReader(npyfile, comm=comm_self
-                                  ).topography(substrate=dummy_substrate)
+    loaded_topography = NPYReader(npyfile, communicator=comm_self).topography(substrate=dummy_substrate)
 
     np.testing.assert_allclose(loaded_topography.heights(), topography.heights())
 
@@ -53,7 +47,7 @@ def test_save_and_load_np(comm_self, file_format_examples):
     npyfile = "test_save_and_load_np.npy"
     np.save(npyfile, topography.heights())
 
-    loaded_topography = NPYReader(npyfile, comm=comm_self).topography(size=(1., 1.))
+    loaded_topography = NPYReader(npyfile, communicator=comm_self).topography(size=(1., 1.))
 
     np.testing.assert_allclose(loaded_topography.heights(), topography.heights())
     

@@ -30,8 +30,9 @@ Implement the FFT-based elasticity solver of pycontact
 """
 
 from collections import namedtuple
+
 import numpy as np
-import sys
+
 from NuMPI import MPI
 
 from .Substrates import ElasticSubstrate
@@ -56,7 +57,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     _periodic = True
 
     def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi, stiffness_q0=None,
-                 thickness=None, poisson=0.0, superclass=True, fft="serial", comm=MPI.COMM_SELF):
+                 thickness=None, poisson=0.0, superclass=True, fft="serial", communicator=MPI.COMM_SELF):
         """
         Parameters
         ----------
@@ -96,6 +97,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             FFT engine to use. Options are 'fftw', 'fftwmpi', 'pfft' and 'p3dfft'.
             'serial' and 'mpi' can also be specified, where the choice of the
             appropriate fft is made by muFFT
+        communicator : mpi4py communicator or NuMPI stub communicator
+            MPI communicator object.
         """
         super().__init__()
         if not hasattr(nb_grid_pts, "__iter__"):
@@ -172,9 +175,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             self.fftengine=numpyEngine(self.nb_domain_grid_pts)
 
         else:
-            self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft, communicator=comm)
+            self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft, communicator=communicator)
 
-        self.pnp = Reduction(comm)
+        self._communicator = communicator
+        self.pnp = Reduction(communicator)
 
         if superclass:
             self._compute_fourier_coeffs()
@@ -275,6 +279,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """
         return self.fftengine.fourier_slices
 
+    @property
+    def communicator(self):
+        """Return the MPI communicator"""
+        return self._communicator
 
     def __repr__(self):
         dims = 'x', 'y', 'z'
@@ -574,30 +582,33 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     _periodic = False
 
     def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi, fft="serial",
-                 comm=MPI.COMM_WORLD):
+                 communicator=MPI.COMM_WORLD, check_boundaries=True):
         """
-        Keyword Arguments:
-        nb_grid_pts  -- Tuple containing number of points in spatial directions.
-                       The length of the tuple determines the spatial dimension
-                       of the problem. Warning: internally, the free boundary
-                       conditions require the system so store a system of
-                       2*nb_grid_pts.x by 2*nb_grid_pts.y. Keep in mind that if
-                       your surface is nx by ny, the forces and displacements
-                       will still be 2nx by 2ny.
-        young       -- Equiv. Young's modulus E'
-                       1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
-        physical_sizes        -- (default 2π) domain physical_sizes. For multidimensional problems,
-                       a tuple can be provided to specify the lenths per
-                       dimension. If the tuple has less entries than
-                       dimensions, the last value in repeated.
+        Parameters
+        ----------
+        nb_grid_pts : tuple of floats
+            Tuple containing number of points in spatial directions. The length of the tuple determines the spatial
+            dimension of the problem. Warning: internally, the free boundary conditions require the system so store a
+            system of 2*nb_grid_pts.x by 2*nb_grid_pts.y. Keep in mind that if your surface is nx by ny, the forces and
+            displacements will still be 2nx by 2ny.
+        young : float
+            Equiv. Young's modulus E', 1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
+        physical_sizes : tuple of floats
+            (default 2π) domain physical_sizes. For multidimensional problems, a tuple can be provided to specify the
+            lengths per dimension. If the tuple has less entries than dimensions, the last value in repeated.
+        communicator : mpi4py communicator NuMPI stub communicator
+            MPI communicator object.
+        check_boundaries: bool
+        if set to true, the function check will test that the pressures are
+        zero at the boundary of the topography-domain.
+        `check()` is called systematically at the end of system.minimize_proxy
         """
         self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
         super().__init__(nb_grid_pts, young, physical_sizes, superclass=False,
-                         fft=fft,
-                         comm=comm)
+                         fft=fft, communicator=communicator)
         self._compute_fourier_coeffs()
         self._compute_i_fourier_coeffs()
-
+        self._check_boundaries = check_boundaries
 
     def spawn_child(self, nb_grid_pts):
         """
@@ -810,9 +821,13 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         is_ok = self.pnp.all(is_ok)
 
         if not is_ok:
-            raise self.FreeBoundaryError("forces not zero at the boundary of the "
-                                         "active domain, "
-                                         "increase the physical_sizes of your domain")
+            raise self.FreeBoundaryError(
+                "The forces not zero at the boundary of the active domain."
+                "This is typically an indication that the contact geometry "
+                "exceeds the bounds of the domain. Since this is a nonperiodic"
+                "calculation, you may want to increase the size of your domain."
+                " If you are sure that the calculation is correct,"
+                " set check_boundary to False")
 
     def check(self, force=None):
         """
@@ -825,7 +840,8 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         -------
 
         """
-        self.check_boundaries(force)
+        if self._check_boundaries:
+            self.check_boundaries(force)
 
 # convenient container for storing correspondences betwees small and large
 # system

@@ -25,16 +25,11 @@
 """
 Tests the pylint (and possibly pep8) conformity of the code
 """
-try:
-    import unittest
-    from pylint import epylint
-    import pep8
+import unittest
+from pylint import epylint
+import pep8
 
-    import PyCo
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+import PyCo
 
 class SystemTest(unittest.TestCase):
     def setUp(self):

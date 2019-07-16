@@ -26,28 +26,26 @@ import pytest
 import os
 
 from runtests.mpi import MPITestFixture
+
+from NuMPI import MPI
 from muFFT import FFT
+
+comm = MPITestFixture([1, 2, 4], scope='session')
+comm_self = MPITestFixture([1], scope='session')
+
+maxcomm = MPITestFixture([MPI.COMM_WORLD.Get_size()], scope="session")
+
 
 @pytest.fixture(scope="session")
 def file_format_examples():
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
 
-#@pytest.fixture
-#def commsizes(request):
-#    return [int(s) for s in request.config.getoption("--commsizes").split(',')]
-
-#comm = MPITestFixture([int(s) for s in config.getoption("--commsizes").split(',')], scope='session')
-comm = MPITestFixture([1,2,4], scope='session')
-comm_self = MPITestFixture([1], scope='session')
-
-from NuMPI import MPI
-maxcomm= MPITestFixture([MPI.COMM_WORLD.Get_size()], scope="session")
 
 @pytest.fixture(scope="session")
 def fftengine_type(comm):
     try:
-        fftname="mpi"
-        engine = FFT((2*comm.Get_size(), 3*comm.Get_size()), fft="mpi", communicator=comm)
+        fftname = "mpi"
+        engine = FFT((2 * comm.Get_size(), 3 * comm.Get_size()), fft="mpi", communicator=comm)
     except:
         if comm.Get_size() == 1:
             fftname = "fftw"

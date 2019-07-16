@@ -61,14 +61,15 @@ def test_constrained_conjugate_gradients(comm, fftengine_type):
 
         for disp0, normal_force in [(-0.9, None), (-0.1, None)]:  # (0.1, None),
             substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                                    fft="mpi", comm=comm)
+                                                    fft="mpi", communicator=comm)
             interaction = HardWall()
             profile = np.resize(np.cos(2 * np.pi * np.arange(nx) / nx), (ny, nx))
             surface = Topography(profile.T, physical_sizes=(sx, sy),
                                  # nb_grid_pts=substrate.nb_grid_pts,
+                                 decomposition='domain',
                                  subdomain_locations=substrate.topography_subdomain_locations,
                                  nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
-                                 pnp=substrate.pnp)
+                                 communicator=substrate.communicator)
             system = make_system(substrate, interaction, surface)
 
             result = system.minimize_proxy(offset=disp0,

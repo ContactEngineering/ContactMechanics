@@ -54,7 +54,8 @@ scripts = ['commandline/hard_wall.py',
 extensions = [
     Extension(
         name='_PyCo',
-        sources=['c/patchfinder.cpp',
+        sources=['c/autocorrelation.c',
+                 'c/patchfinder.cpp',
                  'c/PyCo_module.cpp'],
     )
 ]
