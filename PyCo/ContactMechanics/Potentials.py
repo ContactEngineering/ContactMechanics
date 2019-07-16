@@ -192,7 +192,8 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         """
         convenience function returning the value of the maximum stress (at r_infl)
         """
-        return np.asscalar(self.evaluate(self.r_infl, forces=True)[1])
+        Max_tensile=self.evaluate(self.r_infl, forces=True)[1]
+        return Max_tensile.item()
 
     @property
     def v_min(self):
