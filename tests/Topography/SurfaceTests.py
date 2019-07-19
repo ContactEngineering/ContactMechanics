@@ -929,7 +929,7 @@ class h5SurfaceTest(unittest.TestCase):
     def test_read(self):
         loader = H5Reader(os.path.join(DATADIR,  'surface.2048x2048.h5'))
 
-        topography = loader.topography(size=(1.,1.))
+        topography = loader.topography(physical_sizes=(1.,1.))
         nx, ny = topography.nb_grid_pts
         self.assertEqual(nx, 2048)
         self.assertEqual(ny, 2048)
