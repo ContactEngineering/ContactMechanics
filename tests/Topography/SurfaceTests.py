@@ -45,7 +45,8 @@ import os
 import io
 import pickle
 
-from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan, make_sphere, open_topography
+from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, open_topography,
+                             read_topography)
 from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 
 from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz
@@ -1073,3 +1074,16 @@ class DerivativeTest(PyCoTestCase):
         self.assertArrayAlmostEqual(d2[:-1], dh[:-1], tol=1e-6)
         self.assertArrayAlmostEqual(d3, dh[:-1], tol=1e-6)
 
+
+class PickeTest(PyCoTestCase):
+    def test_detrended(self):
+        t1 = read_topography(os.path.join(DATADIR, 'example1.di'))
+
+        dt1 = t1.detrend(detrend_mode="center")
+
+        t1_pickled = pickle.dumps(t1)
+        t1_unpickled = pickle.loads(t1_pickled)
+
+        dt2 = t1_unpickled.detrend(detrend_mode="center")
+
+        self.assertAlmostEqual(dt1.coeffs[0], dt2.coeffs[0])
