@@ -55,7 +55,7 @@ from PyCo.Topography.IO import detect_format, CannotDetectFileFormat
 
 import PyCo.Topography.IO
 from PyCo.Topography.IO import readers
-from PyCo.Topography.IO import NPYReader, H5Reader, IbwReader
+from PyCo.Topography.IO import NPYReader, H5Reader, IBWReader
 from PyCo.Topography.Generation import fourier_synthesis
 
 from ..PyCoTest import PyCoTestCase
@@ -886,7 +886,7 @@ class ibwSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        reader = IbwReader(os.path.join(DATADIR,  'example.ibw'))
+        reader = IBWReader(os.path.join(DATADIR, 'example.ibw'))
         surface = reader.topography()
         nx, ny = surface.nb_grid_pts
         self.assertEqual(nx, 512)
