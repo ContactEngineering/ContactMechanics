@@ -1,5 +1,6 @@
 #
-# Copyright 2018-2019 Antoine Sanner
+# Copyright 2019 Lintao Fang
+#           2018-2019 Antoine Sanner
 #           2016, 2019 Lars Pastewka
 #           2016 Till Junge
 # 

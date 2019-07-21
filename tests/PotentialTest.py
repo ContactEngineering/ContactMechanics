@@ -1,5 +1,6 @@
 #
-# Copyright 2018-2019 Antoine Sanner
+# Copyright 2019 Lintao Fang
+#           2018-2019 Antoine Sanner
 # 
 # ### MIT license
 # 
