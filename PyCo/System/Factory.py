@@ -38,6 +38,7 @@ from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from PyCo.Topography import open_topography
 from PyCo.Topography.IO import ReaderBase
+from PyCo.ContactMechanics import HardWall
 
 from NuMPI import MPI
 from NuMPI.Tools import Reduction
@@ -56,6 +57,8 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
                    the substrate
     interaction -- An instance of Interaction. Defines the contact formulation
     surface     -- An instance of Topography, defines the profile.
+
+
     """
     # pylint: disable=invalid-name
     # pylint: disable=no-member
@@ -88,6 +91,8 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
             surface.nb_grid_pts,
             physical_sizes=physical_sizes, **kwargs)
 
+    if interaction=="hardwall":
+        interaction=HardWall()
     # make shure the interaction has the correcrt communicator
     interaction.pnp = Reduction(communicator)
     interaction.communicator = communicator

@@ -198,6 +198,15 @@ def test_choose_smooth_contactsystem(comm_self):
     """
     pass
 
+def test_hardwall_as_string(comm, examplefile):
+    fn, res, data = examplefile
+    make_system(substrate="periodic",
+                interaction="hardwall",
+                surface=fn,
+                physical_sizes=(1.,1.),
+                young=1,
+                communicator=comm)
+
 if __name__ == "__main__":
     comm = MPI.COMM_WORLD
     fn = "worflowtest.npy"
