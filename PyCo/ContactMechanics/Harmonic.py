@@ -29,7 +29,7 @@ Harmonic potential for wall interaction
 
 from . import Potential
 import numpy as np
-
+from NuMPI import MPI
 
 class HarmonicPotential(Potential):
     """ Repulsive harmonic potential.
@@ -40,13 +40,13 @@ class HarmonicPotential(Potential):
 
     name = "lj9-3"
 
-    def __init__(self, spring_constant,pnp=np):
+    def __init__(self, spring_constant,communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         spring_constant -- Spring constant k
         """
         self.spring_constant = spring_constant
-        Potential.__init__(self, 0,pnp)
+        Potential.__init__(self, 0,communicator=communicator)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': k = {0.spring_constant}").format(self)

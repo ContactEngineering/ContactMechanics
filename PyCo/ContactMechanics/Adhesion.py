@@ -29,6 +29,7 @@
 
 from . import Potential
 import numpy as np
+from NuMPI import MPI
 
 class ExpPotential(Potential):
     """ V(g) = -gamma0*e^(-g(r)/rho)
@@ -36,7 +37,7 @@ class ExpPotential(Potential):
 
     name = "adh"
 
-    def __init__(self, gamma0,rho,r_cut=float('inf'),pnp=np):
+    def __init__(self, gamma0,rho,r_cut=float('inf'), communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         gamma0 -- surface energy at perfect contact
@@ -44,7 +45,7 @@ class ExpPotential(Potential):
         """
         self.rho = rho
         self.gam = gamma0
-        Potential.__init__(self,r_cut,pnp)
+        Potential.__init__(self,r_cut,communicator=communicator)
 
 
     def __repr__(self, ):

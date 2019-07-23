@@ -30,6 +30,8 @@ Defines the base class for contact description
 
 import numpy as np
 import copy
+from NuMPI import MPI
+from NuMPI.Tools import Reduction
 
 class Interaction(object):
     """base class for all interactions, e.g. interatomic potentials"""
@@ -54,10 +56,11 @@ class HardWall(Interaction):
 
 class SoftWall(Interaction):
     """base class for smooth contact mechanics"""
-    def __init__(self,pnp=np):
+    def __init__(self, communicator=MPI.COMM_WORLD):
         self.energy = None
         self.force = None
-        self.pnp = pnp
+        self.communicator = communicator
+        self.pnp = Reduction(communicator)
 
     def __deepcopy__(self,memo):
         """
@@ -81,6 +84,10 @@ class SoftWall(Interaction):
         # pnp is a module or a class impolenting computation methods, it is not copied
         result.pnp = self.pnp
         keys.remove('pnp')
+        # same for communicator
+        result.communicator = self.communicator
+        keys.remove('communicator')
+
         for k in keys:
             setattr(result, k, copy.deepcopy(getattr(self, k), memo))
         return result

@@ -30,6 +30,7 @@ http://dx.doi.org/10.1103/PhysRevLett.111.035502
 """
 
 import numpy as np
+from NuMPI import MPI
 
 from . import Potential, SmoothPotential
 from . import ParabolicCutoffPotential
@@ -45,7 +46,7 @@ class VDW82(Potential):
     """
     name = 'v-d-Waals82'
 
-    def __init__(self, c_sr, hamaker, r_cut=float('inf'),pnp=np):
+    def __init__(self, c_sr, hamaker, r_cut=float('inf'),communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         c_sr            -- coefficient for repulsive part
@@ -54,7 +55,7 @@ class VDW82(Potential):
         """
         self.c_sr = c_sr
         self.hamaker = hamaker
-        Potential.__init__(self, r_cut, pnp=pnp)
+        Potential.__init__(self, r_cut, communicator=communicator)
 
     def __getstate__(self):
         state = super().__getstate__(), self.c_sr, self.hamaker
@@ -140,7 +141,7 @@ class VDW82smooth(VDW82, SmoothPotential):
     """
     name = 'vdw82smooth'
 
-    def __init__(self, c_sr, hamaker, gamma=None, r_t=None,pnp=np):
+    def __init__(self, c_sr, hamaker, gamma=None, r_t=None,communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         c_sr    -- coefficient for repulsive part
@@ -148,7 +149,7 @@ class VDW82smooth(VDW82, SmoothPotential):
         gamma   -- (default ε) Work of adhesion, defaults to ε
         r_t     -- (default r_min) transition point, defaults to r_min
         """
-        VDW82.__init__(self, c_sr, hamaker,pnp=pnp)
+        VDW82.__init__(self, c_sr, hamaker,communicator=communicator)
         SmoothPotential.__init__(self, gamma, r_t)
 
     def __repr__(self):
@@ -182,7 +183,7 @@ class VDW82smooth(VDW82, SmoothPotential):
             return super().r_infl
             # This is the old property implementation in the VDW82 Potential
 
-def VDW82smoothMin(c_sr, hamaker, gamma=None, r_ti=None, r_t_ls=None, pnp=np):
+def VDW82smoothMin(c_sr, hamaker, gamma=None, r_ti=None, r_t_ls=None, communicator=MPI.COMM_WORLD):
     """
     When starting from a bad guess, or with a bad optimizer, sometimes
     optimisations that include potentials with a singularity at the origin
@@ -199,9 +200,9 @@ def VDW82smoothMin(c_sr, hamaker, gamma=None, r_ti=None, r_t_ls=None, pnp=np):
     r_t_ls  -- (default r_min) transition point between lj and spline,
                 defaults to r_min
     """
-    return LinearCorePotential(VDW82smooth(c_sr, hamaker, gamma, r_t_ls, pnp=pnp), r_ti)
+    return LinearCorePotential(VDW82smooth(c_sr, hamaker, gamma, r_t_ls, communicator=communicator), r_ti)
 
-def VDW82SimpleSmooth(c_sr, hamaker, r_c, pnp=np):
+def VDW82SimpleSmooth(c_sr, hamaker, r_c, communicator=MPI.COMM_WORLD):
     """Uses the ParabolaCutoffPotential smoothing in combination with VDW82
 
         Keyword Arguments:
@@ -209,7 +210,7 @@ def VDW82SimpleSmooth(c_sr, hamaker, r_c, pnp=np):
         hamaker -- Hamaker constant for substrate
         r_c     -- emposed cutoff radius
     """
-    return ParabolicCutoffPotential(VDW82(c_sr, hamaker, pnp=pnp), r_c)
+    return ParabolicCutoffPotential(VDW82(c_sr, hamaker, communicator=communicator), r_c)
 
-def VDW82SimpleSmoothMin(c_sr, hamaker, r_c, r_ti, pnp=np):
-    return LinearCorePotential(VDW82SimpleSmooth(c_sr, hamaker, r_c, pnp=pnp), r_ti=r_ti)
+def VDW82SimpleSmoothMin(c_sr, hamaker, r_c, r_ti, communicator=MPI.COMM_WORLD):
+    return LinearCorePotential(VDW82SimpleSmooth(c_sr, hamaker, r_c, communicator=communicator), r_ti=r_ti)
