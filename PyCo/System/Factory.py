@@ -34,8 +34,17 @@ from .Systems import SystemBase
 from .Systems import IncompatibleFormulationError
 from .Systems import IncompatibleResolutionError
 
+from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
+from PyCo.Topography import open_topography
+from PyCo.Topography.IO import ReaderBase
+
+from NuMPI import MPI
+
 # TODO: give the parallel numpy thrue to the
-def make_system(substrate, interaction, surface):
+def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
+                physical_sizes=None,
+                **kwargs):
     """
     Factory function for contact systems. Checks the compatibility between the
     substrate, interaction method and surface and returns an object of the
@@ -49,8 +58,45 @@ def make_system(substrate, interaction, surface):
     """
     # pylint: disable=invalid-name
     # pylint: disable=no-member
-    args = substrate, interaction, surface
+
     subclasses = list()
+
+    # possibility to give file address instead of topography:
+    if (type(surface) is str
+        or
+        (hasattr(surface, 'read') # is a filelike object
+         and not hasattr(surface, 'topography'))): # but not a reader
+        if communicator is not None:
+            openkwargs = {"communicator": communicator}
+        else: openkwargs={}
+        surface = open_topography(surface, **openkwargs)
+    
+    if physical_sizes is None:
+        if surface.physical_sizes is None:
+            raise ValueError("physical sizes neither provided in input or in file")
+        else:
+            physical_sizes = surface.physical_sizes
+    # substrate build with physical sizes and nb_grid_pts
+    # matching the topography
+    if substrate=="periodic":
+        substrate = PeriodicFFTElasticHalfSpace(
+            surface.nb_grid_pts,
+            physical_sizes=physical_sizes, **kwargs)
+    elif substrate=="free":
+        substrate = FreeFFTElasticHalfSpace(
+            surface.nb_grid_pts,
+            physical_sizes=physical_sizes, **kwargs)
+
+
+    # now the topography is ready to load
+    if issubclass(surface.__class__, ReaderBase):
+        surface = surface.topography(
+            subdomain_locations=substrate.topography_subdomain_locations,
+            nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
+            physical_sizes=physical_sizes)
+        # TODO: this may fail for some readers
+
+    args = substrate, interaction, surface
 
     def check_subclasses(base_class, container):
         """

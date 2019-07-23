@@ -33,60 +33,76 @@ from mpi4py import MPI
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics.Interactions import HardWall
+from PyCo.Topography import make_sphere
 from PyCo.Topography.IO import NPYReader, open_topography
+
+
 import numpy as np
+
 import os
+from NuMPI.Tools import Reduction
 
 DATADIR = os.path.dirname(os.path.realpath(__file__))
 
-# @pytest.fixture
-# def examplefile(comm):
-#     fn = DATADIR + "/worflowtest.npy"
-#     res = (128,64)
-#     np.random.seed(1)
-#     data  = np.random.random(res )
-#     data -= np.mean(data)
-#     if comm.Get_rank == 0:
-#         np.save(fn, data)
-#
-#     comm.barrier()
-#     return (fn, res, data)
+@pytest.fixture
+def examplefile(comm):
+    fn = DATADIR + "/worflowtest.npy"
+    res = (128,64)
+    np.random.seed(1)
+    data  = np.random.random(res )
+    data -= np.mean(data)
+    if comm.rank == 0:
+        np.save(fn, data)
+
+    comm.barrier()
+    return (fn, res, data)
+
+#DATAFILE = DATADIR + "/worflowtest.npy"
+#@pytest.fixture
+#def data(comm):
+#    res = (256,256)#(128, 64)
+#    np.random.seed(1)
+#    data = np.random.random(res)
+#    data -= np.mean(data)
+#    if comm.Get_rank() == 0:
+#        np.save(DATAFILE, data)
+#    comm.barrier() # all processors wait on the file to be created
+#    return data
 
 @pytest.mark.parametrize("HS", [PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace])
 @pytest.mark.parametrize("loader", [open_topography, NPYReader])
-def test_LoadTopoFromFile(comm, fftengine_type, HS, loader):
-
-    fn = DATADIR + "/worflowtest.npy"
-    res = (128, 64)
-    np.random.seed(1)
-    data = np.random.random(res)
-    data -= np.mean(data)
-    if comm.Get_rank() == 0:
-        np.save(fn, data)
-    comm.barrier() # all processors wait on the file to be created
-
-    #fn, res, data = examplefile
+def test_LoadTopoFromFile(comm, fftengine_type, HS, loader, examplefile):
+    #fn = DATAFILE
+    fn, res, data = examplefile
     interaction = HardWall()
 
     # Read metadata from the file and returns a UniformTopgraphy Object
-    fileReader = loader(fn, comm=comm)
+    fileReader = loader(fn, communicator=comm)
 
     #pdb.set_trace()
 
     assert fileReader.nb_grid_pts == res
 
-    # create a substrate according to the topography
-    fftengine = fftengine_type(fileReader.nb_grid_pts, comm = comm)
     Es = 1
     if fileReader.physical_sizes is not None:
-        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts, size=fileReader.physical_sizes, young=Es, fftengine=fftengine)
+        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,
+                       physical_sizes=fileReader.physical_sizes,
+                       young=Es, fft="fftwmpi",
+                       communicator=comm)
     else:
-        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,size=fileReader.nb_grid_pts, young = Es, fftengine=fftengine )
+        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,
+                       physical_sizes=fileReader.nb_grid_pts,
+                       young = Es, fft="fftwmpi",
+                       communicator=comm )
 
-    top = fileReader.topography(substrate)
+    top = fileReader.topography(
+        subdomain_locations=substrate.topography_subdomain_locations,
+        nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
+        physical_sizes=substrate.physical_sizes)
 
     assert top.nb_grid_pts == substrate.nb_grid_pts
-    assert top.nb_subdomain_grid_pts == substrate.topography_nb_subdomain_grid_pts
+    assert top.nb_subdomain_grid_pts \
+           == substrate.topography_nb_subdomain_grid_pts
           # or top.nb_subdomain_grid_pts == (0,0) # for FreeFFTElHS
     assert top.subdomain_locations == substrate.topography_subdomain_locations
 
@@ -94,34 +110,93 @@ def test_LoadTopoFromFile(comm, fftengine_type, HS, loader):
 
     # test that the slicing is what is expected
 
-    fulldomain_field = np.arange(np.prod(substrate.nb_domain_grid_pts)).reshape(substrate.nb_domain_grid_pts)
+    fulldomain_field = np.arange(np.prod(substrate.nb_domain_grid_pts)
+                                 ).reshape(substrate.nb_domain_grid_pts)
 
-    np.testing.assert_array_equal(fulldomain_field[top.subdomain_slices],fulldomain_field[tuple([slice(substrate.subdomain_locations[i],substrate.subdomain_locations[i]+max(0,min(substrate.nb_grid_pts[i] - substrate.subdomain_locations[i],substrate.nb_subdomain_grid_pts[i]))) for i in range(substrate.dim)])])
+    np.testing.assert_array_equal(
+        fulldomain_field[top.subdomain_slices],
+        fulldomain_field[tuple([
+            slice(substrate.subdomain_locations[i],
+            substrate.subdomain_locations[i]
+                  + max(0,min(substrate.nb_grid_pts[i]
+                  - substrate.subdomain_locations[i],
+            substrate.nb_subdomain_grid_pts[i])))
+            for i in range(substrate.dim)])])
 
     # Test Computation of the rms_height
-    # Sq
-    assert top.rms_height(kind="Sq") == np.sqrt(np.mean((data - np.mean(data))**2))
+
+
+    ############## BEGINDEBUG
+    assert top.rms_height(kind="Sq") \
+           == np.sqrt(np.mean((data - np.mean(data))**2))
+
     #Rq
-    assert top.rms_height(kind="Rq") == np.sqrt(np.mean((data - np.mean(data,axis = 0))**2))
+    assert top.rms_height(kind="Rq") \
+           == np.sqrt(np.mean((data - np.mean(data,axis = 0))**2))
 
     system = make_system(substrate, interaction, top)
 
-        # make some tests on the system
+    # make some tests on the system
 
-@pytest.mark.xfail(run=False)
-def test_make_system_from_file():
+
+def test_make_system_from_file(examplefile, comm):
     """
     longtermgoal for confortable and secure use
     Returns
     -------
 
     """
+    # TODO: test this on npy and nc file
     # Maybe it will be another Function or class
+    fn, res, data = examplefile
 
     substrate =  PeriodicFFTElasticHalfSpace
-    interaction = HardWall
+    interaction = HardWall()
 
-    system = make_system(substrate, interaction, fn)
+    system = make_system(substrate="periodic",
+                         interaction=interaction,
+                         surface=fn,
+                         communicator=comm,
+                         physical_sizes=(20.,30.),
+                         young=1)
+
+    print( system.__class__)
+
+def test_make_system_from_file_serial(comm_self):
+    """
+    same as test_make_system_from_file but with the reader being not MPI
+    compatible
+    Returns
+    -------
+
+    """
+    pass
+
+#def test_automake_substrate(comm):
+#    surface = make_sphere(2, (4,4), (1., 1.), )
+
+def test_make_free_system(comm):
+    """
+    For number of processors > 1 it SmartSmoothContactSystem
+    doesn't work.
+    Parameters
+    ----------
+    comm
+
+    Returns
+    -------
+
+    """
+    pass
+
+def test_choose_smooth_contactsystem(comm_self):
+    """
+    even on one processor, one should be able to force the usage of the
+    smooth contact system. The occurence of jump instabilities make the babushka
+    system difficult to use.
+
+    """
+    pass
 
 if __name__ == "__main__":
     comm = MPI.COMM_WORLD

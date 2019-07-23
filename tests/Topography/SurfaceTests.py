@@ -422,7 +422,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(bw[1], 1.5)
 
     def test_example6(self):
-        topography_file = open_topography(os.path.join(DATADIR,  'example6.txt'))
+        topography_file = open_topography(os.path.join(DATADIR, 'example6.txt'))
         surf = topography_file.topography()
         self.assertTrue(isinstance(surf, UniformLineScan))
         self.assertTrue(np.allclose(surf.heights(), [1,2,3,4,5,6,7,8,9]))
@@ -858,7 +858,8 @@ class diSurfaceTest(unittest.TestCase):
                                            (0.83011806260022758, "AmplitudeError"),  # AmplitudeError
                                            (None, "Phase")])  # Phase
         ]:
-            reader = open_topography(os.path.join(DATADIR, '{}').format(fn), format="di")
+            reader = open_topography(os.path.join(DATADIR, '{}').format(fn),
+                                     format="di")
 
 
             for i, (rms, name) in enumerate(rmslist):
