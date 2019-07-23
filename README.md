@@ -76,6 +76,9 @@ python run-tests.py
 
 You can choose the number of processors with the option `--mpirun="mpirun -np 4"`. For development purposes you can go beyound the number of processorce of your computer wusing `--mpirun="mpirun -np 10 --oversubscribe"`
 
+Other usefull flags:
+- `--xterm`: one window per processor
+- `--xterm --pdb`: debugging
 
 Development
 -----------
