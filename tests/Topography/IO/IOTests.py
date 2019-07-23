@@ -177,14 +177,16 @@ class UnknownFileFormatGivenTest(unittest.TestCase):
 
     def test_detect_format(self):
         with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"),
-                                               format='Nonexistentfileformat')
+            PyCo.Topography.IO.open_topography(
+                os.path.join(DATADIR, "surface.2048x2048.h5"),
+                format='Nonexistentfileformat')
 
 
 class FileFormatMismatchTest(unittest.TestCase):
     def test_read(self):
         with self.assertRaises(PyCo.Topography.IO.FileFormatMismatch):
-            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, 'surface.2048x2048.h5'), format="npy")
+            PyCo.Topography.IO.open_topography(
+                os.path.join(DATADIR, 'surface.2048x2048.h5'), format="npy")
 
 
 class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):

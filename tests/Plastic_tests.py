@@ -52,7 +52,8 @@ def test_hard_wall_bearing_area(comm, fftengine_type):
     # Test that at very low hardness we converge to (almost) the bearing
     # area geometry
     pnp = Reduction(comm)
-    fullsurface = open_topography(os.path.join(FIXTURE_DIR, 'surface1.out')).topography()
+    fullsurface = open_topography(
+        os.path.join(FIXTURE_DIR, 'surface1.out')).topography()
     nb_domain_grid_pts = fullsurface.nb_grid_pts
     substrate = PeriodicFFTElasticHalfSpace(nb_domain_grid_pts, 1.0, fft="mpi", communicator=comm)
     surface = Topography(fullsurface.heights(), physical_sizes=nb_domain_grid_pts,

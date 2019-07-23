@@ -75,7 +75,8 @@ class SystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.sphere = Topography.make_sphere(self.radius, self.res, self.physical_sizes)
+        self.sphere = Topography.make_sphere(self.radius, self.res,
+                                             self.physical_sizes)
 
     def test_RejectInconsistentInputTypes(self):
         with self.assertRaises(IncompatibleFormulationError):
@@ -83,7 +84,8 @@ class SystemTest(unittest.TestCase):
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
-        incompat_sphere = Topography.make_sphere(self.radius, incompat_res, self.physical_sizes)
+        incompat_sphere = Topography.make_sphere(self.radius, incompat_res,
+                                                 self.physical_sizes)
         with self.assertRaises(IncompatibleResolutionError):
             make_system(self.substrate, self.smooth, incompat_sphere)
 
@@ -598,3 +600,5 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
             error = abs(normalforce-normalforce.mean()).mean()
         self.assertTrue(error < tol, "error = {:.15g} > tol = {}, N = {}".format(
             error, tol, normalforce))
+
+

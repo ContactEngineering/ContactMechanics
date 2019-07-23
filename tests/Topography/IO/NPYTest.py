@@ -42,19 +42,17 @@ def test_save_and_load(comm_self, file_format_examples):
     # sometimes the surface isn't transposed the same way when
 
     topography = open_topography(
-        os.path.join(file_format_examples, 'example4.di'), format="di").topography()
+        os.path.join(file_format_examples, 'example4.di'),
+        format="di").topography()
 
     npyfile = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                           "test_save_and_load.npy")
     save_npy(npyfile, topography)
 
-    class dummy_substrate:
-        nb_grid_pts = topography.nb_grid_pts
-        topography_nb_subdomain_grid_pts = topography.nb_grid_pts
-        topography_subdomain_locations = (0,0)
-        physical_sizes= (1., 1.)
-
-    loaded_topography = NPYReader(npyfile, communicator=comm_self).topography(substrate=dummy_substrate)
+    loaded_topography = NPYReader(npyfile, communicator=comm_self).topography(
+        #nb_subdomain_grid_pts=topography.nb_grid_pts,
+        #subdomain_locations=(0,0),
+        physical_sizes=(1., 1.) )
 
     np.testing.assert_allclose(loaded_topography.heights(), topography.heights())
 
@@ -66,7 +64,8 @@ def test_save_and_load_np(comm_self, file_format_examples):
     # sometimes the surface isn't transposed the same way when
 
     topography = open_topography(
-        os.path.join(file_format_examples, 'example4.di'), format="di").topography()
+        os.path.join(file_format_examples, 'example4.di'),
+        format="di").topography()
 
     npyfile = "test_save_and_load_np.npy"
     np.save(npyfile, topography.heights())
