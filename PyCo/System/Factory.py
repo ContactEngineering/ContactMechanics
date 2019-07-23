@@ -40,6 +40,7 @@ from PyCo.Topography import open_topography
 from PyCo.Topography.IO import ReaderBase
 
 from NuMPI import MPI
+from NuMPI.Tools import Reduction
 
 # TODO: give the parallel numpy thrue to the
 def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
@@ -87,6 +88,9 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
             surface.nb_grid_pts,
             physical_sizes=physical_sizes, **kwargs)
 
+    # make shure the interaction has the correcrt communicator
+    interaction.pnp = Reduction(communicator)
+    interaction.communicator = communicator
 
     # now the topography is ready to load
     if issubclass(surface.__class__, ReaderBase):
