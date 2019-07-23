@@ -53,6 +53,12 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+
+import pytest
+from NuMPI import MPI
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
+
 class PotentialTest(unittest.TestCase):
     tol = 1e-14
     def setUp(self):
