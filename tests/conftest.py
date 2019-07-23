@@ -31,7 +31,7 @@ from runtests.mpi import MPITestFixture
 from NuMPI import MPI
 from muFFT import FFT
 
-comm = MPITestFixture([1, 2, 4], scope='session')
+comm = MPITestFixture([1, 4], scope='session')
 comm_self = MPITestFixture([1], scope='session')
 
 maxcomm = MPITestFixture([MPI.COMM_WORLD.Get_size()], scope="session")
