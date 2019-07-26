@@ -29,7 +29,7 @@ Implementation of the constrained conjugate gradient algorithm as described in
 I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)
 """
 
-from math import isnan, pi, sqrt
+from math import isnan, sqrt
 
 import numpy as np
 
@@ -91,7 +91,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         if not hasattr(topography, "nb_grid_pts"): raise ValueError(
             "You should provide a topography object when working with MPI")
         #print("Parallel fftengine")
-    pnp= substrate.pnp
+
+    pnp = substrate.pnp
 
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "nb_grid_pts"):
