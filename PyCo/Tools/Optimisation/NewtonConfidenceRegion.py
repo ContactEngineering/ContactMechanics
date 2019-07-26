@@ -1,39 +1,35 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Antoine Sanner
+#           2018 Lars Pastewka
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   NewtonConfidenceRegion.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   17 Sep 2015
-
-@brief  implements the Newton method with confidence region as defined in
-        Bierlaire (2006):
-        Introduction à l'optimization différentiable, Michel Bierlaire,
-        Presses polytechniques et universitaires romandes, Lausanne 2006,
-        ISBN:2-88074-669-8
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+implements the Newton method with confidence region as defined in
+Bierlaire (2006):
+Introduction à l'optimization différentiable, Michel Bierlaire,
+Presses polytechniques et universitaires romandes, Lausanne 2006,
+ISBN:2-88074-669-8
 """
 
 import numpy as np
@@ -59,7 +55,7 @@ def newton_confidence_region(fun, x0, jac, hess, tol, store_iterates=None,
     tol            -- Tolerance for termination
     store_iterates -- (default None) if set to 'iterate' the full iterates are
                       stored in module-level constant iterates
-    radius0        -- (default 10) size of initial confidence region size
+    radius0        -- (default 10) physical_sizes of initial confidence region physical_sizes
     eta1/eta2      -- (default 0.01, 0.9) heuristics for step length
                       modifications. Defaults from Bierlaire (2006)
     method         -- (default 'steihaug_toint') solver for confidence region

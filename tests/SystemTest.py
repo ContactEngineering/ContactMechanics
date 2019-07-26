@@ -1,41 +1,29 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Lars Pastewka
+#           2018-2019 Antoine Sanner
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   04-SystemTest.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   11 Feb 2015
-
-@brief  Tests the creation of tribosystems
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
-You should have received a copy of the GNU General Public License
-along with GNU Emacs; see the file COPYING. If not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
+Tests the creation of tribosystems
 """
 
 try:
@@ -62,16 +50,24 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+import pytest
+from NuMPI import MPI
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
+
+BASEDIR = os.path.dirname(os.path.realpath(__file__))
+
 class SystemTest(unittest.TestCase):
     def setUp(self):
-        self.size = (7.5+5*rand(), 7.5+5*rand())
+        self.physical_sizes = (7.5+5*rand(), 7.5+5*rand())
         self.radius = 100
         base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
-        self.substrate = Solid.PeriodicFFTElasticHalfSpace(
-            self.res, self.young, self.size)
+        self.substrate = Solid.PeriodicFFTElasticHalfSpace(self.res, self.young,
+                                                           self.physical_sizes)
 
         self.eps = 1+np.random.rand()
         self.sig = 3+np.random.rand()
@@ -79,7 +75,8 @@ class SystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.sphere = Topography.make_sphere(self.radius, self.res, self.size)
+        self.sphere = Topography.make_sphere(self.radius, self.res,
+                                             self.physical_sizes)
 
     def test_RejectInconsistentInputTypes(self):
         with self.assertRaises(IncompatibleFormulationError):
@@ -87,7 +84,8 @@ class SystemTest(unittest.TestCase):
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
-        incompat_sphere = Topography.make_sphere(self.radius, incompat_res, self.size)
+        incompat_sphere = Topography.make_sphere(self.radius, incompat_res,
+                                                 self.physical_sizes)
         with self.assertRaises(IncompatibleResolutionError):
             make_system(self.substrate, self.smooth, incompat_sphere)
 
@@ -98,10 +96,10 @@ class SystemTest(unittest.TestCase):
         pot, forces = S.evaluate(disp, offset, forces = True)
 
     def test_SystemGradient(self):
-        res = 16##self.res##[0]
+        res = self.res##[0]
         size = [r*1.28 for r in self.res]##[0]
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, size)
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      size)
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         disp = random(res)*self.sig/10
@@ -203,9 +201,9 @@ class SystemTest(unittest.TestCase):
         ## this merely makes sure that the code doesn't throw exceptions
         ## the plausibility of the result is not verified
         res = self.res[0]
-        size = self.size[0]
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+        size = self.physical_sizes[0]
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -242,9 +240,9 @@ class SystemTest(unittest.TestCase):
 
     def test_minimize_proxy(self):
         res = self.res
-        size = self.size
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+        size = self.physical_sizes
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -263,9 +261,9 @@ class SystemTest(unittest.TestCase):
 
     def test_minimize_proxy_tol(self):
         res = self.res
-        size = self.size
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+        size = self.physical_sizes
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
@@ -305,16 +303,79 @@ class SystemTest(unittest.TestCase):
         self.assertTrue(error < 1e-5, "error = {}".format(error))
 
 
+def test_LBFGSB_Hertz():
+    """
+    goal is that this test run the hertzian contact unsing L-BFGS-B
+
+    For some reason it is difficult to reach the gradient tolerance
+
+    """
+    nx, ny = 64,64
+    sx, sy = 20., 20.
+    R = 11.
+
+    surface =Topography.make_sphere( R,(nx,ny), (sx,sy), kind="paraboloid")
+    Es=50.
+    substrate = Solid.FreeFFTElasticHalfSpace((nx,ny), young=Es,
+                                              physical_sizes=(sx, sy),
+                                              fft="serial",
+                                              communicator=MPI.COMM_SELF)
+
+    interaction = Contact.ExpPotential(0., 0.0001)
+    system = SmoothContactSystem(substrate, interaction,surface)
+
+    gtol=1e-7 # 1e-8 is not reachable for some reason #FIXME
+    offset=1.
+    res = system.minimize_proxy(offset=offset, lbounds="auto",
+                                options=dict(gtol=gtol, ftol=0))
+
+    assert res.success, res.message
+    print(res.message)
+    print(np.max(abs(res.jac))) # This far beyond the tolerance because
+    # at the points where the constraint act the gradient is allowed to not be zero
+
+    padding_mask = np.full(substrate.nb_subdomain_grid_pts , True)
+    padding_mask[substrate.topography_subdomain_slices] = False
+
+    print(np.max(abs(res.jac[padding_mask])))
+    #ä no force in padding area
+    np.testing.assert_allclose(
+        system.substrate.force[padding_mask],0, rtol=0, atol=gtol)
+    comp_contact_area = np.sum(
+        np.where(system.compute_gap(res.x, offset) == 0, 1.,0.)) \
+                        * system.area_per_pt
+
+    comp_normal_force= np.sum(-substrate.evaluate_force(res.x))
+    from PyCo.ReferenceSolutions import Hertz as Hz
+    a, p0 = Hz.radius_and_pressure(Hz.normal_load(offset, R, Es), R, Es)
+
+    np.testing.assert_allclose(comp_normal_force,
+                        Hz.normal_load(offset, R, Es),
+                        rtol=1e-3,
+                        err_msg="computed normal force doesn't match with hertz "
+                                "theory for imposed Penetration {}".format(
+                            offset))
+
+    np.testing.assert_allclose(comp_contact_area, np.pi * a ** 2,
+                        rtol=1e-2,
+                        err_msg="Computed area doesn't match Hertz Theory")
+
+    if False:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        plt.colorbar(ax.pcolormesh(- system.substrate.force), label="pressure")
+        plt.show(block=True)
+
 class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
     def setUp(self):
-        self.size = (7.5+5*rand(), 7.5+5*rand())
+        self.physical_sizes = (7.5+5*rand(), 7.5+5*rand())
         self.radius = 100
         base_res = 16
         self.res = (base_res, base_res)
         self.young = 3+2*random()
 
         self.substrate = Solid.FreeFFTElasticHalfSpace(
-            self.res, self.young, self.size)
+            self.res, self.young, self.physical_sizes)
 
         self.eps = 1+np.random.rand()
         self.sig = 3+np.random.rand()
@@ -322,15 +383,15 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smooth(self.eps, self.sig, self.gam)
 
-        self.sphere = Topography.make_sphere(self.radius, self.res, self.size)
+        self.sphere = Topography.make_sphere(self.radius, self.res, self.physical_sizes)
 
     def test_unconfirmed_minimization(self):
         ## this merely makes sure that the code doesn't throw exceptions
         ## the plausibility of the result is not verified
         res = self.res[0]
-        size = self.size[0]
-        substrate = Solid.PeriodicFFTElasticHalfSpace(
-            res, 25*self.young, self.size[0])
+        size = self.physical_sizes[0]
+        substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
+                                                      self.physical_sizes[0])
         sphere = Topography.make_sphere(self.radius, res, size)
         # here, i deliberately avoid using the make_system, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a
@@ -338,7 +399,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         # directliy like this is almost certainly mistaken
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = -self.sig
-        disp = np.zeros(substrate.domain_resolution)
+        disp = np.zeros(substrate.nb_domain_grid_pts)
 
         fun_jac = S.objective(offset, gradient=True)
         fun     = S.objective(offset, gradient=False)
@@ -371,8 +432,8 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
     def test_comparison_pycontact(self):
         tol = 1e-9
-        ref_fpath = 'tests/ref_smooth_sphere.nc'
-        out_fpath = 'tests/ref_smooth_sphere.out'
+        ref_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.nc')
+        out_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.out')
         ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
         with open(out_fpath) as fh:
             fh.__next__()
@@ -411,7 +472,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ref_profile = np.array(
             ref_data.variables['h']+ref_data.variables['avgh'][0])[:32, :32]
         offset = -.8*potential.r_c
-        gap = S.compute_gap(np.zeros(substrate.domain_resolution), offset)
+        gap = S.compute_gap(np.zeros(substrate.nb_domain_grid_pts), offset)
         diff = ref_profile-gap
         # pycontact centres spheres at (n + 0.5, m + 0.5). need to correct for test
         correction = radius - np.sqrt(radius**2-.5)
@@ -427,7 +488,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         fun_hard = S.objective(offset + correction, gradient=False)
 
         ## initial guess (cheating) is the solution of pycontact
-        disp = np.zeros(S.substrate.domain_resolution)
+        disp = np.zeros(S.substrate.nb_domain_grid_pts)
         disp[:ref_data.size, :ref_data.size] = -ref_data.variables['u'][0]
         gap = S.compute_gap(disp, offset)
         print("gap:     min, max = {}, offset = {}".format((gap.min(), gap.max()), offset))
@@ -483,7 +544,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
                  S.substrate.energy, S.interaction.force.sum(),
                  S.substrate.force.sum(), type(S)))
         error = Tools.mean_err(
-            disp, result.x.reshape(S.substrate.domain_resolution))
+            disp, result.x.reshape(S.substrate.nb_domain_grid_pts))
         self.assertTrue(
             error < ftol,
             "resulting displacements differ: error = {} > tol = {}".format(
@@ -491,8 +552,8 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
     def test_size_insensitivity(self):
         tol = 1e-6
-        ref_fpath = 'tests/ref_smooth_sphere.nc'
-        out_fpath = 'tests/ref_smooth_sphere.out'
+        ref_fpath = os.path.join(BASEDIR,'ref_smooth_sphere.nc')
+        out_fpath = os.path.join(BASEDIR, 'ref_smooth_sphere.out')
         ref_data =  Dataset(ref_fpath, mode='r', format='NETCDF4')
         with open(out_fpath) as fh:
             fh.__next__()
@@ -515,8 +576,8 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         normalforce = np.zeros(nb_compars)
         options = dict(ftol = 1e-12, gtol = 1e-10)
 
-        for i, resolution in ((i, ref_data.size//4*2**i) for i in range(nb_compars)):
-            res = (resolution, resolution)
+        for i, nb_grid_pts in ((i, ref_data.size//4*2**i) for i in range(nb_compars)):
+            res = (nb_grid_pts, nb_grid_pts)
 
             size= tuple((float(r) for r in res))
             young = 2. # pycontact convention (hardcoded)
@@ -539,3 +600,5 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
             error = abs(normalforce-normalforce.mean()).mean()
         self.assertTrue(error < tol, "error = {:.15g} > tol = {}, N = {}".format(
             error, tol, normalforce))
+
+

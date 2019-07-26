@@ -1,40 +1,39 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Lintao Fang
+#           2018-2019 Antoine Sanner
+#           2018-2019 Lars Pastewka
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   Lj93.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   22 Jan 2015
-
-@brief  9-3 Lennard-Jones potential for wall interactions
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+9-3 Lennard-Jones potential for wall interactions
 """
 
-from . import Potential, SmoothPotential, MinimisationPotential
-from . import SimpleSmoothPotential
+from . import Potential, SmoothPotential
+from . import ParabolicCutoffPotential
+from . import LinearCorePotential
 import numpy as np
+from NuMPI import MPI
 
 class LJ93(Potential):
     """ 9-3 Lennard-Jones potential with optional cutoff radius.
@@ -50,16 +49,25 @@ class LJ93(Potential):
 
     name = "lj9-3"
 
-    def __init__(self, epsilon, sigma, r_cut=float('inf'),pnp=np):
+    def __init__(self, epsilon, sigma, r_cut=float('inf'),communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε
         sigma   -- Lennard-Jones distance parameter σ
         r_cut   -- (default i) optional cutoff radius
         """
-        self.eps = epsilon
-        self.sig = sigma
-        Potential.__init__(self, r_cut,pnp=pnp)
+        self.eps = float(epsilon)
+        self.sig = float(sigma)
+        Potential.__init__(self, r_cut, communicator=communicator)
+
+    def __getstate__(self):
+        state = super().__getstate__(), self.eps, self.sig
+        return state
+
+    def __setstate__(self, state):
+        superstate, self.eps, self.sig = state
+        super().__setstate__(superstate)
+
 
     def __repr__(self, ):
         return ("Potential '{0.name}': ε = {0.eps}, σ = {0.sig}, "
@@ -168,7 +176,7 @@ class LJ93smooth(LJ93, SmoothPotential):
     """
     name = 'lj9-3smooth'
 
-    def __init__(self, epsilon, sigma, gamma=None, r_t=None,pnp=np):
+    def __init__(self, epsilon, sigma, gamma=None, r_t=None,communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
@@ -177,8 +185,17 @@ class LJ93smooth(LJ93, SmoothPotential):
         gamma   -- (default ε) Work of adhesion, defaults to ε
         r_t     -- (default r_min) transition point, defaults to r_min
         """
-        LJ93.__init__(self, epsilon, sigma, None,pnp=pnp)
+        LJ93.__init__(self, epsilon, sigma, None,communicator=communicator)
         SmoothPotential.__init__(self, gamma, r_t)
+
+    def __getstate__(self):
+        state = LJ93.__getstate__(self), SmoothPotential.__getstate__(self)
+        return state
+
+    def __setstate__(self, state):
+        lj93state, smoothpotstate = state
+        LJ93.__setstate__(self, lj93state)
+        SmoothPotential.__setstate__(self, smoothpotstate)
 
     def __repr__(self):
         has_gamma = -self.gamma != self.naive_min
@@ -212,19 +229,15 @@ class LJ93smooth(LJ93, SmoothPotential):
             # This is the old property implementation in the LJ93 Potential
 
 
-class LJ93smoothMin(LJ93smooth, MinimisationPotential):
+def LJ93smoothMin(epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None,communicator=MPI.COMM_WORLD):
     """
     When starting from a bad guess, or with a bad optimizer, sometimes
     optimisations that include potentials with a singularity at the origin
     fail, because the optimizer chooses a bad step direction and length and
     falls into non-physical territory. This class tries to remedy this by
     replacing the singular repulsive part around zero by a linear function.
-    """
-    name = 'lj9-3smooth-min'
 
-    def __init__(self, epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None,pnp=np):
-        """
-        Keyword Arguments:
+    Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
                    adhesion in this formulation)
         sigma   -- Lennard-Jones distance parameter σ
@@ -233,48 +246,19 @@ class LJ93smoothMin(LJ93smooth, MinimisationPotential):
                    and lj, defaults to r_min
         r_t_ls  -- (default r_min) transition point between lj and spline,
                     defaults to r_min
-        """
-        LJ93smooth.__init__(self, epsilon, sigma, gamma, r_t_ls,pnp=pnp)
-        MinimisationPotential.__init__(self, r_ti)
-
-    def __repr__(self):
-        has_gamma = -self.gamma != self.naive_min
-        has_r_t = self.r_t != self.r_min
-        return ("Potential '{0.name}', ε = {0.eps}, σ = "
-                "{0.sig}{1}{2}, r_ti = {0.r_ti}").format(
-                    self,
-                    ", γ = {.gamma}".format(self) if has_gamma else "",
-                    ", r_t = {}".format(
-                        self.r_t if has_r_t else "r_min"))  # nopep8
-
-
-class LJ93SimpleSmooth(LJ93, SimpleSmoothPotential):
     """
-    Uses the SimpleSmoothPotential smoothing in combination with LJ93
-    """
-    name = 'lj9-3simple-smooth'
+    return LinearCorePotential(LJ93smooth(epsilon, sigma, gamma, r_t_ls, communicator=communicator), r_ti)
 
-    def __init__(self, epsilon, sigma, r_c,pnp=np):
-        """
+def LJ93SimpleSmooth(epsilon, sigma, r_c, communicator=MPI.COMM_WORLD):
+    """Uses the ParabolicCutoffPotential smoothing in combination with LJ93
+
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
                    adhesion in this formulation)
         sigma   -- Lennard-Jones distance parameter σ
         r_c     -- emposed cutoff radius
-        """
-        LJ93.__init__(self, epsilon, sigma, r_c,pnp)
-        SimpleSmoothPotential.__init__(self, r_c)
+    """
+    return ParabolicCutoffPotential(LJ93(epsilon, sigma, communicator=communicator), r_c)
 
-    @property
-    def r_min(self):
-        """
-        convenience function returning the location of the energy minimum
-        """
-        return self._r_min
-
-    @property
-    def r_infl(self):
-        """
-        convenience function returning the location of the inflection point
-        """
-        return self._r_infl
+def LJ93SimpleSmoothMin(epsilon, sigma, r_c, r_ti, communicator=MPI.COMM_WORLD):
+    return LinearCorePotential(LJ93SimpleSmooth(epsilon, sigma, r_c, communicator=communicator), r_ti=r_ti)

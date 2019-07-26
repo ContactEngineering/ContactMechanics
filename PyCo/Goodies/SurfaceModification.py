@@ -1,35 +1,30 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Antoine Sanner
+#           2016, 2018-2019 Lars Pastewka
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   SurfaceModification.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   18 Jun 2015
-
-@brief  Helper functions for the generation of random fractal surfaces
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Helper functions for the generation of random fractal surfaces
 """
 
 import numpy as np
@@ -52,7 +47,7 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
         surf_char = CharacterisePeriodicSurface(self.surface)
         hurst = surf_char.estimate_hurst()
         rms_height = self.surface.rms_height()
-        super().__init__(surface.resolution, surface.size, hurst, rms_height,
+        super().__init__(surface.nb_grid_pts, surface.physical_sizes, hurst, rms_height,
                          seed=None, lambda_max=None)
 
     def generate_phases(self):
@@ -67,7 +62,7 @@ def estimate_short_cutoff(surface, rms_slope=None, rms_curvature=None,
                           return_bounds=False):
     surf = ModifyExistingPeriodicSurface(surface)
     cutoff1 = np.mean(surf.size)
-    cutoff2 = np.mean([x/y for x, y in zip(surf.size, surf.resolution)])/2
+    cutoff2 = np.mean([x/y for x, y in zip(surf.size, surf.nb_grid_pts)])/2
     initial_slope = rms_slope(surf.get_surface())
     initial_curvature = rms_curvature(surf.get_surface())
     if rms_slope is not None:

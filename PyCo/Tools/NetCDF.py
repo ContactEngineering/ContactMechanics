@@ -1,42 +1,35 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2016, 2019 Lars Pastewka
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   NetCDF.py
-
-@author Lars Pastewka <lars.pastewka@kit.edu>
-
-@date   08 Feb 2016
-
-@brief  Output surface topography and contact deformation to a structured NetCDF
-        database.
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Output surface topography and contact deformation to a structured NetCDF
+database.
 """
 
 from __future__ import print_function
 
 import numbers
-import os
 from math import sqrt
 
 import numpy as np
@@ -50,7 +43,7 @@ except:
 
 ###
 
-class NetCDFContainer_frame(object):
+class NetCDFContainerFrame(object):
     def __init__(self, parent, i):
         self._parent = parent
         self._i = i
@@ -350,7 +343,7 @@ class NetCDFContainer(object):
 
 
     def get_next_frame(self):
-        frame = NetCDFContainer_frame(self, self._cur_frame)
+        frame = NetCDFContainerFrame(self, self._cur_frame)
         self._cur_frame += 1
         return frame
 
@@ -368,7 +361,7 @@ class NetCDFContainer(object):
             return self.__dict__[name]
 
         if name in self._data.variables:
-            return self._data.variables[name]
+            return self._data.variables[name][...]
 
         return self._data.__getattr__(name)
 
@@ -404,14 +397,14 @@ class NetCDFContainer(object):
         if isinstance(i, str):
             return self.__getattr__(i)
         if isinstance(i, slice):
-            return [ NetCDFContainer_frame(self, j)
-                     for j in range(*i.indices(len(self))) ]
-        return NetCDFContainer_frame(self, i)
+            return [NetCDFContainerFrame(self, j)
+                    for j in range(*i.indices(len(self)))]
+        return NetCDFContainerFrame(self, i)
 
 
     def __iter__(self):
         for i in range(len(self)):
-            yield NetCDFContainer_frame(self, i)
+            yield NetCDFContainerFrame(self, i)
 
 
     def get_size(self):

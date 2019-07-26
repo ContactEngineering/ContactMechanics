@@ -1,35 +1,31 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Antoine Sanner
+#           2016, 2018-2019 Lars Pastewka
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   SmoothSystemSpecialisations.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   20 Feb 2015
-
-@brief  implements the periodic and non-periodic smooth contact systems
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+implements the periodic and non-periodic smooth contact systems
 """
 
 from collections import namedtuple
@@ -51,9 +47,9 @@ BndSet = namedtuple('BndSet', ('large', 'small'))
 
 class FastSmoothContactSystem(SmoothContactSystem):
     """
-    This proxy class tries to take advantage of the system-size independence of
+    This proxy class tries to take advantage of the system-physical_sizes independence of
     non-periodic FFT-solved systems by determining the required minimum system
-    size, encapsulating a SmoothContactSystem of that size and run it almost
+    physical_sizes, encapsulating a SmoothContactSystem of that physical_sizes and run it almost
     transparently instead of the full system.
     It's almost transparent, because by its nature, the small system does not
     compute displacements everywhere the large system exists. Therefore, for
@@ -75,7 +71,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
     class BabushkaBoundaryError(Exception):
         """
-        Called when the choosen size of the Babushka System had an Influence on
+        Called when the choosen physical_sizes of the Babushka System had an Influence on
         the Solution. In the Future, one may catch this error,
         increase the margin and restart minimization
         """
@@ -118,7 +114,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
     def shape_minimisation_input(self, in_array):
         """
         For minimisation of smart systems, the initial guess array (e.g.
-        displacement) may have a non-intuitive shape and size (The problem size
+        displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes
         may be decreased, as for free, non-periodic systems, or increased as
         with augmented-lagrangian-type issues). Use the output of this function
         as argument x0 for scipy minimisation functions. Also, if your initial
@@ -129,9 +125,9 @@ class FastSmoothContactSystem(SmoothContactSystem):
         in_array -- array with the initial guess. has the intuitive shape you
                     think it has
         """
-        if np.prod(self.substrate.domain_resolution) == in_array.size:
+        if np.prod(self.substrate.nb_domain_grid_pts) == in_array.size:
             return self._get_babushka_array(in_array).reshape(-1)
-        elif (np.prod(self.babushka.substrate.domain_resolution) ==
+        elif (np.prod(self.babushka.substrate.nb_domain_grid_pts) ==
               in_array.size):
             return in_array.reshape(-1)
         raise IncompatibleResolutionError()
@@ -224,7 +220,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         # does not accept it as argument anymore
         self.offset = offset
         if disp0 is None:
-            disp0 = np.zeros(self.substrate.domain_resolution)
+            disp0 = np.zeros(self.substrate.nb_domain_grid_pts)
         gap = self.compute_gap(disp_scale*disp0, offset)
         contact = np.argwhere(gap < self.interaction.r_c)
         if contact.size == 0:
@@ -242,18 +238,18 @@ class FastSmoothContactSystem(SmoothContactSystem):
         if any(bnd < 0 for bnd in self.__babushka_offset):
             raise self.FreeBoundaryError(
                 ("With the current margin of {}, the system overlaps the lower"
-                 " bounds by {}. Total resolution is {}").format(
-                     self.margin, self.__babushka_offset, self.resolution),
+                 " bounds by {}. Total nb_grid_pts is {}").format(
+                     self.margin, self.__babushka_offset, self.nb_grid_pts),
                 disp0)  # nopep8
-        if any(res + self.__babushka_offset[i] > self.resolution[i] for i, res
+        if any(res + self.__babushka_offset[i] > self.nb_grid_pts[i] for i, res
                in enumerate(sm_res)):
             raise self.FreeBoundaryError(
                 ("With the current margin of {}, the system overlaps the upper"
-                 " bounds by {}. Total resolution is {}").format(
+                 " bounds by {}. Total nb_grid_pts is {}").format(
                      self.margin,
-                     tuple(self.__babushka_offset[i] + res - self.resolution[i]
+                     tuple(self.__babushka_offset[i] + res - self.nb_grid_pts[i]
                            for i, res in enumerate(sm_res)),
-                     self.resolution), disp0)  # nopep8
+                     self.nb_grid_pts), disp0)  # nopep8
 
         self.compute_babushka_bounds(sm_res)
         sm_surf = self._get_babushka_array(self.surface.heights(),
@@ -291,28 +287,28 @@ class FastSmoothContactSystem(SmoothContactSystem):
 
         self.force = self.substrate.force.copy()
         if self.dim == 1:
-            self.force[:self.resolution[0]] -= self.interaction.force
+            self.force[:self.nb_grid_pts[0]] -= self.interaction.force
         else:
-            self.force[:self.resolution[0], :self.resolution[1]] -= \
+            self.force[:self.nb_grid_pts[0], :self.nb_grid_pts[1]] -= \
               self.interaction.force   # nopep8
         self.disp = self.substrate.evaluate_disp(self.substrate.force)
         return self.energy, self.force, self.disp
 
-    def compute_babushka_bounds(self, babushka_resolution):
+    def compute_babushka_bounds(self, babushka_nb_grid_pts):
         """
         returns a list of tuples that contain the equivalent slices in the
-        small and the large array. It differentiates between resolution and
-        domain_resolution.
+        small and the large array. It differentiates between nb_grid_pts and
+        nb_domain_grid_pts.
         Parameters:
-        babushka_resolution -- resolution of smaller scale
+        babushka_nb_grid_pts -- nb_grid_pts of smaller scale
         """
         def boundary_generator():
             """
             computes slices for the boundaries. helps translating between large
             and small arrays using copy-less ndarray views
             """
-            sm_res = babushka_resolution
-            lg_res = self.resolution
+            sm_res = babushka_nb_grid_pts
+            lg_res = self.nb_grid_pts
             for i in (0, 1):
                 for j in (0, 1):
                     sm_slice = tuple((slice(i*sm_res[0], (i+1)*sm_res[0]),
@@ -329,35 +325,35 @@ class FastSmoothContactSystem(SmoothContactSystem):
     def _get_babushka_array(self, full_array, babushka_array=None):
         """
         returns the equivalent small-scale array representation of a given
-        large-scale array. In the case of domain_resolution arrays, this
+        large-scale array. In the case of nb_domain_grid_pts arrays, this
         is a copy. Else a view.
         Parameters:
         full_array     -- large-scale input array
         babushka_array -- optional small-scale output array to overwrite
         """
         # pylint: disable=unused-argument
-        def domain_resolution():
+        def nb_domain_grid_pts():
             "used when arrays correspond to the substrate"
             nonlocal babushka_array
             if babushka_array is None:
                 babushka_array = np.zeros(
-                    self.babushka.substrate.domain_resolution)
+                    self.babushka.substrate.nb_domain_grid_pts)
             for bnd in self.bounds:
                 babushka_array[bnd.small] = full_array[bnd.large]
             return babushka_array
 
-        def normal_resolution():
+        def normal_nb_grid_pts():
             "used when arrays correspond to the interaction or the surface"
             nonlocal babushka_array
             if babushka_array is None:
-                babushka_array = np.zeros(self.babushka.resolution)
+                babushka_array = np.zeros(self.babushka.nb_grid_pts)
             bnd = self.bounds[0]
             babushka_array[bnd.small] = full_array[bnd.large]
             return babushka_array
-        if full_array.shape == self.resolution:
-            return normal_resolution()
+        if full_array.shape == self.nb_grid_pts:
+            return normal_nb_grid_pts()
         else:
-            return domain_resolution()
+            return nb_domain_grid_pts()
 
     def _get_full_array(self, babushka_array, full_array=None):
         """
@@ -368,28 +364,28 @@ class FastSmoothContactSystem(SmoothContactSystem):
         babushka_array -- small-scale input array
         """
         # pylint: disable=unused-argument
-        def domain_resolution():
+        def nb_domain_grid_pts():
             "used when arrays correspond to the substrate"
             nonlocal full_array
             if full_array is None:
                 full_array = np.zeros(
-                    self.substrate.domain_resolution)
+                    self.substrate.nb_domain_grid_pts)
             for bnd in self.bounds:
                 full_array[bnd.large] = babushka_array[bnd.small]
             return full_array
 
-        def normal_resolution():
+        def normal_nb_grid_pts():
             "used when arrays correspond to the interaction or the surface"
             nonlocal full_array
             if full_array is None:
-                full_array = np.zeros(self.resolution)
+                full_array = np.zeros(self.nb_grid_pts)
             bnd = self.bounds[0]
             full_array[bnd.large] = babushka_array[bnd.small]
             return full_array
-        if babushka_array.shape == self.babushka.resolution:
-            return normal_resolution()
+        if babushka_array.shape == self.babushka.nb_grid_pts:
+            return normal_nb_grid_pts()
         else:
-            return domain_resolution()
+            return nb_domain_grid_pts()
 
     def minimize_proxy(self, offset, disp0=None, method='L-BFGS-B',
                        options=None, gradient=True, lbounds=None, ubounds=None,
@@ -426,7 +422,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         fun = self.objective(offset, disp0, gradient=gradient,
                              disp_scale=disp_scale)
         if disp0 is None:
-            disp0 = np.zeros(self.substrate.domain_resolution)
+            disp0 = np.zeros(self.substrate.nb_domain_grid_pts)
         disp0 = self.shape_minimisation_input(disp0)
         if callback is True:
             use_callback = self.callback(force=gradient)
@@ -441,7 +437,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
         def compound_callback(disp_k):
             """
             The callback first check whether the new state of the system
-            violates the size restrictions of the babuška system before calling
+            violates the physical_sizes restrictions of the babuška system before calling
             the user-provided callback function
             Parameter:
             disp_k -- flattened displacement vector at the current optimization

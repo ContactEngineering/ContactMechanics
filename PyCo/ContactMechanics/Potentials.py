@@ -1,35 +1,32 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Lintao Fang
+#           2018-2019 Antoine Sanner
+#           2016, 2019 Lars Pastewka
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   Potential.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   21 Jan 2015
-
-@brief  Generic potential class, all potentials inherit it
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Generic potential class, all potentials inherit it
 """
 
 import math
@@ -38,8 +35,10 @@ import abc
 import numpy as np
 import scipy.optimize
 
-from .Interactions import SoftWall
+from NuMPI import MPI
 
+from .Interactions import SoftWall
+#from helpers.debug_tools import dump_in_out
 
 class Potential(SoftWall, metaclass=abc.ABCMeta):
     """ Describes the minimum interface to interaction potentials for
@@ -68,8 +67,8 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
             pass
 
     @abc.abstractmethod
-    def __init__(self, r_cut,pnp=np):
-        super().__init__(pnp)
+    def __init__(self, r_cut, communicator=MPI.COMM_WORLD):
+        super().__init__(communicator)
         self.r_c = r_cut
         if r_cut is not None:
             self.has_cutoff = not math.isinf(self.r_c)
@@ -87,6 +86,14 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
     def __repr__(self):
         return ("Potential '{0.name}', cut-off radius r_cut = " +
                 "{0.r_c}").format(self)
+
+    def __getstate__(self): #TODO: should the energy be serialized ?, I think not
+        state = super().__getstate__(), self.has_cutoff, self.offset,  self.r_c, self.curb
+        return state
+
+    def __setstate__(self, state):
+        superstate, self.has_cutoff, self.offset,  self.r_c, self.curb = state
+        super().__setstate__(superstate)
 
     def compute(self, gap, pot=True, forces=False, curb=False, area_scale=1.):
         # pylint: disable=arguments-differ
@@ -116,14 +123,45 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         curb       -- (default False) if true, returns second derivative
         area_scale -- (default 1.) scale by this. (Interaction quantities are
                       supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
+                      to be able to scale their response for their nb_grid_pts))
         """
-        # pylint: disable=bad-whitespace
-        # pylint: disable=arguments-differ
         if np.isscalar(r):
             r = np.asarray(r)
         if r.shape == ():
             r.shape = (1, )
+
+        # we use subok = False to ensure V will not be a masked array
+        V = np.zeros_like(r, subok=False) if pot else self.SliceableNone()
+        dV = np.zeros_like(r,
+                           subok=False) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r,
+                            subok=False) if curb else self.SliceableNone()
+
+        if np.ma.getmask(r) is not np.ma.nomask:
+            sl = np.logical_not(r.mask)
+            V[sl], dV[sl], ddV[sl] = self._evaluate( r[sl], pot, forces, curb)
+        else:
+            V, dV, ddV = self._evaluate( r, pot, forces,curb)
+
+        # note, if in future we want to return masked arrays we should
+        # set the fill_value to zero afterward
+
+        return (area_scale * V if pot else None,
+                area_scale * dV if forces else None,
+                area_scale * ddV if curb else None)
+
+
+    def _evaluate(self, r, pot=True, forces=False, curb=False):
+        """Evaluates the potential and its derivatives
+        Keyword Arguments:
+        r          -- array of distances
+        pot        -- (default True) if true, returns potential energy
+        forces     -- (default False) if true, returns forces
+        curb       -- (default False) if true, returns second derivative
+        """
+        # pylint: disable=bad-whitespace
+        # pylint: disable=arguments-differ
+
         inside_slice = np.ma.filled(r < self.r_c, fill_value=False)
         V = np.zeros_like(r) if pot else self.SliceableNone()
         dV = np.zeros_like(r) if forces else self.SliceableNone()
@@ -133,9 +171,9 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
             r[inside_slice], pot, forces, curb)
         if V[inside_slice] is not None:
             V[inside_slice] -= self.offset
-        return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
 
     @abc.abstractproperty
     def r_min(self):
@@ -151,6 +189,14 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         inflection point (if applicable)
         """
         raise NotImplementedError()
+
+    @property
+    def max_tensile(self):
+        """
+        convenience function returning the value of the maximum stress (at r_infl)
+        """
+        Max_tensile=self.evaluate(self.r_infl, forces=True)[1]
+        return Max_tensile.item()
 
     @property
     def v_min(self):
@@ -218,7 +264,7 @@ class SmoothPotential(Potential):
         # pylint: disable=super-init-not-called
         # not calling the superclass's __init__ because this is used in diamond
         # inheritance and I do not want to have to worry about python's method
-        # resolution order
+        # nb_grid_pts order
         self.gamma = gamma if gamma is not None else -self.naive_min
         # Warning: this assumes that the minimum of the potential is a negative
         # value. This will fail curiously if you use this class to implement a
@@ -239,6 +285,14 @@ class SmoothPotential(Potential):
         self.ddpoly = None
         self.eval_poly_and_cutoff()
 
+    def __getstate__(self):
+        state = super().__getstate__(), self.gamma, self.r_t, self.coeffs, self.poly, self.dpoly, self.ddpoly, self.r_c, self.offset
+        return state
+
+    def __setstate__(self, state):
+        superstate, self.gamma, self.r_t, self.coeffs, self.poly, self.dpoly, self.ddpoly, self.r_c, self.offset = state
+        super().__setstate__(superstate)
+
     @abc.abstractmethod
     def __repr__(self):
         raise NotImplementedError
@@ -255,24 +309,21 @@ class SmoothPotential(Potential):
         else:
             return None
 
-    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
+    def _evaluate(self, r, pot=True, forces=False, curb=False):
         """Evaluates the potential and its derivatives
         Keyword Arguments:
         r          -- array of distances
         pot        -- (default True) if true, returns potential energy
         forces     -- (default False) if true, returns forces
         curb       -- (default False) if true, returns second derivative
-        area_scale -- (default 1.) scale by this. (Interaction quantities are
-                      supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
-        if np.isscalar(r):
-            r = np.asarray(r)
-        nb_dim = len(r.shape)
-        if nb_dim == 0:
-            r.shape = (1,)
+        # if np.isscalar(r):
+        #     r = np.asarray(r)
+        # nb_dim = len(r.shape)
+        # if nb_dim == 0:
+        #     r.shape = (1,)
         V = np.zeros_like(r) if pot else self.SliceableNone()
         dV = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
@@ -281,9 +332,12 @@ class SmoothPotential(Potential):
         sl_rest = np.logical_not(sl_inner)
         # little hack to work around numpy bug
         if np.array_equal(sl_inner, np.array([True])):
+#            raise AssertionError(" I thought this code is never executed")
             V, dV, ddV = self.naive_pot(r, pot, forces, curb)
             V -= self.offset
-            return V, dV, ddV
+            return (V if pot else None,
+                    dV if forces else None,
+                    ddV if curb else None)
         else:
             V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_pot(
                 r[sl_inner], pot, forces, curb)
@@ -298,9 +352,9 @@ class SmoothPotential(Potential):
             V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_pot(
                 r[sl_outer], pot, forces, curb)
 
-        return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
 
     def spline_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the spline part and its derivatives of the potential.
@@ -656,95 +710,29 @@ class SmoothPotential(Potential):
                        " check whether the inputs make sense").format(self)
             raise self.PotentialError(err_str)
 
+class ChildPotential(Potential):
+    def __init__(self, parent_potential):
+        self.parent_potential = parent_potential
+        self.pnp = parent_potential.pnp
+        self.communicator = parent_potential.communicator
 
-class MinimisationPotential(SmoothPotential):
-    """
-    Replaces the singular repulsive part of potentials by a linear part. This
-    makes potentials maximally robust for the use with very bad initial
-    parameters. Consider using this instead of loosing time guessing initial
-    states for optimization.
-    """
-    def __init__(self, r_ti=None):
-        """
-        Keyword Arguments:
-        r_ti    -- (default r_min/2) transition point between linear function
-                   and lj, defaults to r_min
-        """
-        # pylint: disable=super-init-not-called
-        # not calling the superclass's __init__ because this is used in diamond
-        # inheritance and I do not want to have to worry about python's method
-        # resolution order
-        self.r_ti = r_ti if r_ti is not None else self.r_min/2
-        self.lin_part = self.compute_linear_part()
-
-    def compute_linear_part(self):
-        " evaluates the two coefficients of the linear part of the potential"
-        f_val, f_prime, dummy = super().evaluate(self.r_ti, True, True)
-        return np.poly1d((float(-f_prime), f_val + f_prime*self.r_ti))
-
-    @abc.abstractmethod
-    def __repr__(self):
-        raise NotImplementedError
-
-    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
-        """Evaluates the potential and its derivatives
-        Keyword Arguments:
-        r          -- array of distances
-        pot        -- (default True) if true, returns potential energy
-        forces     -- (default False) if true, returns forces
-        curb       -- (default False) if true, returns second derivative
-        area_scale -- (default 1.) scale by this. (Interaction quantities are
-                      supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
-        """
-        # pylint: disable=bad-whitespace
-        # pylint: disable=invalid-name
-        if np.isscalar(r):
-            r = np.asarray(r)
-        nb_dim = len(r.shape)
-        if nb_dim == 0:
-            r.shape = (1,)
-        V = np.zeros_like(r) if pot else self.SliceableNone()
-        dV = np.zeros_like(r) if forces else self.SliceableNone()
-        ddV = np.zeros_like(r) if curb else self.SliceableNone()
-
-        sl_core = np.ma.filled(r < self.r_ti, fill_value=False)
-        sl_rest = np.logical_not(sl_core)
-        # little hack to work around numpy bug
-        if np.array_equal(sl_core, np.array([True])):
-            return self.lin_pot(r, pot, forces, curb)
+    def __getattr__(self, item):
+        #print("looking up item {} in {}".format(item, self.parent_potential))
+        #print(self.parent_potential)
+        if item[:2]=="__" and item[-2:]=="__":
+            #print("not allow to lookup")
+            raise AttributeError
         else:
-            V[sl_core], dV[sl_core], ddV[sl_core] = self.lin_pot(
-                r[sl_core], pot, forces, curb)
+            return getattr(self.parent_potential, item)
 
-        sl_inner = np.logical_and(np.ma.filled(r < self.r_t, fill_value=False),
-                                  sl_rest)
-        sl_rest *= np.logical_not(sl_inner)
-        # little hack to work around numpy bug
-        if np.array_equal(sl_inner, np.array([True])):
-            V, dV, ddV = self.naive_pot(r, pot, forces, curb)
-            V -= self.offset
-            return V, dV, ddV
-        else:
-            V[sl_inner], dV[sl_inner], ddV[sl_inner] = self.naive_pot(
-                r[sl_inner], pot, forces, curb)
-        if pot:
-            V[sl_inner] -= self.offset
+    def __getstate__(self):
+        state = super().__getstate__(), self.parent_potential
+        return state
 
-        sl_outer = np.logical_and(np.ma.filled(r < self.r_c, fill_value=False),
-                                  sl_rest)
-        # little hack to work around numpy bug
-        if np.array_equal(sl_outer, np.array([True])):
-            V, dV, ddV = self.spline_pot(r, pot, forces, curb)
-        else:
-            V[sl_outer], dV[sl_outer], ddV[sl_outer] = self.spline_pot(
-                r[sl_outer], pot, forces, curb)
+    def __setstate__(self, state):
+        superstate, self.parent_potential = state
+        super().__setstate__(superstate)
 
-        return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
-
-    @abc.abstractmethod
     def naive_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the potential and its derivatives without cutoffs or
             offsets.
@@ -755,7 +743,97 @@ class MinimisationPotential(SmoothPotential):
             curb   -- (default False) if true, returns second derivative
 
         """
-        raise NotImplementedError()
+        return self.parent_potential.naive_pot(r, pot, forces, curb)
+
+
+class LinearCorePotential(ChildPotential):
+    """
+    Replaces the singular repulsive part of potentials by a linear part. This
+    makes potentials maximally robust for the use with very bad initial
+    parameters. Consider using this instead of loosing time guessing initial
+    states for optimization.
+    """
+    def __init__(self, parent_potential, r_ti=None):
+        """
+        Keyword Arguments:
+        r_ti    -- (default r_min/2) transition point between linear function
+                   and lj, defaults to r_min
+        """
+        # pylint: disable=super-init-not-called
+        # not calling the superclass's __init__ because this is used in diamond
+        # inheritance and I do not want to have to worry about python's method
+        # nb_grid_pts order
+        super().__init__(parent_potential)
+        self.r_ti = r_ti if r_ti is not None else parent_potential.r_min/2
+        self.lin_part = self.compute_linear_part()
+
+    def __getstate__(self):
+        """ is called and the returned object is pickled as the contents for
+            the instance
+        """
+        state = super().__getstate__(), self.r_ti, self.lin_part
+        return state
+
+    def __setstate__(self, state):
+        """ Upon unpickling, it is called with the unpickled state
+        Keyword Arguments:
+        state -- result of __getstate__
+        """
+        superstate, self.r_ti, self.lin_part = state
+        super().__setstate__(superstate)
+
+
+    def compute_linear_part(self):
+        " evaluates the two coefficients of the linear part of the potential"
+        f_val, f_prime, dummy = self.parent_potential.evaluate(self.r_ti, True, True)
+        return np.poly1d((float(-f_prime), f_val + f_prime*self.r_ti))
+
+    def __repr__(self):
+        return "{0} -> LinearCorePotential: r_ti = {1.r_ti}".format(self.parent_potential.__repr__(),self)
+    #@dump_in_out(open("LinearCore.txt", "w"))
+    def _evaluate(self, r, pot=True, forces=False, curb=False):
+        """Evaluates the potential and its derivatives
+        Keyword Arguments:
+        r          -- array of distances
+        pot        -- (default True) if true, returns potential energy
+        forces     -- (default False) if true, returns forces
+        curb       -- (default False) if true, returns second derivative
+        """
+        # pylint: disable=bad-whitespace
+        # pylint: disable=invalid-name
+        if np.isscalar(r):
+            r = np.asarray(r)
+        nb_dim = len(r.shape)
+        if nb_dim == 0:
+            r.shape = (1,)
+        # we use subok = False to ensure V will not be a masked array
+        V = np.zeros_like(r, subok=False) if pot else self.SliceableNone()
+        dV = np.zeros_like(r, subok=False) if forces else self.SliceableNone()
+        ddV = np.zeros_like(r, subok=False) if curb else self.SliceableNone()
+
+
+        sl_core = np.ma.filled(r < self.r_ti, fill_value=False)
+        sl_rest = np.logical_not(sl_core)
+
+        if np.ma.getmask(r) is not np.ma.nomask:
+            sl_rest = np.logical_and(sl_rest, np.logical_not(np.ma.getmask(r)))
+            sl_core = np.logical_and(sl_core, np.logical_not(np.ma.getmask(r)))
+
+
+        # little hack to work around numpy bug
+        if np.array_equal(sl_core, np.array([True])):
+            V, dV, ddV = self.lin_pot(r, pot, forces, curb)
+            raise AssertionError(" I thought this code is never executed")
+        else:
+            V[sl_core], dV[sl_core], ddV[sl_core] = \
+                self.lin_pot(r[sl_core], pot, forces, curb)
+            V[sl_rest], dV[sl_rest], ddV[sl_rest] = \
+                self.parent_potential._evaluate(r[sl_rest], pot, forces, curb)
+
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
+
 
     def lin_pot(self, r, pot=True, forces=False, curb=False):
         """ Evaluates the linear part and its derivatives of the potential.
@@ -770,36 +848,59 @@ class MinimisationPotential(SmoothPotential):
         ddV = None if curb is False else 0.
         return V, dV, ddV
 
-    @abc.abstractproperty
+    @property
     def r_min(self):
         """
         convenience function returning the location of the enery minimum
         """
-        raise NotImplementedError()
+        return self.parent_potential.r_min
+    @property
+    def r_infl(self):
+        """
+        convenience function returning the location of the potential's
+        inflection point (if applicable)
+        """
 
+        return self.parent_potential.r_infl
 
-class SimpleSmoothPotential(Potential):
+class ParabolicCutoffPotential(ChildPotential):
     """
-    Implements a very simple smoothing of a potential, by complementing the
-    functional form of the potential with a parabola that brings to zero the
-    potential's zeroth, first and second derivative at an imposed (and freely
-    chosen) cut_off radius r_c
+        Implements a very simple smoothing of a potential, by complementing the
+        functional form of the potential with a parabola that brings to zero the
+        potential's zeroth, first and second derivative at an imposed (and freely
+        chosen) cut_off radius r_c
     """
-    # pylint: disable=abstract-method
-    # pylint: disable=super-init-not-called
-    # this class is itself abstract
-    def __init__(self, r_c):
+
+    def __init__(self, parent_potential, r_c):
         """
         Keyword Arguments:
         r_c -- user-defined cut-off radius
         """
-
+        super().__init__(parent_potential)
         self.r_c = r_c
 
         self.poly = None
         self.compute_poly()
         self._r_min = self.precompute_min()
         self._r_infl = self.precompute_infl()
+
+    def __getstate__(self):
+        """ is called and the returned object is pickled as the contents for
+            the instance
+        """
+        state = super().__getstate__(), self.r_c ,self.poly,self.dpoly, self.ddpoly, self._r_min, self._r_infl
+        return state
+
+    def __setstate__(self, state):
+        """ Upon unpickling, it is called with the unpickled state
+        Keyword Arguments:
+        state -- result of __getstate__
+        """
+        superstate, self.r_c ,self.poly,self.dpoly, self.ddpoly, self._r_min, self._r_infl= state
+        super().__setstate__(superstate)
+
+    def __repr__(self):
+        return "{0} -> ParabolaCutoffPotential: r_c = {1.r_c}".format(self.parent_potential.__repr__(),self)
 
     def precompute_min(self):
         """
@@ -836,6 +937,21 @@ class SimpleSmoothPotential(Potential):
                  "This was the full minimisation result: {}").format(result))
         return float(result[0])
 
+
+    @property
+    def r_min(self):
+        """
+        convenience function returning the location of the energy minimum
+        """
+        return self._r_min
+
+    @property
+    def r_infl(self):
+        """
+        convenience function returning the location of the inflection point
+        """
+        return self._r_infl
+
     def compute_poly(self):
         """
         computes the coefficients of the corrective parabola
@@ -853,7 +969,7 @@ class SimpleSmoothPotential(Potential):
         self.dpoly = np.polyder(self.poly)
         self.ddpoly = np.polyder(self.dpoly)
 
-    def evaluate(self, r, pot=True, forces=False, curb=False, area_scale=1.):
+    def _evaluate(self, r, pot=True, forces=False, curb=False):
         """
         Evaluates the potential and its derivatives
         Keyword Arguments:
@@ -861,15 +977,8 @@ class SimpleSmoothPotential(Potential):
         pot        -- (default True) if true, returns potential energy
         forces     -- (default False) if true, returns forces
         curb       -- (default False) if true, returns second derivative
-        area_scale -- (default 1.) scale by this. (Interaction quantities are
-                      supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
         """
-        if np.isscalar(r):
-            r = np.asarray(r)
-        nb_dim = len(r.shape)
-        if nb_dim == 0:
-            r.shape = (1,)
+
         V = np.zeros_like(r) if pot else self.SliceableNone()
         dV = np.zeros_like(r) if forces else self.SliceableNone()
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
@@ -895,6 +1004,7 @@ class SimpleSmoothPotential(Potential):
             V[sl_in_range], dV[sl_in_range], ddV[sl_in_range] = adjust_pot(
                 r[sl_in_range])
 
-        return (area_scale*V if pot else None,
-                area_scale*dV if forces else None,
-                area_scale*ddV if curb else None)
+        return (V if pot else None,
+                dV if forces else None,
+                ddV if curb else None)
+

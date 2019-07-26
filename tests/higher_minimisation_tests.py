@@ -1,35 +1,29 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Antoine Sanner
+#           2019 Lars Pastewka
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   higher_minimisation_tests.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   30 Mar 2015
-
-@brief  Tests for higher system methods, such as computing pulloff-force
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Tests for higher system methods, such as computing pulloff-force
 """
 try:
     import unittest
@@ -70,7 +64,7 @@ class PulloffTest(unittest.TestCase):
     def tst_FirstContactThenOffset(self):
         system = make_system(self.substrate, self.pot, self.surface)
         offset0 = .5*self.pot.r_min + .5*self.pot.r_c
-        disp0 = np.zeros(self.substrate.domain_resolution)
+        disp0 = np.zeros(self.substrate.nb_domain_grid_pts)
 
         def obj_fun(offset):
             nonlocal disp0
@@ -112,7 +106,7 @@ class PulloffTest(unittest.TestCase):
     def tst_FirstOffsetThenContact(self):
         system = make_system(self.substrate, self.pot, self.surface)
         offset0 = .5*self.pot.r_min + .5*self.pot.r_c
-        disp0 = np.zeros(self.substrate.domain_resolution)
+        disp0 = np.zeros(self.substrate.nb_domain_grid_pts)
 
         def minimize_force(offset0, const_disp):
             system.create_babushka(offset0, const_disp)

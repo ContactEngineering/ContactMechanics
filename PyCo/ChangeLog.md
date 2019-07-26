@@ -1,5 +1,14 @@
+
 Change log for PyCo
 ===================
+
+v0.31.0 (5Mar19)
+----------------
+
+- Added height-difference autocorrelation and variable bandwidth analysis for nonuniform
+  line scans.
+- Added wrapper 'to_nonuniform' function that turns uniform into nonuniform line scans.
+- Bug fix: 'center' detrend mode for nonunform line scans now minimizes rms height.
 
 v0.30.0 (15Feb19)
 -----------------
@@ -23,10 +32,10 @@ API Changes:
 - Uniform topographies and line scans can be periodic.
 - Removed unit property from height containers. Units are now stored in the info dictionary,
   which has to be set on generation of the height container.
-- All topographies must have a size. Readers use the resolution as the default size 
-  if the files contain no size information. 
+- All topographies must have a physical_sizes. Readers use the resolution as the default physical_sizes 
+  if the files contain no physical_sizes information. 
 - Removed 'shape' alias to 'resolution' property for height containers.
-- Size + shape are now always tuples, size is also always set as tuple.
+- Size + shape are now always tuples, physical_sizes is also always set as tuple.
 - Topographies can now be pickled and unpickled.  
 - Replaced class 'Sphere' with generator function 'make_sphere'.
 - Contact with "FreeFFTElasticHalfSpace": 

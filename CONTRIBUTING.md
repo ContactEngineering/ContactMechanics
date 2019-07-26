@@ -3,7 +3,7 @@ Contributing to PyCo
 
 Code style
 ----------
-Always follow [PEP-8](https://www.python.org/dev/peps/pep-0008/), with the following exception: "One big exception to PEP 8 is our preference of longer line lengths. We’re well into the 21st Century, and we have high-resolution computer screens that can fit way more than 79 characters on a screen. Don’t limit lines of code to 79 characters if it means the code looks significantly uglier or is harder to read." (Taken from [Django's contribuing guidelines](https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/coding-style/).)
+Always follow [PEP-8](https://www.python.org/dev/peps/pep-0008/), with the following exception: "One big exception to PEP 8 is our preference of longer line lengths. We’re well into the 21st Century, and we have high-resolutiob computer screens that can fit way more than 79 characters on a screen. Don’t limit lines of code to 79 characters if it means the code looks significantly uglier or is harder to read." (Taken from [Django's contribuing guidelines](https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/coding-style/).)
 
 Development branches
 --------------------
@@ -31,3 +31,9 @@ Examples:
 - use TST when your changes only deal with the testing environment. If you fix a bug and implement the test for it, use BUG.
 - minor changes that doesn't change the codes behaviour (for example rewrite file in a cleaner or slightly efficienter way) belong to the tag MAINT
 - if you change documentation files without changing the code, use DOC; if you also change code in the same commit, use another shortcut
+
+Authors
+-------
+Add yourself to the AUTHORS file using the email address that you are using for your
+commits. We use this information to automatically generate copyright statements for
+all files from the commit log.

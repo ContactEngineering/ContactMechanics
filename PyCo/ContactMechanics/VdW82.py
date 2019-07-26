@@ -1,41 +1,40 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Antoine Sanner
+#           2019 Lars Pastewka
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   VdW82.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   25 Feb 2015
-
-@brief  Implements a van der Waals-type interaction as discribed in
-        http://dx.doi.org/10.1103/PhysRevLett.111.035502
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Implements a van der Waals-type interaction as described in
+http://dx.doi.org/10.1103/PhysRevLett.111.035502
 """
+
 import numpy as np
+from NuMPI import MPI
 
-from . import Potential, SmoothPotential, MinimisationPotential
-from . import SimpleSmoothPotential
+from . import Potential, SmoothPotential
+from . import ParabolicCutoffPotential
+from . import LinearCorePotential
 
 
 class VDW82(Potential):
@@ -47,7 +46,7 @@ class VDW82(Potential):
     """
     name = 'v-d-Waals82'
 
-    def __init__(self, c_sr, hamaker, r_cut=float('inf'),pnp=np):
+    def __init__(self, c_sr, hamaker, r_cut=float('inf'),communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         c_sr            -- coefficient for repulsive part
@@ -56,7 +55,15 @@ class VDW82(Potential):
         """
         self.c_sr = c_sr
         self.hamaker = hamaker
-        Potential.__init__(self, r_cut,pnp=pnp)
+        Potential.__init__(self, r_cut, communicator=communicator)
+
+    def __getstate__(self):
+        state = super().__getstate__(), self.c_sr, self.hamaker
+        return state
+
+    def __setstate__(self, state):
+        superstate, self.c_sr, self.hamaker = state
+        super().__setstate__(superstate)
 
     def __repr__(self, ):
         return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
@@ -134,7 +141,7 @@ class VDW82smooth(VDW82, SmoothPotential):
     """
     name = 'vdw82smooth'
 
-    def __init__(self, c_sr, hamaker, gamma=None, r_t=None,pnp=np):
+    def __init__(self, c_sr, hamaker, gamma=None, r_t=None,communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         c_sr    -- coefficient for repulsive part
@@ -142,7 +149,7 @@ class VDW82smooth(VDW82, SmoothPotential):
         gamma   -- (default ε) Work of adhesion, defaults to ε
         r_t     -- (default r_min) transition point, defaults to r_min
         """
-        VDW82.__init__(self, c_sr, hamaker,pnp=pnp)
+        VDW82.__init__(self, c_sr, hamaker,communicator=communicator)
         SmoothPotential.__init__(self, gamma, r_t)
 
     def __repr__(self):
@@ -176,65 +183,34 @@ class VDW82smooth(VDW82, SmoothPotential):
             return super().r_infl
             # This is the old property implementation in the VDW82 Potential
 
-class VDW82smoothMin(VDW82smooth, MinimisationPotential):
+def VDW82smoothMin(c_sr, hamaker, gamma=None, r_ti=None, r_t_ls=None, communicator=MPI.COMM_WORLD):
     """
     When starting from a bad guess, or with a bad optimizer, sometimes
     optimisations that include potentials with a singularity at the origin
     fail, because the optimizer chooses a bad step direction and length and
     falls into non-physical territory. This class tries to remedy this by
     replacing the singular repulsive part around zero by a linear function.
+
+    Keyword Arguments:
+    c_sr    -- coefficient for repulsive part
+    hamaker -- Hamaker constant for substrate
+    gamma   -- (default ε) Work of adhesion, defaults to ε
+    r_ti    -- (default r_min/2) transition point between linear function
+               and lj, defaults to r_min
+    r_t_ls  -- (default r_min) transition point between lj and spline,
+                defaults to r_min
     """
-    name = 'vdW8-2smooth-min'
+    return LinearCorePotential(VDW82smooth(c_sr, hamaker, gamma, r_t_ls, communicator=communicator), r_ti)
 
-    def __init__(self, c_sr, hamaker, gamma=None, r_ti=None, r_t_ls=None,pnp=np):
-        """
-        Keyword Arguments:
-        c_sr    -- coefficient for repulsive part
-        hamaker -- Hamaker constant for substrate
-        gamma   -- (default ε) Work of adhesion, defaults to ε
-        r_ti    -- (default r_min/2) transition point between linear function
-                   and lj, defaults to r_min
-        r_t_ls  -- (default r_min) transition point between lj and spline,
-                    defaults to r_min
-        """
-        VDW82smooth.__init__(self, c_sr, hamaker, gamma, r_t_ls,pnp=pnp)
-        MinimisationPotential.__init__(self, r_ti)
+def VDW82SimpleSmooth(c_sr, hamaker, r_c, communicator=MPI.COMM_WORLD):
+    """Uses the ParabolaCutoffPotential smoothing in combination with VDW82
 
-    def __repr__(self):
-        return super().__repr__()
-
-
-class VDW82SimpleSmooth(VDW82, SimpleSmoothPotential):
-    """
-    Uses the SimpleSmoothPotential smoothing in combination with VDW82
-    """
-    name = 'vdW8-2simple-smooth'
-
-    def __init__(self, c_sr, hamaker, r_c,pnp=np):
-        """
         Keyword Arguments:
         c_sr    -- coefficient for repulsive part
         hamaker -- Hamaker constant for substrate
         r_c     -- emposed cutoff radius
-        """
-        VDW82.__init__(self, c_sr, hamaker, r_c,pnp=pnp)
-        SimpleSmoothPotential.__init__(self, r_c)
+    """
+    return ParabolicCutoffPotential(VDW82(c_sr, hamaker, communicator=communicator), r_c)
 
-    @property
-    def r_min(self):
-        """
-        convenience function returning the location of the energy minimum
-        """
-        return self._r_min
-
-    @property
-    def r_infl(self):
-        """
-        convenience function returning the location of the inflection point
-        """
-        return self._r_infl
-
-    def __repr__(self, ):
-        return ("Potential '{0.name}': C_SR = {0.c_sr}, A_l = {0.hamaker}, "
-                "r_c = {1}").format(
-                    self, self.r_c if self.has_cutoff else '∞')  # nopep8
+def VDW82SimpleSmoothMin(c_sr, hamaker, r_c, r_ti, communicator=MPI.COMM_WORLD):
+    return LinearCorePotential(VDW82SimpleSmooth(c_sr, hamaker, r_c, communicator=communicator), r_ti=r_ti)

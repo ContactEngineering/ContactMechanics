@@ -1,35 +1,31 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Antoine Sanner
+#           2018 Lars Pastewka
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   common.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   17 Sep 2015
-
-@brief  Common helpers and exception definitions for optimisers
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Common helpers and exception definitions for optimisers
 """
 import warnings
 import numpy as np
@@ -225,7 +221,7 @@ def first_wolfe_condition(fun, x0, fprime, direction, alpha, beta1):
     x0          -- initial guess for solution
     fprime      -- Jacobian (gradient)
     direction   -- search direction (column vec)
-    alpha       -- step size
+    alpha       -- step physical_sizes
     beta1       -- lower wolfe bound
     """
     return float(fun(x0+alpha*direction)) <= float(fun(x0)) + \
@@ -241,7 +237,7 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
     x0        -- initial guess for solution
     fprime    -- Jacobian (gradient) of objective function
     direction -- search direction
-    alpha     -- step size
+    alpha     -- step physical_sizes
     beta2     -- upper wolfe bound
     """
     return (float(fprime(x0 + alpha*direction).T @ direction) >=
@@ -253,13 +249,13 @@ def second_wolfe_condition(x0, fprime, direction, alpha, beta2):
 def line_search(fun, x0, fprime, direction, alpha0, beta1=1e-4, beta2=0.99,
                 step_factor=3., store_iterates=None, maxiter=40):
     """
-    find a step size alpha that satisfies both conditions of Wolfe
+    find a step physical_sizes alpha that satisfies both conditions of Wolfe
     Keyword Arguments:
     fun         -- objective function to minimize
     x0          -- initial guess for solution
     fprime      -- Jacobian (gradient) of objective function
     direction   -- search direction
-    alpha0      -- Initial guess for step size
+    alpha0      -- Initial guess for step physical_sizes
     beta1       -- (default 1e-4)
     beta2       -- (default 0.99)
     step_factor -- (default 3.) step increase when too short
@@ -428,7 +424,7 @@ def construct_augm_lag_hess(fun_hess, constraints_hess,
         constraints_hess_eval = constraints_hess(x, *args)
         return_hess = fun_hess(x, *args) + c_pen * constraints_jac_eval.T * \
             constraints_jac_eval
-        for i in range(lam.size):
+        for i in range(lam.physical_sizes):
             return_hess += (lam[i] * constraints_hess_eval[i] +
                             c_pen*constraints_jac_eval *
                             constraints_jac_eval.T)

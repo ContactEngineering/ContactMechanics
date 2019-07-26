@@ -1,40 +1,35 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Antoine Sanner
+#           2017, 2019 Lars Pastewka
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   SimpleRelaxation.py
-
-@author Lars Pastewka <lars.pastewka@kit.edu>
-
-@date   08 Feb 2017
-
-@brief  Simple relaxation solver for the hard-wall contact problem. The original
-        implementation is described in:
-        H.M. Stanley, T. Kato, J. Tribol. 119, 481 (1997)
-        The extension for ideal plasticity is described in:
-        F. Sahlin, R. Larsson, A. Almqvist, P.M. Lugt, P. Marklund,
-        Proc. IMechE Part J: J. Engineering Tribology 224, 335 (2010)
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Simple relaxation solver for the hard-wall contact problem. The original
+implementation is described in:
+H.M. Stanley, T. Kato, J. Tribol. 119, 481 (1997)
+The extension for ideal plasticity is described in:
+F. Sahlin, R. Larsson, A. Almqvist, P.M. Lugt, P. Marklund,
+Proc. IMechE Part J: J. Engineering Tribology 224, 335 (2010)
 """
 
 from math import isnan, pi, sqrt
@@ -125,11 +120,11 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         logger.pr('pentol = {0}'.format(pentol))
 
     if disp0 is None:
-        u_r = np.zeros(substrate.domain_resolution)
+        u_r = np.zeros(substrate.nb_domain_grid_pts)
     else:
         u_r = disp0.copy()
 
-    comp_slice = [slice(0, substrate.resolution[i])
+    comp_slice = [slice(0, substrate.nb_grid_pts[i])
                   for i in range(substrate.dim)]
     if substrate.dim not in (1, 2):
         raise Exception(
@@ -137,12 +132,12 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
              "or 2 dimensions (Your substrate has {}.).").format(
                  substrate.dim))
 
-    comp_mask = np.zeros(substrate.domain_resolution, dtype=bool)
+    comp_mask = np.zeros(substrate.nb_domain_grid_pts, dtype=bool)
     comp_mask[comp_slice] = True
 
     surf_mask = np.ma.getmask(surface)
     if surf_mask is np.ma.nomask:
-        surf_mask = np.ones(substrate.resolution, dtype=bool)
+        surf_mask = np.ones(substrate.nb_grid_pts, dtype=bool)
     else:
         comp_mask[comp_slice][surf_mask] = False
         surf_mask = np.logical_not(surf_mask)
@@ -182,7 +177,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
         plt.figure()
         plt.subplot(221)
         plt.title('f_r (before)')
-        plt.pcolormesh(f_r[comp_mask].reshape(substrate.domain_resolution))
+        plt.pcolormesh(f_r[comp_mask].reshape(substrate.nb_domain_grid_pts))
         plt.colorbar()
 
         print(f_r[comp_mask].min(), f_r[comp_mask].max())
@@ -223,7 +218,7 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
 
         plt.subplot(222)
         plt.title('f_r (after)')
-        plt.pcolormesh(f_r[comp_mask].reshape(substrate.domain_resolution))
+        plt.pcolormesh(f_r[comp_mask].reshape(substrate.nb_domain_grid_pts))
         plt.colorbar()
 
         assert abs(external_force+f_r.sum()) < 1e-6
@@ -254,12 +249,12 @@ def simple_relaxation(substrate, surface, hardness=None, external_force=None,
 
         plt.subplot(223)
         plt.title('u_r')
-        plt.pcolormesh(u_r[comp_mask].reshape(substrate.domain_resolution))
+        plt.pcolormesh(u_r[comp_mask].reshape(substrate.nb_domain_grid_pts))
         plt.colorbar()
 
         plt.subplot(224)
         plt.title('g_r')
-        plt.pcolormesh(g_r.reshape(substrate.domain_resolution))
+        plt.pcolormesh(g_r.reshape(substrate.nb_domain_grid_pts))
         plt.colorbar()
         plt.show()
 

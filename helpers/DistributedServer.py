@@ -1,53 +1,47 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Antoine Sanner
+#           2015-2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   DistributedServer.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   19 Mar 2015
-
-@brief  example for using the  multiprocessing capabilities of PyCo, serverside
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+example for using the  multiprocessing capabilities of PyCo, serverside
 """
 
 from PyCo.Tools import BaseResultManager
 import numpy as np
 
 class Manager(BaseResultManager):
-    def __init__(self, port, key, resolution):
+    def __init__(self, port, key, nb_grid_pts):
         super().__init__(port, key.encode())
 
-        self.resolution = resolution
-        center_coord = (resolution[0]//2, resolution[1]//2)
+        self.nb_grid_pts = nb_grid_pts
+        center_coord = (nb_grid_pts[0]//2, nb_grid_pts[1]//2)
         initial_guess = 1
 
         self.available_jobs = dict({center_coord: initial_guess})
         self.scheduled = set()
         self.done_jobs = set()
-        self.set_todo_counter(np.prod(resolution))
-        self.result_matrix = np.zeros(resolution)
+        self.set_todo_counter(np.prod(nb_grid_pts))
+        self.result_matrix = np.zeros(nb_grid_pts)
 
     def schedule_available_jobs(self):
         for coords, init_guess in self.available_jobs.items():
@@ -74,9 +68,9 @@ class Manager(BaseResultManager):
             self.mark_ready(i-1, j, value)
         if j > 0:
             self.mark_ready(i, j-1, value)
-        if i < self.resolution[0]-1:
+        if i < self.nb_grid_pts[0]-1:
             self.mark_ready(i+1, j, value)
-        if j < self.resolution[1]-1:
+        if j < self.nb_grid_pts[1]-1:
             self.mark_ready(i, j+1, value)
 
 def parse_args():

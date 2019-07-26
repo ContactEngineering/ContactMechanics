@@ -1,35 +1,29 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Lars Pastewka
+#           2018-2019 Antoine Sanner
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   Hertz_tests.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   05 Oct 2015
-
-@brief  Tests adhesion-free systems for accuracy and compares performance
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Tests adhesion-free systems for accuracy and compares performance
 """
 
 try:
@@ -51,7 +45,12 @@ except ImportError as err:
     print(err)
     sys.exit(-1)
 
+from NuMPI import MPI
+import pytest
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 # -----------------------------------------------------------------------------
+@unittest.skip("Skip because test is slow")
 class AdhesionTest(unittest.TestCase):
     def setUp(self):
         # sphere radius:
@@ -86,10 +85,10 @@ class AdhesionTest(unittest.TestCase):
             area = []
             for _disp0 in disp0:
                 result = system.minimize_proxy(_disp0,
-                                               lbounds=ext_surface.heights() + _disp0,
+                                               lbounds="auto",#ext_surface.heights() + _disp0,
                                                tol=self.tol)
                 u = result.x
-                u.shape = ext_surface.resolution
+                u.shape = ext_surface.nb_grid_pts
                 f = substrate.evaluate_force(u)
                 converged = result.success
                 self.assertTrue(converged)

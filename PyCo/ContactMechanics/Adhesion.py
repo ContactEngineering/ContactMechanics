@@ -1,39 +1,35 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Antoine Sanner
+#           2016, 2019 Lars Pastewka
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   Lj93.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   22 Jan 2015
-
-@brief  9-3 Lennard-Jones potential for wall interactions
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+9-3 Lennard-Jones potential for wall interactions
 """
 
 from . import Potential
 import numpy as np
+from NuMPI import MPI
 
 class ExpPotential(Potential):
     """ V(g) = -gamma0*e^(-g(r)/rho)
@@ -41,7 +37,7 @@ class ExpPotential(Potential):
 
     name = "adh"
 
-    def __init__(self, gamma0,rho,r_cut=float('inf'),pnp=np):
+    def __init__(self, gamma0,rho,r_cut=float('inf'), communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         gamma0 -- surface energy at perfect contact
@@ -49,13 +45,21 @@ class ExpPotential(Potential):
         """
         self.rho = rho
         self.gam = gamma0
-        Potential.__init__(self,r_cut,pnp)
+        Potential.__init__(self,r_cut,communicator=communicator)
 
 
     def __repr__(self, ):
         return ("Potential '{0.name}': eps = {0.eps}, sig = {0.sig},"
                 "r_c = {1}").format(
                     self, self.r_c if self.has_cutoff else 'None')
+
+    def __getstate__(self):
+        state = super().__getstate__(), self.rho, self.gam
+        return state
+
+    def __setstate__(self, state):
+        superstate, self.rho, self.gam = state
+        super().__setstate__(superstate)
 
     @property
     def r_min(self):

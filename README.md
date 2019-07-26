@@ -31,6 +31,26 @@ Installation
 
 You need Python 3 and [FFTW3](http://www.fftw.org/) to run PyCo. All Python dependencies can be installed automatically by invoking
 
+#### Installation directly with pip
+
+```bash
+# dependencies not installable with requirements.txt
+pip install [--user] numpy
+pip install [--user] pylint
+pip install [--user] cython
+pip install [--user] mpi4py #optional
+
+#install mufft
+pip install [--user]  git+https://gitlab.com/muspectre/muspectre.git#egg=libmufft
+
+# install pyco
+pip  install [--user]  git+https://github.com/pastewka/PyCo.git#egg=PyCo
+```
+If you are not installing into a virtual environment 
+
+
+#### Installation from source directory 
+
 ```pip3 install [--user] -r requirements.txt```
 
 in the source directory. PyCo can be installed by invoking
@@ -39,10 +59,26 @@ in the source directory. PyCo can be installed by invoking
 
 in the source directoy. The command line parameter --user is optional and leads to a local installation in the current user's `$HOME/.local` directory.
 
+
 Testing
 -------
 
-Run `python3 setup.py test` in the main source directory to run the automated tests.
+To run the automated tests, go to the main source directory and execute the following:
+
+```
+pytest
+```
+
+Tests that are parallelizable have to run with [runtests](https://github.com/AntoineSIMTEK/runtests)
+```
+python run-tests.py 
+``` 
+
+You can choose the number of processors with the option `--mpirun="mpirun -np 4"`. For development purposes you can go beyound the number of processorce of your computer wusing `--mpirun="mpirun -np 10 --oversubscribe"`
+
+Other usefull flags:
+- `--xterm`: one window per processor
+- `--xterm --pdb`: debugging
 
 Development
 -----------

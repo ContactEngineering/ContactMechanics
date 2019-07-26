@@ -1,4 +1,27 @@
-#! /usr/bin/env python3
+#
+# Copyright 2019 Antoine Sanner
+#           2016, 2018-2019 Lars Pastewka
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 """
 Automatically compute contact area, load and displacement for a rough surface.
@@ -31,14 +54,15 @@ rho = 1.0
 # Read a surface topography from a text file. Returns a PyCo.Topography.Topography
 # object.
 surface = read_matrix('surface1.out')
-# Set the *physical* size of the surface. We here set it to equal the shape,
-# i.e. the resolution of the surface just read. Size is returned by surface.size
+# Set the *physical* physical_sizes of the surface. We here set it to equal the shape,
+# i.e. the nb_grid_pts of the surface just read. Size is returned by surface.physical_sizes
 # and can be unknown, i.e. *None*.
 surface.set_size(surface.shape)
 
 # Initialize elastic half-space. This one is periodic with contact modulus
-# E*=1.0 and physical size equal to the surface.
-substrate = PeriodicFFTElasticHalfSpace(surface.shape, 1.0, surface.size,
+# E*=1.0 and physical physical_sizes equal to the surface.
+substrate = PeriodicFFTElasticHalfSpace(surface.shape, 1.0,
+                                        surface.physical_sizes,
                                         stiffness_q0=None)
 
 interaction = ExpPotential(gamma, rho)
@@ -70,7 +94,7 @@ for disp0 in np.linspace(-10, 10, 11):
 
     gap = u - surface.heights() - disp0
     mean_gap = np.mean(gap)
-    load = -f.sum()/np.prod(surface.size)
+    load = -f.sum()/np.prod(surface.physical_sizes)
     #area = (f>0).sum()/np.prod(surface.shape)
     area = (gap<tol).sum()/np.prod(surface.shape)
     if not opt.success:

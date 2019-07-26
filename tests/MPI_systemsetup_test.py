@@ -1,96 +1,220 @@
+#
+# Copyright 2018-2019 Antoine Sanner
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+"""
 
+represents the UseCase of creating System with MPI parallelization
 
-import unittest
+"""
+
+import pytest
 
 from mpi4py import MPI
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
-from FFTEngine import PFFTEngine
 from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics.Interactions import HardWall
-from PyCo.Topography import MPITopographyLoader
-from PyCo.Topography.ParallelFromFile import TopographyLoaderNPY
+from PyCo.Topography import make_sphere
+from PyCo.Topography.IO import NPYReader, open_topography
+
+
 import numpy as np
 
-class MPI_TopographyLoading_Test(unittest.TestCase):
+import os
+from NuMPI.Tools import Reduction
+
+DATADIR = os.path.dirname(os.path.realpath(__file__))
+
+@pytest.fixture
+def examplefile(comm):
+    fn = DATADIR + "/worflowtest.npy"
+    res = (128,64)
+    np.random.seed(1)
+    data  = np.random.random(res )
+    data -= np.mean(data)
+    if comm.rank == 0:
+        np.save(fn, data)
+
+    comm.barrier()
+    return (fn, res, data)
+
+#DATAFILE = DATADIR + "/worflowtest.npy"
+#@pytest.fixture
+#def data(comm):
+#    res = (256,256)#(128, 64)
+#    np.random.seed(1)
+#    data = np.random.random(res)
+#    data -= np.mean(data)
+#    if comm.Get_rank() == 0:
+#        np.save(DATAFILE, data)
+#    comm.barrier() # all processors wait on the file to be created
+#    return data
+
+@pytest.mark.parametrize("HS", [PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace])
+@pytest.mark.parametrize("loader", [open_topography, NPYReader])
+def test_LoadTopoFromFile(comm, fftengine_type, HS, loader, examplefile):
+    #fn = DATAFILE
+    fn, res, data = examplefile
+    interaction = HardWall()
+
+    # Read metadata from the file and returns a UniformTopgraphy Object
+    fileReader = loader(fn, communicator=comm)
+
+    #pdb.set_trace()
+
+    assert fileReader.nb_grid_pts == res
+
+    Es = 1
+    if fileReader.physical_sizes is not None:
+        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,
+                       physical_sizes=fileReader.physical_sizes,
+                       young=Es, fft="fftwmpi",
+                       communicator=comm)
+    else:
+        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,
+                       physical_sizes=fileReader.nb_grid_pts,
+                       young = Es, fft="fftwmpi",
+                       communicator=comm )
+
+    top = fileReader.topography(
+        subdomain_locations=substrate.topography_subdomain_locations,
+        nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
+        physical_sizes=substrate.physical_sizes)
+
+    assert top.nb_grid_pts == substrate.nb_grid_pts
+    assert top.nb_subdomain_grid_pts \
+           == substrate.topography_nb_subdomain_grid_pts
+          # or top.nb_subdomain_grid_pts == (0,0) # for FreeFFTElHS
+    assert top.subdomain_locations == substrate.topography_subdomain_locations
+
+    np.testing.assert_array_equal(top.heights(),data[top.subdomain_slices])
+
+    # test that the slicing is what is expected
+
+    fulldomain_field = np.arange(np.prod(substrate.nb_domain_grid_pts)
+                                 ).reshape(substrate.nb_domain_grid_pts)
+
+    np.testing.assert_array_equal(
+        fulldomain_field[top.subdomain_slices],
+        fulldomain_field[tuple([
+            slice(substrate.subdomain_locations[i],
+            substrate.subdomain_locations[i]
+                  + max(0,min(substrate.nb_grid_pts[i]
+                  - substrate.subdomain_locations[i],
+            substrate.nb_subdomain_grid_pts[i])))
+            for i in range(substrate.dim)])])
+
+    # Test Computation of the rms_height
+
+
+    ############## BEGINDEBUG
+    assert top.rms_height(kind="Sq") \
+           == np.sqrt(np.mean((data - np.mean(data))**2))
+
+    #Rq
+    assert top.rms_height(kind="Rq") \
+           == np.sqrt(np.mean((data - np.mean(data,axis = 0))**2))
+
+    system = make_system(substrate, interaction, top)
+
+    # make some tests on the system
+
+
+def test_make_system_from_file(examplefile, comm):
     """
-
-    represents the UseCase of creating System with MPI parallelization
+    longtermgoal for confortable and secure use
+    Returns
+    -------
 
     """
-    def setUp(self):
-        self.fn = "worflowtest.npy"
-        self.res = (128,64)
-        np.random.seed(1)
-        self.data  = np.random.random(self.res )
-        self.data -= np.mean(self.data)
+    # TODO: test this on npy and nc file
+    # Maybe it will be another Function or class
+    fn, res, data = examplefile
 
-        np.save(self.fn,self.data)
+    substrate =  PeriodicFFTElasticHalfSpace
+    interaction = HardWall()
 
-    def test_LoadTopoFromFile(self): # TODO: loop over all the cases, maybe with a pytest fixture  ?
-        comm = MPI.COMM_WORLD
+    system = make_system(substrate="periodic",
+                         interaction=interaction,
+                         surface=fn,
+                         communicator=comm,
+                         physical_sizes=(20.,30.),
+                         young=1)
 
-        for HS in [PeriodicFFTElasticHalfSpace,FreeFFTElasticHalfSpace]:
-            with self.subTest(HS=HS):
-                for loader in [MPITopographyLoader, TopographyLoaderNPY]: #TODO: these implementations are redundant, only one of them will persist
-                    with self.subTest(loader=loader):
-                        interaction = HardWall()
+    print( system.__class__)
 
-                        # Read metadata from the file and returns a UniformTopgraphy Object
-                        fileReader = MPITopographyLoader(self.fn, comm=comm)
+def test_make_system_from_file_serial(comm_self):
+    """
+    same as test_make_system_from_file but with the reader being not MPI
+    compatible
+    Returns
+    -------
 
-                        assert fileReader.resolution == self.res
+    """
+    pass
 
-                        # create a substrate according to the topography
+#def test_automake_substrate(comm):
+#    surface = make_sphere(2, (4,4), (1., 1.), )
 
-                        fftengine = PFFTEngine(domain_resolution = fileReader.resolution, comm = comm)
-                        Es = 1
-                        if fileReader.size is not None:
-                            substrate = HS(resolution=fileReader.resolution, size=fileReader.size, young=Es, fftengine=fftengine )
-                        else:
-                            substrate = HS(resolution=fileReader.resolution, young = Es, fftengine=fftengine )
+def test_make_free_system(comm):
+    """
+    For number of processors > 1 it SmartSmoothContactSystem
+    doesn't work.
+    Parameters
+    ----------
+    comm
 
-                        top = fileReader.topography(substrate)
+    Returns
+    -------
 
-                        assert top.resolution == substrate.resolution
-                        assert top.subdomain_resolution == substrate.subdomain_resolution \
-                               or top.subdomain_resolution == (0,0) # for FreeFFTElHS
-                        assert top.subdomain_location == substrate.subdomain_location
+    """
+    pass
 
-                        np.testing.assert_array_equal(top.heights(),self.data[top.subdomain_slice])
+def test_choose_smooth_contactsystem(comm_self):
+    """
+    even on one processor, one should be able to force the usage of the
+    smooth contact system. The occurence of jump instabilities make the babushka
+    system difficult to use.
 
-                        # test that the slicing is what is expected
+    """
+    pass
 
-                        fulldomain_field = np.arange(np.prod(substrate.domain_resolution)).reshape(substrate.domain_resolution)
+def test_hardwall_as_string(comm, examplefile):
+    fn, res, data = examplefile
+    make_system(substrate="periodic",
+                interaction="hardwall",
+                surface=fn,
+                physical_sizes=(1.,1.),
+                young=1,
+                communicator=comm)
 
-                        np.testing.assert_array_equal(fulldomain_field[top.subdomain_slice],fulldomain_field[tuple([slice(substrate.subdomain_location[i],substrate.subdomain_location[i]+max(0,min(substrate.resolution[i] - substrate.subdomain_location[i],substrate.subdomain_resolution[i]))) for i in range(substrate.dim)])])
+if __name__ == "__main__":
+    comm = MPI.COMM_WORLD
+    fn = "worflowtest.npy"
+    res = (128, 64)
+    np.random.seed(1)
+    data = np.random.random(res)
+    data -= np.mean(data)
 
-                        # Test Computation of the rms_height
-                        # Sq
-                        assert top.rms_height(kind="Sq") == np.sqrt(np.mean((self.data - np.mean(self.data))**2))
-                        #Rq
-                        assert top.rms_height(kind="Rq") == np.sqrt(np.mean((self.data - np.mean(self.data,axis = 0))**2))
-
-                        system = make_system(substrate, interaction, top)
-
-        # make some tests on the system
-
-    @unittest.expectedFailure
-    def test_make_system_from_file(self):
-        """
-        longtermgoal for confortable and secure use
-        Returns
-        -------
-
-        """
-        # Maybe it will be another Function or class
-
-        substrate =  PeriodicFFTElasticHalfSpace
-        interaction = HardWall
-
-        system = make_system(substrate, interaction, self.fn)
-
-
-suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(MPI_TopographyLoading_Test)])
-if __name__ in  ['__main__','builtins']:
-    print("Running unittest MPI_FileIO_Test")
-    result = unittest.TextTestRunner().run(suite)
+    np.save(fn, data)
+    test_LoadTopoFromFile(comm, (fn, res, data), HS=PeriodicFFTElasticHalfSpace,
+                              loader=NPYReader)

@@ -1,35 +1,30 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Antoine Sanner
+#           2018-2019 Lars Pastewka
+#           2015-2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   SurfAnalysisHelper.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   25 Jun 2015
-
-@brief  Comparisons between measured and generated surfaces and implications
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Comparisons between measured and generated surfaces and implications
 """
 
 import numpy as np
@@ -63,11 +58,11 @@ def main():
     h_rms = 13.8e-9
     lambda_max= 4e-9
     surf_dict = dict()
-    surf_dict["Topo1_Fit"] = Surf.read_matrix("SurfaceExample.asc", size=size, factor=1e-9)
-    surf_dict["Topo1_NoFit"] = Surf.read_matrix("SurfaceExampleUnfiltered.asc", size=size, factor=1e-9)
-    resolution = surf_dict["Topo1_NoFit"].resolution
-    surf_dict["exact"] = Tools.RandomSurfaceExact(resolution, size, hurst, h_rms).get_surface()
-    surf_dict["Gauss"] = Tools.RandomSurfaceGaussian(resolution, size, hurst, h_rms).get_surface()
+    surf_dict["Topo1_Fit"] = Surf.read_matrix("SurfaceExample.asc", physical_sizes=size, factor=1e-9)
+    surf_dict["Topo1_NoFit"] = Surf.read_matrix("SurfaceExampleUnfiltered.asc", physical_sizes=size, factor=1e-9)
+    nb_grid_pts = surf_dict["Topo1_NoFit"].nb_grid_pts
+    surf_dict["exact"] = Tools.RandomSurfaceExact(nb_grid_pts, size, hurst, h_rms).get_surface()
+    surf_dict["Gauss"] = Tools.RandomSurfaceGaussian(nb_grid_pts, size, hurst, h_rms).get_surface()
 
     for name, surf in surf_dict.items():
         test_surf_analysis(surf, name)

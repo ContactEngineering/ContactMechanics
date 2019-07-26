@@ -1,35 +1,29 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Lintao Fang
+#           2018-2019 Antoine Sanner
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   02-PotentialTest.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   27 Jan 2015
-
-@brief  Tests the potential classes
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Tests the potential classes
 """
 
 try:
@@ -40,11 +34,13 @@ try:
     from PyCo.ContactMechanics import LJ93smooth
     from PyCo.ContactMechanics import LJ93smoothMin
     from PyCo.ContactMechanics import LJ93SimpleSmooth
+    from PyCo.ContactMechanics import LJ93SimpleSmoothMin
 
     from PyCo.ContactMechanics import VDW82
     from PyCo.ContactMechanics import VDW82smooth
     from PyCo.ContactMechanics import VDW82smoothMin
     from PyCo.ContactMechanics import VDW82SimpleSmooth
+    from PyCo.ContactMechanics import LinearCorePotential
 
     from PyCo.ContactMechanics import ExpPotential
 
@@ -56,6 +52,12 @@ except ImportError as err:
     import sys
     print(err)
     sys.exit(-1)
+
+
+import pytest
+from NuMPI import MPI
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 
 class PotentialTest(unittest.TestCase):
     tol = 1e-14
@@ -321,6 +323,99 @@ class PotentialTest(unittest.TestCase):
         #     plt.legend(loc='best')
         # plt.show()
 
+
+#    @unittest.expectedFailure
+#    def test_VDW82SimpleSmoothMin(self):
+#        hamaker = 68.1e-21
+#        c_sr = 2.1e-78 * 1e-6
+#        r_c = 10e-10
+#        potref = VDW82SimpleSmooth(c_sr, hamaker, 10e-10)
+#        pot = VDW82SimpleSmoothMin(c_sr, hamaker, r_ti = potref.r_min / 2, r_c= 10e-10)
+
+        # import matplotlib.pyplot as plt
+        # r = np.linspace(pot.r_min*.7, pot.r_c*1.1, 1000)
+        # ps = pot.evaluate(r, pot=True, forces=True)
+        #
+        # for i, name in enumerate(('potential', 'force')):
+        #     plt.figure()
+        #     p = ps[i]
+        #     plt.plot(r, p, label=name)
+        #
+        #     pois = [pot.r_c, pot.r_min]
+        #     plt.scatter(pois, pot.evaluate(pois, pot=True, forces=True)[i])
+        #     plt.ylim(bottom=1.1*p.min(), top=-.3*p.min())
+        #     plt.grid(True)
+        #     plt.legend(loc='best')
+        # plt.show()
+
+    def test_LinearCorePotential(self):
+        w = 3
+        z0 = 0.5
+        r_ti=  0.4 * z0
+
+        refpot = VDW82(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2)
+
+
+        pot = LinearCorePotential(refpot, r_ti =r_ti)
+        z = [0.8*r_ti,r_ti,1.5*r_ti]
+        for zi in z:
+            np.testing.assert_allclose(
+                pot.naive_pot(zi, True, True, True),
+                np.array(refpot.evaluate(zi, True, True, True, area_scale=1.)).reshape(-1))
+            if zi >= r_ti:
+                np.testing.assert_allclose(pot.evaluate(zi, True, True,True, area_scale=4.),
+                                           refpot.evaluate(zi, True, True,True, area_scale=4.))
+
+        "".format(LinearCorePotential)
+        if False:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(3)
+
+            z =np.linspace(0.8*r_ti,2*z0)
+            for poti in [refpot, pot]:
+                p,f,c = poti.evaluate(z, True, True, True)
+                ax[0].plot(z,p)
+                ax[1].plot(z,f)
+                ax[2].plot(z,c)
+            fig.savefig("test_LinearCorePotential.png")
+
+    def test_LinearCoreSimpleSmoothPotential(self):
+        w = 3
+        z0 = 0.5
+        r_ti = 0.4 * z0
+        r_c = 10 * z0
+
+        refpot = VDW82(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2)
+
+        smoothpot=VDW82SimpleSmooth(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, r_c= r_c)
+
+        pot = LinearCorePotential(smoothpot, r_ti=r_ti)
+
+        assert pot.r_c==smoothpot.r_c, "{0.r_c}{1.r_c}"
+        assert pot.r_infl==smoothpot.r_infl
+        assert pot.r_min==smoothpot.r_min
+
+        z = [0.8 * r_ti, r_ti, 1.5 * r_ti, r_c, 1.1 * r_c]
+        for zi in z:
+            if zi >= r_ti :
+                np.testing.assert_allclose(
+                    pot.evaluate(zi, True, True, True, area_scale=4.),
+                    smoothpot.evaluate(zi, True, True, True, area_scale=4.))
+            if zi >= r_c:
+                assert pot.evaluate(zi, True, True, True, area_scale=4.) == (0, 0, 0), "Potential nonzero outside of cutoff"
+
+        if False:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(3)
+
+            z = np.linspace(0.8 * r_ti, 2 * z0)
+            for poti in [refpot, pot]:
+                p, f, c = poti.evaluate(z, True, True, True)
+                ax[0].plot(z, p)
+                ax[1].plot(z, f)
+                ax[2].plot(z, c)
+            fig.savefig("test_LinearCoreSimpleSmoothPotential.png")
+
     def test_ExpPotential(self):
         r = np.linspace(-10, 10, 1001)
         pot = ExpPotential(1.0, 1.0)
@@ -374,3 +469,241 @@ class PotentialTest(unittest.TestCase):
         self.assertTrue(all_ok, "\n"+"\n\n".join(msg))
 
 
+# TODO: is there a smart way to do regression tests ?
+    # def test_lj93smoothmin_regression(self):
+    #
+    #     import copy
+    #
+    #     print("########################################################################")
+    #     z = np.random.random((200)) *10 -1
+    #
+    #
+    #     mask = np.zeros_like(z)
+    #     mask[-2:] = True
+    #     mask[0]=True
+    #     z = np.ma.masked_array(z, mask=mask)
+    #
+    #
+    #     print(np.max(z))
+    #     print(np.min(z))
+    #
+    #     for params in [dict(epsilon=1.7294663266397667, sigma=3.253732668164946, gamma = 2, r_ti=0.5, r_t_ls = 3),
+    #                    dict(epsilon=1, sigma=2, gamma=5)]:
+    #         new = LJ93smoothMin(**params)
+    #         old = LJ93smoothMin_old(**params)
+    #
+    #         z[1] = params["sigma"]
+    #         z[2] = 0
+    #         z[3] = 0.5
+    #         z[4] = 3.
+    #         z[5] = float("inf")
+    #         z[10] = LJ93(params["epsilon"], params["sigma"]).r_min
+    #         z[11] = old.r_infl
+    #         z[12] = old.r_t
+    #         z[13] = old.r_ti
+    #         z[14] = old.r_c
+    #
+    #         Vnew, dVnew, ddVnew = new.evaluate(z, True, True, True, area_scale=1.5)
+    #         Vold, dVold, ddVold = old.evaluate(z, True, True, True, area_scale=1.5)
+    #
+    #         np.testing.assert_allclose(Vnew, Vold, rtol=1e-17)
+    #         np.testing.assert_allclose(dVnew, dVold, rtol=1e-17)
+    #         np.testing.assert_allclose(ddVnew, ddVold, rtol=1e-17)
+    #
+    #         new.compute(z, True, True, True, area_scale=1.5)
+    #         old.compute(z, True, True, True, area_scale=1.5)
+    #
+    #         copied_new = copy.deepcopy(new)
+    #
+    #         print(old.lin_part)
+    #         print(new.lin_part)
+    #
+    #         for key in old.__dict__.keys():
+    #             print(key)
+    #
+    #             def allarraycomp(a, b, msg):
+    #                 if a.dtype == object:
+    #                     for i, j in zip(a, b):
+    #                         allarraycomp(i, j, msg=msg)
+    #                 else:
+    #                     np.testing.assert_allclose(a, b, err_msg=msg)
+    #
+    #             def asserteverything(a, b, msg):
+    #                 if hasattr(a, "dtype"):
+    #                     allarraycomp(a,b,msg)
+    #                 else:
+    #                     self.assertEqual(a,b, msg = msg)
+    #
+    #             asserteverything(getattr(new, key), getattr(old, key), msg="problem for {} : newval: {}, oldval: {}".format(key, getattr(new, key), getattr(old, key)))
+    #             asserteverything(getattr(copied_new, key), getattr(old, key), msg="problem for {} : newval: {}, oldval: {}".format(key, getattr(new, key), getattr(old, key)))
+
+
+import pytest
+
+@pytest.mark.parametrize("pot_creation", [
+                        'LJ93(eps, sig)',
+                        'LJ93SimpleSmooth(eps, sig, 3*sig)',
+                        'LJ93smooth(eps, sig)',
+                        'LJ93smoothMin(eps, sig)',
+                        'LJ93smooth(eps,  sig, r_t="inflection")',
+                        'LJ93smoothMin(eps, sig, r_t_ls="inflection")',
+                        'LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
+                        'VDW82(c_sr, hamaker)',
+                        'VDW82smooth(c_sr,  hamaker)',
+                        'VDW82smoothMin(c_sr,  hamaker)',
+                        'VDW82smooth(c_sr,  hamaker, r_t="inflection")',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
+                        'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)'
+                         ])
+def test_deepcopy(pot_creation):
+    import copy
+    w = 3
+    z0 = 0.5
+    r_ti = 0.4 * z0
+    r_c = 10 * z0
+    import copy
+
+    eps = 1.7294663266397667
+    sig = 3.253732668164946
+
+    c_sr = 2.1e-78
+    hamaker = 68.1e-21
+
+    all_ok = True
+    msg = []
+    pot = eval(pot_creation)
+    copied_potential = copy.deepcopy(pot)
+
+    z = np.array([
+        pot.r_min * 1e-4,
+        pot.r_min * (1 - 1e-4),
+        pot.r_min * (1 + 1e-4),
+        pot.r_infl * (1 - 1e-4),
+        pot.r_infl * (1 + 1e-4),
+        pot.r_infl * 1e3,
+        pot.r_infl * 1e3,
+        pot.r_infl * 1e3
+    ])
+    mask = np.zeros_like(z)
+    mask[-2:] = True
+    z = np.ma.masked_array(z, mask=mask)
+
+    print("testing {}".format(pot))
+    pot.evaluate(z, True, True, True)
+    copied_potential.evaluate(z, True, True, True)
+
+    np.testing.assert_allclose(
+        copied_potential.evaluate(z, True, True, True),
+        pot.evaluate(z, True, True, True))
+
+    # assert the cached values (energy, force and curvature were also deepcopied)
+    # and so computing with the new instance of the potential does'nt influence the original one
+    refvals = pot.evaluate(z, True, True, True)
+    pot.compute(z, True, True, True)
+    copied_potential.compute(np.random.random((1, 4)))
+    np.testing.assert_allclose(pot.energy, np.sum(refvals[0]))
+    np.testing.assert_allclose(pot.force, refvals[1])
+    np.testing.assert_allclose(pot.curb, refvals[2])
+
+    if hasattr(pot,
+               "parent_potential"):  # assert parent potential has also been copied
+        assert pot.parent_potential is not copied_potential.parent_potential
+
+@pytest.mark.parametrize("fill_value", [float("inf"), 1e20])
+@pytest.mark.parametrize("pot_creation", [
+                        'LJ93(eps, sig)',
+                        'LJ93SimpleSmooth(eps, sig, 3*sig)',
+                        'LJ93smooth(eps, sig)',
+                        'LJ93smoothMin(eps, sig)',
+                        'LJ93smooth(eps,  sig, r_t="inflection")',
+                        'LJ93smoothMin(eps, sig, r_t_ls="inflection")',
+                        'LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93SimpleSmoothMin(eps, sig, LJ93(eps, sig).r_infl * 2,  LJ93(eps, sig).r_min * 0.8)',
+                        'VDW82(c_sr, hamaker)',
+                        'VDW82smooth(c_sr,  hamaker)',
+                        'VDW82smoothMin(c_sr,  hamaker)',
+                        'VDW82smooth(c_sr,  hamaker, r_t="inflection")',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
+                        'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)'
+                         ])
+def test_masked_arrays(pot_creation, fill_value):
+    eps = 1.7294663266397667
+    sig = 3.253732668164946
+
+    c_sr = 2.1e-78
+    hamaker = 68.1e-21
+    pot=eval(pot_creation)
+
+    shape= (2,3)
+    h = np.random.random(shape)*10
+    mask= [[True, False, True], [False, True, False]]
+    hma = np.ma.masked_array(h, mask, fill_value=fill_value)
+
+    V, dV, ddV = pot.evaluate(hma, True, True, True)
+    #print(V)
+    #print(np.asarray(V))
+    assert (np.asarray(V[hma.mask])== 0.).all()
+    assert (np.asarray(dV[hma.mask]) == 0.).all()
+    assert (np.asarray(ddV[hma.mask])== 0.).all()
+
+
+@pytest.mark.parametrize("pot_class",[LJ93smooth, LJ93smoothMin])
+def test_lj93_masked(pot_class):
+    eps = 1
+    sig = 2
+    gam = 5
+    pot = pot_class(eps, sig, gam)
+
+    z = np.array([0.5,1,2,3,4])
+    pot.compute(z, True, True)
+    en1 = pot.energy
+    #print(en1)
+
+    z = np.ma.masked_array([0.5,0.7, 1, 2, 3, 4],mask=[0,1,0,0,0,0])
+    pot.compute(z, True, True)
+    en2=pot.energy
+    #print("{}".format(en1))
+    #print("{}".format(en2))
+
+    assert en1 == en2
+
+@pytest.mark.parametrize("pot_creation", [
+                        'LJ93(eps, sig)',
+                        'LJ93SimpleSmooth(eps, sig, 3*sig)',
+                        'LJ93smooth(eps, sig)',
+                        'LJ93smoothMin(eps, sig)',
+                        'LJ93smooth(eps,  sig, r_t="inflection")',
+                        'LJ93smoothMin(eps, sig, r_t_ls="inflection")',
+                        'LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93SimpleSmoothMin(eps, sig, LJ93(eps, sig).r_infl * 2,  LJ93(eps, sig).r_min * 0.8)',
+                        'VDW82(c_sr, hamaker)',
+                        'VDW82smooth(c_sr,  hamaker)',
+                        'VDW82smoothMin(c_sr,  hamaker)',
+                        'VDW82smooth(c_sr,  hamaker, r_t="inflection")',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
+                        'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)'
+                         ])
+def test_max_tensile(pot_creation):
+    eps = 1.7294663266397667
+    sig = 3.253732668164946
+
+    c_sr = 2.1e-78
+    hamaker = 68.1e-21
+
+    pot = eval(pot_creation)
+
+
+    en1=np.isscalar(pot.max_tensile)
+
+    # print("{}".format(en1))
+
+    assert en1

@@ -1,35 +1,30 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Antoine Sanner
+#           2018-2019 Lars Pastewka
+#           2015-2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   WindowTest.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   07 Jul 2015
-
-@brief  Compare windowed parameter recoups to non-windowed
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Compare windowed parameter recoups to non-windowed
 """
 
 import numpy as np
@@ -123,7 +118,7 @@ def main():
     siz = 2000e-9
     size = (siz, siz)
     path = os.path.join(os.path.dirname(__file__), "SurfaceExampleUnfiltered.asc")
-    surface = Surf.read_matrix(path, size=size, factor=1e-9)
+    surface = Surf.read_matrix(path, physical_sizes=size, factor=1e-9)
     surfs = []
     surfs.append(('Topo1', surface))
     arr, x, residual = Tools.shift_and_tilt(surface.heights(), full_output=True)
@@ -131,12 +126,12 @@ def main():
         (float(x[0]), float(x[1]), float(np.sqrt(1-x[0]**2 - x[1]**2))),
         float(x[-1]), residual, arr.mean()))
     arr = Tools.shift_and_tilt_approx(surface.heights())
-    surface = Surf.Topography(arr, size=size)
+    surface = Surf.Topography(arr, physical_sizes=size)
     plot_distro('Topo1_corr', surface.heights())
     surfs.append(('Topo1_corr', surface))
 
     hurst = .85
-    res = surface.resolution
+    res = surface.nb_grid_pts
     h_rms = 2.11e-8
 
     surface = Tools.RandomSurfaceGaussian(res, size, hurst, h_rms).get_surface()
@@ -145,7 +140,7 @@ def main():
     dsize = (2*siz, 2*siz)
     dres = (res[0], res[0])
     dsurface = Tools.RandomSurfaceGaussian(dres, dsize, hurst, h_rms).get_surface()
-    surface = Surf.Topography(dsurface.heights()[:res[0], :res[0]], size = size)
+    surface = Surf.Topography(dsurface.heights()[:res[0], :res[0]], physical_sizes= size)
     surfs.append(('Gauss aperiodic', surface))
 
     for name, surf in surfs:#(surfs[-1],):

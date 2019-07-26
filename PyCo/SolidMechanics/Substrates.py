@@ -1,40 +1,36 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Lars Pastewka
+#           2018-2019 Antoine Sanner
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   Substrate.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   26 Jan 2015
-
-@brief  Base class for continuum mechanics models of halfspaces
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Base class for continuum mechanics models of halfspaces
 """
 
 import abc
 
-class Substrate(object,metaclass=abc.ABCMeta):
+class Substrate(object, metaclass=abc.ABCMeta):
     """ Generic baseclass from which all substate classes derive
     """
     _periodic = None
@@ -61,14 +57,14 @@ class Substrate(object,metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def domain_resolution(self):
+    def nb_domain_grid_pts(self):
         """
         """
         pass
 
     @property
     @abc.abstractmethod
-    def subdomain_resolution(self):
+    def nb_subdomain_grid_pts(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
@@ -78,12 +74,18 @@ class Substrate(object,metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def subdomain_location(self):
+    def subdomain_locations(self):
         """
         When working in Parallel one processor holds only Part of the Data
 
         :return:
         """
+        pass
+
+    @property
+    @abc.abstractmethod
+    def communicator(self):
+        """Return the MPI communicator"""
         pass
 
     #@property
@@ -108,7 +110,7 @@ class Substrate(object,metaclass=abc.ABCMeta):
         pass
 
 
-class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
+class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
     """ Generic baseclass for elastic substrates
     """
     name = 'generic_elastic_halfspace'
@@ -121,10 +123,10 @@ class ElasticSubstrate(Substrate,metaclass=abc.ABCMeta):
 
     def __repr__(self):
         dims = 'x', 'y', 'z'
-        size_str = ', '.join('{}: {}({})'.format(dim, size, resolution) for
-                             dim, size, resolution in zip(dims, self.size,
-                                                          self.resolution))
-        return ("{0.dim}-dimensional halfspace '{0.name}', size(resolution) in"
+        size_str = ', '.join('{}: {}({})'.format(dim, size, nb_grid_pts) for
+                             dim, size, nb_grid_pts in zip(dims, self.size,
+                                                          self.nb_grid_pts))
+        return ("{0.dim}-dimensional halfspace '{0.name}', physical_sizes(nb_grid_pts) in"
                 " {1}, E' = {0.young}").format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):

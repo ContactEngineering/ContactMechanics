@@ -1,48 +1,46 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Antoine Sanner
+#           2019 Lars Pastewka
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   Interaction.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   26 Jan 2015
-
-@brief  Defines the base class for contact description
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Defines the base class for contact description
 """
 
 import numpy as np
 import copy
+from NuMPI import MPI
+from NuMPI.Tools import Reduction
 
 class Interaction(object):
-    "base class for all interactions, e.g. interatomic potentials"
+    """base class for all interactions, e.g. interatomic potentials"""
     # pylint: disable=too-few-public-methods
     pass
 
 
 class HardWall(Interaction):
-    "base class for non-smooth contact mechanics"
+    """base class for non-smooth contact mechanics"""
     # pylint: disable=too-few-public-methods
     def __init__(self):
         self.penetration = None
@@ -57,11 +55,12 @@ class HardWall(Interaction):
 
 
 class SoftWall(Interaction):
-    "base class for smooth contact mechanics"
-    def __init__(self,pnp=np):
+    """base class for smooth contact mechanics"""
+    def __init__(self, communicator=MPI.COMM_WORLD):
         self.energy = None
         self.force = None
-        self.pnp = pnp
+        self.communicator = communicator
+        self.pnp = Reduction(communicator)
 
     def __deepcopy__(self,memo):
         """
@@ -85,21 +84,31 @@ class SoftWall(Interaction):
         # pnp is a module or a class impolenting computation methods, it is not copied
         result.pnp = self.pnp
         keys.remove('pnp')
+        # same for communicator
+        result.communicator = self.communicator
+        keys.remove('communicator')
+
         for k in keys:
             setattr(result, k, copy.deepcopy(getattr(self, k), memo))
         return result
 
+    def __getstate__(self):
+        return self.energy, self.force
+
+    def __setstate__(self, state):
+        self.energy, self.force = state
+
     def compute(self, gap, pot=True, forces=False, area_scale=1.):
         """
         computes and stores the interaction energy and/or forces based on the
-        as fuction of the gap
+        as function of the gap
         Parameters:
         gap        -- array containing the point-wise gap values
         pot        -- (default True) whether the energy should be evaluated
         forces     -- (default False) whether the forces should be evaluated
         area_scale -- (default 1.) scale by this. (Interaction quantities are
                       supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
+                      to be able to scale their response for their nb_grid_pts))
         """
         energy, self.force = self.evaluate(
             gap, pot, forces, area_scale)
@@ -115,6 +124,6 @@ class SoftWall(Interaction):
         forces     -- (default False) whether the forces should be evaluated
         area_scale -- (default 1.) scale by this. (Interaction quantities are
                       supposed to be expressed per unit area, so systems need
-                      to be able to scale their response for their resolution))
+                      to be able to scale their response for their nb_grid_pts))
         """
         raise NotImplementedError()

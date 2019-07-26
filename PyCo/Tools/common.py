@@ -1,35 +1,31 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2019 Antoine Sanner
+#           2016, 2018 Lars Pastewka
+#           2016 Till Junge
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 """
-@file   common.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   11 Feb 2015
-
-@brief  Bin for small common helper function and classes
-
-@section LICENCE
-
-Copyright 2015-2018 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Bin for small common helper function and classes
 """
 
 import numpy as np
@@ -98,19 +94,19 @@ def mean_err(arr1, arr2, rfft=False):
     return abs(np.ravel(arr1[tuple(comp_sl)]-arr2[tuple(comp_sl)])).mean()
 
 
-def compute_wavevectors(resolution, size, nb_dims):
+def compute_wavevectors(nb_grid_pts, physical_sizes, nb_dims):
     """
-    computes and returns the wavevectors q that exist for the surfaces size
-    and resolution as one vector of components per dimension
+    computes and returns the wavevectors q that exist for the surfaces physical_sizes
+    and nb_grid_pts as one vector of components per dimension
     """
     vectors = list()
     if nb_dims == 1:
-        resolution = [resolution]
-        size = [size]
+        nb_grid_pts = [nb_grid_pts]
+        physical_sizes = [physical_sizes]
     for dim in range(nb_dims):
-        vectors.append(2*np.pi*np.fft.fftfreq(
-            resolution[dim],
-            size[dim]/resolution[dim]))
+        vectors.append(2 * np.pi * np.fft.fftfreq(
+            nb_grid_pts[dim],
+            physical_sizes[dim] / nb_grid_pts[dim]))
     return vectors
 
 

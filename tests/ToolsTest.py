@@ -1,57 +1,45 @@
-#!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+#
+# Copyright 2018-2019 Antoine Sanner
+#           2018-2019 Lars Pastewka
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
-@file   ToolsTest.py
-
-@author Till Junge <till.junge@kit.edu>
-
-@date   13 Feb 2015
-
-@brief  Tests for PyCo helper tools
-
-@section LICENCE
-
-Copyright 2015-2017 Till Junge, Lars Pastewka
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Tests for PyCo helper tools
 """
 
-try:
-    import unittest
-    import numpy as np
-    import warnings
+import numpy as np
 
-    import PyCo.Topography.Nonuniform as Nonuniform
-    import PyCo.Topography.Uniform as Uniform
-    from PyCo.Tools import evaluate_gradient, mean_err
-    from PyCo.Tools.ContactAreaAnalysis import distance_map
-    from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
-    from PyCo.Topography.Generation import RandomSurfaceGaussian, RandomSurfaceExact
-    from PyCo.Topography.Nonuniform.Detrending import polyfit
-    from PyCo.Topography.Uniform.Autocorrelation import autocorrelation_1D, autocorrelation_2D
-    from PyCo.Topography.Uniform.Detrending import tilt_from_height, shift_and_tilt
+from PyCo.Tools import evaluate_gradient, mean_err
+from PyCo.Tools.ContactAreaAnalysis import distance_map
+from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
+from PyCo.Topography.Nonuniform.Detrending import polyfit
+from PyCo.Topography.Uniform.Detrending import tilt_from_height, shift_and_tilt
 
-    from .PyCoTest import PyCoTestCase
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+from .PyCoTest import PyCoTestCase
+
+import pytest
+from NuMPI import MPI
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 
 class ToolTest(PyCoTestCase):
     def test_gradient(self):
@@ -103,63 +91,6 @@ class ToolTest(PyCoTestCase):
         self.assertAlmostEqual(mean_slope[2], d)
 
 
-    def test_impulse_autocorrelation(self):
-        nx = 16
-        for x, w, h, p in [(nx//2, 3, 1, True), (nx//3, 2, 2, True),
-                           (nx//2, 5, 1, False), (nx//3, 6, 2.5, False)]:
-            y = np.zeros(nx)
-            y[x-w//2:x+(w+1)//2] = h
-            r, A = autocorrelation_1D(UniformLineScan(y, nx, periodic=True))
-
-            A_ana = np.zeros_like(A)
-            A_ana[:w] = h**2*np.linspace(w/nx, 1/nx, w)
-            A_ana = A_ana[0] - A_ana
-            self.assertTrue(np.allclose(A, A_ana))
-
-
-    def test_brute_force_autocorrelation_1D(self):
-        n = 10
-        for surf in [UniformLineScan(np.ones(n), n, periodic=False),
-                     UniformLineScan(np.arange(n), n, periodic=False),
-                     Topography(np.random.random(n).reshape(n, 1), (n, 1), periodic=False)]:
-            r, A = autocorrelation_1D(surf)
-
-            n = len(A)
-            dir_A = np.zeros(n)
-            for d in range(n):
-                for i in range(n-d):
-                    dir_A[d] += (surf.heights()[i] - surf.heights()[i+d])**2/2
-                dir_A[d] /= (n-d)
-            self.assertArrayAlmostEqual(A, dir_A)
-
-
-    def test_brute_force_autocorrelation_2D(self):
-        n = 10
-        m = 11
-        for surf in [Topography(np.ones([n, m]), (n, m), periodic=False),
-                     Topography(np.random.random([n, m]), (n, m), periodic=False)]:
-            r, A, A_xy = autocorrelation_2D(surf, return_map=True)
-
-            nx, ny = surf.resolution
-            dir_A_xy = np.zeros([n, m])
-            dir_A = np.zeros_like(A)
-            dir_n = np.zeros_like(A)
-            for dx in range(n):
-                for dy in range(m):
-                    for i in range(nx-dx):
-                        for j in range(ny-dy):
-                            dir_A_xy[dx, dy] += (surf.heights()[i, j] - surf.heights()[i+dx, j+dy])**2/2
-                    dir_A_xy[dx, dy] /= (nx-dx)*(ny-dy)
-                    d = np.sqrt(dx**2 + dy**2)
-                    i = np.argmin(np.abs(r-d))
-                    dir_A[i] += dir_A_xy[dx, dy]
-                    dir_n[i] += 1
-            dir_n[dir_n==0] = 1
-            dir_A /= dir_n
-            self.assertArrayAlmostEqual(A_xy, dir_A_xy)
-            self.assertArrayAlmostEqual(A[:-2], dir_A[:-2])
-
-
     def test_nonuniform_rms_height(self):
         n = 1024
         dx = 0.12
@@ -205,5 +136,6 @@ class ToolTest(PyCoTestCase):
 
         dx = np.abs(dmap-np.roll(dmap,1))
         dy = np.abs(dmap-np.roll(dmap,1,axis=1))
-        self.assertLessEqual(np.max(dx),np.sqrt(2))
-        self.assertLessEqual(np.max(dy),np.sqrt(2))
+
+        self.assertLessEqual(np.max(dx),np.sqrt(2) + 1e-15)
+        self.assertLessEqual(np.max(dy),np.sqrt(2) + 1e-15)
