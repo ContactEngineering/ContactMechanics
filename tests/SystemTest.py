@@ -75,8 +75,9 @@ class SystemTest(unittest.TestCase):
                                              self.physical_sizes)
 
     def test_RejectInconsistentInputTypes(self):
-        with self.assertRaises(IncompatibleFormulationError):
-            make_system(12,, 24, physical_sizes = (1, 2))
+        #with self.assertRaises(IncompatibleFormulationError):
+        #    sphere = Topography.make_sphere(self.radius, (11, 11), (1, 1))
+        #    make_system("hardwall", 23, sphere)
 
         def test_RejectInconsistentSizes(self):
             incompat_res = tuple((2 * r for r in self.res))
