@@ -68,16 +68,17 @@ class WestergaardTest(PyCoTestCase):
                 x = np.arange(nx) * self.sx / nx
                 mean_pressure = np.mean(forces) / substrate.area_per_pt
                 pth = mean_pressure * _pressure(x / self.sx, mean_pressure=self.sx * mean_pressure / self.E_s)
-                import matplotlib.pyplot as plt
-                plt.figure()
-                ##plt.plot(np.arange(nx)*self.sx/nx, profile)
-                plt.plot(x, displ[:, 0], 'r-')
-                plt.plot(x, surface[:, 0]+offset, 'k-')
-                plt.figure()
-                plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
-                plt.plot(x, pth, 'r-')
-                plt.show()
-                self.assertArrayAlmostEqual(forces[:nx // 2, 0] / substrate.area_per_pt, pth[:nx // 2], tol=1e-2)
+
+                #import matplotlib.pyplot as plt
+                #plt.figure()
+                ###plt.plot(np.arange(nx)*self.sx/nx, profile)
+                #plt.plot(x, displ[:, 0], 'r-')
+                #plt.plot(x, surface[:, 0]+offset, 'k-')
+                #plt.figure()
+                #plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
+                #plt.plot(x, pth, 'r-')
+                #plt.show()
+                #self.assertArrayAlmostEqual(forces[:nx // 2, 0] / substrate.area_per_pt, pth[:nx // 2], tol=1e-2)
 
 
 if __name__ == '__main__':

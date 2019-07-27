@@ -215,7 +215,7 @@ def constrained_conjugate_gradients(substrate,
         # but we need to remove points with separation larger than Dugdale
         # length. (Those will have zero pressure and are therefore included
         # if Dugdale_stress is nonzero.)
-        if Dugdale_length is not None:
+        if Dugdale is not None:
             c_r = np.logical_and(c_r, g_r < Dugdale_length)
 
         # If a hardness is specified, exclude values that exceed the hardness
