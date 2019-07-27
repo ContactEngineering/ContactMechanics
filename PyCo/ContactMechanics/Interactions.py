@@ -54,6 +54,22 @@ class HardWall(Interaction):
         self.penetration = np.where(gap < tol, -gap, 0)
 
 
+class Dugdale(HardWall):
+    """Potential class representing a Dugdale cohesive zone model"""
+    def __init__(self, stress, length):
+        super().__init__()
+        self._stress = stress
+        self._length = length
+
+    @property
+    def stress(self):
+        return self._stress
+
+    @property
+    def length(self):
+        return self._length
+
+
 class SoftWall(Interaction):
     """base class for smooth contact mechanics"""
     def __init__(self, communicator=MPI.COMM_WORLD):

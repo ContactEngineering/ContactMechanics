@@ -35,8 +35,8 @@ import scipy
 
 from .. import ContactMechanics, SolidMechanics, Topography
 from ..Tools import compare_containers
-from ..Tools.Optimisation import constrained_conjugate_gradients, simple_relaxation
-from NuMPI.Tools import Reduction
+from ..Tools.Optimisation import constrained_conjugate_gradients
+
 
 class IncompatibleFormulationError(Exception):
     # pylint: disable=missing-docstring
@@ -706,16 +706,15 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        #if self.substrate.fftengine.is_MPI: # TODO: this can be thrown away
-        result = constrained_conjugate_gradients(
+        try:
+            Dugdale = (self.interaction.stress, self.interaction.length)
+        except AttributeError:
+            Dugdale = None
+        result = solver(
             self.substrate,
             self.surface,
+            Dugdale = Dugdale,
             **kwargs)
-        #else :
-        #    result = solver(
-        #        self.substrate,
-        #        self.surface.heights(),
-        #        **kwargs)
         if result.success:
             self.offset = result.offset
             self.disp = result.x
