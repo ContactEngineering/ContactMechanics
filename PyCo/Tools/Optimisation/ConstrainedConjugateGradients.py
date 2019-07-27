@@ -334,12 +334,12 @@ def constrained_conjugate_gradients(substrate,
                 # See Eq. (23) of Bazrafshan et al. (2017)
                 p_R[slice_R] = (external_force + Dugdale_force_sum) / psum * (
                             p_R[slice_R] - c_r * Dugdale_force) + Dugdale_force
-                p_R[pad_mask] = 0
             else:
                 # If the total force is zero, we reset the calculation and use an equally-distributed force as the
                 # starting point.
                 p_R[...] = 0.0
                 p_R[slice_R] = -external_force / nb_surface_pts * np.ones_like(p_R[slice_R])
+        p_R[pad_mask] = 0
 
         # If hardness is specified, set all stress larger than hardness to the
         # hardness value (i.e. truncate pressure)
