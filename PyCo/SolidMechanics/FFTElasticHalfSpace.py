@@ -872,12 +872,12 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
 
         if not is_ok:
             raise self.FreeBoundaryError(
-                "The forces not zero at the boundary of the active domain."
+                "The forces not zero at the boundary of the active domain. "
                 "This is typically an indication that the contact geometry "
-                "exceeds the bounds of the domain. Since this is a nonperiodic"
-                "calculation, you may want to increase the size of your domain."
-                " If you are sure that the calculation is correct,"
-                " set check_boundary to False")
+                "exceeds the bounds of the domain. Since this is a nonperiodic "
+                "calculation, you may want to increase the size of your domain. "
+                "If you are sure that the calculation is correct, "
+                "set check_boundary to False")
 
     def check(self, force=None):
         """
