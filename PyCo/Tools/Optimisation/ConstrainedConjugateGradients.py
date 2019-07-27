@@ -109,10 +109,10 @@ def constrained_conjugate_gradients(substrate,
 
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "nb_grid_pts"):
-        surface = topography
-        topography = Topography(surface, physical_sizes=substrate.physical_sizes)
+        heights = topography
+        topography = Topography(heights, physical_sizes=substrate.physical_sizes)
     else:
-        surface = topography.heights()  # Local data
+        heights = topography.heights()  # Local data
 
     # Note: Suffix _r denotes real-space _q reciprocal space 2d-arrays
 
@@ -126,12 +126,12 @@ def constrained_conjugate_gradients(substrate,
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
         if pentol == 0:
-            pentol = (offset + comm.sum(surface[...]) / nb_surface_pts) / 1000
+            pentol = (offset + comm.sum(heights[...]) / nb_surface_pts) / 1000
         # If we are still zero use an arbitrary value
         if pentol == 0:
             pentol = 1e-3
 
-    surf_mask = np.ma.getmask(surface)  # TODO: Test behaviour with masked arrays.
+    surf_mask = np.ma.getmask(heights)  # TODO: Test behaviour with masked arrays.
     if surf_mask is np.ma.nomask:
         nb_surface_pts_mask = nb_surface_pts
     else:
@@ -171,7 +171,7 @@ def constrained_conjugate_gradients(substrate,
     comp_mask = np.zeros(substrate.nb_subdomain_grid_pts, dtype=bool)
     comp_mask[tuple(comp_slice)] = True
 
-    surf_mask = np.ma.getmask(surface)
+    surf_mask = np.ma.getmask(heights)
     if surf_mask is np.ma.nomask:
         surf_mask = np.ones(topography.nb_subdomain_grid_pts, dtype=bool)
     else:
@@ -179,8 +179,8 @@ def constrained_conjugate_gradients(substrate,
         surf_mask = np.logical_not(surf_mask)
     pad_mask = np.logical_not(comp_mask)
     N_pad = comm.sum(pad_mask * 1)
-    u_r[comp_mask] = np.where(u_r[comp_mask] < surface[surf_mask] + offset,
-                              surface[surf_mask] + offset,
+    u_r[comp_mask] = np.where(u_r[comp_mask] < heights[surf_mask] + offset,
+                              heights[surf_mask] + offset,
                               u_r[comp_mask])
 
     result = optim.OptimizeResult()
@@ -214,7 +214,7 @@ def constrained_conjugate_gradients(substrate,
         A_contact = comm.sum(c_r * 1)
 
         # Compute gap
-        g_r = u_r[comp_mask] - surface[surf_mask]
+        g_r = u_r[comp_mask] - heights[surf_mask]
 
         # Dugdale zone is included in the "contact area" (the active set),
         # but we need to remove points with separation larger than Dugdale
@@ -369,7 +369,7 @@ def constrained_conjugate_gradients(substrate,
             rms_pen = sqrt(G / A_cg)
         else:
             rms_pen = sqrt(G)
-        max_pen = max(0.0, comm.max(c_r * (surface[surf_mask] + offset - u_r[comp_mask])))
+        max_pen = max(0.0, comm.max(c_r * (heights[surf_mask] + offset - u_r[comp_mask])))
         result.maxcv = {"max_pen": max_pen,
                         "max_pres": max_pres}
 
