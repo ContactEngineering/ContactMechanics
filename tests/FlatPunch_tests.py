@@ -43,7 +43,7 @@ class FlatPunchTest(unittest.TestCase):
 
     def test_constrained_conjugate_gradients(self):
         for nx, ny in [(256, 256), (256, 255), (255, 256)]:
-            for disp0, normal_force in [(0, 15.0)]:  # (0.1, None),
+            for disp0, normal_force in [(None, 15), (0.1, None)]:
                 sx = sy = 2.5 * self.r_s
                 substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
                                                     (sx, sy))
@@ -80,7 +80,15 @@ class FlatPunchTest(unittest.TestCase):
                 offset = result.offset
                 forces = -result.jac
                 converged = result.success
+
+                # Check that calculation has converged
                 self.assertTrue(converged)
+
+                # Check that target values have been reached
+                if disp0 is not None:
+                    self.assertAlmostEqual(offset, disp0)
+                if normal_force is not None:
+                    self.assertAlmostEqual(-forces.sum(), normal_force)
 
                 # Check contact stiffness
                 self.assertAlmostEqual(-forces.sum() / offset / (2 * self.r_s * self.E_s),
