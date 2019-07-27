@@ -43,7 +43,7 @@ from PyCo.ContactMechanics import HardWall
 from NuMPI import MPI
 from NuMPI.Tools import Reduction
 
-# TODO: give the parallel numpy thrue to the
+
 def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
                 physical_sizes=None,
                 **kwargs):
@@ -67,14 +67,15 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
 
     # possibility to give file address instead of topography:
     if (type(surface) is str
-        or
-        (hasattr(surface, 'read') # is a filelike object
-         and not hasattr(surface, 'topography'))): # but not a reader
+            or
+            (hasattr(surface, 'read')  # is a filelike object
+             and not hasattr(surface, 'topography'))):  # but not a reader
         if communicator is not None:
             openkwargs = {"communicator": communicator}
-        else: openkwargs={}
+        else:
+            openkwargs = {}
         surface = open_topography(surface, **openkwargs)
-    
+
     if physical_sizes is None:
         if surface.physical_sizes is None:
             raise ValueError("physical sizes neither provided in input or in file")
@@ -82,17 +83,17 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
             physical_sizes = surface.physical_sizes
     # substrate build with physical sizes and nb_grid_pts
     # matching the topography
-    if substrate=="periodic":
+    if substrate == "periodic":
         substrate = PeriodicFFTElasticHalfSpace(
             surface.nb_grid_pts,
             physical_sizes=physical_sizes, **kwargs)
-    elif substrate=="free":
+    elif substrate == "free":
         substrate = FreeFFTElasticHalfSpace(
             surface.nb_grid_pts,
             physical_sizes=physical_sizes, **kwargs)
 
-    if interaction=="hardwall":
-        interaction=HardWall()
+    if interaction == "hardwall":
+        interaction = HardWall()
     # make shure the interaction has the correcrt communicator
     interaction.pnp = Reduction(communicator)
     interaction.communicator = communicator
@@ -126,4 +127,4 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
     raise IncompatibleFormulationError(
         ("There is no class that handles the combination of substrates of type"
          " '{}', interactions of type '{}' and surfaces of type '{}'").format(
-             *(arg.__class__.__name__ for arg in args)))
+            *(arg.__class__.__name__ for arg in args)))
