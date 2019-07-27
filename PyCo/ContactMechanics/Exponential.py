@@ -24,7 +24,7 @@
 #
 
 """
-9-3 Lennard-Jones potential for wall interactions
+Exponential attraction.
 """
 
 from . import Potential
