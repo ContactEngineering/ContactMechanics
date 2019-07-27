@@ -27,21 +27,14 @@
 Tests adhesion-free flat punch results
 """
 
-try:
-    import unittest
-    import numpy as np
-    from PyCo.ContactMechanics import HardWall
-    from PyCo.ReferenceSolutions.Westergaard import _pressure
-    from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
-    from PyCo.Topography import Topography
-    from PyCo.System import make_system
-    from PyCo.Tools.Logger import screen
-    from .PyCoTest import PyCoTestCase
-except ImportError as err:
-    import sys
-
-    print(err)
-    sys.exit(-1)
+import unittest
+import numpy as np
+from PyCo.ContactMechanics import HardWall
+from PyCo.ReferenceSolutions.Westergaard import _pressure
+from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.Topography import Topography
+from PyCo.System import make_system
+from .PyCoTest import PyCoTestCase
 
 
 # -----------------------------------------------------------------------------
@@ -75,15 +68,15 @@ class WestergaardTest(PyCoTestCase):
                 x = np.arange(nx) * self.sx / nx
                 mean_pressure = np.mean(forces) / substrate.area_per_pt
                 pth = mean_pressure * _pressure(x / self.sx, mean_pressure=self.sx * mean_pressure / self.E_s)
-                # import matplotlib.pyplot as plt
-                # plt.figure()
+                import matplotlib.pyplot as plt
+                plt.figure()
                 ##plt.plot(np.arange(nx)*self.sx/nx, profile)
-                # plt.plot(x, displ[:, 0], 'r-')
-                # plt.plot(x, surface[:, 0]+offset, 'k-')
-                # plt.figure()
-                # plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
-                # plt.plot(x, pth, 'r-')
-                # plt.show()
+                plt.plot(x, displ[:, 0], 'r-')
+                plt.plot(x, surface[:, 0]+offset, 'k-')
+                plt.figure()
+                plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
+                plt.plot(x, pth, 'r-')
+                plt.show()
                 self.assertArrayAlmostEqual(forces[:nx // 2, 0] / substrate.area_per_pt, pth[:nx // 2], tol=1e-2)
 
 

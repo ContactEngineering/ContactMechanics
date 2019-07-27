@@ -9,7 +9,7 @@ from PyCo.Tools.Optimisation import constrained_conjugate_gradients
 from PyCo.Topography import make_sphere, Topography
 
 # TODO: this works for exactly these conditions but it sometimes locks for example at (64,64)
-nx, ny = (128, 128)
+nx, ny = (256, 256)
 sx, sy = (2 * np.pi, 2 * np.pi)
 
 Es = 10

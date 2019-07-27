@@ -86,6 +86,3 @@ class FlatPunchTest(unittest.TestCase):
                 self.assertAlmostEqual(-forces.sum() / offset / (2 * self.r_s * self.E_s),
                                        1.0, places=2)
 
-
-if __name__ == '__main__':
-    unittest.main()
