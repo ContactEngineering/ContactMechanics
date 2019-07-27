@@ -294,7 +294,7 @@ class SystemTest(unittest.TestCase):
                      S.compute_normal_force())
             self.assertTrue(error < 1e-5, "error = {}".format(error))
 
-    def test_LBFGSB_Hertz():
+    def test_LBFGSB_Hertz(self):
         """
         goal is that this test run the hertzian contact unsing L-BFGS-B
 
