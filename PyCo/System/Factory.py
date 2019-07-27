@@ -94,7 +94,7 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
 
     if interaction == "hardwall":
         interaction = HardWall()
-    # make shure the interaction has the correcrt communicator
+    # make sure the interaction has the correct communicator
     interaction.pnp = Reduction(communicator)
     interaction.communicator = communicator
 
