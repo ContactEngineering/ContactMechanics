@@ -309,7 +309,7 @@ def constrained_conjugate_gradients(substrate,
         # from hardness inside the flowing regions. This should go to zero.
         max_pres = 0
         if comm.sum(mask_tensile * 1) > 0:
-            max_pres = comm.max(p_r[mask_tensile] * 1)
+            max_pres = comm.max(p_r[comp_mask][g_r > Dugdale_length] * 1)
         if hardness:
             A_fl = comm.sum(mask_flowing)
             if A_fl > 0:
@@ -335,7 +335,7 @@ def constrained_conjugate_gradients(substrate,
 
         if delta_str != 'mix':
             if comm.sum(nc_r * 1) > 0:
-                # The contact area has changed! nc_r contains area that
+                # The contact area has changed! nc_r contains grid points that
                 # penetrate but have zero (or tensile) pressure. They hence
                 # violate the contact constraint. Update their forces and
                 # reset the CG iteration. Note that they will enter c_r
