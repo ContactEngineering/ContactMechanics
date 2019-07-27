@@ -35,7 +35,7 @@ try:
     import PyCo.ReferenceSolutions.JKR as JKR
     import PyCo.ReferenceSolutions.MaugisDugdale as MD
     from scipy.optimize import minimize_scalar
-    from PyCo.ContactMechanics import ExpPotential
+    from PyCo.ContactMechanics import Exponential
     from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                      PeriodicFFTElasticHalfSpace)
     from PyCo.Topography import make_sphere
@@ -74,7 +74,7 @@ class AdhesionTest(unittest.TestCase):
 
         for ran in [0.05, 0.3]:
             substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sx))
-            interaction = ExpPotential(self.w, ran)# , 0.13)
+            interaction = Exponential(self.w, ran)# , 0.13)
             surface = make_sphere(self.r_s, (nx, ny), (sx, sx), standoff=float('inf'))
             ext_surface = make_sphere(self.r_s, (2*nx, 2*ny), (2*sx, 2*sx),
                                  centre=(sx/2, sx/2), standoff=float('inf'))

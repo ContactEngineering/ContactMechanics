@@ -31,7 +31,7 @@ from . import Potential
 import numpy as np
 from NuMPI import MPI
 
-class ExpPotential(Potential):
+class Exponential(Potential):
     """ V(g) = -gamma0*e^(-g(r)/rho)
     """
 

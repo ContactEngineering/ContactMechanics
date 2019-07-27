@@ -42,7 +42,7 @@ try:
     from PyCo.ContactMechanics import VDW82SimpleSmooth
     from PyCo.ContactMechanics import LinearCorePotential
 
-    from PyCo.ContactMechanics import ExpPotential
+    from PyCo.ContactMechanics import Exponential
 
     import PyCo.Tools as Tools
 
@@ -418,7 +418,7 @@ class PotentialTest(unittest.TestCase):
 
     def test_ExpPotential(self):
         r = np.linspace(-10, 10, 1001)
-        pot = ExpPotential(1.0, 1.0)
+        pot = Exponential(1.0, 1.0)
         V, dV, ddV = pot.naive_pot(r)
         self.assertTrue((V<0.0).all())
         self.assertTrue((dV<0.0).all())
