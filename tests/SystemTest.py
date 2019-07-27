@@ -80,7 +80,7 @@ class SystemTest(unittest.TestCase):
 
     def test_RejectInconsistentInputTypes(self):
         with self.assertRaises(IncompatibleFormulationError):
-            make_system(12, 13, 24)
+            make_system(12, 13, 24, physical_sizes=(1, 2))
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
