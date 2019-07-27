@@ -33,6 +33,7 @@ import copy
 from NuMPI import MPI
 from NuMPI.Tools import Reduction
 
+
 class Interaction(object):
     """base class for all interactions, e.g. interatomic potentials"""
     # pylint: disable=too-few-public-methods
@@ -41,6 +42,7 @@ class Interaction(object):
 
 class HardWall(Interaction):
     """base class for non-smooth contact mechanics"""
+
     # pylint: disable=too-few-public-methods
     def __init__(self):
         self.penetration = None
@@ -56,6 +58,7 @@ class HardWall(Interaction):
 
 class Dugdale(HardWall):
     """Potential class representing a Dugdale cohesive zone model"""
+
     def __init__(self, stress, length):
         super().__init__()
         self._stress = stress
@@ -72,13 +75,14 @@ class Dugdale(HardWall):
 
 class SoftWall(Interaction):
     """base class for smooth contact mechanics"""
+
     def __init__(self, communicator=MPI.COMM_WORLD):
         self.energy = None
         self.force = None
         self.communicator = communicator
         self.pnp = Reduction(communicator)
 
-    def __deepcopy__(self,memo):
+    def __deepcopy__(self, memo):
         """
         makes a deepcopy of all the attributes except self.pnp, where it stores the same reference
 
@@ -96,7 +100,7 @@ class SoftWall(Interaction):
 
         keys = set(self.__dict__.keys())
 
-        #exceptions
+        # exceptions
         # pnp is a module or a class impolenting computation methods, it is not copied
         result.pnp = self.pnp
         keys.remove('pnp')
