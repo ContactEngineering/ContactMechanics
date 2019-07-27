@@ -58,7 +58,10 @@ def constrained_conjugate_gradients(substrate,
     configuration deflection of an elastic manifold. The conjugate gradient
     iteration is reset using the steepest descent direction whenever the contact
     area changes.
-    Method is described in I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)
+
+    The method is described in I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999).
+    Treatment of Dugdale zones is described in M. Bazrafshana, M.B. de Rooij,
+    M. Valefi, D.J. Schipper, Tribol. Int. 112, 117 (2017).
 
     Parameters
     ----------
