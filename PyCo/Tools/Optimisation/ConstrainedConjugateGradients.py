@@ -251,10 +251,11 @@ def constrained_conjugate_gradients(substrate,
 
         if delta_str != 'mix' and not (hardness is not None and A_cg == 0):
             # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
+            t_R = np.zeros_like(p_R)
             if delta > 0 and G_old > 0:
-                t_R = c_r * (g_r + delta * (G / G_old) * t_R)
+                t_R[slice_R] = c_r * (g_r + delta * (G / G_old) * t_R[slice_R])
             else:
-                t_R = c_r * g_r
+                t_R[slice_R] = c_r * g_r
 
             # Compute elastic displacement that belongs to t_R, i.e. apply the
             # linear operator to t_r.
@@ -331,12 +332,13 @@ def constrained_conjugate_gradients(substrate,
             psum = -comm.sum(p_R[mask_R]) + Dugdale_force_sum
             if psum != 0:
                 # See Eq. (23) of Bazrafshan et al. (2017)
-                p_R = (external_force + Dugdale_force_sum) / psum * (p_R - c_r * Dugdale_force) + Dugdale_force
+                p_R[slice_R] = (external_force + Dugdale_force_sum) / psum * (
+                            p_R[slice_R] - c_r * Dugdale_force) + Dugdale_force
             else:
                 # If the total force is zero, we reset the calculation and use an equally-distributed force as the
                 # starting point.
-                p_R = -external_force / nb_surface_pts * np.ones_like(p_R)
-                p_R[pad_mask] = 0.0
+                p_R[...] = 0.0
+                p_R[slice_R] = -external_force / nb_surface_pts * np.ones_like(p_R[slice_R])
 
         # If hardness is specified, set all stress larger than hardness to the
         # hardness value (i.e. truncate pressure)
