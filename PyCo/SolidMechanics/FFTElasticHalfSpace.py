@@ -801,8 +801,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 # Automatically pad forces if force array is half of subdomain
                 # nb_grid_pts
                 padded_forces = np.zeros(self.nb_domain_grid_pts)
-                s = [slice(0, forces.shape[i])
-                     for i in range(len(forces.shape))]
+                s = tuple(slice(0, forces.shape[i]) for i in range(len(forces.shape)))
                 padded_forces[s] = forces
                 return super().evaluate_disp(padded_forces)[s]
         else:
