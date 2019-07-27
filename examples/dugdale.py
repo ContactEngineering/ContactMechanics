@@ -4,7 +4,10 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+from PyCo.System import make_system
+from PyCo.ContactMechanics import Dugdale
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
+from PyCo.Tools.Logger import screen
 from PyCo.Tools.Optimisation import constrained_conjugate_gradients
 from PyCo.Topography import make_sphere, Topography
 
@@ -18,20 +21,20 @@ h0 = 0.2
 
 sigma0 = 1
 
-# R = 200 * h0
+interaction = Dugdale(sigma0, h0)
+if True:
+    R = 10
+    halfspace = FreeFFTElasticHalfSpace((nx, ny), Es, (sx, sx))
+    topography = make_sphere(R, (nx,ny), (sx, sy))
+else:
+    x = np.arange(nx).reshape(-1, 1) / nx * sx
+    y = np.arange(ny).reshape(1, -1) / ny * sy
 
-# hs = FreeFFTElasticHalfSpace((nx, ny), Es,
-#                        (sx, sx))
-# topography = make_sphere(R, (nx,ny), (sx, sy))
+    heights = np.cos(x) * np.cos(y)
+    heights -= np.max(heights)
 
-x = np.arange(nx).reshape(-1, 1) / nx * sx
-y = np.arange(ny).reshape(1, -1) / ny * sy
-
-heights = np.cos(x) * np.cos(y)
-heights -= np.max(heights)
-
-topography = Topography(heights, (sx, sy))
-hs = PeriodicFFTElasticHalfSpace((nx, ny), Es, (sx, sx))
+    topography = Topography(heights, (sx, sy))
+    halfspace = PeriodicFFTElasticHalfSpace((nx, ny), Es, (sx, sx))
 
 
 ######################################### plot
@@ -88,6 +91,8 @@ class liveplotter:
         lgc, = self.axgc.plot(g_r[:, ny // 2], "--")
         lpc, = self.axpc.plot(
             (p_r * (p_r <= sigma0))[:, ny // 2] / topography.area_per_pt, "+-r", )
+        self.axpc.set_ylim(-3, 2)
+        self.axgc.set_ylim(0, 2)
 
         self.fig.canvas.draw()
         plt.pause(0.1)
@@ -95,14 +100,14 @@ class liveplotter:
 
 #########################################
 
-sol = constrained_conjugate_gradients(
-    hs,
-    topography=topography,
-    Dugdale=(sigma0, h0),
+system = make_system(halfspace, interaction, topography)
+system.minimize_proxy(
     #external_force=2,
     verbose=True,
-    maxiter=20,
-    callback=liveplotter(resolution=topography.nb_grid_pts)
+    maxiter=50,
+    prestol=1e-4,
+    callback=liveplotter(resolution=topography.nb_grid_pts),
+    logger=screen
 )
 
 fig, ax = plt.subplots()
