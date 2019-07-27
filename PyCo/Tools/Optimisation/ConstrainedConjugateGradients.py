@@ -214,7 +214,7 @@ def constrained_conjugate_gradients(substrate,
         A_contact = comm.sum(c_r * 1)
 
         # Compute gap
-        g_r = u_r[comp_mask] - heights[surf_mask]
+        g_r = u_r[comp_mask] - heights[surf_mask] - offset
 
         # Dugdale zone is included in the "contact area" (the active set),
         # but we need to remove points with separation larger than Dugdale
@@ -235,10 +235,10 @@ def constrained_conjugate_gradients(substrate,
         # Check if calculation is run at constant external force rather than
         # constant displacement.
         if external_force is not None:
-            offset = 0
+            offset_due_to_force = 0
             if A_cg > 0:
-                offset = comm.sum(g_r[c_r]) / A_cg
-        g_r -= offset
+                offset_due_to_force = comm.sum(g_r[c_r]) / A_cg
+            g_r -= offset_due_to_force
 
         # Compute G = sum(g*g) (over contact area only)
         G = comm.sum(c_r * g_r * g_r)
