@@ -334,6 +334,7 @@ def constrained_conjugate_gradients(substrate,
                 # See Eq. (23) of Bazrafshan et al. (2017)
                 p_R[slice_R] = (external_force + Dugdale_force_sum) / psum * (
                             p_R[slice_R] - c_r * Dugdale_force) + Dugdale_force
+                p_R[pad_mask] = 0
             else:
                 # If the total force is zero, we reset the calculation and use an equally-distributed force as the
                 # starting point.
@@ -395,8 +396,11 @@ def constrained_conjugate_gradients(substrate,
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
                        'offset']
-        log_values = [delta_str, it, A_contact, A_contact / comm.sum(mask_r * 1), psum,
-                      offset]
+        log_values = [delta_str, it, A_contact, A_contact / comm.sum(mask_r * 1), psum]
+        if external_force is None:
+            log_values += [offset]
+        else:
+            log_values += [mean_gap]
 
         if hardness:
             log_headers += ['plast. area', 'frac.plast. area']
