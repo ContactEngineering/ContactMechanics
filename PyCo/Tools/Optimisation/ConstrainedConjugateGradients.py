@@ -138,10 +138,10 @@ def constrained_conjugate_gradients(substrate,
         nb_surface_pts_mask = comm.sum(np.logical_not(surf_mask))  # count the number of points that are not masked
 
     if Dugdale is not None:
-        Dugdale_stress, Dugdale_length = Dugdale
-        Dugdale_stress *= topography.area_per_pt
+        Dugdale_force, Dugdale_length = Dugdale
+        Dugdale_force *= topography.area_per_pt
     else:
-        Dugdale_stress = 0
+        Dugdale_force = 0
         Dugdale_length = 0
 
     if logger is not None:
@@ -208,7 +208,7 @@ def constrained_conjugate_gradients(substrate,
 
         # Reset contact area (area that feels compressive stress). This is the
         # active set of the constrained optimization.
-        c_r = p_r[comp_mask] < Dugdale_stress
+        c_r = p_r[comp_mask] < Dugdale_force
 
         # Compute total contact area (area with compressive pressure)
         A_contact = comm.sum(c_r * 1)
@@ -317,7 +317,7 @@ def constrained_conjugate_gradients(substrate,
 
         # Project on the feasible set: Set all tensile stresses to zero (or the
         # Dugdale stress).
-        p_r[p_r > Dugdale_stress] = Dugdale_stress
+        p_r[p_r > Dugdale_force] = Dugdale_force
 
         # Adjust pressure
         if external_force is not None:
