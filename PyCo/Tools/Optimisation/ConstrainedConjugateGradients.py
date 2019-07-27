@@ -159,9 +159,9 @@ def constrained_conjugate_gradients(substrate,
     # slice of the local data of the computation subdomain corresponding to the topography subdomain.
     # It's typically the first half of the computation subdomain (along the non-parallelized dimension) for FreeFFTElHS
     # It's the same for PeriodicFFTElHS
-    comp_slice = [slice(0, max(0, min(substrate.nb_grid_pts[i] - substrate.subdomain_locations[i],
+    comp_slice = tuple(slice(0, max(0, min(substrate.nb_grid_pts[i] - substrate.subdomain_locations[i],
                                       substrate.nb_subdomain_grid_pts[i])))
-                  for i in range(substrate.dim)]
+                       for i in range(substrate.dim))
     if substrate.dim not in (1, 2):
         raise Exception(
             ("Constrained conjugate gradient currently only implemented for 1 "
@@ -169,13 +169,13 @@ def constrained_conjugate_gradients(substrate,
                 substrate.dim))
 
     comp_mask = np.zeros(substrate.nb_subdomain_grid_pts, dtype=bool)
-    comp_mask[tuple(comp_slice)] = True
+    comp_mask[comp_slice] = True
 
     surf_mask = np.ma.getmask(heights_r)
     if surf_mask is np.ma.nomask:
         surf_mask = np.ones(topography.nb_subdomain_grid_pts, dtype=bool)
     else:
-        comp_mask[tuple(comp_slice)][surf_mask] = False
+        comp_mask[comp_slice][surf_mask] = False
         surf_mask = np.logical_not(surf_mask)
     pad_mask = np.logical_not(comp_mask)
     N_pad = comm.sum(pad_mask * 1)
@@ -411,16 +411,18 @@ def constrained_conjugate_gradients(substrate,
                 log_values[0] = 'CONVERGED'
                 logger.st(log_headers, log_values, force_print=True)
             # Return full u_r because this is required to reproduce pressure
-            # from evalualte_force
+            # from evaluate_force
             result.x = u_r  # [comp_mask]
             # Return partial p_r because pressure outside computational region
             # is zero anyway
-            result.jac = -p_r[tuple(comp_slice)]
+            result.jac = -p_r[comp_slice]
+            result.active_set = np.zeros(substrate.nb_subdomain_grid_pts, dtype=bool)
+            result.active_set[comp_mask] = c_r
             # Compute elastic energy
-            result.fun = -comm.sum(p_r[tuple(comp_slice)] * u_r[tuple(comp_slice)]) / 2
+            result.fun = -comm.sum(p_r[comp_slice] * u_r[comp_slice]) / 2
             result.offset = offset
             result.success = True
-            result.message = "Polonsky converged"
+            result.message = "Polonsky & Keer converged"
             return result
 
         if logger is not None and it < maxiter:
@@ -450,9 +452,9 @@ def constrained_conjugate_gradients(substrate,
     result.x = u_r  # [comp_mask]
     # Return partial p_r because pressure outside computational region
     # is zero anyway
-    result.jac = -p_r[tuple(comp_slice)]
+    result.jac = -p_r[comp_slice]
     # Compute elastic energy
-    result.fun = -comm.sum((p_r[tuple(comp_slice)] * u_r[tuple(comp_slice)])) / 2
+    result.fun = -comm.sum((p_r[comp_slice] * u_r[comp_slice])) / 2
     result.offset = offset
     result.message = "Reached maxiter = {}".format(maxiter)
     return result
