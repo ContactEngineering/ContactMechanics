@@ -2,6 +2,40 @@
 Change log for PyCo
 ===================
 
+v0.50.0 (31Jul19)
+-----------------
+
+Overview:
+
+- MPI parallelization of topographies, substrates and interaction.
+- Updated reader framework that supports loading files in parallel. This requires to peek at the files (without
+  loading them) to understand the number of grid points to decide on a domain decomposition strategy.
+
+Technical:
+
+- Use MPI wrapper provided by NuMPI (https://github.com/IMTEK-Simulation/NuMPI) for serial calculations.
+- Switch to parallel L-BFGS of NuMPI. 
+- Removed Cython dependencies. (Parallel) FFT is now handled by muFFT (https://gitlab.com/muspectre/muspectre).
+- Tests have been partially converted to pytest. Parallel tests are run through run-tests
+  (https://github.com/AntoineSIMTEK/runtests).
+
+v0.32.0 (15Jul19)
+-----------------
+
+- Autocorrelation and power-spectrum updates. Both now have an option 'algorithm' that let's the user select
+  between a (fast) FFT and a (slow) brute-force implementation.
+  
+v0.31.3 (7Jul19)
+----------------
+
+- Removed check for existing forces on boundaries (nonperiodic calculations only).
+
+v0.31.1 (20May19)
+-----------------
+
+- Bug fix: Contact calculations now also run with detrended/scaled topographies.
+- Updated hard wall command line script to new topography interface.
+
 v0.31.0 (5Mar19)
 ----------------
 
