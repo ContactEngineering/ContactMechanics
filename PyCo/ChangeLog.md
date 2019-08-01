@@ -2,6 +2,12 @@
 Change log for PyCo
 ===================
 
+v0.50.1 (1Aug19)
+----------------
+
+- Bug fix: Running without an MPI installation
+- Bug fix: Reading DI files with non-topographic data
+
 v0.50.0 (31Jul19)
 -----------------
 
