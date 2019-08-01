@@ -57,7 +57,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     _periodic = True
 
     def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi, stiffness_q0=None,
-                 thickness=None, poisson=0.0, superclass=True, fft="serial", communicator=MPI.COMM_SELF):
+                 thickness=None, poisson=0.0, superclass=True, fft="serial", communicator=None):
         """
         Parameters
         ----------

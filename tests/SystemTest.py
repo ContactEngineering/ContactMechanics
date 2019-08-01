@@ -26,29 +26,24 @@
 Tests the creation of tribosystems
 """
 
-try:
-    import unittest
-    from numpy.random import rand, random
-    import numpy as np
+import unittest
+from numpy.random import rand, random
+import numpy as np
 
-    from scipy.optimize import minimize
-    from scipy.fftpack import fftn, ifftn
-    import time
+from scipy.optimize import minimize
+from scipy.fftpack import fftn, ifftn
+import time
 
-    import os
-    from netCDF4 import Dataset
+import os
+from netCDF4 import Dataset
 
-    from PyCo.System import make_system, IncompatibleFormulationError
-    from PyCo.System import IncompatibleResolutionError
-    from PyCo.System.Systems import SmoothContactSystem
-    import PyCo.SolidMechanics as Solid
-    import PyCo.ContactMechanics as Contact
-    import PyCo.Topography as Topography
-    import PyCo.Tools as Tools
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+from PyCo.System import make_system, IncompatibleFormulationError
+from PyCo.System import IncompatibleResolutionError
+from PyCo.System.Systems import SmoothContactSystem
+import PyCo.SolidMechanics as Solid
+import PyCo.ContactMechanics as Contact
+import PyCo.Topography as Topography
+import PyCo.Tools as Tools
 
 import pytest
 from NuMPI import MPI
