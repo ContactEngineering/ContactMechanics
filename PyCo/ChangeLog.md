@@ -2,11 +2,17 @@
 Change log for PyCo
 ===================
 
+v0.50.2 (1Aug19)
+----------------
+
+- Bug fix: Missing `channel` argument for `topography` method of `WrappedReader` (#181)
+- `WrappedReader` now uses 'Default' as channel name
+
 v0.50.1 (1Aug19)
 ----------------
 
 - Bug fix: Running without an MPI installation
-- Bug fix: Reading DI files with non-topographic data
+- Bug fix: Reading DI files with non-topographic data (#338)
 
 v0.50.0 (31Jul19)
 -----------------
