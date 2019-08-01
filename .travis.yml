@@ -1,40 +1,28 @@
-# Travis auto-virtualenv isn't supported on OS X
-language: generic
-sudo: required
-matrix:
-  include:
-    - python: 3.4
-      language: python
-      python: "3.4"
-      os: linux
-      dist: trusty
-      env: PYTHON=/usr/bin/python3.4
-virtualenv:
-  system_site_packages: true
-before_install:
-  - source .travis.before_install.bash
-before_script:
-  - source .travis.before_script.bash
+language: python
+python:
+  - 3.5
+  - 3.6
+env:
+  - WITH_MPI=no
+  - WITH_MPI=yes
+install:
+  - sudo apt-get update
+  - if [ "$WITH_MPI" == "yes" ]; then sudo apt-get install openmpi-bin libopenmpi-dev; fi
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda3
+  - export PATH="$HOME/miniconda3/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy
+  - source activate test-environment
+  - if [ "$WITH_MPI" == "yes" ]; then python -m pip install mpi4py; fi
+  - python -m pip install -r requirements.txt
+  - python setup.py install
 script:
-  - "python setup.py test"
+  - if [ "$WITH_MPI" == "yes" ]; then python run-tests.py --verbose --full-trace -s; else pytest --verbose --full-trace -s; fi
 notifications:
   email:
-    - lars.pastewka@kit.edu
-addons:
-  apt:
-    packages:
-    - gfortran
-    - liblapack-dev
-    - libfftw3-dev
-    - libnetcdf-dev
-    - libhdf5-dev
-    - python-numpy
-    - python-scipy
-    - python-matplotlib
-    - python-tk
-    - cython
-    - python3-numpy
-    - python3-scipy
-    - python3-matplotlib
-    - python3-tk
-    - cython3
+    - antoine.sanner@imtek.uni-freiburg.de
+    - lars.pastewka@imtek.uni-freiburg.de
