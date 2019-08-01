@@ -582,7 +582,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     _periodic = False
 
     def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi, fft="serial",
-                 communicator=MPI.COMM_WORLD, check_boundaries=True):
+                 communicator=None, check_boundaries=True):
         """
         Parameters
         ----------

@@ -45,8 +45,8 @@ def file_format_examples():
 @pytest.fixture(scope="session")
 def fftengine_type(comm):
     try:
-        fftname = "mpi"
-        engine = FFT((2 * comm.Get_size(), 3 * comm.Get_size()), fft="mpi", communicator=comm)
+        fftname = "serial" if comm.Get_size() == 1 else "mpi"
+        engine = FFT((2 * comm.Get_size(), 3 * comm.Get_size()), fft=fftname, communicator=comm)
     except:
         if comm.Get_size() == 1:
             fftname = "fftw"

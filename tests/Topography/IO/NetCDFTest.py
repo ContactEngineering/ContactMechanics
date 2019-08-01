@@ -42,7 +42,9 @@ def test_save_and_load(comm):
     np.random.seed(1)
     t = fourier_synthesis(nb_grid_pts, size, 0.8, rms_slope=0.1)
 
-    substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, 1, fft='mpi', communicator=comm)
+    substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, 1,
+                                            fft='serial' if comm is None or comm.Get_size() == 1 else 'mpi',
+                                            communicator=comm)
     dt = t.domain_decompose(substrate.subdomain_locations, substrate.nb_subdomain_grid_pts, comm)
 
     # Attempt to open full file on each process
