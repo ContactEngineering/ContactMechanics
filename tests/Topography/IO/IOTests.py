@@ -143,13 +143,13 @@ class IOTest(unittest.TestCase):
         file_list = self.text_example_file_list + self.binary_example_file_list
 
         for fn in file_list:
-            print(fn)
             reader = open_topography(fn)
-            t = reader.topography(
-                physical_sizes=reader.channels[reader.default_channel]['physical_sizes']
-                    if 'physical_sizes' in reader.channels[reader.default_channel]
-                    else [1., ] * len(reader.channels[reader.default_channel]['nb_grid_pts'])
-            )
+            physical_sizes = None
+            if reader.channels[reader.default_channel]['dim'] != 1:
+                physical_sizes = reader.channels[reader.default_channel]['physical_sizes'] \
+                    if 'physical_sizes' in reader.channels[reader.default_channel] \
+                    else [1., ] * reader.channels[reader.default_channel]['dim']
+            t = reader.topography(physical_sizes=physical_sizes)
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
 
@@ -169,11 +169,12 @@ class IOTest(unittest.TestCase):
                     assert_array_equal(x.positions(), y.positions())
                     assert_array_equal(x.heights(), y.heights())
 
-    def test_channel_0(self):
+    def test_reader_arguments_exist(self):
+        """Check whether all readers have channle, physical_sizes and height_scale_factor arguments"""
         for fn in self.text_example_file_list + self.binary_example_file_list:
             r = open_topography(fn)
-            t = r.topography(channel=0, physical_sizes=(1, 1))
-
+            physical_sizes = None if r.channels[0]['dim'] == 1 else (1, 1)
+            t = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
 
 class UnknownFileFormatGivenTest(unittest.TestCase):
 
