@@ -74,8 +74,13 @@ class SystemTest(unittest.TestCase):
                                              self.physical_sizes)
 
     def test_RejectInconsistentInputTypes(self):
+        class dummyInteraction:
+            pass
         with self.assertRaises(IncompatibleFormulationError):
-            make_system(12, 13, 24)
+            make_system(interaction=dummyInteraction(),
+                        surface=self.sphere,
+                        substrate=self.substrate
+                        )
 
     def test_DecoratedTopography(self):
         top= self.sphere.detrend()
