@@ -77,6 +77,14 @@ class SystemTest(unittest.TestCase):
         with self.assertRaises(IncompatibleFormulationError):
             make_system(12, 13, 24)
 
+    def test_DecoratedTopography(self):
+        top= self.sphere.detrend()
+        make_system(substrate="periodic",
+                    interaction="hardwall",
+                    young=1.,
+                    surface=top
+                    )
+
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
         incompat_sphere = Topography.make_sphere(self.radius, incompat_res,
