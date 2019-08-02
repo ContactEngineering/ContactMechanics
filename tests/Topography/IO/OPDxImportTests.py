@@ -51,7 +51,7 @@ class OPDxSurfaceTest(unittest.TestCase):
 
         loader = OPDxReader(file_path)
 
-        channel_0, channel_1 = loader.channels()
+        channel_0, channel_1 = loader.channels
 
         # Check if metadata has been read in
 

@@ -47,10 +47,10 @@ from PyCo.Topography.IO import detect_format
 import PyCo.Topography.IO
 from PyCo.Topography.IO import readers
 
-
 ###
 
 DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../file_format_examples')
+
 
 @pytest.mark.parametrize("reader", readers.values())
 def test_closes_file_on_failure(reader):
@@ -145,9 +145,11 @@ class IOTest(unittest.TestCase):
         for fn in file_list:
             print(fn)
             reader = open_topography(fn)
-            t = reader.topography(physical_sizes=reader.physical_sizes
-            if reader.physical_sizes is not None
-            else [1., ] * len(reader.nb_grid_pts))
+            t = reader.topography(
+                physical_sizes=reader.channels[reader.default_channel]['physical_sizes']
+                    if 'physical_sizes' in reader.channels[reader.default_channel]
+                    else [1., ] * len(reader.channels[reader.default_channel]['nb_grid_pts'])
+            )
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
 
@@ -167,6 +169,11 @@ class IOTest(unittest.TestCase):
                     assert_array_equal(x.positions(), y.positions())
                     assert_array_equal(x.heights(), y.heights())
 
+    def test_channel_0(self):
+        for fn in self.text_example_file_list + self.binary_example_file_list:
+            r = open_topography(fn)
+            t = r.topography(channel=0, physical_sizes=(1, 1))
+
 
 class UnknownFileFormatGivenTest(unittest.TestCase):
 
@@ -182,17 +189,13 @@ class UnknownFileFormatGivenTest(unittest.TestCase):
                 format='Nonexistentfileformat')
 
 
-class FileFormatMismatchTest(unittest.TestCase):
-    def test_read(self):
-        with self.assertRaises(PyCo.Topography.IO.FileFormatMismatch):
-            PyCo.Topography.IO.open_topography(
-                os.path.join(DATADIR, 'surface.2048x2048.h5'), format="npy")
+def test_file_format_mismatch():
+    with pytest.raises(PyCo.Topography.IO.FileFormatMismatch):
+        PyCo.Topography.IO.open_topography(
+            os.path.join(DATADIR, 'surface.2048x2048.h5'), format="npy")
 
 
 class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
-    def setUp(self):
-        pass
-
     def test_detect_format_then_read(self):
         self.assertEqual(detect_format(os.path.join(DATADIR, 'line_scan_1_minimal_spaces.asc')), 'xyz')
 
