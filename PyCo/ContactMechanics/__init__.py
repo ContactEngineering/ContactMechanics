@@ -28,7 +28,7 @@
 Defines all interaction modes used in PyCo
 """
 
-from .Interactions import Interaction, HardWall, SoftWall
+from .Interactions import Interaction, HardWall, Dugdale, SoftWall
 from .Potentials import Potential, SmoothPotential
 from .Potentials import LinearCorePotential, ParabolicCutoffPotential
 

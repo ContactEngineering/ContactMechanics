@@ -54,6 +54,18 @@ class HardWall(Interaction):
         self.penetration = np.where(gap < tol, -gap, 0)
 
 
+class Dugdale(HardWall):
+    def __init__(self, Dugdale_stress, Dugdale_length):
+        super().__init__()
+        self.Dugdale_stress = Dugdale_stress
+        self.Dugdale_length = Dugdale_length
+
+    def compute(self, gap, tol=0.):
+        return np.where(gap < self.Dugdale_length,
+                        Dugdale_stress*np.ones_like(gap),
+                        np.zeros_like(gap))
+
+
 class SoftWall(Interaction):
     """base class for smooth contact mechanics"""
     def __init__(self, communicator=MPI.COMM_WORLD):
