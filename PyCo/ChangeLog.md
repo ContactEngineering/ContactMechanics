@@ -7,7 +7,7 @@ v0.51.1
 
 - Bug fix: Setting physical_sizes argument in readers (#188)
 - Bug fix: physical_sizes should be None for surfacs without a physical size (#189)
-- Bug fix: Running and testing without mpi4py is now possible
+- Bug fix: Running and testing without mpi4py is now possible (#179)
 - CI: All tests (serial and MPI parallel) pass
 
 v0.51.0 (5Aug19)
