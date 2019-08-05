@@ -9,5 +9,5 @@ h5py
 sphinx==1.8.2
 git+https://github.com/IMTEK-Simulation/NuMPI.git
 pytest>=4
-git+https://gitlab.com/muspectre/muspectre.git@feat/19_fftw_detection#egg=mufft
+git+https://gitlab.com/muspectre/muspectre.git#egg=mufft
 git+https://github.com/pastewka/runtests.git#egg=runtests
