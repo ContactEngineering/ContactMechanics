@@ -172,9 +172,12 @@ class IOTest(unittest.TestCase):
     def test_reader_arguments_exist(self):
         """Check whether all readers have channle, physical_sizes and height_scale_factor arguments"""
         for fn in self.text_example_file_list + self.binary_example_file_list:
+            # Test open -> topography
             r = open_topography(fn)
             physical_sizes = None if r.channels[0]['dim'] == 1 else (1, 1)
             t = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            # Test read_topograhy
+            t = read_topography(fn, channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
 
 class UnknownFileFormatGivenTest(unittest.TestCase):
 
