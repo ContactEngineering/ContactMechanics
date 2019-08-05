@@ -351,10 +351,6 @@ class NumpyTxtSurfaceTest(unittest.TestCase):
 
 
 class NumpyAscSurfaceTest(unittest.TestCase):
-    def setUp(self):
-        pass
-
-
     def test_example1(self):
         surf = read_asc(os.path.join(DATADIR,  'example1.txt'))
         self.assertTrue(isinstance(surf, Topography))
@@ -406,9 +402,10 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         surf = read_asc(os.path.join(DATADIR,  'example5.txt'))
         self.assertTrue(isinstance(surf, Topography))
         self.assertEqual(surf.nb_grid_pts, (10, 10))
-        self.assertEqual(surf.physical_sizes, (10, 10))
+        self.assertTrue(surf.physical_sizes is None)
         self.assertAlmostEqual(surf.rms_height(), 1.0)
-        self.assertAlmostEqual(surf.rms_slope(), 0.666666666666666666)
+        with self.assertRaises(ValueError):
+            surf.rms_slope()
         self.assertTrue(surf.is_uniform)
         self.assertFalse('unit' in surf.info)
 
