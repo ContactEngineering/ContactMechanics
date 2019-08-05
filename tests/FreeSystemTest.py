@@ -27,27 +27,23 @@ tests that the Fast optimization for free (non-periodic) systems is
 consistent with computing the full system
 """
 
-try:
-    import unittest
-    import numpy as np
-    from numpy.random import rand, random
-    from scipy.optimize import minimize
-    import time
+import time
+import unittest
 
-    from PyCo.System.Systems import SmoothContactSystem, NonSmoothContactSystem
-    from PyCo.System.SmoothSystemSpecialisations import FastSmoothContactSystem
-    from PyCo.System import make_system
-    import PyCo.SolidMechanics as Solid
-    import PyCo.ContactMechanics as Contact
-    import PyCo.Topography as Topography
-    import PyCo.Tools as Tools
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
-
+import numpy as np
 import pytest
+from scipy.optimize import minimize
+
 from NuMPI import MPI
+
+import PyCo.SolidMechanics as Solid
+import PyCo.ContactMechanics as Contact
+import PyCo.Topography as Topography
+import PyCo.Tools as Tools
+from PyCo.System.Systems import SmoothContactSystem, NonSmoothContactSystem
+from PyCo.System.SmoothSystemSpecialisations import FastSmoothContactSystem
+from PyCo.System import make_system
+
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
         reason="tests only serial funcionalities, please execute with pytest")
@@ -173,7 +169,7 @@ def test_minimization(pot_class, young, base_res):
     offset = .8 * S.interaction.r_c
     fun = S.objective(offset, gradient=True)
 
-    options = dict(ftol=1e-18, gtol=1e-10)
+    options = dict(ftol=1e-16, gtol=1e-8)
     disp = S.shape_minimisation_input(
         np.zeros(substrate.nb_domain_grid_pts))
 
