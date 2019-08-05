@@ -91,7 +91,7 @@ def test_minimization_simplesmoothmin(young, r_c):
     offset = .8 * S.interaction.r_c
     fun = S.objective(offset, gradient=True)
 
-    options = dict(ftol=1e-16, gtol=1e-8, disp=True)
+    options = dict(ftol=2.220446049250313e-09, gtol=1e-5)
     disp = S.shape_minimisation_input(
         np.zeros(substrate.nb_domain_grid_pts))
 
