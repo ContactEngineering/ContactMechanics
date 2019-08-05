@@ -26,15 +26,40 @@
 import pytest
 import os
 
-from runtests.mpi import MPITestFixture
+from runtests.mpi.tester import WorldTooSmall, create_comm
 
 from NuMPI import MPI
 from muFFT import FFT
 
-comm = MPITestFixture([1, 4], scope='session')
-comm_self = MPITestFixture([1], scope='session')
+def MyMPITestFixture(commsize, scope='function'):
+    """ Create a test fixture for MPI Communicators of various commsizes """
 
-maxcomm = MPITestFixture([MPI.COMM_WORLD.Get_size()], scope="session")
+    @pytest.fixture(params=commsize, scope=scope)
+    def fixture(request):
+        from NuMPI import MPI
+        MPI.COMM_WORLD.barrier()
+        try:
+            comm, color = create_comm(request.param, mpi_missing='ignore')
+
+            if color != 0:
+                pytest.skip("Not using communicator {}.".format(request.param))
+                return None
+            else:
+                # Turn a None into a NuMPI stub communicator
+                if comm is None:
+                    comm = MPI.COMM_SELF
+                return comm
+
+        except WorldTooSmall:
+            pytest.skip("Not using communicator {}.".format(request.param))
+            return None
+
+    return fixture
+
+comm = MyMPITestFixture([1, 4], scope='session')
+comm_self = MyMPITestFixture([1], scope='session')
+
+maxcomm = MyMPITestFixture([MPI.COMM_WORLD.Get_size()], scope="session")
 
 
 @pytest.fixture(scope="session")
