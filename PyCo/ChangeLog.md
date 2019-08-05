@@ -2,6 +2,11 @@
 Change log for PyCo
 ===================
 
+v0.51.0 (5Aug19)
+----------------
+
+- Cleanup of new reader API
+
 v0.50.2 (1Aug19)
 ----------------
 
