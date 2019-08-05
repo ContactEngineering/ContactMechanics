@@ -357,7 +357,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
     def test_example1(self):
         surf = read_asc(os.path.join(DATADIR,  'example1.txt'))
-        self.assertTrue(isinstance(surf, ScaledUniformTopography))
+        self.assertTrue(isinstance(surf, Topography))
         self.assertEqual(surf.nb_grid_pts, (1024, 1024))
         self.assertAlmostEqual(surf.physical_sizes[0], 2000)
         self.assertAlmostEqual(surf.physical_sizes[1], 2000)
@@ -410,7 +410,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.rms_height(), 1.0)
         self.assertAlmostEqual(surf.rms_slope(), 0.666666666666666666)
         self.assertTrue(surf.is_uniform)
-        self.assertIsNone(surf.info['unit'])
+        self.assertFalse('unit' in surf.info)
 
         # test setting the physical_sizes
         surf.physical_sizes = 1, 2
@@ -433,7 +433,7 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         self.assertAlmostEqual(surf.physical_sizes, (9.0,))
 
         self.assertFalse(surf.is_uniform)
-        self.assertIsNone(surf.info['unit'])
+        self.assertFalse('unit' in surf.info)
 
         bw = surf.bandwidth()
         self.assertAlmostEqual(bw[0], (8*1.+2*0.5/10)/9)
