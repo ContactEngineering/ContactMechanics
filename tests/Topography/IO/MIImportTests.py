@@ -57,6 +57,7 @@ class MISurfaceTest(unittest.TestCase):
                           'label': 'Topography',
                           'range': '2.9025000000000003e+000',
                           'unit': 'um',
+                          'dim': 2,
                           'direction': 'Trace',
                           'filter': '3rd_order',
                           'name': 'Topography',
