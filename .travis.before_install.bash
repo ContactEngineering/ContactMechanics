@@ -35,5 +35,5 @@ if [ "$WITH_MPI" == "yes" ]; then
 
   # Install netcdf4-python and make sure that it is compiled (no-binary),
   # otherwise it will not have parallel support.
-  CC=mpicc python -m pip install --no-binary netCDF4 netCDF4==${NETCDF4_PYTHON_VERSION}
+  HDF5_DIR=$HOME/.local CC=mpicc python -m pip install --no-binary netCDF4 netCDF4==${NETCDF4_PYTHON_VERSION}
 fi
