@@ -3,7 +3,7 @@ python:
   - 3.6
 env:
   - WITH_MPI=no
-  - WITH_MPI=yes HDF5_VERSION=1.10.5 NETCDF4_VERSION=4.6.3 NETCDF4_PYTHON_VERSION=1.5.1.2
+  - WITH_MPI=yes MPI4PY_VERSION=3.0.2 HDF5_VERSION=1.10.5 NETCDF4_VERSION=4.6.3 NETCDF4_PYTHON_VERSION=1.5.1.2
 before_install:
   - source .travis.before_install.bash
 install:

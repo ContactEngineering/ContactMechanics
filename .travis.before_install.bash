@@ -34,7 +34,7 @@ if [ "$WITH_MPI" == "yes" ]; then
     && make install
 
   cd $wd
-  python -m pip install --no-binary mpi4py
+  python -m pip install --no-binary mpi4py mpi4py==${MPI4PY_VERSION}
 
   # Install netcdf4-python and make sure that it is compiled (no-binary),
   # otherwise it will not have parallel support.
