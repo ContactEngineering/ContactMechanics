@@ -3,7 +3,7 @@
 sudo apt-get update
 sudo apt-get install libfftw3-dev
 if [ "$WITH_MPI" == "yes" ]; then
-  sudo apt-get install openmpi-bin libopenmpi-dev libfftw3-mpi-dev
+  sudo apt-get install openmpi-bin libopenmpi-dev libfftw3-mpi-dev libpnetcdf-dev
 fi
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 bash miniconda.sh -b -p $HOME/miniconda3
