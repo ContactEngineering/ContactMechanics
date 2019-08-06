@@ -18,7 +18,7 @@ python -m pip install $(grep numpy requirements.txt)
 if [ "$WITH_MPI" == "yes" ]; then
   curl https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz | tar -xzC /tmp \
     && cd /tmp/hdf5-${HDF5_VERSION} \
-    && CC=mpicc CXX=mpicxx ./configure --enable-parallel --prefix=/usr/local \
+    && CC=mpicc CXX=mpicxx ./configure --enable-parallel --prefix=$HOME/.local \
     && make \
     && make install
 
@@ -27,7 +27,7 @@ if [ "$WITH_MPI" == "yes" ]; then
   curl https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-${NETCDF4_VERSION}.tar.gz | tar -xzC /tmp \
     && mkdir /tmp/netcdf-c-build \
     && cd /tmp/netcdf-c-build \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DUSE_PARALLEL=ON -DENABLE_PARALLEL4=ON -DENABLE_PNETCDF=ON /tmp/netcdf-c-${NETCDF4_VERSION} \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DUSE_PARALLEL=ON -DENABLE_PARALLEL4=ON -DENABLE_PNETCDF=ON /tmp/netcdf-c-${NETCDF4_VERSION} \
     && make \
     && make install
 
