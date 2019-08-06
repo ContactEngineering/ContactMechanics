@@ -16,6 +16,8 @@ conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy
 source activate test-environment
 python -m pip install $(grep numpy requirements.txt)
 if [ "$WITH_MPI" == "yes" ]; then
+  wd=$(pwd)
+
   curl https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz | tar -xzC /tmp \
     && cd /tmp/hdf5-${HDF5_VERSION} \
     && CC=mpicc CXX=mpicxx ./configure --enable-parallel --prefix=$HOME/.local \
@@ -31,6 +33,7 @@ if [ "$WITH_MPI" == "yes" ]; then
     && make \
     && make install
 
+  cd $wd
   python -m pip install --no-binary mpi4py
 
   # Install netcdf4-python and make sure that it is compiled (no-binary),
