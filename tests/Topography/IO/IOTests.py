@@ -21,21 +21,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from NuMPI import MPI
-import pytest
-
-pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
-                                reason="tests only serial functionalities, please execute with pytest")
-
-import unittest
-import warnings
-
-import numpy as np
-from numpy.testing import assert_array_equal
 
 import os
 import io
 import pickle
+import unittest
+import warnings
+
+import pytest
+from numpy.testing import assert_array_equal
+
+from NuMPI import MPI
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
+                                reason="tests only serial functionalities, please execute with pytest")
 
 from PyCo.Topography import open_topography, read_topography
 
@@ -170,14 +169,22 @@ class IOTest(unittest.TestCase):
                     assert_array_equal(x.heights(), y.heights())
 
     def test_reader_arguments(self):
-        """Check whether all readers have channel, physical_sizes and height_scale_factor arguments"""
+        """Check whether all readers have channel, physical_sizes and height_scale_factor arguments.
+        Also check whether we can execute `topography` multiple times for all readers"""
         physical_sizes0 = (1.2, 1.3)
         for fn in self.text_example_file_list + self.binary_example_file_list:
             # Test open -> topography
             r = open_topography(fn)
             physical_sizes = None if r.channels[0]['dim'] == 1 else physical_sizes0
             t = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
-            # Test read_topograhy
+            if physical_sizes is not None:
+                self.assertEqual(t.physical_sizes, physical_sizes)
+            # Second call to topography
+            t2 = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            if physical_sizes is not None:
+                self.assertEqual(t2.physical_sizes, physical_sizes)
+            assert_array_equal(t.heights(), t2.heights())
+            # Test read_topography
             t = read_topography(fn, channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t.physical_sizes, physical_sizes)
