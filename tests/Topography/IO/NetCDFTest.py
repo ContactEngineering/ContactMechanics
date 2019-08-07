@@ -49,9 +49,10 @@ def test_save_and_load(comm):
     dt = t.domain_decompose(substrate.subdomain_locations, substrate.nb_subdomain_grid_pts,
                             communicator=comm)
 
-    # Attempt to open full file on each process
+    # Save file
     dt.to_netcdf('parallel_save_test.nc')
 
+    # Attempt to open full file on each process
     t2 = read_topography('parallel_save_test.nc')
 
     assert t.physical_sizes == t2.physical_sizes
