@@ -48,6 +48,8 @@ def test_save_and_load(comm):
                                             communicator=comm)
     dt = t.domain_decompose(substrate.subdomain_locations, substrate.nb_subdomain_grid_pts,
                             communicator=comm)
+    if comm.size > 1:
+        assert dt.is_domain_decomposed
 
     # Save file
     dt.to_netcdf('parallel_save_test.nc')
