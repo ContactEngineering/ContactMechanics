@@ -8,7 +8,7 @@ v0.51.1 (7Aug19)
 - Bug fix: Setting physical_sizes argument in readers (#188)
 - Bug fix: physical_sizes should be None for surfacs without a physical size (#189)
 - Bug fix: Running and testing without mpi4py is now possible (#179)
-- Bug fix: Multiple calls to `topograpgy` (#187)
+- Bug fix: Multiple calls to `topography` method of readers (#187)
 - Method to inspect pipeline (#175)
 - CI: All tests (serial and MPI parallel) pass in Travis CI
 
