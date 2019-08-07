@@ -4,6 +4,8 @@
 # broken on most distributions.
 #
 
+pushd
+
 curl https://parallel-netcdf.github.io/Release/pnetcdf-${PNETCDF_VERSION}.tar.gz | tar -xzC ${BUILDDIR} &&
   cd ${BUILDDIR}/pnetcdf-${PNETCDF_VERSION} &&
   CC=mpicc CXX=mpicxx ./configure --disable-fortran --disable-cxx --enable-shared --prefix=${PREFIX} &&
@@ -28,3 +30,5 @@ curl https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-${NETCDF4_VERSIO
 # Install netcdf4-python and make sure that it is compiled (no-binary),
 # otherwise it will not have parallel support.
 HDF5_DIR=${PREFIX} CC=mpicc python -m pip install --no-binary netCDF4 netCDF4==${NETCDF4_PYTHON_VERSION}
+
+popd
