@@ -189,6 +189,24 @@ class IOTest(unittest.TestCase):
             if physical_sizes is not None:
                 self.assertEqual(t.physical_sizes, physical_sizes)
 
+    def test_readers_with_binary_file_object(self):
+        """Check whether all readers have channel, physical_sizes and height_scale_factor arguments.
+        Also check whether we can execute `topography` multiple times for all readers"""
+        physical_sizes0 = (1.2, 1.3)
+        for fn in self.text_example_file_list + self.binary_example_file_list:
+            print(fn)
+            # Test open -> topography
+            r = open_topography(open(fn, mode='rb'))
+            physical_sizes = None if r.channels[0]['dim'] == 1 else physical_sizes0
+            t = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            if physical_sizes is not None:
+                self.assertEqual(t.physical_sizes, physical_sizes)
+            # Second call to topography
+            t2 = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            if physical_sizes is not None:
+                self.assertEqual(t2.physical_sizes, physical_sizes)
+            assert_array_equal(t.heights(), t2.heights())
+
 class UnknownFileFormatGivenTest(unittest.TestCase):
 
     def test_read(self):
