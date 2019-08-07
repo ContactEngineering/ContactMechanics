@@ -84,28 +84,27 @@ class OPDxSurfaceTest(unittest.TestCase):
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
-        loader = OPDxReader(file_path)
+        with OPDxReader(file_path) as loader:
+            self.assertEqual(loader._default_channel, 1)
 
-        self.assertEqual(loader._default_channel, 1)
+            topography = loader.topography()
 
-        topography = loader.topography()
+            # Check physical sizes
+            self.assertAlmostEqual(topography.physical_sizes[0], 47.819, places=3)
+            self.assertAlmostEqual(topography.physical_sizes[1], 35.855, places=3)
 
-        # Check physical sizes
-        self.assertAlmostEqual(topography.physical_sizes[0], 47.819, places=3)
-        self.assertAlmostEqual(topography.physical_sizes[1], 35.855, places=3)
+            # Check nb_grid_ptss
+            self.assertEqual(topography.nb_grid_pts[0], 960)
+            self.assertEqual(topography.nb_grid_pts[1], 1280)
 
-        # Check nb_grid_ptss
-        self.assertEqual(topography.nb_grid_pts[0], 960)
-        self.assertEqual(topography.nb_grid_pts[1], 1280)
+            # Check unit
+            self.assertEqual(topography._info['unit'], 'nm')
 
-        # Check unit
-        self.assertEqual(topography._info['unit'], 'nm')
+            # Check an entry in the metadata
+            self.assertEqual(topography._info['SequenceNumber'], 5972)
 
-        # Check an entry in the metadata
-        self.assertEqual(topography._info['SequenceNumber'], 5972)
-
-        # Check a height value
-        self.assertAlmostEqual(topography._heights[0, 0], -7731.534, places=3)
+            # Check a height value
+            self.assertAlmostEqual(topography._heights[0, 0], -7731.534, places=3)
 
     def test_read_with_check(self):
         buffer = ['V', 'C', 'A', ' ', 'D', 'A', 'T', 'A', '\x01', '\x00', '\x00', 'U', '\x07', '\x00', '\x00', '\x00']
