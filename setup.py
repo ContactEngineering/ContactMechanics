@@ -79,5 +79,6 @@ setup(
     python_requires='>3.5.0',
     install_requires=[
         'numpy>=1.11.0',
+        'NuMPI',
     ]
 )
