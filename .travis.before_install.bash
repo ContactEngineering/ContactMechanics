@@ -19,7 +19,7 @@ if [ "$WITH_MPI" == "yes" ]; then
   wd=$(pwd)
 
   curl https://parallel-netcdf.github.io/Release/pnetcdf-${PNETCDF_VERSION}.tar.gz | tar -xzC /tmp \
-    && cd /tmp/hdf5-${PNETCDF_VERSION} \
+    && cd /tmp/pnetcdf-${PNETCDF_VERSION} \
     && CC=mpicc CXX=mpicxx ./configure --disable-fortran --disable-cxx --enable-shared --prefix=$HOME/.local \
     && make \
     && make install
