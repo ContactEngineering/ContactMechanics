@@ -48,6 +48,7 @@ def MyMPITestFixture(commsize, scope='function'):
                 # Turn a None into a NuMPI stub communicator
                 if comm is None:
                     comm = MPI.COMM_SELF
+                print('MPI communicator: Rank {} (of {}).'.format(comm.rank, comm.size))
                 return comm
 
         except WorldTooSmall:
