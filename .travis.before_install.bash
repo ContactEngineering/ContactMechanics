@@ -14,8 +14,6 @@ fi
 #conda info -a
 #conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy
 #source activate test-environment
-python -m venv create venv
-source venv/bin/activate
 python -m pip install $(grep numpy requirements.txt)
 if [ "$WITH_MPI" == "yes" ]; then
   python -m pip install --no-binary mpi4py mpi4py==${MPI4PY_VERSION}
