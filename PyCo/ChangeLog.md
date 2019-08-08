@@ -2,6 +2,11 @@
 Change log for PyCo
 ===================
 
+v0.51.2 (8Aug19)
+----------------
+
+- Bug fix: `assign_patch_numbers` crashed for maps larger that 64k x 64k (#191)
+
 v0.51.1 (7Aug19)
 ----------------
 
