@@ -57,7 +57,7 @@ static npy_long default_stencil[2*DEFAULT_SX] = {
 
 
 
-void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, ptrdiff_t i0, ptrdiff_t j0,
+void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, std::ptrdiff_t i0, std::ptrdiff_t j0,
                 npy_int p, npy_int sx, npy_long *stencil, npy_int *id)
 {
   Stack stack(DEFAULT_STACK_SIZE);
@@ -80,17 +80,17 @@ void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, ptrdiff_t i0, ptrdiff_t
       dj = stencil[s+1];
 
       /* Periodic boundary conditions */
-      ptrdiff_t jj = j+dj;
+      std::ptrdiff_t jj = j+dj;
       if (jj < 0)     jj += ny;
       if (jj > ny-1)  jj -= ny;
 
       /* Periodic boundary conditions */
-      ptrdiff_t ii = i+di;
+      std::ptrdiff_t ii = i+di;
       if (ii < 0)     ii += nx;
       if (ii > nx-1)  ii -= nx;
 
       //int k = ii+nx*jj;
-      ptrdiff_t k = ii*ny+jj;
+      std::ptrdiff_t k = ii*ny+jj;
       if (map[k] && id[k] == 0) {
         stack.push(ii, jj);
       }
@@ -157,7 +157,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
   npy_int *id = (npy_int *) PyArray_DATA(py_id);
 
   int i, j;
-  ptrdiff_t k = 0;
+  std::ptrdiff_t k = 0;
   npy_int p = 0;
 
   for (i = 0; i < nx; i++) {
