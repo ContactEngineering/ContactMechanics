@@ -8,7 +8,7 @@ before_install:
   - source .travis.before_install.bash
 install:
   - python -m pip install -r requirements.txt
-  - python -c "import netCDF4; print('NetCDF configuration: CDF5 {}; Parallel4: {}; PnetCDF: {}'.format(netCDF4.__has_cdf5_format__, netCDF4.__has_parallel4_support__, netCDF4.__has_pnetcdf_support__))"
+  - source .print_netcdf_capabilities.sh
   - python setup.py install
 script:
   - if [ "$WITH_MPI" == "yes" ]; then python run-tests.py --verbose --full-trace -s; else pytest --verbose --full-trace -s; fi
