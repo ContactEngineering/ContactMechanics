@@ -57,7 +57,7 @@ static npy_long default_stencil[2*DEFAULT_SX] = {
 
 
 
-void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, int i0, int j0,
+void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, ptrdiff_t i0, ptrdiff_t j0,
                 npy_int p, npy_int sx, npy_long *stencil, npy_int *id)
 {
   Stack stack(DEFAULT_STACK_SIZE);
@@ -80,19 +80,19 @@ void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, int i0, int j0,
       dj = stencil[s+1];
 
       /* Periodic boundary conditions */
-      int jj = j+dj;
+      ptrdiff_t jj = j+dj;
       if (jj < 0)     jj += ny;
       if (jj > ny-1)  jj -= ny;
 
       /* Periodic boundary conditions */
-      int ii = i+di;
+      ptrdiff_t ii = i+di;
       if (ii < 0)     ii += nx;
       if (ii > nx-1)  ii -= nx;
 
       //int k = ii+nx*jj;
-      int k = ii*ny+jj;
+      ptrdiff_t k = ii*ny+jj;
       if (map[k] && id[k] == 0) {
-    stack.push(ii, jj);
+        stack.push(ii, jj);
       }
     }
   }
@@ -140,7 +140,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
   }
 
   py_bool_map = (PyArrayObject*) PyArray_FROMANY((PyObject *) py_map, NPY_BOOL,
-                         2, 2, NPY_C_CONTIGUOUS);
+                                                 2, 2, NPY_C_CONTIGUOUS);
   if (!py_bool_map)
     return NULL;
 
@@ -156,15 +156,16 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
     return NULL;
   npy_int *id = (npy_int *) PyArray_DATA(py_id);
 
-  int i, j, k = 0;
+  int i, j;
+  ptrdiff_t k = 0;
   npy_int p = 0;
 
   for (i = 0; i < nx; i++) {
     for (j = 0; j < ny; j++) {
 
       if (map[k] && id[k] == 0) {
-    p++;
-    fill_patch(nx, ny, map, i, j, p, sx, stencil, id);
+        p++;
+        fill_patch(nx, ny, map, i, j, p, sx, stencil, id);
       }
 
       k++;

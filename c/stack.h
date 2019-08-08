@@ -66,11 +66,11 @@ class Stack {
   template<typename T> void push(T value) {
     if (tp_+sizeof(T) > size_) {
       if (bp_ < sizeof(T)) {
-	expand(2*size_);
+        expand(2*size_);
       }
       else {
-	top_ = tp_;
-	tp_ = 0;
+        top_ = tp_;
+        tp_ = 0;
       }
     }
     else if (bp_ == tp_ && !is_empty_) {
