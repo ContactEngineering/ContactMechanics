@@ -30,7 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <math.h>
+#include <cmath>
+#include <cstddef>
 
 #include <Python.h>
 #define PY_ARRAY_UNIQUE_SYMBOL PYCO_ARRAY_API
