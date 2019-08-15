@@ -192,19 +192,4 @@ class RepulsiveExpPotential(Potential):
         dV = dV_att + dV_rep
         ddV = ddV_att + ddV_rep
 
-        #TODO: maybe I will need that
-        #else:
-        #    V = np.zeros_like(g)
-        #    dV = np.zeros_like(g)
-        #    ddV = np.zeros_like(g)
-        #    V[m] = -self.gam*np.exp(g[m])
-        #    dV[m] = V[m]/self.rho
-        #    ddV[m] = V[m]/self.rho**2
-
-            # Quadratic function for r < 0. This avoids numerical overflow at small r.
-            #m = np.logical_not(m)
-            #V[m] = -self.gam*(1+g[m]+0.5*g[m]**2)
-            #dV[m] = -self.gam/self.rho*(1+g[m])
-            #ddV[m] = -self.gam/self.rho**2
-
         return V, dV, ddV

@@ -442,7 +442,7 @@ class PotentialTest(unittest.TestCase):
             errordV[i] = abs((dV[:-1] + dV[1:]) / 2 + dV_num).max()
             errorddV[i] = abs(ddV[1:-1] - ddV_num).max()
 
-        if True:
+        if False:
             import matplotlib.pyplot as plt
             plt.loglog(ns, errordV , label="dV")
             plt.loglog(ns, errorddV , label="ddV")
@@ -458,7 +458,7 @@ class PotentialTest(unittest.TestCase):
         errordV =  errordV  / errordV[0] * ns **2 / ns[0]**2
         errorddV = errorddV / errorddV[0]  * ns ** 2 / ns[0]**2
 
-        if True:
+        if False:
             plt.loglog(ns, errordV - 1 , label="dV")
             plt.loglog(ns, errorddV - 1, label="ddV")
             plt.legend()
