@@ -43,7 +43,6 @@ from PyCo.ContactMechanics import HardWall
 from NuMPI import MPI
 from NuMPI.Tools import Reduction
 
-# TODO: give the parallel numpy thrue to the
 def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
                 physical_sizes=None,
                 **kwargs):
