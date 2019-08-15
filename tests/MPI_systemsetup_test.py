@@ -32,7 +32,7 @@ import pytest
 from mpi4py import MPI
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from PyCo.System.Factory import make_system
-from PyCo.ContactMechanics.Interactions import HardWall
+from PyCo.ContactMechanics import HardWall, VDW82
 from PyCo.Topography import make_sphere
 from PyCo.Topography.IO import NPYReader, open_topography
 
@@ -78,22 +78,15 @@ def test_LoadTopoFromFile(comm, fftengine_type, HS, loader, examplefile):
 
     # Read metadata from the file and returns a UniformTopgraphy Object
     fileReader = loader(fn, communicator=comm)
-
-    #pdb.set_trace()
+    fileReader.nb_grid_pts = fileReader._nb_grid_pts #FIXME: workaround
 
     assert fileReader.nb_grid_pts == res
 
     Es = 1
-    if fileReader.physical_sizes is not None:
-        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,
-                       physical_sizes=fileReader.physical_sizes,
-                       young=Es, fft="fftwmpi",
-                       communicator=comm)
-    else:
-        substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,
-                       physical_sizes=fileReader.nb_grid_pts,
-                       young = Es, fft="fftwmpi",
-                       communicator=comm )
+    substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,
+                   physical_sizes=fileReader.nb_grid_pts,
+                   young = Es, fft="fftwmpi",
+                   communicator=comm )
 
     top = fileReader.topography(
         subdomain_locations=substrate.topography_subdomain_locations,
@@ -175,7 +168,36 @@ def test_make_system_from_file_serial(comm_self):
 #def test_automake_substrate(comm):
 #    surface = make_sphere(2, (4,4), (1., 1.), )
 
-def test_make_free_system(comm):
+def test_smoothcontactsystem_no_minimize_proxy(examplefile, comm):
+    """
+    asserts the smoothcontactsystem doesn't allow the use of minimize_proxy for
+    distributed computations
+    """
+    fn, res, data = examplefile
+
+    interaction = VDW82(1.,1., communicator=comm)
+
+    if comm.size ==1:
+        system = make_system(substrate="periodic",
+                             interaction=interaction,
+                             surface=fn,
+                             communicator=comm,
+                             physical_sizes=(20., 30.),
+                             young=1)
+    else:
+
+        with pytest.raises(ValueError):
+            system = make_system(substrate="periodic",
+                                 interaction=interaction,
+                                 surface=fn,
+                                 communicator=comm,
+                                 physical_sizes=(20., 30.),
+                                 young=1)
+            print(system.surface.is_domain_decomposed)
+            system.minimize_proxy()
+
+
+def test_make_free_system(examplefile, comm):
     """
     For number of processors > 1 it SmartSmoothContactSystem
     doesn't work.
@@ -187,7 +209,20 @@ def test_make_free_system(comm):
     -------
 
     """
-    pass
+    fn, res, data = examplefile
+
+    interaction = VDW82(1., 1., communicator=comm)
+    system = make_system(substrate="free",
+                         interaction=interaction,
+                         surface=fn,
+                         communicator=comm,
+                         physical_sizes=(20.,30.),
+                         young=1)
+
+    if comm.size==1:
+        assert system.__class__.__name__ == "FastSmoothContactSystem"
+    else:
+        assert system.__class__.__name__ == "SmoothContactSystem"
 
 def test_choose_smooth_contactsystem(comm_self):
     """

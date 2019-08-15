@@ -38,7 +38,7 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
     """
 
     @staticmethod
-    def handles(substrate_type, interaction_type, surface_type):
+    def handles(substrate_type, interaction_type, surface_type, is_domain_decomposed):
         """
         determines whether this class can handle the proposed system
         composition

@@ -133,7 +133,7 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
 
     check_subclasses(SystemBase, subclasses)
     for cls in subclasses:
-        if cls.handles(*(type(arg) for arg in args)):
+        if cls.handles(*(type(arg) for arg in args), communicator.size>1):
             return cls(*args)
     raise IncompatibleFormulationError(
         ("There is no class that handles the combination of substrates of type"
