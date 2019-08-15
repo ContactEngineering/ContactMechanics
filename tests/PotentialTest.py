@@ -43,7 +43,7 @@ try:
     from PyCo.ContactMechanics import LinearCorePotential
 
     from PyCo.ContactMechanics import ExpPotential
-
+    from PyCo.ContactMechanics import RepulsiveExpPotential
     import PyCo.Tools as Tools
 
     from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
@@ -428,6 +428,47 @@ class PotentialTest(unittest.TestCase):
         self.assertLess(abs((dV[:-1]+dV[1:])/2+dV_num).max(), 1e-4)
         self.assertLess(abs(ddV[1:-1]-ddV_num).max(), 1e-2)
 
+    def test_RepulsiveExpPotential(self):
+        ns = np.array([10, 1e2, 1e3, 1e4])
+        errordV= np.zeros_like(ns)
+        errorddV= np.zeros_like(ns)
+
+        for i, n in enumerate(ns):
+            r = np.linspace(-.1, 10, n + 1)
+            pot = RepulsiveExpPotential(0.5, 0.5, 1.3, 1.)
+            V, dV, ddV = pot.naive_pot(r)
+            dV_num = np.diff(V) / np.diff(r)
+            ddV_num = np.diff(dV_num) / (r[1] - r[0])
+            errordV[i] = abs((dV[:-1] + dV[1:]) / 2 + dV_num).max()
+            errorddV[i] = abs(ddV[1:-1] - ddV_num).max()
+
+        if True:
+            import matplotlib.pyplot as plt
+            plt.loglog(ns, errordV , label="dV")
+            plt.loglog(ns, errorddV , label="ddV")
+            plt.plot((ns[0], ns[-1]), np.array((ns[0], ns[-1])) ** (-2) * 10,
+                     c="gray", label="$10 / n^2$")
+            plt.plot((ns[0], ns[-1]), np.array((ns[0], ns[-1])) ** (-2) * 100,
+                     c="gray", label="$100 / n^2$")
+            plt.xlabel("# points")
+            plt.ylabel(r"error = $|analytical - numerical|_{\infty}$")
+            plt.legend()
+            plt.show(block=True)
+
+        errordV =  errordV  / errordV[0] * ns **2 / ns[0]**2
+        errorddV = errorddV / errorddV[0]  * ns ** 2 / ns[0]**2
+
+        if True:
+            plt.loglog(ns, errordV - 1 , label="dV")
+            plt.loglog(ns, errorddV - 1, label="ddV")
+            plt.legend()
+            plt.xlabel("# points n")
+            plt.ylabel("(error * n**2) / (error * n**2)(0)")
+            plt.show(block=True)
+        assert (errordV < 10).all()
+        assert (errorddV < 10).all()
+
+
     def test_rinfl(self):
         """
         Test if the inflection point calculated analyticaly is really a 
@@ -458,7 +499,8 @@ class PotentialTest(unittest.TestCase):
             VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection"),
             VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05),
             VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05),
-            VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)
+            VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2),
+            RepulsiveExpPotential(2, 0.1, 0.1, 1)
                     ]:
             
             ok = (pot.evaluate(pot.r_infl * (1-1e-4), True, True, True)[2]
@@ -556,7 +598,8 @@ import pytest
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
-                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)'
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
+                        'RepulsiveExpPotential(1., 0.5, 1., 1.)'
                          ])
 def test_deepcopy(pot_creation):
     import copy
@@ -630,7 +673,8 @@ def test_deepcopy(pot_creation):
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
-                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)'
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
+                        'RepulsiveExpPotential(1., 0.5, 1., 1.)'
                          ])
 def test_masked_arrays(pot_creation, fill_value):
     eps = 1.7294663266397667
@@ -690,7 +734,8 @@ def test_lj93_masked(pot_class):
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
-                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)'
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
+                        'RepulsiveExpPotential(1., 0.5, 1., 1.)'
                          ])
 def test_max_tensile(pot_creation):
     eps = 1.7294663266397667
