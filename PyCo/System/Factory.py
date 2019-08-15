@@ -84,12 +84,12 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
     # matching the topography
     if substrate=="periodic":
         substrate = PeriodicFFTElasticHalfSpace(
-            surface.nb_grid_pts,
-            physical_sizes=physical_sizes, **kwargs)
+            nb_grid_pts,
+            physical_sizes=physical_sizes, communicator=communicator, **kwargs)
     elif substrate=="free":
         substrate = FreeFFTElasticHalfSpace(
-            surface.nb_grid_pts,
-            physical_sizes=physical_sizes, **kwargs)
+            nb_grid_pts,
+            physical_sizes=physical_sizes, communicator=communicator, **kwargs)
 
     if interaction=="hardwall":
         interaction=HardWall()
