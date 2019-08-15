@@ -74,12 +74,25 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
             openkwargs = {"communicator": communicator}
         else: openkwargs={}
         surface = open_topography(surface, **openkwargs)
-    
+
+    if hasattr(surface, "nb_grid_pts"): # it is a Topography instance
+        nb_grid_pts = surface.nb_grid_pts
+    else: # assume it is a reader instance
+        nb_grid_pts = surface.channels[surface.default_channel]['nb_grid_pts']
+
     if physical_sizes is None:
-        if surface.physical_sizes is None:
+        # if physical_sizes is not given in input arguments,
+        # try to extract physical sizes from the input topography or reader
+        if hasattr(surface, "physical_sizes"):  # it is a Topography instance
+            surface_physical_sizes = surface.physical_sizes
+        else:  # we assume it is a reader instance
+            surface_physical_sizes = surface.channels[surface.default_channel][
+                'physical_sizes']
+        if surface_physical_sizes is None:
             raise ValueError("physical sizes neither provided in input or in file")
         else:
-            physical_sizes = surface.physical_sizes
+            physical_sizes = surface_physical_sizes
+
     # substrate build with physical sizes and nb_grid_pts
     # matching the topography
     if substrate=="periodic":
