@@ -33,19 +33,20 @@ SOFTWARE.
 #ifndef __STACK_H
 #define __STACK_H
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 
 class Stack {
  public:
-  Stack(size_t size) {
-    size_ = size;
-    top_ = size;
+  Stack(size_t buffer_size) {
+    buffer_size_ = buffer_size;
+    top_ = 0;
     tp_ = 0;
     bp_ = 0;
     is_empty_ = true;
-    data_ = malloc(size_);
+    data_ = malloc(buffer_size_);
   }
   ~Stack() {
     free(data_);
@@ -58,23 +59,34 @@ class Stack {
   size_t get_size() {
     if (is_empty_)
       return 0;
-    if (tp_ >= bp_)
-      return tp_-bp_;    
+    if (tp_ >= bp_) {
+      assert(top_ == 0);
+      return tp_-bp_;
+    }
     return top_-bp_+tp_;
   }
 
+  size_t get_buffer_size() {
+    return buffer_size_;
+  }
+
   template<typename T> void push(T value) {
-    if (tp_+sizeof(T) > size_) {
-      if (bp_ < sizeof(T)) {
-        expand(2*size_);
-      }
-      else {
-        top_ = tp_;
-        tp_ = 0;
+    if (tp_ > bp_) {
+      /* Check if there is enough space beyond tp_ or before bp_ */
+      if (buffer_size_-tp_ < sizeof(T) && bp_ < sizeof(T)) {
+        expand(2*buffer_size_);
       }
     }
-    else if (bp_ == tp_ && !is_empty_) {
-      expand(2*size_);
+    else {
+      /* Check if there is enough space between tp_ and bp_ */
+      if (bp_ - tp_ < sizeof(T)) {
+        expand(2*buffer_size_);
+      }
+    }
+    /* Check if we would exceed size of buffer, then wrap around */
+    if (tp_+sizeof(T) > buffer_size_) {
+      top_ = tp_;
+      tp_ = 0;
     }
 
     *((T*) ((uint8_t*) data_+tp_)) = value;
@@ -85,6 +97,7 @@ class Stack {
 
   template<typename T> void pop(T &value) {
     if (tp_ == 0) {
+      assert(top_ > 0);
       tp_ = top_-sizeof(T);
     }
     else {
@@ -97,7 +110,7 @@ class Stack {
   }
 
   template<typename T> void pop_bottom(T &value) {
-    if (bp_+sizeof(T) > size_) {
+    if (bp_+sizeof(T) > buffer_size_) {
       assert(bp_ == top_);
       bp_ = 0;
     }
@@ -162,9 +175,9 @@ class Stack {
   }
 
  private:
-  size_t size_;       /* Total size of the stack */
-  size_t top_;        /* Where does the data end after wrapping tp_? */
-  size_t tp_, bp_;    /* Top pointer, bottom pointer, end markers of stack */
+  size_t buffer_size_;  /* Total size of the buffer holding the stack */
+  size_t top_;          /* Where does the data end after wrapping tp_? */
+  size_t tp_, bp_;      /* Top pointer, bottom pointer, end markers of stack */
 
   bool is_empty_;
 
@@ -177,18 +190,21 @@ class Stack {
     if (!new_data) {
       printf("Failed to allocate new stack!\n");
     }
-    if (tp_ > bp_) {
+    if (tp_ >= bp_) {
+      assert(top_ == 0);
       memcpy(new_data, ((uint8_t *) data_+bp_), tp_-bp_);
       tp_ -= bp_;
     }
     else {
+      assert(top_ > 0);
       memcpy(new_data, ((uint8_t *) data_+bp_), top_-bp_);
       memcpy(((uint8_t *) new_data+top_-bp_), data_, tp_);
       tp_ = top_-bp_+tp_;
     }
     free(data_);
-    size_ = new_size;
     data_ = new_data;
+    buffer_size_ = new_size;
+    top_ = 0;
     bp_ = 0;
   }
 };

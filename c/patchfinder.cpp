@@ -69,7 +69,6 @@ void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, std::ptrdiff_t i0, std:
 
     stack.pop(i, j);
 
-    //id[i+nx*j] = p;
     id[i*ny+j] = p;
 
     int s;
