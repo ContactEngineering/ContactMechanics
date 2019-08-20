@@ -89,7 +89,6 @@ void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, std::ptrdiff_t i0, std:
       if (ii < 0)     ii += nx;
       if (ii > nx-1)  ii -= nx;
 
-      //int k = ii+nx*jj;
       std::ptrdiff_t k = ii*ny+jj;
       if (map[k] && id[k] == 0) {
         stack.push(ii, jj);
@@ -105,8 +104,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
   PyObject *py_map, *py_stencil;
 
   py_stencil = NULL;
-  if (!PyArg_ParseTuple(args, "O|O",
-            &py_map, &py_stencil))
+  if (!PyArg_ParseTuple(args, "O|O", &py_map, &py_stencil))
     return NULL;
   if (!py_map)
     return NULL;
@@ -120,7 +118,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
   if (py_stencil) {
     py_long_stencil =
       (PyArrayObject*) PyArray_FROMANY((PyObject *) py_stencil, NPY_LONG,
-                       2, 2, NPY_C_CONTIGUOUS);
+                                       2, 2, NPY_C_CONTIGUOUS);
     if (!py_long_stencil)
       return NULL;
 
@@ -131,7 +129,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
 
     if (sy != 2) {
       PyErr_SetString(PyExc_TypeError, "Stencil must have dimension 2 in the "
-              "second axis.");
+                                       "second axis.");
     }
   }
   else {
@@ -156,7 +154,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
     return NULL;
   npy_int *id = (npy_int *) PyArray_DATA(py_id);
 
-  int i, j;
+  std::ptrdiff_t i, j;
   std::ptrdiff_t k = 0;
   npy_int p = 0;
 
