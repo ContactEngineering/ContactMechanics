@@ -65,7 +65,7 @@ void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, std::ptrdiff_t i0, std:
 
   stack.push(i0, j0);
   while (!stack.is_empty()) {
-    int i, j;
+    std::ptrdiff_t i, j;
 
     stack.pop_bottom(i, j);
 
