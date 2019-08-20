@@ -72,7 +72,7 @@ class Stack {
   }
 
   template<typename T> void push(T value) {
-    if (tp_ > bp_) {
+    if (tp_ >= bp_) {
       /* Check if there is enough space beyond tp_ or before bp_ */
       if (buffer_size_-tp_ < sizeof(T) && bp_ < sizeof(T)) {
         expand(2*buffer_size_);
