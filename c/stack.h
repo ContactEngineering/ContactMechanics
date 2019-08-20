@@ -33,10 +33,11 @@ SOFTWARE.
 #ifndef __STACK_H
 #define __STACK_H
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <cassert>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
 
 class Stack {
  public:
