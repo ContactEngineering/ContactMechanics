@@ -39,6 +39,8 @@ SOFTWARE.
 
 #include <cassert>
 
+#define DEBUG_STACK_MAGIC std::size_t(0xDEADBEEF)
+
 class Stack {
  public:
   Stack(size_t buffer_size) {
@@ -71,7 +73,7 @@ class Stack {
     return buffer_size_;
   }
 
-  template<typename T> void push(T value) {
+  template<typename T> void _push(T value) {
     if (tp_ >= bp_) {
       /* Check if there is enough space beyond tp_ or before bp_ */
       if (buffer_size_-tp_ < sizeof(T) && bp_ < sizeof(T)) {
@@ -96,7 +98,7 @@ class Stack {
     is_empty_ = false;
   }
 
-  template<typename T> void pop(T &value) {
+  template<typename T> void _pop(T &value) {
     if (tp_ == 0) {
       assert(top_ > 0);
       tp_ = top_-sizeof(T);
@@ -110,7 +112,7 @@ class Stack {
     is_empty_ = bp_ == tp_;
   }
 
-  template<typename T> void pop_bottom(T &value) {
+  template<typename T> void _pop_bottom(T &value) {
     if (bp_+sizeof(T) > buffer_size_) {
       assert(bp_ == top_);
       bp_ = 0;
@@ -120,6 +122,55 @@ class Stack {
 
     is_empty_ = bp_ == tp_;
   }
+
+#ifdef DEBUG_STACK
+  template<typename T> void push(T value) {
+    // When debugging, decorate the actual value
+    _push(DEBUG_STACK_MAGIC);
+    _push(sizeof(T));
+    _push(value);
+    _push(sizeof(T));
+    _push(DEBUG_STACK_MAGIC);
+  }
+
+  template<typename T> void pop(T &value) {
+    std::size_t size, magic;
+    _pop(magic);
+    assert(magic == DEBUG_STACK_MAGIC);
+    _pop(size);
+    assert(size == sizeof(T));
+    _pop(value);
+    _pop(size);
+    assert(size == sizeof(T));
+    _pop(magic);
+    assert(magic == DEBUG_STACK_MAGIC);
+  }
+
+  template<typename T> void pop_bottom(T &value) {
+    std::size_t size, magic;
+    _pop_bottom(magic);
+    assert(magic == DEBUG_STACK_MAGIC);
+    _pop_bottom(size);
+    assert(size == sizeof(T));
+    _pop_bottom(value);
+    _pop_bottom(size);
+    assert(size == sizeof(T));
+    _pop_bottom(magic);
+    assert(magic == DEBUG_STACK_MAGIC);
+  }
+#else
+  template<typename T> void push(T value) {
+    _push(value);
+  }
+
+  template<typename T> void pop(T &value) {
+    _pop(value);
+  }
+
+  template<typename T> void pop_bottom(T &value) {
+    _pop_bottom(value);
+  }
+#endif
 
   template<typename T1, typename T2> void push(T1 value1, T2 value2) {
     push(value1);

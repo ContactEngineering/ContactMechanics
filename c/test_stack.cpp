@@ -13,15 +13,21 @@ int main(int argc, char *argv[])
   printf("push(1)\n");
   s.push((int) 1);
   printf("size = %lu, %lu\n", s.get_size(), s.get_buffer_size());
+#ifndef DEBUG_STACK
   assert(s.get_size() == sizeof(int));
+#endif
   printf("push(3.4)\n");
   s.push((double) 3.4);
   printf("size = %lu, %lu\n", s.get_size(), s.get_buffer_size());
+#ifndef DEBUG_STACK
   assert(s.get_size() == sizeof(int) + sizeof(double));
+#endif
   printf("push(2)\n");
   s.push((int) 2);
   printf("size = %lu, %lu\n", s.get_size(), s.get_buffer_size());
+#ifndef DEBUG_STACK
   assert(s.get_size() == 2*sizeof(int) + sizeof(double));
+#endif
   s.pop_bottom(i);
   printf("pop_bottom = %i\n", i);
   assert(i == 1);
@@ -31,7 +37,9 @@ int main(int argc, char *argv[])
   printf("push(4.8)\n");
   s.push((double) 4.8);
   printf("size = %lu, %lu\n", s.get_size(), s.get_buffer_size());
+#ifndef DEBUG_STACK
   assert(s.get_size() == 2*sizeof(double));
+#endif
   s.pop_bottom(d);
   printf("pop_bottom = %f\n", d);
   assert(std::abs(d - 3.4) < 1e-6);
