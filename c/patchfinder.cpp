@@ -64,16 +64,13 @@ void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, std::ptrdiff_t i0, std:
   Stack stack(DEFAULT_STACK_SIZE);
 
   stack.push(i0, j0);
+  id[i0*ny+j0] = p;
   while (!stack.is_empty()) {
     std::ptrdiff_t i, j;
 
     stack.pop_bottom(i, j);
 
-    id[i*ny+j] = p;
-
-    int s;
-
-    for (s = 0; s < 2*sx; s+=2) {
+    for (int s = 0; s < 2*sx; s+=2) {
       int di, dj;
 
       di = stencil[s];
@@ -92,6 +89,7 @@ void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, std::ptrdiff_t i0, std:
       std::ptrdiff_t k = ii*ny+jj;
       if (map[k] && id[k] == 0) {
         stack.push(ii, jj);
+        id[ii*ny+jj] = p;
       }
     }
   }

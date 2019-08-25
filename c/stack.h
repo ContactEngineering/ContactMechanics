@@ -37,9 +37,11 @@ SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 
+#include <iostream>
 #include <cassert>
 
-#define DEBUG_STACK_MAGIC std::size_t(0xDEADBEEF)
+#define DEBUG_STACK_MAGIC_START std::size_t(0xDEADBEEF)
+#define DEBUG_STACK_MAGIC_END std::size_t(0xBEEFDEAD)
 
 class Stack {
  public:
@@ -74,20 +76,32 @@ class Stack {
   }
 
   template<typename T> void _push(T value) {
-    if (tp_ >= bp_) {
-      /* Check if there is enough space beyond tp_ or before bp_ */
-      if (buffer_size_-tp_ < sizeof(T) && bp_ < sizeof(T)) {
-        expand(2*buffer_size_);
+    if (!is_empty_) {
+      if (tp_ > bp_) {
+        /* Check if there is enough space beyond tp_ or before bp_ */
+#ifdef DEBUG_STACK_PRINT
+        std::cout << "tp_ > bp_; tp_ = " << tp_ << ", bp_ = " << bp_ << ", buffer_size_ = " << buffer_size_ << std::endl;
+#endif
+        if (buffer_size_-tp_ < sizeof(T) && bp_ < sizeof(T)) {
+          expand(2*buffer_size_);
+        }
       }
-    }
-    else {
-      /* Check if there is enough space between tp_ and bp_ */
-      if (bp_ - tp_ < sizeof(T)) {
-        expand(2*buffer_size_);
+      else {
+        /* Check if there is enough space between tp_ and bp_. Note that this
+           includes the case where tp_ == bp_ but _is_empty == false. */
+#ifdef DEBUG_STACK_PRINT
+        std::cout << "tp_ <= bp_; tp_ = " << tp_ << ", bp_ = " << bp_ << ", buffer_size_ = " << buffer_size_ << std::endl;
+#endif
+        if (bp_ - tp_ < sizeof(T)) {
+          expand(2*buffer_size_);
+        }
       }
     }
     /* Check if we would exceed size of buffer, then wrap around */
     if (tp_+sizeof(T) > buffer_size_) {
+#ifdef DEBUG_STACK_PRINT
+      std::cout << "WRAPPING AROUND (_push)" << std::endl;
+#endif
       top_ = tp_;
       tp_ = 0;
     }
@@ -114,6 +128,9 @@ class Stack {
 
   template<typename T> void _pop_bottom(T &value) {
     if (bp_+sizeof(T) > buffer_size_) {
+#ifdef DEBUG_STACK_PRINT
+      std::cout << "WRAPPING AROUND (_pop_bottom)" << std::endl;
+#endif
       assert(bp_ == top_);
       bp_ = 0;
     }
@@ -126,37 +143,52 @@ class Stack {
 #ifdef DEBUG_STACK
   template<typename T> void push(T value) {
     // When debugging, decorate the actual value
-    _push(DEBUG_STACK_MAGIC);
+#ifdef DEBUG_STACK_PRINT
+    std::cout << "push(" << value << ") - size = " << sizeof(T) << std::endl;
+#endif
+    _push(DEBUG_STACK_MAGIC_START);
     _push(sizeof(T));
     _push(value);
     _push(sizeof(T));
-    _push(DEBUG_STACK_MAGIC);
+    _push(DEBUG_STACK_MAGIC_END);
   }
 
   template<typename T> void pop(T &value) {
     std::size_t size, magic;
+#ifdef DEBUG_STACK_PRINT
+    std::cout << "pop size = " << sizeof(T) << std::endl;
+#endif
     _pop(magic);
-    assert(magic == DEBUG_STACK_MAGIC);
+    assert(magic == DEBUG_STACK_MAGIC_END);
     _pop(size);
     assert(size == sizeof(T));
     _pop(value);
+#ifdef DEBUG_STACK_PRINT
+    std::cout << "pop(" << value << ")" << std::endl;
+#endif
     _pop(size);
     assert(size == sizeof(T));
     _pop(magic);
-    assert(magic == DEBUG_STACK_MAGIC);
+    assert(magic == DEBUG_STACK_MAGIC_START);
   }
 
   template<typename T> void pop_bottom(T &value) {
     std::size_t size, magic;
+#ifdef DEBUG_STACK_PRINT
+    std::cout << "pop_bottom size = " << sizeof(T) << std::endl;
+#endif
     _pop_bottom(magic);
-    assert(magic == DEBUG_STACK_MAGIC);
+    assert(magic == DEBUG_STACK_MAGIC_START);
     _pop_bottom(size);
     assert(size == sizeof(T));
     _pop_bottom(value);
+#ifdef DEBUG_STACK_PRINT
+    std::cout << "pop_bottom(" << value << ")" << std::endl;
+#endif
     _pop_bottom(size);
     assert(size == sizeof(T));
     _pop_bottom(magic);
-    assert(magic == DEBUG_STACK_MAGIC);
+    assert(magic == DEBUG_STACK_MAGIC_END);
   }
 #else
   template<typename T> void push(T value) {
@@ -231,18 +263,23 @@ class Stack {
   size_t top_;          /* Where does the data end after wrapping tp_? */
   size_t tp_, bp_;      /* Top pointer, bottom pointer, end markers of stack */
 
-  bool is_empty_;
+  bool is_empty_;       /* Flag for whether array empty. This is needed because
+                           the condition bp_ == tp_ is met for empty and full
+                           stacks. */
 
-  void *data_;
+  void *data_;          /* Buffer containing the actual data. */
 
   void expand(size_t new_size) {
     printf("Expanding stack size to %3.2f MB.\n",
 	   ((double) new_size)/(1024*1024));
     void *new_data = malloc(new_size);
+#ifdef DEBUG_STACK_PRINT
+        std::cout << "tp_ = " << tp_ << ", bp_ = " << bp_ << ", top_ = " << top_ << ", buffer_size_ = " << buffer_size_ << ", is_empty = " << is_empty_ << std::endl;
+#endif
     if (!new_data) {
       printf("Failed to allocate new stack!\n");
     }
-    if (tp_ >= bp_) {
+    if (tp_ > bp_) {
       assert(top_ == 0);
       memcpy(new_data, ((uint8_t *) data_+bp_), tp_-bp_);
       tp_ -= bp_;
