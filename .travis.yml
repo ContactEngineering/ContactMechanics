@@ -1,4 +1,7 @@
 language: python
+dist:
+  - xenial
+  - bionic
 python:
   - 3.6
 env:
