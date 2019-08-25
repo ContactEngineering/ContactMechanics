@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
   Stack s(8);
 
-  int i;
+  int i, j;
   double d;
 
   printf("push(1)\n");
@@ -47,4 +47,10 @@ int main(int argc, char *argv[])
   printf("pop_bottom = %f\n", d);
   assert(std::abs(d - 4.8) < 1e-6);
   printf("size = %lu, %lu\n", s.get_size(), s.get_buffer_size());
+  printf("push(2, 3)\n");
+  s.push((int) 2, (int) 3);
+  s.pop_bottom(i, j);
+  printf("pop_bottom = %i, %i\n", i, j);
+  assert(i == 2);
+  assert(j == 3);
 }
