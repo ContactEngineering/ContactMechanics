@@ -35,7 +35,7 @@ import PyCo
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                  PeriodicFFTElasticHalfSpace)
-from PyCo.Topography import open_topography, DetrendedTopography, PlasticTopography, ScaledTopography
+from PyCo.Topography import read_topography, PlasticTopography
 from PyCo.System import make_system
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -112,7 +112,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     elif step == 1:
         disp0 = -top+0.01*(top-middle)
     else:
-        ref_area = np.log10(np.array(area+1/np.prod(surface.shape)))
+        ref_area = np.log10(np.array(area+1/np.prod(surface.nb_grid_pts)))
         darea = np.append(ref_area[1:]-ref_area[:-1], -ref_area[-1])
         i = np.argmax(darea)
         if i == step-1:
@@ -120,17 +120,15 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
         else:
             disp0 = (disp[i]+disp[i+1])/2
 
-    opt = system.minimize_proxy(
-        offset=disp0, pentol=pentol, maxiter=maxiter,
-        logger=logger, kind='ref',
-        verbose=arguments.verbose)
+    opt = system.minimize_proxy(offset=disp0, pentol=pentol, maxiter=maxiter, logger=logger,
+                                verbose=arguments.verbose)
     f = opt.jac
     u = opt.x[:f.shape[0], :f.shape[1]]
     disp = np.append(disp, [disp0])
     gap = np.append(gap, [np.mean(u)-middle-disp0])
     current_load = f.sum()/np.prod(surface.physical_sizes)
     load = np.append(load, [current_load])
-    current_area = (f>0).sum()/np.prod(surface.shape)
+    current_area = (f>0).sum()/np.prod(surface.nb_grid_pts)
     area = np.append(area, [current_area])
     converged = np.append(converged, np.array([opt.success], dtype=bool))
     logger.pr('disp = {}, area = {}, load = {}, converged = {}' \
@@ -151,23 +149,23 @@ def dump(txt, surface, u, f, offset=0):
     load = f.sum()
     mean_pressure = load/np.prod(surface.physical_sizes)
     area = (f>0).sum()
-    fractional_area = area/np.prod(surface.shape)
+    fractional_area = area/np.prod(surface.nb_grid_pts)
     area *= surface.area_per_pt
     if substrate.young == 1:
-        header = ['mean elastic ({})'.format(surface.unit),
-                  'mean rigid ({})'.format(surface.unit),
-                  'mean gap ({})'.format(surface.unit),
-                  'load (E* {}^2)'.format(surface.unit),
+        header = ['mean elastic ({})'.format(surface.info['unit']),
+                  'mean rigid ({})'.format(surface.info['unit']),
+                  'mean gap ({})'.format(surface.info['unit']),
+                  'load (E* {}^2)'.format(surface.info['unit']),
                   'mean pressure (E*)',
-                  'area ({}^2)'.format(surface.unit),
+                  'area ({}^2)'.format(surface.info['unit']),
                   'fractional area']
     else:
-        header = ['mean elastic ({})'.format(surface.unit),
-                  'mean rigid ({})'.format(surface.unit),
-                  'mean gap ({})'.format(surface.unit),
-                  'load ([Units of E*] {}^2)'.format(surface.unit),
+        header = ['mean elastic ({})'.format(surface.info['unit']),
+                  'mean rigid ({})'.format(surface.info['unit']),
+                  'mean gap ({})'.format(surface.info['unit']),
+                  'load ([Units of E*] {}^2)'.format(surface.info['unit']),
                   'mean pressure ([Units of E*])',
-                  'area ({}^2)'.format(surface.unit),
+                  'area ({}^2)'.format(surface.info['unit']),
                   'fractional area']
     data = [mean_elastic, mean_rigid, mean_elastic-mean_rigid, load,
             mean_pressure, area, fractional_area]
@@ -196,11 +194,11 @@ def save_pressure(fn, surface, substrate, pressure, macro=None):
                unitstr)
 
 def save_gap(fn, surface, gap, macro=None):
-    if surface.unit is None:
+    if surface.info['unit'] is None:
         unitstr = 'No unit information available.'
     else:
         unitstr = 'Gap values follow, they are reported in units of ' \
-                  '{}.'.format(surface.unit)
+                  '{}.'.format(surface.info['unit'])
     macrostr = ''
     if macro is not None:
         macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
@@ -308,7 +306,7 @@ logger.pr('maxiter = {}'.format(arguments.maxiter))
 logger.pr('displacement = {}'.format(arguments.displacement))
 logger.pr('pressure = {}'.format(arguments.pressure))
 logger.pr('pressure-from-file = {}'.format(arguments.pressure_from_fn))
-logger.pr('physical_sizes = {}'.format(arguments.size))
+logger.pr('physical_sizes = {}'.format(arguments.physical_sizes))
 logger.pr('size_unit = {}'.format(arguments.size_unit))
 logger.pr('height_fac = {}'.format(arguments.height_fac))
 logger.pr('height_unit = {}'.format(arguments.height_unit))
@@ -323,32 +321,28 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 
 # Read a surface topography from a text file. Returns a PyCo.Topography.Topography
 # object.
-surface = open_topography(arguments.filename)
+surface = read_topography(arguments.filename, physical_sizes=arguments.physical_sizes)
 # Set the *physical* physical_sizes of the surface. We here set it to equal the shape,
 # i.e. the nb_grid_pts of the surface just open_topography. Size is returned by surface.physical_sizes
 # and can be unknown, i.e. *None*.
-if arguments.size is not None:
-    surface.physical_sizes = arguments.size
-if surface.physical_sizes is None:
-    surface.physical_sizes = surface.shape
 if arguments.size_unit is not None:
-    surface.unit = arguments.size_unit
+    surface.info['unit'] = arguments.size_unit
 if arguments.height_fac is not None or arguments.height_unit is not None:
     fac = 1.0
     if arguments.height_fac is not None:
         fac *= arguments.height_fac
     if arguments.height_unit is not None:
-        fac *= unit_to_meters[arguments.height_unit]/unit_to_meters[surface.unit]
+        fac *= unit_to_meters[arguments.height_unit]/unit_to_meters[surface.info['unit']]
     logger.pr('Rescaling surface heights by {}.'.format(fac))
-    surface = ScaledTopography(surface, fac)
+    surface = surface.scale(fac)
 
-logger.pr('Topography has dimension of {} and physical_sizes of {} {}.'.format(surface.shape,
-                                                                     surface.physical_sizes,
-                                                                     surface.unit))
+logger.pr('Topography has dimension of {} and physical_sizes of {} {}.'.format(surface.nb_grid_pts,
+                                                                               surface.physical_sizes,
+                                                                               surface.info['unit']))
 logger.pr('RMS height = {}, RMS slope = {}'.format(surface.rms_height(),
                                                    surface.rms_slope()))
 if arguments.detrend is not None:
-    surface = DetrendedTopography(surface, detrend_mode=arguments.detrend)
+    surface = surface.detrend(detrend_mode=arguments.detrend)
     logger.pr('After detrending: RMS height = {}, RMS slope = {}' \
               .format(surface.rms_height(), surface.rms_slope()))
 
@@ -357,7 +351,7 @@ if arguments.hardness is not None:
 
 # Initialize elastic half-space.
 if arguments.boundary == 'periodic':
-    substrate = PeriodicFFTElasticHalfSpace(surface.shape, arguments.modulus,
+    substrate = PeriodicFFTElasticHalfSpace(surface.nb_grid_pts, arguments.modulus,
                                             surface.physical_sizes,
                                             thickness=arguments.thickness,
                                             poisson=arguments.poisson)
@@ -366,7 +360,7 @@ elif arguments.boundary == 'nonperiodic':
         raise ValueError('"thickness" arguments cannot be used with '
                          'nonperiodic boundaries.')
     substrate = FreeFFTElasticHalfSpace(
-        surface.shape,
+        surface.nb_grid_pts,
         arguments.modulus/(1-arguments.poisson**2),
         surface.physical_sizes
         )
@@ -387,7 +381,7 @@ system = make_system(substrate, interaction, surface)
 container = None
 if arguments.netcdf_fn is not None:
     container = NetCDFContainer(arguments.netcdf_fn, mode='w', double=True)
-    container.set_shape(surface.shape)
+    container.set_shape(surface.nb_grid_pts)
 
 if arguments.pressure is not None or arguments.pressure_from_fn is not None:
     if arguments.displacement is not None:
@@ -427,7 +421,7 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
                                               _pressure))
         logger.pr('energy = {}'.format(opt.fun))
         logger.pr('fractional contact area = {}' \
-            .format((f>0).sum()/np.prod(surface.shape)))
+            .format((f>0).sum()/np.prod(surface.nb_grid_pts)))
 
         dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
@@ -472,7 +466,7 @@ elif arguments.displacement is not None:
         logger.pr('pressure = {}'.format(f.sum() / np.prod(surface.physical_sizes)))
         logger.pr('energy = {}'.format(opt.fun))
         logger.pr('fractional contact area = {}' \
-            .format((f>0).sum()/np.prod(surface.shape)))
+            .format((f>0).sum()/np.prod(surface.nb_grid_pts)))
 
         dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
