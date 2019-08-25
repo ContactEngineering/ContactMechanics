@@ -181,6 +181,13 @@ def dump_nc(container):
         frame.load = load
         frame.area = area
 
+def save_contact(fn, surface, substrate, pressure, macro=None):
+    macrostr = ''
+    if macro is not None:
+        macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
+    np.savetxt(fn, pressure, header=versionstr+'\n'+commandline+'\n'+macrostr+
+               'Contact map follows. Values are boolean.')
+
 def save_pressure(fn, surface, substrate, pressure, macro=None):
     if substrate.young == 1:
         unitstr = 'Pressure values follow, they are reported in units of E*.'
@@ -273,6 +280,9 @@ parser.add_argument('--height-unit', dest='height_unit', type=str,
 parser.add_argument('--pentol', dest='pentol', type=float,
                     help='tolerance for penetration of surface PENTOL',
                     metavar='PENTOL')
+parser.add_argument('--contact-fn', dest='contact_fn', type=str,
+                    help='filename for contact map CONTACTFN',
+                    metavar='CONTACTFN')
 parser.add_argument('--pressure-fn', dest='pressure_fn', type=str,
                     help='filename for pressure map PRESSUREFN',
                     metavar='PRESSUREFN')
@@ -311,6 +321,7 @@ logger.pr('size_unit = {}'.format(arguments.size_unit))
 logger.pr('height_fac = {}'.format(arguments.height_fac))
 logger.pr('height_unit = {}'.format(arguments.height_unit))
 logger.pr('pentol = {}'.format(arguments.pentol))
+logger.pr('contact-fn = {}'.format(arguments.contact_fn))
 logger.pr('pressure-fn = {}'.format(arguments.pressure_fn))
 logger.pr('displ-fn = {}'.format(arguments.displ_fn))
 logger.pr('gap-fn = {}'.format(arguments.gap_fn))
@@ -414,6 +425,7 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
             pentol=arguments.pentol,
             maxiter=arguments.maxiter, logger=logger,
             verbose=arguments.verbose)
+        c = opt.active_set
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]
         logger.pr('displacement = {}'.format(opt.offset))
@@ -426,14 +438,14 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
 
+        if arguments.contact_fn is not None:
+            save_gap(arguments.gap_fn+suffix, surface, substrate, c, macro=macro)
         if arguments.pressure_fn is not None:
-            save_pressure(arguments.pressure_fn+suffix, surface, substrate,
-                          f/surface.area_per_pt, macro=macro)
+            save_pressure(arguments.pressure_fn+suffix, surface, substrate, f/surface.area_per_pt, macro=macro)
         if arguments.displ_fn is not None:
             save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
-            save_gap(arguments.gap_fn+suffix, surface,
-                     u-surface[...]-opt.offset, macro=macro)
+            save_gap(arguments.gap_fn+suffix, surface, u-surface[...]-opt.offset, macro=macro)
 
 elif arguments.displacement is not None:
     # Run computation for a linear range of displacements
