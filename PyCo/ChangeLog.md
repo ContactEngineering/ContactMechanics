@@ -2,6 +2,12 @@
 Change log for PyCo
 ===================
 
+v0.52.0 (25Aug19)
+-----------------
+
+- API: Return contact map (the 'active set') from constrained conjugate gradient
+- Bug fix: `assign_patch_numbers` was broken on some configurations since v0.51.2
+
 v0.51.2 (8Aug19)
 ----------------
 
