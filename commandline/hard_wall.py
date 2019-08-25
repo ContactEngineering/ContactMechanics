@@ -122,6 +122,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
 
     opt = system.minimize_proxy(offset=disp0, pentol=pentol, maxiter=maxiter, logger=logger,
                                 verbose=arguments.verbose)
+    c = opt.active_set
     f = opt.jac
     u = opt.x[:f.shape[0], :f.shape[1]]
     disp = np.append(disp, [disp0])
@@ -140,7 +141,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
                                                     key=lambda x: x[3]))
     converged = np.array(converged, dtype=bool)
 
-    return u, f, disp0, current_load, current_area, \
+    return c, u, f, disp0, current_load, current_area, \
         (disp, gap, load, area, converged)
 
 def dump(txt, surface, u, f, offset=0):
@@ -185,7 +186,7 @@ def save_contact(fn, surface, substrate, pressure, macro=None):
     macrostr = ''
     if macro is not None:
         macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
-    np.savetxt(fn, pressure, header=versionstr+'\n'+commandline+'\n'+macrostr+
+    np.savetxt(fn, pressure, fmt='%i', header=versionstr+'\n'+commandline+'\n'+macrostr+
                'Contact map follows. Values are boolean.')
 
 def save_pressure(fn, surface, substrate, pressure, macro=None):
@@ -439,7 +440,7 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         macro = dump(txt, surface, u, f, opt.offset)
 
         if arguments.contact_fn is not None:
-            save_gap(arguments.gap_fn+suffix, surface, substrate, c, macro=macro)
+            save_contact(arguments.contact_fn+suffix, surface, substrate, c, macro=macro)
         if arguments.pressure_fn is not None:
             save_pressure(arguments.pressure_fn+suffix, surface, substrate, f/surface.area_per_pt, macro=macro)
         if arguments.displ_fn is not None:
@@ -472,6 +473,7 @@ elif arguments.displacement is not None:
             maxiter=arguments.maxiter,
             logger=logger, kind='ref',
             verbose=arguments.verbose)
+        c = opt.active_set
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]
         logger.pr('displacement = {} ({})'.format(opt.offset, _displacement))
@@ -483,14 +485,14 @@ elif arguments.displacement is not None:
         dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
 
+        if arguments.contact_fn is not None:
+            save_contact(arguments.contact_fn+suffix, surface, substrate, c, macro=macro)
         if arguments.pressure_fn is not None:
-            save_pressure(arguments.pressure_fn+suffix, surface, substrate,
-                          f/surface.area_per_pt, macro=macro)
+            save_pressure(arguments.pressure_fn+suffix, surface, substrate, f/surface.area_per_pt, macro=macro)
         if arguments.displ_fn is not None:
             save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
-            save_gap(arguments.gap_fn+suffix, surface,
-                     u-surface[...]-opt.offset, macro=macro)
+            save_gap(arguments.gap_fn+suffix, surface, u-surface[...]-opt.offset, macro=macro)
 
 else:
     # Run computation automatically such that area is equally spaced on
@@ -506,21 +508,21 @@ else:
         if nsteps == 1:
             suffix = ''
 
-        u, f, disp0, load, area, history = \
+        c, u, f, disp0, load, area, history = \
             next_step(system, surface, history, pentol=arguments.pentol,
                       maxiter=arguments.maxiter, logger=logger)
 
         dump_nc(container)
         macro = dump(txt, surface, u, f, disp0)
 
+        if arguments.contact_fn is not None:
+            save_contact(arguments.contact_fn+suffix, surface, substrate, c, macro=macro)
         if arguments.pressure_fn is not None:
-            save_pressure(arguments.pressure_fn+suffix, surface, substrate,
-                          f/surface.area_per_pt, macro=macro)
+            save_pressure(arguments.pressure_fn+suffix, surface, substrate, f/surface.area_per_pt, macro=macro)
         if arguments.displ_fn is not None:
             save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
-            save_gap(arguments.gap_fn+suffix, surface,  u-surface[...]-disp0,
-                     macro=macro)
+            save_gap(arguments.gap_fn+suffix, surface,  u-surface[...]-disp0, macro=macro)
 
 if container is not None:
     container.close()
