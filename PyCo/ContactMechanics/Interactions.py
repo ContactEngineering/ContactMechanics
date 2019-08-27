@@ -70,16 +70,9 @@ class Dugdale(HardWall):
     def length(self):
         return self._length
 
-
-class Dugdale(HardWall):
-    def __init__(self, Dugdale_stress, Dugdale_length):
-        super().__init__()
-        self.Dugdale_stress = Dugdale_stress
-        self.Dugdale_length = Dugdale_length
-
     def compute(self, gap, tol=0.):
-        return np.where(gap < self.Dugdale_length,
-                        Dugdale_stress*np.ones_like(gap),
+        return np.where(gap < self._length,
+                        self._stress*np.ones_like(gap),
                         np.zeros_like(gap))
 
 
