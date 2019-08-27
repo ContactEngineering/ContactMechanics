@@ -25,6 +25,12 @@
 Tests tools for analysis of contact geometries.
 """
 
+from NuMPI import MPI
+import pytest
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial functionalities, please execute with pytest")
+
 from math import sqrt
 import os
 import unittest
