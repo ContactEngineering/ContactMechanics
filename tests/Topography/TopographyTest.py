@@ -23,14 +23,19 @@
 # SOFTWARE.
 #
 
-import numpy as np
-from numpy.testing import assert_array_equal
 import pickle
 
-from PyCo.Topography import Topography
-from ..PyCoTest import PyCoTestCase
-from NuMPI.Tools import Reduction
+import numpy as np
+from numpy.testing import assert_array_equal
+
 from muFFT import FFT
+from NuMPI.Tools import Reduction
+
+from PyCo.Topography import Topography
+from PyCo.Topography.Generation import fourier_synthesis
+from PyCo.Topography.UniformLineScanAndTopography import DetrendedUniformTopography
+
+from ..PyCoTest import PyCoTestCase
 
 def test_positions(comm, fftengine_type):
     nx, ny = (12*comm.Get_size(), 10 * comm.Get_size() +1)
@@ -227,3 +232,10 @@ def test_translate(comm_self):
             ==
             np.array([[1, 0, 0],
                       [0, 0, 0]])).all()
+
+def test_pipeline():
+    t1 = fourier_synthesis((511, 511), (1., 1.), 0.8, rms_height=1)
+    t2 = t1.detrend()
+    p = t2.pipeline()
+    assert isinstance(p[0], Topography)
+    assert isinstance(p[1], DetrendedUniformTopography)

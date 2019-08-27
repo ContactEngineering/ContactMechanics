@@ -1,0 +1,1 @@
+python -c "import netCDF4; print('NetCDF configuration: CDF5 {}; Parallel4: {}; PnetCDF: {}'.format(netCDF4.__has_cdf5_format__, netCDF4.__has_parallel4_support__, netCDF4.__has_pnetcdf_support__))"

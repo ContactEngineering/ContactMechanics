@@ -32,7 +32,7 @@ from .Interactions import Interaction, HardWall, Dugdale, SoftWall
 from .Potentials import Potential, SmoothPotential
 from .Potentials import LinearCorePotential, ParabolicCutoffPotential
 
-from .Exponential import Exponential
-from .Harmonic import Harmonic
+from .Adhesion import ExpPotential, RepulsiveExpPotential
+from .Harmonic import HarmonicPotential
 from .Lj93 import LJ93, LJ93smooth, LJ93smoothMin, LJ93SimpleSmooth, LJ93SimpleSmoothMin
 from .VdW82 import VDW82, VDW82smooth, VDW82smoothMin, VDW82SimpleSmooth, VDW82SimpleSmoothMin

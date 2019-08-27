@@ -28,8 +28,9 @@
 Bin for small common helper function and classes
 """
 
+from functools import wraps
+
 import numpy as np
-import scipy
 
 
 def compare_containers(cont_a, cont_b):
@@ -73,11 +74,11 @@ def evaluate_gradient(fun, x, delta):
     for i in range(x.size):
         # pylint: disable=bad-whitespace
         x_plus = x.copy().reshape(-1)
-        x_plus[i] += .5*delta
+        x_plus[i] += .5 * delta
         x_minus = x.copy().reshape(-1)
-        x_minus[i] -= .5*delta
+        x_minus[i] -= .5 * delta
         grad[i] = (fun(x_plus.reshape(x.shape)) -
-                   fun(x_minus.reshape(x.shape)))/delta
+                   fun(x_minus.reshape(x.shape))) / delta
     grad.shape = x.shape
     return grad
 
@@ -87,11 +88,11 @@ def mean_err(arr1, arr2, rfft=False):
     comp_sl = [slice(0, max(d_1, d_2)) for (d_1, d_2)
                in zip(arr1.shape, arr2.shape)]
     if rfft:
-        comp_sl[-1] = slice(0, comp_sl[-1].stop//2+1)
+        comp_sl[-1] = slice(0, comp_sl[-1].stop // 2 + 1)
     if arr1[tuple(comp_sl)].shape != arr2[tuple(comp_sl)].shape:
         raise Exception("The array shapes differ: a: {}, b:{}".format(
             arr1.shape, arr2.shape))
-    return abs(np.ravel(arr1[tuple(comp_sl)]-arr2[tuple(comp_sl)])).mean()
+    return abs(np.ravel(arr1[tuple(comp_sl)] - arr2[tuple(comp_sl)])).mean()
 
 
 def compute_wavevectors(nb_grid_pts, physical_sizes, nb_dims):
@@ -122,7 +123,7 @@ def fftn(arr, integral):
                 2D: Area
                 etc
     """
-    return integral/np.prod(arr.shape)*np.fft.fftn(arr)
+    return integral / np.prod(arr.shape) * np.fft.fftn(arr)
 
 
 def ifftn(arr, integral):
@@ -137,7 +138,7 @@ def ifftn(arr, integral):
                 2D: Area
                 etc
     """
-    return np.prod(arr.shape)/integral*np.fft.ifftn(arr)
+    return np.prod(arr.shape) / integral * np.fft.ifftn(arr)
 
 
 def get_q_from_lambda(lambda_min, lambda_max):
@@ -146,6 +147,6 @@ def get_q_from_lambda(lambda_min, lambda_max):
     if lambda_min == 0:
         q_max = float('inf')
     else:
-        q_max = 2*np.pi/lambda_min
-    q_min = 2*np.pi/lambda_max
+        q_max = 2 * np.pi / lambda_min
+    q_min = 2 * np.pi / lambda_max
     return q_min, q_max

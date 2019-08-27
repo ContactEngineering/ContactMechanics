@@ -50,26 +50,26 @@ class MISurfaceTest(unittest.TestCase):
         loader = MIReader(file_path)
 
         # Check if metadata has been read in correctly
-        self.assertEqual(loader.channels()[0],
+        self.assertEqual(loader.channels[0],
                          {'DisplayOffset': '8.8577270507812517e-004',
                           'DisplayRange': '1.3109436035156252e-002',
                           'acqMode': 'Main',
                           'label': 'Topography',
                           'range': '2.9025000000000003e+000',
                           'unit': 'um',
+                          'dim': 2,
                           'direction': 'Trace',
                           'filter': '3rd_order',
                           'name': 'Topography',
+                          'nb_grid_pts': (256, 256),
+                          'physical_sizes': (2e-05, 2e-05),
                           'trace': 'Trace'})
 
-        self.assertEqual(loader._default_channel, 0)
-        self.assertEqual(loader.nb_grid_pts, (256, 256))
-
-        self.assertAlmostEqual(loader.physical_sizes[0], 2.0000000000000002e-005, places=8)
-        self.assertAlmostEqual(loader.physical_sizes[1], 2.0000000000000002e-005, places=8)
+        self.assertEqual(loader.default_channel, 0)
+        self.assertEqual(loader.channels[loader.default_channel]['nb_grid_pts'], (256, 256))
 
         # Some metadata value
-        self.assertEqual(loader.info()['biasSample'], 'TRUE')
+        self.assertEqual(loader.info['biasSample'], 'TRUE')
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'mi1.mi')

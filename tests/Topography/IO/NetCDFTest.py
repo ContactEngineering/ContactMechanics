@@ -25,29 +25,36 @@
 import os
 
 import numpy as np
-import pytest
 
 from NuMPI import MPI
 
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Topography import Topography
 from PyCo.Topography.IO import read_topography
 from PyCo.Topography.IO.NC import NCReader
 from PyCo.Topography.Generation import fourier_synthesis
 
 def test_save_and_load(comm):
+    if comm is None:
+        comm = MPI.COMM_SELF
+
     nb_grid_pts = (128, 128)
     size = (3, 3)
 
     np.random.seed(1)
     t = fourier_synthesis(nb_grid_pts, size, 0.8, rms_slope=0.1)
 
-    substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, 1, fft='mpi', communicator=comm)
-    dt = t.domain_decompose(substrate.subdomain_locations, substrate.nb_subdomain_grid_pts, comm)
+    substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, 1,
+                                            fft='serial' if comm is None or comm.size == 1 else 'mpi',
+                                            communicator=comm)
+    dt = t.domain_decompose(substrate.subdomain_locations, substrate.nb_subdomain_grid_pts,
+                            communicator=comm)
+    if comm.size > 1:
+        assert dt.is_domain_decomposed
 
-    # Attempt to open full file on each process
+    # Save file
     dt.to_netcdf('parallel_save_test.nc')
 
+    # Attempt to open full file on each process
     t2 = read_topography('parallel_save_test.nc')
 
     assert t.physical_sizes == t2.physical_sizes

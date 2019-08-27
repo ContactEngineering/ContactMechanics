@@ -111,7 +111,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
     # pylint: disable=unused-argument
     @staticmethod
-    def handles(substrate_type, interaction_type, surface_type):
+    def handles(substrate_type, interaction_type, surface_type, is_domain_decomposed):
         """
         returns whether this class (in practice a subclass) handles this
         combination of types
@@ -119,6 +119,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         substrate_type   -- self-explanatory
         interaction_type -- self-explanatory
         surface_type     -- self-explanatory
+        is_domain_decomposed: some systems cannot handle parallel computation
         """
         return False
 
@@ -244,6 +245,13 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                  (default None)
                  log information at every iteration.
         """
+
+        if self.substrate.communicator is not None and self.substrate.communicator.size > 1:
+            raise ValueError("{0}.minimize_proxy doesn't support "
+                             "mpi parallelization, please use the minimizer "
+                             "and {0}.objective directly"
+                             .format(self.__class__.__name__))
+
         fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
                              logger=logger)
         if disp0 is None:
@@ -368,20 +376,19 @@ class SmoothContactSystem(SystemBase):
         return self.surface.nb_grid_pts
 
     @staticmethod
-    def handles(substrate_type, interaction_type, surface_type):
+    def handles(substrate_type, interaction_type, surface_type, comm):
         is_ok = True
         # any periodic type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
                             SolidMechanics.Substrate)
-        if is_ok:
-            is_ok &= substrate_type.is_periodic()
+
         # only soft interactions allowed
         is_ok &= issubclass(interaction_type,
                             ContactMechanics.SoftWall)
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Topography.Topography)
+                            Topography.UniformTopographyInterface)
         return is_ok
 
     def compute_repulsive_force(self):
@@ -578,7 +585,7 @@ class NonSmoothContactSystem(SystemBase):
         self.contact_zone = None
 
     @staticmethod
-    def handles(substrate_type, interaction_type, surface_type):
+    def handles(substrate_type, interaction_type, surface_type, is_domain_decomposed):
         """
         determines whether this class can handle the proposed system
         composition
@@ -597,7 +604,7 @@ class NonSmoothContactSystem(SystemBase):
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Topography.Topography)
+                            Topography.UniformTopographyInterface)
         return is_ok
 
     @property

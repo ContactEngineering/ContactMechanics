@@ -113,3 +113,83 @@ class Exponential(Potential):
             ddV[m] = -self.gam/self.rho**2
 
         return V, dV, ddV
+
+
+class RepulsiveExpPotential(Potential):
+    """ V(g) = -gamma_{rep}*e^(-r/rho_{rep}) -gamma_{att}*e^(-r/rho_{att})
+    """
+
+    name = "adh"
+
+    def __init__(self, gamma_rep, rho_rep, gamma_att,rho_att,r_cut=float('inf'), communicator=MPI.COMM_WORLD):
+        """
+        Keyword Arguments:
+        gamma0 -- surface energy at perfect contact
+        rho   -- attenuation length
+        """
+        self.rho_att = rho_att
+        self.gam_att = gamma_att
+        self.rho_rep = rho_rep
+        self.gam_rep = gamma_rep
+        Potential.__init__(self,r_cut,communicator=communicator)
+
+
+    def __repr__(self, ):
+        return ("Potential '{0.name}': gamma_rep = {0.gam_rep}, "
+                "rho_rep = {0.rho_rep}, gamma_att = {0.gam_att}, "
+                "rho_att = {0.rho_att},"
+                "r_c = {1}").format(
+                    self, self.r_c if self.has_cutoff else 'None')
+
+    def __getstate__(self):
+        state = super().__getstate__(), self.rho_rep, self.gam_rep, self.rho_att, self.gam_att
+        return state
+
+    def __setstate__(self, state):
+        superstate, self.rho_rep, self.gam_rep, self.rho_att, self.gam_att = state
+        super().__setstate__(superstate)
+
+    @property
+    def r_min(self):
+        return np.log(self.gam_rep / self.gam_att * self.rho_att / self.rho_rep)\
+               / (1/ self.rho_rep - 1 / self.rho_att)
+
+    @property
+    def r_infl(self):
+        return np.log(self.gam_rep / self.gam_att * self.rho_att**2 / self.rho_rep**2) \
+               / (1 / self.rho_rep - 1 / self.rho_att)
+
+    def naive_pot(self, r,pot=True,forces=False,curb=False):
+        """ Evaluates the potential and its derivatives without cutoffs or
+            offsets. These have been collected in a single method to reuse the
+            computated LJ terms for efficiency
+            V(g) = -gamma0*e^(-g(r)/rho)
+            V'(g) = (gamma0/rho)*e^(-g(r)/rho)
+            V''(g) = -(gamma0/r_ho^2)*e^(-g(r)/rho)
+
+            Keyword Arguments:
+            r      -- array of distances
+            pot    -- (default True) if true, returns potential energy
+            forces -- (default False) if true, returns forces
+            curb   -- (default False) if true, returns second derivative
+        """
+        # pylint: disable=bad-whitespace
+        # pylint: disable=invalid-name
+        g_att = -r/self.rho_att
+        g_rep = -r/self.rho_rep
+
+        #if np.isscalar(r):
+
+        V_att = -self.gam_att*np.exp(g_att)
+        dV_att = V_att/self.rho_att # = - derivatibe of V_att
+        ddV_att = V_att/self.rho_att**2
+
+        V_rep = self.gam_rep * np.exp(g_rep)
+        dV_rep = V_rep / self.rho_rep
+        ddV_rep = V_rep / self.rho_rep ** 2
+
+        V = V_att + V_rep
+        dV = dV_att + dV_rep
+        ddV = ddV_att + ddV_rep
+
+        return V, dV, ddV

@@ -22,40 +22,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-try:
-    import pytest
-    import numpy as np
-    import time
-    import math
-    from PyCo.ContactMechanics import HardWall
-    from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-    from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import make_sphere
-    from PyCo.System import make_system
-    #from PyCo.Tools.Logger import screen
-    from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
-                                               surface_displacements,
-                                               surface_stress)
-    from NuMPI.Optimization import LBFGS
-    from NuMPI.Tools.Reduction import Reduction  # TODO: This should be explicitly from NuMPI
-    from mpi4py import MPI
-    from PyCo.ContactMechanics import VDW82smoothMin, VDW82
-    from PyCo.System import SmoothContactSystem
-    from PyCo.Tools.NetCDF import NetCDFContainer
-    from PyCo.Topography import Topography
 
-    import PyCo.ReferenceSolutions.DMT as DMT
-    import PyCo.ReferenceSolutions.JKR as JKR
-    import PyCo.ReferenceSolutions.MaugisDugdale as MD
-    from scipy.optimize import minimize_scalar
+import pytest
 
+import numpy as np
+from scipy.optimize import minimize_scalar
 
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+from NuMPI.Optimization import LBFGS
+from NuMPI.Tools.Reduction import Reduction
 
-_toplot =True
+import PyCo.ReferenceSolutions.MaugisDugdale as MD
+from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
+from PyCo.Topography import make_sphere
+from PyCo.ContactMechanics import VDW82smoothMin, VDW82
+from PyCo.System import SmoothContactSystem
+
+_toplot = True
 
 @pytest.mark.skip("is very slow, call it explicitely")
 def test_smoothsphere(maxcomm, fftengine_type): # TODO problem: difficult to compare contact_area with MD Model,

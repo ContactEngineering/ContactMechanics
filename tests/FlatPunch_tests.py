@@ -27,7 +27,9 @@ Tests adhesion-free flat punch results
 """
 
 import unittest
+
 import numpy as np
+
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from PyCo.Topography import Topography

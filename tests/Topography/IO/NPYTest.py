@@ -23,24 +23,22 @@
 # SOFTWARE.
 #
 
-import pytest
 import numpy as np
 import os
+
+from NuMPI import MPI
 
 from PyCo.Topography.IO.NPY import NPYReader
 from PyCo.Topography.IO.NPY import save_npy
 from PyCo.Topography import open_topography
 
-from NuMPI.Tools import Reduction
-
 import pytest
 from NuMPI import MPI
-pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
         reason="tests only serial funcionalities, please execute with pytest")
 
 def test_save_and_load(comm_self, file_format_examples):
     # sometimes the surface isn't transposed the same way when
-
     topography = open_topography(
         os.path.join(file_format_examples, 'example4.di'),
         format="di").topography()
@@ -60,7 +58,6 @@ def test_save_and_load(comm_self, file_format_examples):
 
 @pytest.mark.xfail
 def test_save_and_load_np(comm_self, file_format_examples):
-
     # sometimes the surface isn't transposed the same way when
 
     topography = open_topography(
