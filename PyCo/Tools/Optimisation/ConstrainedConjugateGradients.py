@@ -307,9 +307,8 @@ def constrained_conjugate_gradients(substrate,
         # If hardness is specified, find area where pressure exceeds hardness
         # but gap is positive
         if hardness is not None:
-            mask_flowing = p_r <= -hardness
-            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing[comp_mask],
-                                                          g_r > 0.0))
+            mask_flowing = p_R[slice_R] <= -hardness
+            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing, g_r > 0.0))
 
         # For nonperiodic calculations: Find maximum pressure in pad region.
         # This must be zero.
@@ -457,7 +456,7 @@ def constrained_conjugate_gradients(substrate,
                      pad_pressure=np.float64(pad_pres).item(),
                      penetration_tol=np.float64(pentol).item(),
                      pressure_tol=np.float64(prestol).item())
-            callback(it, p_R, g_r, d)
+            callback(it, c_r[slice_R], p_R, g_r, d)
 
         if isnan(G) or isnan(rms_pen):
             raise RuntimeError('nan encountered.')

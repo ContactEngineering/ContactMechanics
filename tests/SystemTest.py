@@ -329,7 +329,7 @@ def test_LBFGSB_Hertz():
                                               fft="serial",
                                               communicator=MPI.COMM_SELF)
 
-    interaction = Contact.ExpPotential(0., 0.0001)
+    interaction = Contact.Exponential(0., 0.0001)
     system = SmoothContactSystem(substrate, interaction,surface)
 
     gtol=1e-7 # 1e-8 is not reachable for some reason #FIXME

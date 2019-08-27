@@ -115,7 +115,7 @@ class Exponential(Potential):
         return V, dV, ddV
 
 
-class RepulsiveExpPotential(Potential):
+class RepulsiveExponential(Potential):
     """ V(g) = -gamma_{rep}*e^(-r/rho_{rep}) -gamma_{att}*e^(-r/rho_{att})
     """
 
