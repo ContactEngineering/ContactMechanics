@@ -249,7 +249,30 @@ def constrained_conjugate_gradients(substrate,
         # Compute G = sum(g*g) (over contact area only)
         G = comm.sum(c_r * g_r * g_r)
 
-        if delta_str != 'mix' and not (hardness is not None and A_cg == 0):
+        if delta_str == 'mix' or (A_cg == 0 and (hardness is not None or Dugdale is not None)):
+            # The CG area can vanish if this is a plastic calculation. In that case
+            # we need to use the gap to decide which regions contact. All contact
+            # area should then be the hardness value. We use simple relaxation
+            # algorithm to converge the contact area in that case.
+
+            if delta_str != 'mixconv':
+                delta_str = 'mix'
+
+            # Mix pressure
+            # p_r[mask_R] = (1-mixfac)*p_r[mask_R] + \
+            #                 mixfac*np.where(g_r < 0.0,
+            #                                 -hardness*np.ones_like(g_r),
+            #                                 np.zeros_like(g_r))
+            # Evolve pressure in direction of energy gradient
+            # p_r[mask_R] += mixfac*(u_r[mask_R] + g_r)
+            p_R = (1 - mixfac) * p_R
+            if hardness is not None:
+                p_R[slice_R] -= mixfac * hardness * (g_r < 0.0)
+            else: # Dugdale is not None
+                p_R[slice_R] -= mixfac * Dugdale_force * (g_r < Dugdale_length)
+            mixfac *= 0.5
+            # p_r[mask_R] = -hardness*(g_r < 0.0)
+        else:
             # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
             t_R = np.zeros_like(p_R)
             if delta > 0 and G_old > 0:
@@ -275,25 +298,6 @@ def constrained_conjugate_gradients(substrate,
                     G = 0.0
 
             p_R[slice_R] += tau * c_r * t_R[slice_R]
-        else:
-            # The CG area can vanish if this is a plastic calculation. In that case
-            # we need to use the gap to decide which regions contact. All contact
-            # area should then be the hardness value. We use simple relaxation
-            # algorithm to converge the contact area in that case.
-
-            if delta_str != 'mixconv':
-                delta_str = 'mix'
-
-            # Mix pressure
-            # p_r[mask_R] = (1-mixfac)*p_r[mask_R] + \
-            #                 mixfac*np.where(g_r < 0.0,
-            #                                 -hardness*np.ones_like(g_r),
-            #                                 np.zeros_like(g_r))
-            # Evolve pressure in direction of energy gradient
-            # p_r[mask_R] += mixfac*(u_r[mask_R] + g_r)
-            p_R = (1 - mixfac) * p_R - mixfac * hardness * (g_r < 0.0)
-            mixfac *= 0.5
-            # p_r[mask_R] = -hardness*(g_r < 0.0)
 
         # Find area with tensile stress and negative gap (i.e. penetration of
         # the two surfaces). This is I_ol of Polonsky & Keer's paper.
@@ -303,14 +307,13 @@ def constrained_conjugate_gradients(substrate,
         # If hardness is specified, find area where pressure exceeds hardness
         # but gap is positive
         if hardness is not None:
-            mask_flowing = p_R[slice_R] <= -hardness
-            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing, g_r > 0.0))
+            mask_flowing = p_r <= -hardness
+            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing[comp_mask],
+                                                          g_r > 0.0))
 
         # For nonperiodic calculations: Find maximum pressure in pad region.
         # This must be zero.
-        pad_pres = 0
-        if N_pad > 0:
-            pad_pres = comm.max(abs(p_R[pad_mask]))
+        pad_pres = comm.max(abs(p_R[pad_mask])) if N_pad > 0 else 0
 
         # Find maximum pressure outside contacting region and the deviation
         # from hardness inside the flowing regions. This should go to zero.
@@ -469,6 +472,7 @@ def constrained_conjugate_gradients(substrate,
     # Return partial p_r because pressure outside computational region
     # is zero anyway
     result.jac = -p_R[slice_R]
+    result.active_set = c_r
     # Compute elastic energy
     result.fun = -comm.sum((p_R[slice_R] * u_R[slice_R])) / 2
     if external_force is None:
