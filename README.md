@@ -31,8 +31,6 @@ Installation
 
 You need Python 3 and [FFTW3](http://www.fftw.org/) to run PyCo. All Python dependencies can be installed automatically by invoking
 
-
-
 #### Installation directly with pip
 
 ```bash
@@ -42,18 +40,25 @@ pip install [--user] pylint
 pip install [--user] cython
 pip install [--user] mpi4py #optional
 
-#install mufft
-pip install [--user]  git+https://gitlab.com/muspectre/muspectre.git#egg=libmufft
-
 # install pyco
 pip  install [--user]  git+https://github.com/pastewka/PyCo.git#egg=PyCo
 ```
-If you are not installing into a virtual environment 
 
+The last command will install other dependencies including 
+[muFFT](https://gitlab.com/muspectre/muspectre.git), 
+[NuMPI](https://github.com/IMTEK-Simulation/NuMPI.git) and [a fork of runtests](https://github.com/AntoineSIMTEK/runtests.git)
 
 #### Installation from source directory 
 
-```pip3 install [--user] -r requirements.txt```
+If you cloned the repository. You can install the dependencies with
+
+```
+pip install [--user] numpy
+pip install [--user] pylint
+pip install [--user] cython
+pip install [--user] mpi4py #optional
+pip3 install [--user] -r requirements.txt
+```
 
 in the source directory. PyCo can be installed by invoking
 
@@ -61,6 +66,12 @@ in the source directory. PyCo can be installed by invoking
 
 in the source directoy. The command line parameter --user is optional and leads to a local installation in the current user's `$HOME/.local` directory.
 
+Updating PyCo
+------------- 
+
+If you update PyCo (whether with pip or `git pull` if you cloned the repository), 
+you may need to uninstall `NuMPI`, `muSpectre` and or `runtests`, so that the 
+newest version of them will be installed.
 
 Testing
 -------
