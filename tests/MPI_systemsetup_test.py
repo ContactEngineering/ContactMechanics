@@ -35,7 +35,7 @@ from PyCo.System.Factory import make_system
 from PyCo.ContactMechanics import HardWall, VDW82
 from PyCo.Topography import make_sphere
 from PyCo.Topography.IO import NPYReader, open_topography
-
+from PyCo.System import SmoothContactSystem
 
 import numpy as np
 
@@ -224,14 +224,37 @@ def test_make_free_system(examplefile, comm):
     else:
         assert system.__class__.__name__ == "SmoothContactSystem"
 
-def test_choose_smooth_contactsystem(comm_self):
+def test_choose_smoothcontactsystem(comm_self, examplefile):
     """
     even on one processor, one should be able to force the usage of the
     smooth contact system. The occurence of jump instabilities make the babushka
     system difficult to use.
 
     """
-    pass
+    fn, res, data = examplefile
+
+    interaction = VDW82(1., 1., communicator=comm_self)
+    system = make_system(substrate="free",
+                         interaction=interaction,
+                         surface=fn,
+                         communicator=comm_self,
+                         physical_sizes=(20., 30.),
+                         young=1,
+                         system_class=SmoothContactSystem)
+
+    assert system.__class__.__name__ == "SmoothContactSystem"
+
+def test_incompatible_system_prescribed(comm_self, examplefile):
+    fn, res, data = examplefile
+    from PyCo.System import IncompatibleFormulationError
+    with pytest.raises(IncompatibleFormulationError):
+        system = make_system(substrate="free",
+                             interaction="hardwall",
+                             surface=fn,
+                             communicator=comm_self,
+                             physical_sizes=(20., 30.),
+                             young=1,
+                             system_class=SmoothContactSystem)
 
 def test_hardwall_as_string(comm, examplefile):
     fn, res, data = examplefile

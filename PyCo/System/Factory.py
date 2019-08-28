@@ -44,20 +44,23 @@ from NuMPI import MPI
 from NuMPI.Tools import Reduction
 
 def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
-                physical_sizes=None,
+                physical_sizes=None, system_class=None,
                 **kwargs):
     """
     Factory function for contact systems. Checks the compatibility between the
     substrate, interaction method and surface and returns an object of the
     appropriate type to handle it. The returned object is always of a subtype
     of SystemBase.
-    Keyword Arguments:
+
+    Parameters:
+    -----------
     substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                    the substrate
     interaction -- An instance of Interaction. Defines the contact formulation
     surface     -- An instance of Topography, defines the profile.
 
-
+    Returns
+    -------
     """
     # pylint: disable=invalid-name
     # pylint: disable=no-member
@@ -131,11 +134,23 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
             check_subclasses(cls, container)
             container.append(cls)
 
-    check_subclasses(SystemBase, subclasses)
-    for cls in subclasses:
-        if cls.handles(*(type(arg) for arg in args), communicator.size>1):
-            return cls(*args)
-    raise IncompatibleFormulationError(
-        ("There is no class that handles the combination of substrates of type"
-         " '{}', interactions of type '{}' and surfaces of type '{}'").format(
-             *(arg.__class__.__name__ for arg in args)))
+    if system_class is None:
+        check_subclasses(SystemBase, subclasses)
+        for cls in subclasses:
+            if cls.handles(*(type(arg) for arg in args), communicator.size>1):
+                return cls(*args)
+        raise IncompatibleFormulationError(
+            ("There is no class that handles the combination of substrates of type"
+             " '{}', interactions of type '{}' and surfaces of type '{}'").format(
+                 *(arg.__class__.__name__ for arg in args)))
+    else:
+        if not system_class.handles(*(type(arg) for arg in args),
+                                    communicator.size>1):
+
+            raise IncompatibleFormulationError(
+            "Specified system class {} cannot"
+            " handle the combination of substrates of type"
+            " '{}', interactions of type '{}' and surfaces of type '{}'".format(
+            system_class, *(arg.__class__.__name__ for arg in args)) )
+        return system_class(*args)
+
