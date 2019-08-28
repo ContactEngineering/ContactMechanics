@@ -2,6 +2,78 @@
 Change log for PyCo
 ===================
 
+v0.52.0 (25Aug19)
+-----------------
+
+- API: Return contact map (the 'active set') from constrained conjugate gradient
+- Bug fix: `assign_patch_numbers` was broken on some configurations since v0.51.2
+
+v0.51.2 (8Aug19)
+----------------
+
+- Bug fix: `assign_patch_numbers` crashed for maps larger that 64k x 64k (#191)
+
+v0.51.1 (7Aug19)
+----------------
+
+- Bug fix: Setting physical_sizes argument in readers (#188)
+- Bug fix: physical_sizes should be None for surfacs without a physical size (#189)
+- Bug fix: Running and testing without mpi4py is now possible (#179)
+- Bug fix: Multiple calls to `topography` method of readers (#187)
+- Method to inspect pipeline (#175)
+- CI: All tests (serial and MPI parallel) pass in Travis CI
+
+v0.51.0 (5Aug19)
+----------------
+
+- Cleanup of new reader API
+
+v0.50.2 (1Aug19)
+----------------
+
+- Bug fix: Missing `channel` argument for `topography` method of `WrappedReader` (#181)
+- `WrappedReader` now uses 'Default' as channel name
+
+v0.50.1 (1Aug19)
+----------------
+
+- Bug fix: Running without an MPI installation
+- Bug fix: Reading DI files with non-topographic data (#338)
+
+v0.50.0 (31Jul19)
+-----------------
+
+Overview:
+
+- MPI parallelization of topographies, substrates and interaction.
+- Updated reader framework that supports loading files in parallel. This requires to peek at the files (without
+  loading them) to understand the number of grid points to decide on a domain decomposition strategy.
+
+Technical:
+
+- Use MPI wrapper provided by NuMPI (https://github.com/IMTEK-Simulation/NuMPI) for serial calculations.
+- Switch to parallel L-BFGS of NuMPI. 
+- Removed Cython dependencies. (Parallel) FFT is now handled by muFFT (https://gitlab.com/muspectre/muspectre).
+- Tests have been partially converted to pytest. Parallel tests are run through run-tests
+  (https://github.com/AntoineSIMTEK/runtests).
+
+v0.32.0 (15Jul19)
+-----------------
+
+- Autocorrelation and power-spectrum updates. Both now have an option 'algorithm' that let's the user select
+  between a (fast) FFT and a (slow) brute-force implementation.
+  
+v0.31.3 (7Jul19)
+----------------
+
+- Removed check for existing forces on boundaries (nonperiodic calculations only).
+
+v0.31.1 (20May19)
+-----------------
+
+- Bug fix: Contact calculations now also run with detrended/scaled topographies.
+- Updated hard wall command line script to new topography interface.
+
 v0.31.0 (5Mar19)
 ----------------
 

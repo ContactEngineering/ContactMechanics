@@ -1,6 +1,6 @@
 #
-# Copyright 2018-2019 Lars Pastewka
-#           2018-2019 Antoine Sanner
+# Copyright 2018-2019 Antoine Sanner
+#           2018-2019 Lars Pastewka
 # 
 # ### MIT license
 # 
@@ -27,7 +27,9 @@ Tests adhesion-free flat punch results
 """
 
 import unittest
+
 import numpy as np
+
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
 from PyCo.Topography import Topography

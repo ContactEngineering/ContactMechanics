@@ -1,5 +1,6 @@
 #
-# Copyright 2018-2019 Antoine Sanner
+# Copyright 2019 Lintao Fang
+#           2018-2019 Antoine Sanner
 #           2018-2019 Lars Pastewka
 #           2016 Till Junge
 # 
@@ -32,6 +33,7 @@ from . import Potential, SmoothPotential
 from . import ParabolicCutoffPotential
 from . import LinearCorePotential
 import numpy as np
+from NuMPI import MPI
 
 class LJ93(Potential):
     """ 9-3 Lennard-Jones potential with optional cutoff radius.
@@ -47,7 +49,7 @@ class LJ93(Potential):
 
     name = "lj9-3"
 
-    def __init__(self, epsilon, sigma, r_cut=float('inf'),pnp=np):
+    def __init__(self, epsilon, sigma, r_cut=float('inf'),communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε
@@ -56,7 +58,7 @@ class LJ93(Potential):
         """
         self.eps = float(epsilon)
         self.sig = float(sigma)
-        Potential.__init__(self, r_cut,pnp=pnp)
+        Potential.__init__(self, r_cut, communicator=communicator)
 
     def __getstate__(self):
         state = super().__getstate__(), self.eps, self.sig
@@ -174,7 +176,7 @@ class LJ93smooth(LJ93, SmoothPotential):
     """
     name = 'lj9-3smooth'
 
-    def __init__(self, epsilon, sigma, gamma=None, r_t=None,pnp=np):
+    def __init__(self, epsilon, sigma, gamma=None, r_t=None,communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         epsilon -- Lennard-Jones potential well ε (careful, not work of
@@ -183,7 +185,7 @@ class LJ93smooth(LJ93, SmoothPotential):
         gamma   -- (default ε) Work of adhesion, defaults to ε
         r_t     -- (default r_min) transition point, defaults to r_min
         """
-        LJ93.__init__(self, epsilon, sigma, None,pnp=pnp)
+        LJ93.__init__(self, epsilon, sigma, None,communicator=communicator)
         SmoothPotential.__init__(self, gamma, r_t)
 
     def __getstate__(self):
@@ -227,7 +229,7 @@ class LJ93smooth(LJ93, SmoothPotential):
             # This is the old property implementation in the LJ93 Potential
 
 
-def LJ93smoothMin(epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None, pnp = np):
+def LJ93smoothMin(epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None,communicator=MPI.COMM_WORLD):
     """
     When starting from a bad guess, or with a bad optimizer, sometimes
     optimisations that include potentials with a singularity at the origin
@@ -245,9 +247,9 @@ def LJ93smoothMin(epsilon, sigma, gamma=None, r_ti=None, r_t_ls=None, pnp = np):
         r_t_ls  -- (default r_min) transition point between lj and spline,
                     defaults to r_min
     """
-    return LinearCorePotential(LJ93smooth(epsilon, sigma, gamma, r_t_ls, pnp=pnp), r_ti)
+    return LinearCorePotential(LJ93smooth(epsilon, sigma, gamma, r_t_ls, communicator=communicator), r_ti)
 
-def LJ93SimpleSmooth(epsilon, sigma, r_c, pnp=np):
+def LJ93SimpleSmooth(epsilon, sigma, r_c, communicator=MPI.COMM_WORLD):
     """Uses the ParabolicCutoffPotential smoothing in combination with LJ93
 
         Keyword Arguments:
@@ -256,7 +258,7 @@ def LJ93SimpleSmooth(epsilon, sigma, r_c, pnp=np):
         sigma   -- Lennard-Jones distance parameter σ
         r_c     -- emposed cutoff radius
     """
-    return ParabolicCutoffPotential(LJ93(epsilon, sigma, pnp=pnp), r_c)
+    return ParabolicCutoffPotential(LJ93(epsilon, sigma, communicator=communicator), r_c)
 
-def LJ93SimpleSmoothMin(epsilon, sigma, r_c, r_ti, pnp=np):
-    return LinearCorePotential(LJ93SimpleSmooth(epsilon, sigma, r_c,pnp=pnp), r_ti=r_ti)
+def LJ93SimpleSmoothMin(epsilon, sigma, r_c, r_ti, communicator=MPI.COMM_WORLD):
+    return LinearCorePotential(LJ93SimpleSmooth(epsilon, sigma, r_c, communicator=communicator), r_ti=r_ti)

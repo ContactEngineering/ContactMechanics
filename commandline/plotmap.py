@@ -1,5 +1,6 @@
 #
-# Copyright 2016, 2018 Lars Pastewka
+# Copyright 2019 Antoine Sanner
+#           2016, 2018 Lars Pastewka
 # 
 # ### MIT license
 # 
@@ -26,13 +27,13 @@
 Command line front-end for plotting 2D surfaces
 """
 
-from argparse import ArgumentParser, ArgumentTypeError
+from argparse import ArgumentParser
 
 import numpy as np
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 
-from PyCo.Topography.FromFile import read, detect_format
+from PyCo.Topography.IO import read_topography
 
 ###
 
@@ -47,15 +48,15 @@ arguments = parser.parse_args()
 
 ###
 
-surface = read(arguments.filename, format=detect_format(arguments.filename))
+surface = read_topography(arguments.filename)
 
 ###
 
 try:
     sx, sy = surface.physical_sizes
 except TypeError:
-    sx, sy = surface.shape
-nx, ny = surface.shape
+    sx, sy = surface.nb_grid_pts
+nx, ny = surface.nb_grid_pts
 
 fig = plt.figure()
 ax = fig.add_subplot(111, aspect=sx/sy)
@@ -72,8 +73,8 @@ else:
 plt.colorbar(mesh, ax=ax)
 ax.set_xlim(0, sx)
 ax.set_ylim(0, sy)
-if surface.unit is not None:
-    unit = surface.unit
+if 'unit' in surface.info:
+    unit = surface.info['unit']
 else:
     unit = 'a.u.'
 ax.set_xlabel('Position $x$ ({})'.format(unit))

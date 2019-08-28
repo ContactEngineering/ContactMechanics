@@ -1,6 +1,6 @@
 #
-# Copyright 2018-2019 Antoine Sanner
-#           2019 Lars Pastewka
+# Copyright 2019 Lars Pastewka
+#           2018-2019 Antoine Sanner
 # 
 # ### MIT license
 # 
@@ -26,29 +26,24 @@
 Tests the creation of tribosystems
 """
 
-try:
-    import unittest
-    from numpy.random import rand, random
-    import numpy as np
+import unittest
+from numpy.random import rand, random
+import numpy as np
 
-    from scipy.optimize import minimize
-    from scipy.fftpack import fftn, ifftn
-    import time
+from scipy.optimize import minimize
+from scipy.fftpack import fftn, ifftn
+import time
 
-    import os
-    from netCDF4 import Dataset
+import os
+from netCDF4 import Dataset
 
-    from PyCo.System import make_system, IncompatibleFormulationError
-    from PyCo.System import IncompatibleResolutionError
-    from PyCo.System.Systems import SmoothContactSystem
-    import PyCo.SolidMechanics as Solid
-    import PyCo.ContactMechanics as Contact
-    import PyCo.Topography as Topography
-    import PyCo.Tools as Tools
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+from PyCo.System import make_system, IncompatibleFormulationError
+from PyCo.System import IncompatibleResolutionError
+from PyCo.System.Systems import SmoothContactSystem
+import PyCo.SolidMechanics as Solid
+import PyCo.ContactMechanics as Contact
+import PyCo.Topography as Topography
+import PyCo.Tools as Tools
 
 import pytest
 from NuMPI import MPI
@@ -75,15 +70,30 @@ class SystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.sphere = Topography.make_sphere(self.radius, self.res, self.physical_sizes)
+        self.sphere = Topography.make_sphere(self.radius, self.res,
+                                             self.physical_sizes)
 
     def test_RejectInconsistentInputTypes(self):
+        class dummyInteraction:
+            pass
         with self.assertRaises(IncompatibleFormulationError):
-            make_system(12, 13, 24)
+            make_system(interaction=dummyInteraction(),
+                        surface=self.sphere,
+                        substrate=self.substrate
+                        )
+
+    def test_DecoratedTopography(self):
+        top= self.sphere.detrend()
+        make_system(substrate="periodic",
+                    interaction="hardwall",
+                    young=1.,
+                    surface=top
+                    )
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
-        incompat_sphere = Topography.make_sphere(self.radius, incompat_res, self.physical_sizes)
+        incompat_sphere = Topography.make_sphere(self.radius, incompat_res,
+                                                 self.physical_sizes)
         with self.assertRaises(IncompatibleResolutionError):
             make_system(self.substrate, self.smooth, incompat_sphere)
 
@@ -598,3 +608,5 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
             error = abs(normalforce-normalforce.mean()).mean()
         self.assertTrue(error < tol, "error = {:.15g} > tol = {}, N = {}".format(
             error, tol, normalforce))
+
+

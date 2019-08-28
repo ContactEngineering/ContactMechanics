@@ -1,6 +1,6 @@
 #
-# Copyright 2016, 2019 Lars Pastewka
-#           2018 Antoine Sanner
+# Copyright 2018-2019 Antoine Sanner
+#           2016, 2019 Lars Pastewka
 #           2016 Till Junge
 # 
 # ### MIT license
@@ -379,11 +379,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                 log_values[0] = 'CONVERGED'
                 logger.st(log_headers, log_values, force_print=True)
             # Return full u_r because this is required to reproduce pressure
-            # from evalualte_force
+            # from evaluale_force
             result.x = u_r#[comp_mask]
             # Return partial p_r because pressure outside computational region
             # is zero anyway
             result.jac = -p_r[tuple(comp_slice)]
+            result.active_set = c_r
             # Compute elastic energy
             result.fun = -pnp.sum(p_r[tuple(comp_slice)]*u_r[tuple(comp_slice)])/2
             result.offset = offset
@@ -417,6 +418,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     # Return partial p_r because pressure outside computational region
     # is zero anyway
     result.jac = -p_r[tuple(comp_slice)]
+    result.active_set = c_r
     # Compute elastic energy
     result.fun = -pnp.sum((p_r[tuple(comp_slice)]*u_r[tuple(comp_slice)]))/2
     result.offset = offset

@@ -1,6 +1,6 @@
 #
-# Copyright 2016, 2018-2019 Lars Pastewka
-#           2018-2019 Antoine Sanner
+# Copyright 2018-2019 Antoine Sanner
+#           2016, 2018-2019 Lars Pastewka
 #           2016 Till Junge
 # 
 # ### MIT license
@@ -174,7 +174,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                  "Pressure is non-zero at the bounds of the Babushka System"))
 
     @staticmethod
-    def handles(substrate_type, interaction_type, surface_type):
+    def handles(substrate_type, interaction_type, surface_type, is_domain_decomposed):
         is_ok = True
         # any periodic type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
@@ -188,6 +188,8 @@ class FastSmoothContactSystem(SmoothContactSystem):
         # any surface should do
         is_ok &= issubclass(surface_type,
                             Topography)
+
+        is_ok &= not is_domain_decomposed
         return is_ok
 
     def objective(self, offset, disp0=None, gradient=False, disp_scale=1.):

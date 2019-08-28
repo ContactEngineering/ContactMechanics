@@ -30,7 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <math.h>
+#include <cmath>
+#include <cstddef>
 
 #include <Python.h>
 #define PY_ARRAY_UNIQUE_SYMBOL PYCO_ARRAY_API
@@ -57,42 +58,38 @@ static npy_long default_stencil[2*DEFAULT_SX] = {
 
 
 
-void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, int i0, int j0,
+void fill_patch(npy_intp nx, npy_intp ny, npy_bool *map, std::ptrdiff_t i0, std::ptrdiff_t j0,
                 npy_int p, npy_int sx, npy_long *stencil, npy_int *id)
 {
   Stack stack(DEFAULT_STACK_SIZE);
 
   stack.push(i0, j0);
+  id[i0*ny+j0] = p;
   while (!stack.is_empty()) {
-    int i, j;
+    std::ptrdiff_t i, j;
 
-    stack.pop(i, j);
+    stack.pop_bottom(i, j);
 
-    //id[i+nx*j] = p;
-    id[i*ny+j] = p;
-
-    int s;
-
-    for (s = 0; s < 2*sx; s+=2) {
+    for (int s = 0; s < 2*sx; s+=2) {
       int di, dj;
 
       di = stencil[s];
       dj = stencil[s+1];
 
       /* Periodic boundary conditions */
-      int jj = j+dj;
+      std::ptrdiff_t jj = j+dj;
       if (jj < 0)     jj += ny;
       if (jj > ny-1)  jj -= ny;
 
       /* Periodic boundary conditions */
-      int ii = i+di;
+      std::ptrdiff_t ii = i+di;
       if (ii < 0)     ii += nx;
       if (ii > nx-1)  ii -= nx;
 
-      //int k = ii+nx*jj;
-      int k = ii*ny+jj;
+      std::ptrdiff_t k = ii*ny+jj;
       if (map[k] && id[k] == 0) {
-    stack.push(ii, jj);
+        stack.push(ii, jj);
+        id[ii*ny+jj] = p;
       }
     }
   }
@@ -105,8 +102,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
   PyObject *py_map, *py_stencil;
 
   py_stencil = NULL;
-  if (!PyArg_ParseTuple(args, "O|O",
-            &py_map, &py_stencil))
+  if (!PyArg_ParseTuple(args, "O|O", &py_map, &py_stencil))
     return NULL;
   if (!py_map)
     return NULL;
@@ -120,7 +116,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
   if (py_stencil) {
     py_long_stencil =
       (PyArrayObject*) PyArray_FROMANY((PyObject *) py_stencil, NPY_LONG,
-                       2, 2, NPY_C_CONTIGUOUS);
+                                       2, 2, NPY_C_CONTIGUOUS);
     if (!py_long_stencil)
       return NULL;
 
@@ -131,7 +127,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
 
     if (sy != 2) {
       PyErr_SetString(PyExc_TypeError, "Stencil must have dimension 2 in the "
-              "second axis.");
+                                       "second axis.");
     }
   }
   else {
@@ -140,7 +136,7 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
   }
 
   py_bool_map = (PyArrayObject*) PyArray_FROMANY((PyObject *) py_map, NPY_BOOL,
-                         2, 2, NPY_C_CONTIGUOUS);
+                                                 2, 2, NPY_C_CONTIGUOUS);
   if (!py_bool_map)
     return NULL;
 
@@ -156,15 +152,16 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
     return NULL;
   npy_int *id = (npy_int *) PyArray_DATA(py_id);
 
-  int i, j, k = 0;
+  std::ptrdiff_t i, j;
+  std::ptrdiff_t k = 0;
   npy_int p = 0;
 
   for (i = 0; i < nx; i++) {
     for (j = 0; j < ny; j++) {
 
       if (map[k] && id[k] == 0) {
-    p++;
-    fill_patch(nx, ny, map, i, j, p, sx, stencil, id);
+        p++;
+        fill_patch(nx, ny, map, i, j, p, sx, stencil, id);
       }
 
       k++;

@@ -1,5 +1,6 @@
 #
-# Copyright 2018-2019 Antoine Sanner
+# Copyright 2019 Lintao Fang
+#           2018-2019 Antoine Sanner
 #           2016, 2019 Lars Pastewka
 #           2016 Till Junge
 # 
@@ -34,6 +35,8 @@ import abc
 import numpy as np
 import scipy.optimize
 
+from NuMPI import MPI
+
 from .Interactions import SoftWall
 #from helpers.debug_tools import dump_in_out
 
@@ -64,8 +67,8 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
             pass
 
     @abc.abstractmethod
-    def __init__(self, r_cut, pnp=np):
-        super().__init__(pnp)
+    def __init__(self, r_cut, communicator=MPI.COMM_WORLD):
+        super().__init__(communicator)
         self.r_c = r_cut
         if r_cut is not None:
             self.has_cutoff = not math.isinf(self.r_c)
@@ -711,6 +714,7 @@ class ChildPotential(Potential):
     def __init__(self, parent_potential):
         self.parent_potential = parent_potential
         self.pnp = parent_potential.pnp
+        self.communicator = parent_potential.communicator
 
     def __getattr__(self, item):
         #print("looking up item {} in {}".format(item, self.parent_potential))

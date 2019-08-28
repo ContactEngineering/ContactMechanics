@@ -1,6 +1,6 @@
 #
-# Copyright 2019 Lars Pastewka
-#           2018-2019 Antoine Sanner
+# Copyright 2018-2019 Antoine Sanner
+#           2019 Lars Pastewka
 #           2016 Till Junge
 # 
 # ### MIT license
@@ -30,6 +30,8 @@ Defines the base class for contact description
 
 import numpy as np
 import copy
+from NuMPI import MPI
+from NuMPI.Tools import Reduction
 
 class Interaction(object):
     """base class for all interactions, e.g. interatomic potentials"""
@@ -52,12 +54,25 @@ class HardWall(Interaction):
         self.penetration = np.where(gap < tol, -gap, 0)
 
 
+class Dugdale(HardWall):
+    def __init__(self, Dugdale_stress, Dugdale_length):
+        super().__init__()
+        self.Dugdale_stress = Dugdale_stress
+        self.Dugdale_length = Dugdale_length
+
+    def compute(self, gap, tol=0.):
+        return np.where(gap < self.Dugdale_length,
+                        Dugdale_stress*np.ones_like(gap),
+                        np.zeros_like(gap))
+
+
 class SoftWall(Interaction):
     """base class for smooth contact mechanics"""
-    def __init__(self,pnp=np):
+    def __init__(self, communicator=MPI.COMM_WORLD):
         self.energy = None
         self.force = None
-        self.pnp = pnp
+        self.communicator = communicator
+        self.pnp = Reduction(communicator)
 
     def __deepcopy__(self,memo):
         """
@@ -81,6 +96,10 @@ class SoftWall(Interaction):
         # pnp is a module or a class impolenting computation methods, it is not copied
         result.pnp = self.pnp
         keys.remove('pnp')
+        # same for communicator
+        result.communicator = self.communicator
+        keys.remove('communicator')
+
         for k in keys:
             setattr(result, k, copy.deepcopy(getattr(self, k), memo))
         return result
