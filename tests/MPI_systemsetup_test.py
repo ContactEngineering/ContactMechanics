@@ -32,10 +32,11 @@ import pytest
 from mpi4py import MPI
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from PyCo.System.Factory import make_system
-from PyCo.ContactMechanics import HardWall, VDW82
+from PyCo.ContactMechanics import HardWall, VDW82, ExpPotential
 from PyCo.Topography import make_sphere
 from PyCo.Topography.IO import NPYReader, open_topography
 from PyCo.System import SmoothContactSystem
+from PyCo.Tools import Logger
 
 import numpy as np
 
@@ -264,6 +265,46 @@ def test_hardwall_as_string(comm, examplefile):
                 physical_sizes=(1.,1.),
                 young=1,
                 communicator=comm)
+
+def test_logger(comm_self):
+    """
+    This should test the following:
+    - that that the logger works in an MPI application
+       (on the example of Softwall)
+    - Test that the reductions are well done). To do that we compare the
+    quantities computed at the step with the
+
+    The simplest way to check the independence on number of processors is
+    to store a reference computation somewhere. Looking at the
+    """
+    nx, ny = 16, 16
+    sx, sy = 20., 20.
+    R = 11.
+
+    surface = make_sphere(R, (nx, ny), (sx, sy), kind="paraboloid")
+    Es = 50.
+    substrate = FreeFFTElasticHalfSpace((nx, ny), young=Es,
+                                              physical_sizes=(sx, sy),
+                                              fft="serial",
+                                              communicator=MPI.COMM_SELF)
+
+    interaction = ExpPotential(0., 0.0001)
+    system = SmoothContactSystem(substrate, interaction, surface)
+
+    gtol = 1e-5
+    offset = 1.
+    res = system.minimize_proxy(offset=offset, lbounds="auto",
+                                options=dict(gtol=gtol, ftol=0),
+                                logger=Logger("test_logger.log"))
+
+    with open("test_logger.log") as logfile:
+        print(logfile.read())
+
+    if False:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        plt.colorbar(ax.pcolormesh(- system.substrate.force), label="pressure")
+        plt.show(block=True)
 
 if __name__ == "__main__":
     comm = MPI.COMM_WORLD

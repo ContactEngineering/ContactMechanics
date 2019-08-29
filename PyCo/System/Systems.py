@@ -74,11 +74,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
         #TODO: assert that the interaction pnp is the same
 
-        self.comp_slice = tuple([slice(0, max(0, min(substrate.nb_grid_pts[i] - substrate.subdomain_locations[i],
-                                                     substrate.nb_subdomain_grid_pts[i])))
-                      for i in range(substrate.dim)])# For FreeElasticHalfspace: slice of the subdomain that is not in the padding area
-
-
+        self.comp_slice = self.substrate.local_topography_subdomain_slices
     _proxyclass = False
 
     @abc.abstractmethod
@@ -452,6 +448,13 @@ class SmoothContactSystem(SystemBase):
         """
         return np.argwhere(self.interaction.force < 0.)
 
+    def compute_mean_gap(self):
+        """
+        mean of the gap in the the physical domain (means excluding padding
+        region for the FreeFFTElasticHalfspace)
+        """
+        return self.pnp.sum(self.gap) / np.prod(self.nb_grid_pts)
+
     def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement
@@ -478,9 +481,19 @@ class SmoothContactSystem(SystemBase):
         else:
             self.force = None
         if logger is not None:
-            logger.st(['energy', 'mean gap', 'rel. area', 'load'],
-                      [self.energy, np.mean(self.gap), np.mean(self.gap<1e-9),
-                       -np.sum(self.substrate.force)])
+            tot_nb_grid_pts = np.prod(self.nb_grid_pts)
+            rel_rep_area = self.compute_nb_repulsive_pts()/tot_nb_grid_pts
+            rel_att_area = self.compute_nb_attractive_pts()/tot_nb_grid_pts
+            logger.st(['energy', 'mean gap', 'frac. rep. area',
+                       'frac. att. area',
+                       'frac. int. area', 'substrate force', 'interaction force'],
+              [self.energy,
+               self.compute_mean_gap(),
+               rel_rep_area,
+               rel_att_area,
+               rel_rep_area + rel_att_area,
+               -self.pnp.sum(self.substrate.force),
+               self.pnp.sum(self.interaction.force)])
         return (self.energy, self.force)
 
     def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
