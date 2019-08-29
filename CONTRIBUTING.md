@@ -37,3 +37,51 @@ Authors
 Add yourself to the AUTHORS file using the email address that you are using for your
 commits. We use this information to automatically generate copyright statements for
 all files from the commit log.
+
+
+Writing tests
+-------------
+
+Older tests are written using the `unittest` syntax. We now use `pytest` (that 
+understands almost all unittest syntax), because it is compatible with the 
+parallel test runner [runtests](https://github.com/AntoineSIMTEK/runtests).
+
+If a whole test file should only be run in serial 
+and/or is incompatible with `runtests` (`unittest`), include following line:
+```python
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
+```
+The file will executed in a run with `pytest` and not with a (parallel) run with
+`python3 run-tests.py`
+
+#### MPI Tests
+
+In order to vary the number of processors used in the tests, you should always 
+explictely use the communicator defined as fixture in `tests/conftest.py` instead
+of `MPI.COMM_WORLD`. 
+
+```python
+def test_parallel(comm):
+    substrate = PeriodicFFTElasticHalfSpace(...., commincator=comm) 
+    # Take care not to let your functions use their default value 
+    # for the communicator !
+```
+
+Note: a single test function that should be run only with one processor:
+```python
+def test_parallel(comm_serial):
+    pass
+```
+
+### Debug plots in the tests 
+
+Often when you develop your test you need to plot and print things to see what 
+happens. It is a good idea to let the plots ready for use: 
+```python
+    if False:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        plt.colorbar(ax.pcolormesh(- system.substrate.force), label="pressure")
+        plt.show(block=True)
+```
