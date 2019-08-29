@@ -212,8 +212,8 @@ class FastSystemTest(unittest.TestCase):
         # self.interaction = Contact.LJ93(self.eps, self.sig)
         # self.min_pot = Contact.LJ93SimpleSmooth(self.eps, self.sig, self.rcut)
 
-        # self.interaction =Contact.ExpPotential(self.gam, 0.05, self.rcut)
-        # self.min_pot = Contact.ExpPotential(self.gam, 0.05, self.rcut)
+        # self.interaction =Contact.Exponential(self.gam, 0.05, self.rcut)
+        # self.min_pot = Contact.Exponential(self.gam, 0.05, self.rcut)
 
         self.surface = Topography.make_sphere(self.radius, self.res,
                                               self.physical_sizes,

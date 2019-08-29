@@ -32,7 +32,7 @@ import pytest
 from mpi4py import MPI
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from PyCo.System.Factory import make_system
-from PyCo.ContactMechanics import HardWall, VDW82, ExpPotential
+from PyCo.ContactMechanics import HardWall, VDW82, Exponential
 from PyCo.Topography import make_sphere
 from PyCo.Topography.IO import NPYReader, open_topography
 from PyCo.System import SmoothContactSystem
@@ -288,7 +288,7 @@ def test_logger(comm_self):
                                               fft="serial",
                                               communicator=MPI.COMM_SELF)
 
-    interaction = ExpPotential(0., 0.0001)
+    interaction = Exponential(0., 0.0001)
     system = SmoothContactSystem(substrate, interaction, surface)
 
     gtol = 1e-5
