@@ -182,3 +182,15 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, fftengine_type, nx, ny, basen
     # print(s_refdisp)
     np.testing.assert_allclose(computed_disp[s_c], refdisp[s_refdisp])
 
+
+def test_local_topography_subdomain_slices(comm):
+    nx, ny = 64, 64
+
+    np.random.seed(0)
+    globaldata = np.random.random((nx, ny))
+
+    substrate = FreeFFTElasticHalfSpace((nx, ny), 1., communicator=comm)
+    assert (globaldata[substrate.subdomain_slices]
+            [substrate.local_topography_subdomain_slices]
+            ==
+            globaldata[substrate.topography_subdomain_slices]).all()
