@@ -31,7 +31,7 @@ from . import Potential
 import numpy as np
 from NuMPI import MPI
 
-class HarmonicPotential(Potential):
+class Harmonic(Potential):
     """ Repulsive harmonic potential.
 
         Harmonic potential:

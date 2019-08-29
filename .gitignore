@@ -19,12 +19,6 @@ dist
 /notes/power_spectrum/prv*
 /notes/auto/biblio.el
 /helpers/.ipynb_checkpoints/
-/PyCo/Tools/Optimisation/ConstrainedConjugateGradients.c
-/PyCo/Tools/Optimisation/ConstrainedConjugateGradients.cpp
-/PyCo/Tools/Optimisation/ConstrainedConjugateGradients.html
-/PyCo/Tools/fftext.cpp
-PyCo/Goodies/ScanningProbe.cpp
-PyCo/Tools/Optimisation/ConstrainedConjugateGradientsOpt.cpp
 *.pyc
 
 

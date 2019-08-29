@@ -55,14 +55,24 @@ class HardWall(Interaction):
 
 
 class Dugdale(HardWall):
-    def __init__(self, Dugdale_stress, Dugdale_length):
+    """Potential class representing a Dugdale cohesive zone model"""
+
+    def __init__(self, stress, length):
         super().__init__()
-        self.Dugdale_stress = Dugdale_stress
-        self.Dugdale_length = Dugdale_length
+        self._stress = stress
+        self._length = length
+
+    @property
+    def stress(self):
+        return self._stress
+
+    @property
+    def length(self):
+        return self._length
 
     def compute(self, gap, tol=0.):
-        return np.where(gap < self.Dugdale_length,
-                        Dugdale_stress*np.ones_like(gap),
+        return np.where(gap < self._length,
+                        self._stress*np.ones_like(gap),
                         np.zeros_like(gap))
 
 
@@ -74,7 +84,7 @@ class SoftWall(Interaction):
         self.communicator = communicator
         self.pnp = Reduction(communicator)
 
-    def __deepcopy__(self,memo):
+    def __deepcopy__(self, memo):
         """
         makes a deepcopy of all the attributes except self.pnp, where it stores the same reference
 
@@ -92,7 +102,7 @@ class SoftWall(Interaction):
 
         keys = set(self.__dict__.keys())
 
-        #exceptions
+        # exceptions
         # pnp is a module or a class impolenting computation methods, it is not copied
         result.pnp = self.pnp
         keys.remove('pnp')

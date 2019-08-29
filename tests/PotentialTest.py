@@ -26,32 +26,27 @@
 Tests the potential classes
 """
 
-try:
-    import unittest
-    import numpy as np
+import unittest
+import numpy as np
 
-    from PyCo.ContactMechanics import LJ93
-    from PyCo.ContactMechanics import LJ93smooth
-    from PyCo.ContactMechanics import LJ93smoothMin
-    from PyCo.ContactMechanics import LJ93SimpleSmooth
-    from PyCo.ContactMechanics import LJ93SimpleSmoothMin
+from PyCo.ContactMechanics import LJ93
+from PyCo.ContactMechanics import LJ93smooth
+from PyCo.ContactMechanics import LJ93smoothMin
+from PyCo.ContactMechanics import LJ93SimpleSmooth
+from PyCo.ContactMechanics import LJ93SimpleSmoothMin
 
-    from PyCo.ContactMechanics import VDW82
-    from PyCo.ContactMechanics import VDW82smooth
-    from PyCo.ContactMechanics import VDW82smoothMin
-    from PyCo.ContactMechanics import VDW82SimpleSmooth
-    from PyCo.ContactMechanics import LinearCorePotential
+from PyCo.ContactMechanics import VDW82
+from PyCo.ContactMechanics import VDW82smooth
+from PyCo.ContactMechanics import VDW82smoothMin
+from PyCo.ContactMechanics import VDW82SimpleSmooth
+from PyCo.ContactMechanics import LinearCorePotential
 
-    from PyCo.ContactMechanics import ExpPotential
-    from PyCo.ContactMechanics import RepulsiveExpPotential
-    import PyCo.Tools as Tools
+from PyCo.ContactMechanics import Exponential
+from PyCo.ContactMechanics import RepulsiveExponential
+import PyCo.Tools as Tools
 
-    from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
-    from .lj93smooth_ref_potential import V as LJs_ref_V, dV as LJs_ref_dV, d2V as LJs_ref_ddV
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
+from .lj93smooth_ref_potential import V as LJs_ref_V, dV as LJs_ref_dV, d2V as LJs_ref_ddV
 
 
 import pytest
@@ -416,9 +411,9 @@ class PotentialTest(unittest.TestCase):
                 ax[2].plot(z, c)
             fig.savefig("test_LinearCoreSimpleSmoothPotential.png")
 
-    def test_ExpPotential(self):
+    def test_Exponential(self):
         r = np.linspace(-10, 10, 1001)
-        pot = ExpPotential(1.0, 1.0)
+        pot = Exponential(1.0, 1.0)
         V, dV, ddV = pot.naive_pot(r)
         self.assertTrue((V<0.0).all())
         self.assertTrue((dV<0.0).all())
@@ -428,14 +423,14 @@ class PotentialTest(unittest.TestCase):
         self.assertLess(abs((dV[:-1]+dV[1:])/2+dV_num).max(), 1e-4)
         self.assertLess(abs(ddV[1:-1]-ddV_num).max(), 1e-2)
 
-    def test_RepulsiveExpPotential(self):
+    def test_RepulsiveExponential(self):
         ns = np.array([10, 1e2, 1e3, 1e4])
         errordV= np.zeros_like(ns)
         errorddV= np.zeros_like(ns)
 
         for i, n in enumerate(ns):
             r = np.linspace(-.1, 10, n + 1)
-            pot = RepulsiveExpPotential(0.5, 0.5, 1.3, 1.)
+            pot = RepulsiveExponential(0.5, 0.5, 1.3, 1.)
             V, dV, ddV = pot.naive_pot(r)
             dV_num = np.diff(V) / np.diff(r)
             ddV_num = np.diff(dV_num) / (r[1] - r[0])
@@ -500,7 +495,7 @@ class PotentialTest(unittest.TestCase):
             VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05),
             VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05),
             VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2),
-            RepulsiveExpPotential(2, 0.1, 0.1, 1)
+            RepulsiveExponential(2, 0.1, 0.1, 1)
                     ]:
             
             ok = (pot.evaluate(pot.r_infl * (1-1e-4), True, True, True)[2]
@@ -599,7 +594,7 @@ import pytest
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
                         'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
-                        'RepulsiveExpPotential(1., 0.5, 1., 1.)'
+                        'RepulsiveExponential(1., 0.5, 1., 1.)'
                          ])
 def test_deepcopy(pot_creation):
     import copy
@@ -674,7 +669,7 @@ def test_deepcopy(pot_creation):
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
                         'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
-                        'RepulsiveExpPotential(1., 0.5, 1., 1.)'
+                        'RepulsiveExponential(1., 0.5, 1., 1.)'
                          ])
 def test_masked_arrays(pot_creation, fill_value):
     eps = 1.7294663266397667
@@ -735,7 +730,7 @@ def test_lj93_masked(pot_class):
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
                         'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
-                        'RepulsiveExpPotential(1., 0.5, 1., 1.)'
+                        'RepulsiveExponential(1., 0.5, 1., 1.)'
                          ])
 def test_max_tensile(pot_creation):
     eps = 1.7294663266397667

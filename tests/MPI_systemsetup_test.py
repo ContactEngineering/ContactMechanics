@@ -149,7 +149,7 @@ def test_make_system_from_file(examplefile, comm):
 
     system = make_system(substrate="periodic",
                          interaction=interaction,
-                         surface=fn,
+                         topography=fn,
                          communicator=comm,
                          physical_sizes=(20.,30.),
                          young=1)
@@ -261,7 +261,7 @@ def test_hardwall_as_string(comm, examplefile):
     fn, res, data = examplefile
     make_system(substrate="periodic",
                 interaction="hardwall",
-                surface=fn,
+                topography=fn,
                 physical_sizes=(1.,1.),
                 young=1,
                 communicator=comm)

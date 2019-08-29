@@ -29,7 +29,7 @@ Tries to guess displacements such that areas are equally spaced on a log scale.
 """
 
 import numpy as np
-from PyCo.ContactMechanics import ExpPotential, LJ93smoothMin
+from PyCo.ContactMechanics import Exponential, LJ93smoothMin
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.Topography import read_matrix
 from PyCo.System import make_system
@@ -65,7 +65,7 @@ substrate = PeriodicFFTElasticHalfSpace(surface.shape, 1.0,
                                         surface.physical_sizes,
                                         stiffness_q0=None)
 
-interaction = ExpPotential(gamma, rho)
+interaction = Exponential(gamma, rho)
 #interaction = LJ93smoothMin(1.0, 1.0)
 
 # Piece the full system together. In particular the PyCo.System.SystemBase

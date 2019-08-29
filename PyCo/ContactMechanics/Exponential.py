@@ -24,14 +24,14 @@
 #
 
 """
-9-3 Lennard-Jones potential for wall interactions
+Exponential attraction.
 """
 
 from . import Potential
 import numpy as np
 from NuMPI import MPI
 
-class ExpPotential(Potential):
+class Exponential(Potential):
     """ V(g) = -gamma0*e^(-g(r)/rho)
     """
 
@@ -115,7 +115,7 @@ class ExpPotential(Potential):
         return V, dV, ddV
 
 
-class RepulsiveExpPotential(Potential):
+class RepulsiveExponential(Potential):
     """ V(g) = -gamma_{rep}*e^(-r/rho_{rep}) -gamma_{att}*e^(-r/rho_{att})
     """
 
