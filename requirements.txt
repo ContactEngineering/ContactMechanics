@@ -9,5 +9,5 @@ h5py
 sphinx==1.8.2
 NuMPI==0.1
 pytest>=4
-git+https://gitlab.com/muspectre/muspectre.git#egg=mufft
+git+https://gitlab.com/muspectre/muspectre.git@654a508babf97564c3e3144ca11686431fe45c39#egg=mufft
 git+https://github.com/pastewka/runtests.git#egg=runtests
