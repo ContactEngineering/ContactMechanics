@@ -27,7 +27,7 @@ import unittest
 import numpy as np
 
 
-from PyCo.Topography import Topography, NonuniformLineScan
+from PyCo.Topography import Topography, NonuniformLineScan, UniformLineScan
 
 from NuMPI import MPI
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
@@ -64,6 +64,27 @@ class SinewaveTestUniform(unittest.TestCase):
         analytical = np.sqrt(self.hm**2 / 4)
 
         self.assertEqual(numerical,analytical)
+
+@pytest.mark.xfail
+def test_rms_curvature_paraboloid_uniform_1D():
+    n = 16
+    x = np.array(n)
+    curvature = 0.1
+    heights = 0.5 * curvature * x**2
+
+    surf = UniformLineScan(heights, physical_sizes=(n,),
+                      periodic=False)
+    assert abs((surf.rms_curvature() - curvature) / curvature) == 0
+
+@pytest.mark.xfail
+def test_rms_curvature_paraboloid_uniform_2D():
+    n = 16
+    X, Y = np.mgrid[slice(0, n), slice(0, n)]
+    curvature = 0.1
+    heights = 0.5 * curvature * (X**2 + Y**2)
+    surf = Topography(heights, physical_sizes=(n,n), periodic=False)
+
+    assert abs((surf.rms_curvature() - curvature) / curvature) == 0.
 
 
 class SinewaveTestNonuniform(unittest.TestCase):
