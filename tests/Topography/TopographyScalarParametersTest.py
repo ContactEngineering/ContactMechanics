@@ -47,6 +47,7 @@ class SinewaveTestUniform(unittest.TestCase):
 
         self.precision = 5
 
+    @pytest.mark.xfail
     def test_rms_curvature(self):
         numerical = self.surf.rms_curvature()
         analytical = np.sqrt(16*np.pi**4 *self.hm**2 / self.L**4 )
@@ -65,26 +66,26 @@ class SinewaveTestUniform(unittest.TestCase):
 
         self.assertEqual(numerical,analytical)
 
-@pytest.mark.xfail
+
 def test_rms_curvature_paraboloid_uniform_1D():
     n = 16
-    x = np.array(n)
+    x = np.arange(n)
     curvature = 0.1
     heights = 0.5 * curvature * x**2
 
     surf = UniformLineScan(heights, physical_sizes=(n,),
                       periodic=False)
-    assert abs((surf.rms_curvature() - curvature) / curvature) == 0
+    # central finite differences are second order and so exact for the parabola
+    assert abs((surf.rms_curvature() - curvature) / curvature) < 1e-15
 
-@pytest.mark.xfail
 def test_rms_curvature_paraboloid_uniform_2D():
     n = 16
     X, Y = np.mgrid[slice(0, n), slice(0, n)]
     curvature = 0.1
     heights = 0.5 * curvature * (X**2 + Y**2)
     surf = Topography(heights, physical_sizes=(n,n), periodic=False)
-
-    assert abs((surf.rms_curvature() - curvature) / curvature) == 0.
+    # central finite differences are second order and so exact for the paraboloid
+    assert abs((surf.rms_curvature() - curvature) / curvature)  < 1e-15
 
 
 class SinewaveTestNonuniform(unittest.TestCase):
