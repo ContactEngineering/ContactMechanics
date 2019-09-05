@@ -39,7 +39,7 @@ class SinewaveTestUniform(unittest.TestCase):
         X, Y = np.mgrid[slice(0,n),slice(0,n)]
 
         self.hm = 0.1
-        self.L = n
+        self.L = float(n)
         self.sinsurf = np.sin(2 * np.pi / self.L * X) * np.sin(2 * np.pi / self.L * Y) * self.hm
         self.size= (self.L,self.L)
 
@@ -47,10 +47,10 @@ class SinewaveTestUniform(unittest.TestCase):
 
         self.precision = 5
 
-    @pytest.mark.xfail
     def test_rms_curvature(self):
         numerical = self.surf.rms_curvature()
-        analytical = np.sqrt(16*np.pi**4 *self.hm**2 / self.L**4 )
+        analytical = np.sqrt(4 * (16*np.pi**4 / self.L**4) *self.hm**2 /4 /4 )
+        #                 rms(∆)^2 = (qx^2 + qy^2)^2 * hm^2 / 4
         #print(numerical-analytical)
         self.assertAlmostEqual(numerical,analytical,self.precision)
 
@@ -65,6 +65,23 @@ class SinewaveTestUniform(unittest.TestCase):
         analytical = np.sqrt(self.hm**2 / 4)
 
         self.assertEqual(numerical,analytical)
+
+def test_rms_curvature_sinewave_2D():
+    precision = 5
+
+    n = 256
+    X, Y = np.mgrid[slice(0, n), slice(0, n)]
+    hm = 0.3
+    L = float(n)
+    size=(L,L)
+
+    surf = Topography(np.sin(2 * np.pi / L * X) *hm, physical_sizes=size)
+    numerical_lapl = surf.rms_laplacian()
+    analytical_lapl = np.sqrt((2 * np.pi / L )**4 *hm**2 /2)
+    #print(numerical-analytical)
+    np.testing.assert_almost_equal(numerical_lapl, analytical_lapl,precision)
+
+    np.testing.assert_almost_equal(surf.rms_curvature(), analytical_lapl / 2  , precision)
 
 
 def test_rms_curvature_paraboloid_uniform_1D():
