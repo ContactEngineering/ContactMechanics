@@ -73,7 +73,7 @@ class Exponential(Potential):
     def max_tensile(self):
         return - self.gam / self.rho
 
-    def naive_pot(self, r,pot=True,forces=False,curb=False):
+    def naive_pot(self, r,pot=True,forces=False,curb=False, mask=(slice(None), slice(None))):
         """ Evaluates the potential and its derivatives without cutoffs or
             offsets. These have been collected in a single method to reuse the
             computated LJ terms for efficiency
@@ -106,15 +106,24 @@ class Exponential(Potential):
             V = np.zeros_like(g)
             dV = np.zeros_like(g)
             ddV = np.zeros_like(g)
-            V[m] = -self.gam*np.exp(g[m])
-            dV[m] = V[m]/self.rho
-            ddV[m] = V[m]/self.rho**2
+
+
+            gam = self.gam if  np.isscalar(self.gam) else self.gam[mask][m]
+            rho = self.rho if  np.isscalar(self.rho) else self.rho[mask][m]
+
+            V[m] = -gam*np.exp(g[m])
+            dV[m] = V[m]/rho
+            ddV[m] = V[m]/rho**2
 
             # Quadratic function for r < 0. This avoids numerical overflow at small r.
             m = np.logical_not(m)
-            V[m] = -self.gam*(1+g[m]+0.5*g[m]**2)
-            dV[m] = -self.gam/self.rho*(1+g[m])
-            ddV[m] = -self.gam/self.rho**2
+
+            gam = self.gam if np.isscalar(self.gam) else self.gam[mask][m]
+            rho = self.rho if np.isscalar(self.rho) else self.rho[mask][m]
+
+            V[m] = -gam*(1+g[m]+0.5*g[m]**2)
+            dV[m] = -gam/rho*(1+g[m])
+            ddV[m] = -gam/rho**2
 
         return V, dV, ddV
 
@@ -163,7 +172,7 @@ class RepulsiveExponential(Potential):
         return np.log(self.gam_rep / self.gam_att * self.rho_att**2 / self.rho_rep**2) \
                / (1 / self.rho_rep - 1 / self.rho_att)
 
-    def naive_pot(self, r,pot=True,forces=False,curb=False):
+    def naive_pot(self, r,pot=True,forces=False,curb=False, mask=(slice(None), slice(None))):
         """ Evaluates the potential and its derivatives without cutoffs or
             offsets. These have been collected in a single method to reuse the
             computated LJ terms for efficiency

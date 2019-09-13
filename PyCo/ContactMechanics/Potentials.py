@@ -168,7 +168,7 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
 
         V[inside_slice], dV[inside_slice], ddV[inside_slice] = self.naive_pot(
-            r[inside_slice], pot, forces, curb)
+            r[inside_slice], pot, forces, curb, mask=inside_slice)
         if V[inside_slice] is not None:
             V[inside_slice] -= self.offset
         return (V if pot else None,
