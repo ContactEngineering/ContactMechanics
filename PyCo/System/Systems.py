@@ -455,6 +455,29 @@ class SmoothContactSystem(SystemBase):
         """
         return self.pnp.sum(self.gap) / np.prod(self.nb_grid_pts)
 
+    def logger_input(self):
+        """
+
+        Returns
+        -------
+        headers: list of strings
+        values: list
+        """
+        tot_nb_grid_pts = np.prod(self.nb_grid_pts)
+        rel_rep_area = self.compute_nb_repulsive_pts() / tot_nb_grid_pts
+        rel_att_area = self.compute_nb_attractive_pts() / tot_nb_grid_pts
+
+        return (['energy', 'mean gap', 'frac. rep. area',
+                       'frac. att. area',
+                       'frac. int. area', 'substrate force', 'interaction force'],
+              [self.energy,
+               self.compute_mean_gap(),
+               rel_rep_area,
+               rel_att_area,
+               rel_rep_area + rel_att_area,
+               -self.pnp.sum(self.substrate.force),
+               self.pnp.sum(self.interaction.force)])
+
     def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement
@@ -481,19 +504,7 @@ class SmoothContactSystem(SystemBase):
         else:
             self.force = None
         if logger is not None:
-            tot_nb_grid_pts = np.prod(self.nb_grid_pts)
-            rel_rep_area = self.compute_nb_repulsive_pts()/tot_nb_grid_pts
-            rel_att_area = self.compute_nb_attractive_pts()/tot_nb_grid_pts
-            logger.st(['energy', 'mean gap', 'frac. rep. area',
-                       'frac. att. area',
-                       'frac. int. area', 'substrate force', 'interaction force'],
-              [self.energy,
-               self.compute_mean_gap(),
-               rel_rep_area,
-               rel_att_area,
-               rel_rep_area + rel_att_area,
-               -self.pnp.sum(self.substrate.force),
-               self.pnp.sum(self.interaction.force)])
+            logger.st(*self.logger_input())
         return (self.energy, self.force)
 
     def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
@@ -562,6 +573,21 @@ class SmoothContactSystem(SystemBase):
                 print("at it {}, e = {}".format(
                     counter, self.energy))
         return fun
+
+class BoundedSmoothContactSystem(SmoothContactSystem):
+
+    def compute_nb_contact_pts(self):
+        """
+        compute and return the number of contact points. Note that this is of
+        no physical interest, as it is a purely numerical artefact
+        """
+        return self.pnp.sum(np.where(self.gap == 0., 1., 0.))
+
+    def logger_input(self):
+        headers, vals = super().logger_input()
+        headers.append("frac. cont. area")
+        vals.append(self.compute_nb_contact_pts() / np.prod(self.nb_grid_pts))
+        return headers, vals
 
 
 class NonSmoothContactSystem(SystemBase):

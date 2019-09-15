@@ -30,7 +30,7 @@ Defines all solvers used in PyCo
 
 from .Systems import IncompatibleFormulationError
 from .Systems import IncompatibleResolutionError
-from .Systems import SmoothContactSystem
+from .Systems import SmoothContactSystem, BoundedSmoothContactSystem
 from .Systems import NonSmoothContactSystem
 
 from .SmoothSystemSpecialisations import FastSmoothContactSystem
