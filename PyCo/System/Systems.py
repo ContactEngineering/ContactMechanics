@@ -575,6 +575,9 @@ class SmoothContactSystem(SystemBase):
         return fun
 
 class BoundedSmoothContactSystem(SmoothContactSystem):
+    @staticmethod
+    def handles(*args, **kwargs): # FIXME work around, see issue #208
+        return False
 
     def compute_nb_contact_pts(self):
         """
@@ -588,6 +591,15 @@ class BoundedSmoothContactSystem(SmoothContactSystem):
         headers.append("frac. cont. area")
         vals.append(self.compute_nb_contact_pts() / np.prod(self.nb_grid_pts))
         return headers, vals
+
+    def compute_normal_force(self):
+        "computes and returns the sum of all forces"
+
+        # sum of the jacobian in the contact area (Lagrange multiplier)
+        # and the ineraction forces.
+        # can also be computed easily from the substrate forces
+        raise NotImplementedError
+
 
 
 class NonSmoothContactSystem(SystemBase):
@@ -653,7 +665,7 @@ class NonSmoothContactSystem(SystemBase):
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
-        return self.pnp.sum(self.substrate.force)
+        return self.pnp.sum(self.force)
 
     def compute_nb_contact_pts(self):
         """
@@ -677,11 +689,11 @@ class NonSmoothContactSystem(SystemBase):
         # attention: the substrate may have a higher nb_grid_pts than the gap
         # and the interaction (e.g. FreeElasticHalfSpace)
         self.gap = self.compute_gap(disp, offset)
-        self.interaction.compute(self.gap,
-                                 area_scale=self.area_per_pt)
+        self.interaction.compute(self.gap, True, forces,
+                             area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
 
-        self.energy = self.substrate.energy if pot else None
+        self.energy = self.substrate.energy + self.interaction.energy if pot else None
         if forces:
             self.force = self.substrate.force
         else:
@@ -756,11 +768,23 @@ class NonSmoothContactSystem(SystemBase):
             self.substrate,
             self.surface,
             **kwargs)
+
+
         if result.success:
             self.offset = result.offset
             self.disp = result.x
-            self.force = self.substrate.force = result.jac
+            self.constraint_force = result.jac
             self.contact_zone = result.jac > 0
+            self.evaluate(self.disp, self.offset, True, True) #computes energies and forces
 
-            self.substrate.check()
+            # the "best" forces are the contstraint forces combined with
+            # the interaction forces because the substrate forces
+            # (computed from displacement)
+            # are not exactly zero outside the contact area and the interaction
+            # range
+            self.force = np.copy(self.constraint_force)
+            noncontact_zone = np.logical_not(self.contact_zone)
+            self.force[noncontact_zone] = self.interaction.force[noncontact_zone]
+
+            self.substrate.check(self.force) # check should be done on interaction force and constraint forces.
         return result
