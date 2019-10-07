@@ -22,4 +22,5 @@
 # SOFTWARE.
 #
 
-from .Anisotropic import AnisotropicGF
+from .Anisotropic import AnisotropicGreensFunction
+from .Isotropic import IsotropicGreensFunction
