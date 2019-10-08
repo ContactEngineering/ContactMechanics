@@ -789,7 +789,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         def __init__(self, message):
             super().__init__(message)
 
-    def check_boundaries(self, force=None):
+    def check_boundaries(self, force=None, tol=0):
         """
         Raises an error if the forces are not zero at the boundary of the
         active domain
@@ -809,10 +809,10 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         if self.dim == 2:
             if np.ma.is_masked(force):
                 def check_vals(vals):
-                    return (vals == 0.).all() or vals.mask.all()
+                    return (abs(vals) <= tol).all() or vals.mask.all()
             else:
                 def check_vals(vals):
-                    return (vals == 0.).all()
+                    return (abs(vals) <= tol).all()
 
             if self.subdomain_locations[1] == 0:
                 is_ok &= check_vals(force[:, 0])
