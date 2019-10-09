@@ -81,9 +81,9 @@ class AnisotropicGreensFunction(object):
         # Q = 2: det(M) = c0 + 4*c2 + 16*c4 + 64*c6
         # Q = 3: det(M) = c0 + 9*c2 + 81*c4 + 729*c6
 
-        fac1 = 0.7
-        fac2 = 1.0
-        fac3 = 1.3
+        fac1 = 1
+        fac2 = 2
+        fac3 = 3
         A = np.array([[0, 0, 0, 1],
                       [fac1 ** 6, fac1 ** 4, fac1 ** 2, 1],
                       [fac2 ** 6, fac2 ** 4, fac2 ** 2, 1],
@@ -122,13 +122,12 @@ class AnisotropicGreensFunction(object):
     def make_F(self, qx, qy, qz, eta):
         q = [(qx, qy, _qz) for _qz in qz]
         F = np.zeros((3, len(qz)), dtype=complex)
-        for k, alpha, l in np.ndindex(3, len(qz), 3):
-            F[k, alpha] += self.elasticity_tensor(alpha, 2, k, l) * q[alpha][k] * eta[alpha][l]
+        for i, k, alpha, l in np.ndindex(3, 3, len(qz), 3):
+            F[i, alpha] += 1j * self.elasticity_tensor(i, 2, k, l) * q[alpha][k] * eta[alpha][l]
         return F
 
     def make_U_and_F(self, qx, qy):
-        evs = self.find_eigenvalues(qx, qy)
-        qz = [1j * Q if Q > 0 else -1j * Q for Q in evs]
+        qz = -1j * self.find_eigenvalues(qx, qy)
         eta = self.find_eigenvectors(qx, qy, qz)
         return self.make_U(qz, eta), self.make_F(qx, qy, qz, eta)
 
