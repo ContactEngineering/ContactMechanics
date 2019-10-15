@@ -41,7 +41,7 @@ def test_NCStructuredGrid(comm, fftengine_type, HSClass):
 
         field_ncfile[j].penetration = penetration
         field_ncfile[j].contacting_points = np.array(sol.active_set, dtype=int)
-        field_ncfile[j].gap = system.gap
+        field_ncfile[j].u = sol.x
         field_ncfile[j].forces = system.force
 
         j+=1
