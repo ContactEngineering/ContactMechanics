@@ -8,7 +8,11 @@ from PyCo.Topography import make_sphere
 from muFFT import NCStructuredGrid
 
 import pytest
-@pytest.mark.parametrize("HSClass", [PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace])
+@pytest.mark.parametrize("HSClass", [PeriodicFFTElasticHalfSpace,
+pytest.param(FreeFFTElasticHalfSpace,
+marks=pytest.mark.xfail(
+reason="NCStructured grid not compatible with padding regions,"
+" will be fixed in future mufft version (see issue #70)"))])
 def test_NCStructuredGrid(comm, fftengine_type, HSClass):
     nx, ny = 64, 64
     sx, sy = 2., 2.
