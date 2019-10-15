@@ -6,13 +6,16 @@ from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
 from PyCo.Topography import make_sphere
 from muFFT import NCStructuredGrid
+import os
 
 import pytest
 @pytest.mark.parametrize("HSClass", [PeriodicFFTElasticHalfSpace,
 pytest.param(FreeFFTElasticHalfSpace,
 marks=pytest.mark.xfail(
 reason="NCStructured grid not compatible with padding regions,"
-" will be fixed in future mufft version (see issue #70)"))])
+" will be fixed in future mufft version (see issue #70)")
+)]
+)
 def test_NCStructuredGrid(comm, fftengine_type, HSClass):
     nx, ny = 64, 64
     sx, sy = 2., 2.
@@ -45,10 +48,13 @@ def test_NCStructuredGrid(comm, fftengine_type, HSClass):
 
         field_ncfile[j].penetration = penetration
         field_ncfile[j].contacting_points = np.array(sol.active_set, dtype=int)
-        field_ncfile[j].u = sol.x
-        field_ncfile[j].forces = system.force
+        field_ncfile[j].u = sol.x[halfspace.local_topography_subdomain_slices]
+        field_ncfile[j].forces = system.force[halfspace.local_topography_subdomain_slices]
 
         j+=1
 
 
     field_ncfile.close()
+
+    if comm.rank==0:
+        os.remove("field_data.nc")
