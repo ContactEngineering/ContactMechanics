@@ -33,16 +33,17 @@ from scipy.linalg import null_space
 ###
 
 class AnisotropicGreensFunction(object):
-    def __init__(self, C11, C12, C44):
+    def __init__(self, C11, C12, C44, thickness=None):
         self._C11 = C11
         self._C12 = C12
         self._C44 = C44
-        self._C = np.array([[C11, C12, C12, 0, 0, 0],
-                            [C12, C11, C12, 0, 0, 0],
-                            [C12, C12, C11, 0, 0, 0],
-                            [0, 0, 0, C44, 0, 0],
-                            [0, 0, 0, 0, C44, 0],
-                            [0, 0, 0, 0, 0, C44]])
+        self._C = np.array([[C11, C12, C12, 0, 0, 0], # xx
+                            [C12, C11, C12, 0, 0, 0], # yy
+                            [C12, C12, C11, 0, 0, 0], # zz
+                            [0, 0, 0, C44, 0, 0], # yz
+                            [0, 0, 0, 0, C44, 0], # xz
+                            [0, 0, 0, 0, 0, C44]]) # xy
+        self._thickness = thickness
 
     def elasticity_tensor(self, i, j, k, l):
         Voigt_ij = i
@@ -121,36 +122,62 @@ class AnisotropicGreensFunction(object):
 
     def make_F(self, qx, qy, qz, eta):
         q = [(qx, qy, _qz) for _qz in qz]
-        F = np.zeros((3, len(qz)), dtype=complex)
+        F = np.zeros((len(qz), len(qz)), dtype=complex)
+        # Traction boundary conditions on top
         for i, k, alpha, l in np.ndindex(3, 3, len(qz), 3):
             F[i, alpha] += 1j * self.elasticity_tensor(i, 2, k, l) * q[alpha][k] * eta[alpha][l]
+        # Displacement boundary conditions on bottom
+        if self._thickness is not None:
+            for i, alpha in np.ndindex(3, len(qz)):
+                F[i + 3, alpha] = np.exp(-1j * q[alpha][2] * self._thickness) * eta[alpha][i]
         return F
 
     def make_U_and_F(self, qx, qy):
-        qz = -1j * self.find_eigenvalues(qx, qy)
+        if self._thickness is None:
+            qz = -1j * self.find_eigenvalues(qx, qy)
+        else:
+            _qz = self.find_eigenvalues(qx, qy)
+            qz = np.append(-1j * _qz, 1j * _qz)
         eta = self.find_eigenvectors(qx, qy, qz)
         return self.make_U(qz, eta), self.make_F(qx, qy, qz, eta)
 
-    def _greens_function(self, qx, qy):
-        U, F = self.make_U_and_F(qx, qy)
-        return np.linalg.solve(F.T, U.T).T
+    def _gamma_stiffness(self):
+        """Returns the 3x3 stiffness matrix at the Gamma point (q=0)"""
+        # Voigt components: xz = 4, yz = 3, zz = 2
+        return np.array([[self._C[4, 4], self._C[3, 4], self._C[2, 4]],
+                         [self._C[3, 4], self._C[3, 3], self._C[2, 3]],
+                         [self._C[2, 4], self._C[2, 3], self._C[2, 2]]]) / self._thickness
 
-    def _stiffness(self, qx, qy):
-        if abs(qx) < 1e-6 and abs(qy) < 1e-6:
-            return np.zeros((3, 3))
+    def _greens_function(self, qx, qy, zero_tol=1e-6):
+        if self._thickness is not None and abs(qx) < zero_tol and abs(qy) < zero_tol:
+            # This is zero wavevector. We use the analytical solution in this case.
+            return np.linalg.inv(self._gamma_stiffness())
         U, F = self.make_U_and_F(qx, qy)
-        return np.linalg.solve(U.T, F.T).T
+        return (np.linalg.solve(F.T, U.T))[:3, :]
 
-    def greens_function(self, qx, qy):
+    def _stiffness(self, qx, qy, zero_tol=1e-6):
+        if abs(qx) < zero_tol and abs(qy) < zero_tol:
+            if self._thickness is None:
+                return np.zeros((3, 3))
+            else:
+                return self._gamma_stiffness()
+        if self._thickness is None:
+            U, F = self.make_U_and_F(qx, qy)
+            return np.linalg.solve(U.T, F.T)
+        else:
+            return np.linalg.inv(self._greens_function(qx, qx, zero_tol=zero_tol))
+
+    def greens_function(self, qx, qy, zero_tol=1e-6):
         if np.isscalar(qx) and np.isscalar(qy):
-            return self._greens_function(qx, qy)
+            return self._greens_function(qx, qy, zero_tol=zero_tol)
 
         gf = []
         for _qx, _qy in zip(qx, qy):
-            gf += [self._greens_function(_qx, _qy)]
+            _gf = self._greens_function(_qx, _qy, zero_tol=zero_tol)
+            gf += [_gf[:, :3]]
         return np.array(gf)
 
-    def stiffness(self, qx, qy):
+    def stiffness(self, qx, qy, zero_tol=1e-6):
         if np.isscalar(qx) and np.isscalar(qy):
             return self._stiffness(qx, qy)
 

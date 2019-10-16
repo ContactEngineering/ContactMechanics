@@ -32,10 +32,9 @@ from PyCo.SolidMechanics.GreensFunctions import AnisotropicGreensFunction, Isotr
 
 C11 = 1
 C44 = 0.3
-C12 = C11 - 2 * C44 + 0.3 # + 0.0001  # 0.3
+C12 = C11 - 2 * C44 + 0.0001 # + 0.0001  # 0.3
 aniso1 = AnisotropicGreensFunction(C11, C12, C44)
-#C12 = C11 - 2 * C44 + 0.3  # 0.3
-#aniso2 = AnisotropicGreensFunction(C11, C12, C44)
+aniso2 = AnisotropicGreensFunction(C11, C12, C44, 10)
 
 nu = 0.3
 E = 2 * C44 * (1 + nu)
@@ -43,7 +42,11 @@ iso = IsotropicGreensFunction(C44, nu)
 
 special_points = [('$\Gamma$', (0., 0.)), ('$M$', (0.5, 0.5)), ('$X$', (0.5, 0.)), ('$\Gamma$', (0., 0.))]
 colors = ['r', 'g', 'b', 'k']
-labels = ['isotropic', 'anisotropic1', 'anisotropic2']
+labels = ['isotropic', 'anisotropic', 'anisotropic, finite thickness']
+
+fig = plt.figure()
+subplots = [plt.subplot(2, 3, i+1) for i in range(6)]
+Voigt = [(0, 0), (1, 1), (2, 2), (1, 2), (0, 2), (0, 1)]
 
 npts = 100
 z = 0.0
@@ -52,10 +55,11 @@ for (sym1, (qx1, qy1)), (sym2, (qx2, qy2)) in zip(special_points[:-1], special_p
     qx = 2 * np.pi * np.linspace(qx1, qx2, npts)
     qy = 2 * np.pi * np.linspace(qy1, qy2, npts)
     #plt.plot(np.linspace(z, z + 1.0, npts), C44*4*(1-nu)*np.sqrt(qx**2+qy**2)/(3-4*nu), 'k-', lw=4)
-    for color, label, gf in zip(colors, labels, [iso, aniso1]):
+    for color, label, gf in zip(colors, labels, [iso, aniso1, aniso2]):
         phi = gf.stiffness(qx, qy)
-        phizz = np.real(phi[:, 2, 2])
-        plt.plot(np.linspace(z, z + 1.0, npts), phizz, color + '-', label=label)
+        for subplot, (i, j) in zip(subplots, Voigt):
+            subplot.plot(np.linspace(z, z + 1.0, npts), np.real(phi[:, i, j]), color + '-', label=label)
+            subplot.plot(np.linspace(z, z + 1.0, npts), np.imag(phi[:, i, j]), color + '--', label=label)
     z += 1.0
     labels = [None] * len(colors)
 
