@@ -133,10 +133,10 @@ class AnisotropicGreensFunction(object):
         return F
 
     def make_U_and_F(self, qx, qy):
+        _qz = self.find_eigenvalues(qx, qy)
         if self._thickness is None:
-            qz = -1j * self.find_eigenvalues(qx, qy)
+            qz = -1j * _qz
         else:
-            _qz = self.find_eigenvalues(qx, qy)
             qz = np.append(-1j * _qz, 1j * _qz)
         eta = self.find_eigenvectors(qx, qy, qz)
         return self.make_U(qz, eta), self.make_F(qx, qy, qz, eta)
@@ -153,7 +153,7 @@ class AnisotropicGreensFunction(object):
             # This is zero wavevector. We use the analytical solution in this case.
             return np.linalg.inv(self._gamma_stiffness())
         U, F = self.make_U_and_F(qx, qy)
-        return (np.linalg.solve(F.T, U.T))[:3, :]
+        return np.linalg.solve(F.T, U.T)[:3, :]
 
     def _stiffness(self, qx, qy, zero_tol=1e-6):
         if abs(qx) < zero_tol and abs(qy) < zero_tol:
@@ -165,7 +165,7 @@ class AnisotropicGreensFunction(object):
             U, F = self.make_U_and_F(qx, qy)
             return np.linalg.solve(U.T, F.T)
         else:
-            return np.linalg.inv(self._greens_function(qx, qx, zero_tol=zero_tol))
+            return np.linalg.inv(self._greens_function(qx, qy, zero_tol=zero_tol))
 
     def greens_function(self, qx, qy, zero_tol=1e-6):
         if np.isscalar(qx) and np.isscalar(qy):
@@ -173,8 +173,7 @@ class AnisotropicGreensFunction(object):
 
         gf = []
         for _qx, _qy in zip(qx, qy):
-            _gf = self._greens_function(_qx, _qy, zero_tol=zero_tol)
-            gf += [_gf[:, :3]]
+            gf += [self._greens_function(_qx, _qy, zero_tol=zero_tol)]
         return np.array(gf)
 
     def stiffness(self, qx, qy, zero_tol=1e-6):

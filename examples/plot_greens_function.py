@@ -34,7 +34,7 @@ C11 = 1
 C44 = 0.3
 C12 = C11 - 2 * C44 + 0.0001 # + 0.0001  # 0.3
 aniso1 = AnisotropicGreensFunction(C11, C12, C44)
-aniso2 = AnisotropicGreensFunction(C11, C12, C44, 10)
+aniso2 = AnisotropicGreensFunction(C11, C12, C44, 3)
 
 nu = 0.3
 E = 2 * C44 * (1 + nu)
