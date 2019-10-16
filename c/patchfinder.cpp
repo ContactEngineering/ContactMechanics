@@ -181,11 +181,11 @@ PyObject *assign_patch_numbers(PyObject *self, PyObject *args)
  * Find continuous 1d segments
  */
 
-void fill_segment(npy_intp nx, npy_bool *map, int i, npy_int p, npy_int *id)
+void fill_segment(npy_intp nx, npy_bool *map, std::ptrdiff_t i, npy_int p, npy_int *id)
 {
   id[i] = p;
 
-  int ii = i+1;
+  std::ptrdiff_t ii = i+1;
   /* Periodic boundary conditions */
   if (ii > nx-1)  ii -= nx;
 
@@ -241,7 +241,7 @@ PyObject *assign_segment_numbers(PyObject *self, PyObject *args)
     return NULL;
   npy_int *id = (npy_int *) PyArray_DATA(py_id);
 
-  int i, j, k = 0;
+  std::ptrdiff_t i, j, k = 0;
   npy_int p = 0;
 
   for (i = 0; i < nx; i++) {
