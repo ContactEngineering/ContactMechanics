@@ -33,7 +33,7 @@ from scipy.linalg import null_space
 ###
 
 class AnisotropicGreensFunction(object):
-    def __init__(self, C11, C12, C44, thickness=None):
+    def __init__(self, C11, C12, C44, thickness=None, R=np.eye(3)):
         self._C11 = C11
         self._C12 = C12
         self._C44 = C44
@@ -44,6 +44,18 @@ class AnisotropicGreensFunction(object):
                             [0, 0, 0, 0, C44, 0], # xz
                             [0, 0, 0, 0, 0, C44]]) # xy
         self._thickness = thickness
+        det_R = np.linalg.det(R)
+        if not np.isclose(det_R, 1.0):
+            raise ValueError(f"R is not a proper rotation matrix, det(R)={det_R}")
+        self._R = R
+        C_tensor = np.zeros((3, 3, 3, 3))
+        for i, j, k, l in np.ndindex(3, 3, 3, 3):
+            C_tensor[i, j, k, l] = self.elasticity_tensor(i, j, k, l)
+        C_tensor = np.einsum(
+            'ig,jh,ghmn,km,ln', self._R, self._R, C_tensor, self._R, self._R
+        )
+        for i, j in np.ndindex(6, 6):
+            self._C[i, j] = self.voigt_from_tensor(C_tensor, i, j)
 
     def elasticity_tensor(self, i, j, k, l):
         Voigt_ij = i
@@ -53,6 +65,19 @@ class AnisotropicGreensFunction(object):
         if k != l:
             Voigt_kl = 6 - k - l
         return self._C[Voigt_ij, Voigt_kl]
+
+    def voigt_from_tensor(self, C_tensor, Voigt_ij, Voigt_kl):
+        tensor_ij_for_voigt_ij = {
+            0: (0, 0),
+            1: (1, 1),
+            2: (2, 2),
+            3: (1, 2),
+            4: (0, 2),
+            5: (0, 1),
+        }
+        i, j = tensor_ij_for_voigt_ij[Voigt_ij]
+        k, l = tensor_ij_for_voigt_ij[Voigt_kl]
+        return C_tensor[i, j, k, l]
 
     def bulkop(self, qx, qy, qz):
         """
