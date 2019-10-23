@@ -69,6 +69,10 @@ class Exponential(Potential):
     def r_infl(self):
         return None
 
+    @property
+    def max_tensile(self):
+        return - self.gam / self.rho
+
     def naive_pot(self, r,pot=True,forces=False,curb=False):
         """ Evaluates the potential and its derivatives without cutoffs or
             offsets. These have been collected in a single method to reuse the

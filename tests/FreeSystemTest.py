@@ -549,7 +549,8 @@ class FastSystemTest(unittest.TestCase):
         ext_topography = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=centre)
 
         substrate = Solid.FreeFFTElasticHalfSpace(topography.nb_grid_pts, young,
-                                                  topography.physical_sizes)
+                                                  topography.physical_sizes,
+                                                  check_boundaries=True)
 
         for system in [NonSmoothContactSystem(substrate, Contact.HardWall(), topography),
                        SmoothContactSystem(substrate, Contact.LJ93SimpleSmooth(0.01, 0.01, 10), topography)]:

@@ -322,7 +322,7 @@ def test_LBFGSB_Hertz():
     sx, sy = 20., 20.
     R = 11.
 
-    surface =Topography.make_sphere( R,(nx,ny), (sx,sy), kind="paraboloid")
+    surface =Topography.make_sphere(R, (nx,ny), (sx,sy), kind="paraboloid")
     Es=50.
     substrate = Solid.FreeFFTElasticHalfSpace((nx,ny), young=Es,
                                               physical_sizes=(sx, sy),
@@ -346,12 +346,17 @@ def test_LBFGSB_Hertz():
     padding_mask[substrate.topography_subdomain_slices] = False
 
     print(np.max(abs(res.jac[padding_mask])))
-    #ä no force in padding area
+    # no force in padding area
     np.testing.assert_allclose(
         system.substrate.force[padding_mask],0, rtol=0, atol=gtol)
-    comp_contact_area = np.sum(
-        np.where(system.compute_gap(res.x, offset) == 0, 1.,0.)) \
-                        * system.area_per_pt
+
+    contacting_points = np.where(system.compute_gap(res.x, offset) == 0, 1.,0.)
+    comp_contact_area = np.sum(contacting_points) * system.area_per_pt
+
+    contacting_points_forces = np.where(abs(system.force) > gtol, 1., 0.)
+
+    assert (contacting_points_forces[ \
+        system.substrate.local_topography_subdomain_slices] == contacting_points).all()
 
     comp_normal_force= np.sum(-substrate.evaluate_force(res.x))
     from PyCo.ReferenceSolutions import Hertz as Hz
@@ -365,7 +370,7 @@ def test_LBFGSB_Hertz():
                             offset))
 
     np.testing.assert_allclose(comp_contact_area, np.pi * a ** 2,
-                        rtol=1e-2,
+                        rtol=5e-2,
                         err_msg="Computed area doesn't match Hertz Theory")
 
     if False:
