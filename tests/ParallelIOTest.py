@@ -11,7 +11,7 @@ import os
 import pytest
 @pytest.mark.parametrize("HSClass", [PeriodicFFTElasticHalfSpace,
 pytest.param(FreeFFTElasticHalfSpace,
-marks=pytest.mark.xfail(
+marks=pytest.mark.skip(
 reason="NCStructured grid not compatible with padding regions,"
 " will be fixed in future mufft version (see issue #70)")
 )]
