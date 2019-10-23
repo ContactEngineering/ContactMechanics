@@ -9,6 +9,18 @@ from muFFT import NCStructuredGrid
 import os
 
 import pytest
+
+@pytest.fixture
+def filename(comm):
+    # cleanup after test (wether failed or not)
+    filename="field_data.nc"
+    comm.barrier()
+    yield filename
+    comm.barrier()
+    if comm.rank == 0:
+        if os.path.isfile(filename):
+            os.remove(filename)
+
 @pytest.mark.parametrize("HSClass", [PeriodicFFTElasticHalfSpace,
 pytest.param(FreeFFTElasticHalfSpace,
 marks=pytest.mark.skip(
@@ -16,7 +28,7 @@ reason="NCStructured grid not compatible with padding regions,"
 " will be fixed in future mufft version (see issue #70)")
 )]
 )
-def test_NCStructuredGrid(comm, fftengine_type, HSClass):
+def test_NCStructuredGrid(comm, fftengine_type, HSClass, filename):
     nx, ny = 64, 64
     sx, sy = 2., 2.
 
@@ -35,7 +47,7 @@ def test_NCStructuredGrid(comm, fftengine_type, HSClass):
 
     system = NonSmoothContactSystem(halfspace, HardWall(), topography)
 
-    field_ncfile = NCStructuredGrid("field_data.nc", mode="w",
+    field_ncfile = NCStructuredGrid(filename, mode="w",
                                     nb_domain_grid_pts=system.surface.nb_grid_pts,
                                     decomposition='subdomain',
                                     subdomain_locations=system.surface.subdomain_locations,
@@ -55,6 +67,3 @@ def test_NCStructuredGrid(comm, fftengine_type, HSClass):
 
 
     field_ncfile.close()
-
-    if comm.rank==0:
-        os.remove("field_data.nc")
