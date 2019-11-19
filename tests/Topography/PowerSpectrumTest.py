@@ -164,8 +164,8 @@ def test_NaNs():
 
 def test_brute_force_vs_fft():
     t = read_topography(os.path.join(DATADIR, 'example.asc'))
-    q, A = t.detrend().power_spectrum_1D()
-    q2, A2 = t.detrend().power_spectrum_1D(algorithm='brute-force', wavevectors=q, ninterpolate=5)
+    q, A = t.detrend().power_spectrum_1D(window="None")
+    q2, A2 = t.detrend().power_spectrum_1D(algorithm='brute-force', wavevectors=q, ninterpolate=5, window="None")
     l = len(A2)
     x = A[1:l // 16] / A2[1:l // 16]
     assert np.alltrue(np.logical_and(x > 0.90, x < 1.35))
