@@ -240,7 +240,7 @@ def constrained_conjugate_gradients(substrate,
         # If a hardness is specified, exclude values that exceed the hardness
         # from the "contact area" (the active set).
         if hardness is not None:
-            c_r = np.logical_and(c_r, p_R > -hardness)
+            c_r = np.logical_and(c_r, p_R[slice_R] > -hardness)
 
         # Compute total area treated by the CG optimizer (which exclude flowing)
         # portions.
@@ -322,7 +322,7 @@ def constrained_conjugate_gradients(substrate,
         if hardness:
             A_fl = comm.sum(mask_flowing)
             if A_fl > 0:
-                max_pres = max(max_pres, -comm.min(p_R[mask_flowing] + hardness))
+                max_pres = max(max_pres, -comm.min(p_R[slice_R][mask_flowing] + hardness))
 
         # Project on the feasible set: Set all tensile stresses to zero (or the
         # Dugdale stress).
@@ -346,7 +346,7 @@ def constrained_conjugate_gradients(substrate,
         # If hardness is specified, set all stress larger than hardness to the
         # hardness value (i.e. truncate pressure)
         if hardness is not None:
-            p_R[mask_flowing] = -hardness
+            p_R[slice_R][mask_flowing] = -hardness
 
         if delta_str != 'mix':
             if comm.sum(nc_r * 1) > 0:
