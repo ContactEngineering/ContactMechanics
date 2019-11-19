@@ -383,6 +383,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             # Return partial p_r because pressure outside computational region
             # is zero anyway
             result.jac = -p_r[tuple(comp_slice)]
+            result.active_set = c_r
             # Compute elastic energy
             result.fun = -pnp.sum(p_r[tuple(comp_slice)]*u_r[tuple(comp_slice)])/2
             result.offset = offset
@@ -416,6 +417,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     # Return partial p_r because pressure outside computational region
     # is zero anyway
     result.jac = -p_r[tuple(comp_slice)]
+    result.active_set = c_r
     # Compute elastic energy
     result.fun = -pnp.sum((p_r[tuple(comp_slice)]*u_r[tuple(comp_slice)]))/2
     result.offset = offset
