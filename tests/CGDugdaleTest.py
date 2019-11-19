@@ -30,7 +30,7 @@ def test_flat():
 
     assert (- sol.jac == sigma0).all
 
-
+@pytest.mark.skip
 def test_sphere(plot=False):
     nx, ny = (256, 256)
     sx, sy = (8, 8)
