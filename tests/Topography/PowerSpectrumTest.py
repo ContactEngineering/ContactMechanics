@@ -27,12 +27,13 @@ Tests for power-spectral density analysis
 """
 
 import os
+import pytest
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
 
-from PyCo.Topography import read_topography, UniformLineScan, NonuniformLineScan
+from PyCo.Topography import read_topography, UniformLineScan, NonuniformLineScan, Topography
 from PyCo.Topography.Generation import fourier_synthesis
 from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc
 
@@ -163,8 +164,69 @@ def test_NaNs():
 
 def test_brute_force_vs_fft():
     t = read_topography(os.path.join(DATADIR, 'example.asc'))
-    q, A = t.detrend().power_spectrum_1D()
-    q2, A2 = t.detrend().power_spectrum_1D(algorithm='brute-force', wavevectors=q, ninterpolate=5)
+    q, A = t.detrend().power_spectrum_1D(window="None")
+    q2, A2 = t.detrend().power_spectrum_1D(algorithm='brute-force', wavevectors=q, ninterpolate=5, window="None")
     l = len(A2)
     x = A[1:l // 16] / A2[1:l // 16]
     assert np.alltrue(np.logical_and(x > 0.90, x < 1.35))
+
+@pytest.mark.skip(reason="just plotting")
+def test_default_window_1D():
+    x = np.linspace(0,1,200)
+    heights = np.cos(2 * np.pi * x * 8.3)
+    topography = UniformLineScan(heights,
+                                 physical_sizes=1,periodic=True)
+
+    if True:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        ax.plot(*topography.power_spectrum_1D(), label="periodic=True")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+
+
+
+    topography = UniformLineScan(heights,
+                                 physical_sizes=1,periodic=False)
+
+    if True:
+        import matplotlib.pyplot as plt
+        ax.plot(*topography.power_spectrum_1D(), label="periodic=False")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_ylim(bottom=1e-6)
+        ax.legend()
+        plt.show(block=True)
+
+@pytest.mark.skip(reason="just plotting")
+def test_default_window_2D():
+    x = np.linspace(0,1,200).reshape(-1, 1)
+
+
+    heights = np.cos(2 * np.pi * x * 8.3) * np.ones((1, 200))
+    topography = Topography(heights,
+                            physical_sizes=(1,1),periodic=True)
+
+    if True:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        ax.plot(*topography.power_spectrum_1D(), label="periodic=True")
+        ax.plot(*topography.power_spectrum_2D(nbins=20), label="2D, periodic=True")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+
+
+
+
+    topography = Topography(heights,
+                                 physical_sizes=(1,1),periodic=False)
+
+    if True:
+        import matplotlib.pyplot as plt
+        ax.plot(*topography.power_spectrum_1D(), label="periodic=False")
+        ax.plot(*topography.power_spectrum_2D(nbins=20), label="2D, periodic=False")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        #ax.set_ylim(bottom=1e-6)
+        ax.legend()
+        plt.show(block=True)
