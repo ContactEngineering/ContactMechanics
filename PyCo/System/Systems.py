@@ -726,14 +726,9 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        try:
-            Dugdale = (self.interaction.stress, self.interaction.length)
-        except AttributeError:
-            Dugdale = None
         result = solver(
             self.substrate,
             self.surface,
-            Dugdale = Dugdale,
             **kwargs)
         if result.success:
             self.offset = result.offset
