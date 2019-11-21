@@ -239,3 +239,9 @@ def test_pipeline():
     p = t2.pipeline()
     assert isinstance(p[0], Topography)
     assert isinstance(p[1], DetrendedUniformTopography)
+
+def test_uniform_detrended_periodicity():
+    topography=Topography(np.array([[0,1,0],[0,0,0]]), physical_sizes=(4., 3.), periodic=True)
+    assert topography.detrend("center").is_periodic
+    assert not topography.detrend("height").is_periodic
+    assert not topography.detrend("curvature").is_periodic

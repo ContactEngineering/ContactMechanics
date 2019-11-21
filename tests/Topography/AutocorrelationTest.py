@@ -270,6 +270,7 @@ def test_self_affine_nonuniform_autocorrelation():
     H = 0.8
     slope = 0.1
     t = fourier_synthesis((r,), (s,), H, rms_slope=slope, short_cutoff=s / 20, amplitude_distribution=lambda n: 1.0)
+    t._periodic = False
     r, A = t.detrend(detrend_mode='center').autocorrelation_1D()
     r = r[1:-1]  # Need to exclude final point because we cannot compute nonuniform ACF at that point
     A = A[1:-1]
