@@ -2,6 +2,11 @@
 Change log for PyCo
 ===================
 
+v0.53.1 (20Nov19)
+-----------------
+- API: Detrended Topographies with mode "center" keep is_periodic property. Other modes lead to is_periodic=False. 
+  See pastewka/TopoBank/#347
+
 v0.53.0 (20Nov19)
 -----------------
 
