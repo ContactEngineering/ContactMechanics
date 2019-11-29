@@ -61,11 +61,14 @@ class OPDxSurfaceTest(unittest.TestCase):
             self.fail("read_topography() raised an exception (not passing a file stream)!")
 
         try:
-            read_topography(open(file_path))
+            f = open(file_path)
+            try:
+                read_topography(f)
+            finally:
+                f.close()
+
         except:
             self.fail("read_topography() raised an exception (passing a file stream)!")
-
-
 
 
     def test_read_header(self):
