@@ -135,7 +135,7 @@ class AnisotropicGreensFunction(object):
             eta += [_eta[:, 0]]
         return eta
 
-    def make_U(selfself, qz, eta, z=None):
+    def _make_U(self, qz, eta, z=None):
         U = np.zeros((3, len(qz)), dtype=complex)
         if z is None:
             for k, alpha in np.ndindex(3, len(qz)):
@@ -145,26 +145,29 @@ class AnisotropicGreensFunction(object):
                 U[k, alpha] = eta[alpha][k] * np.exp(1j * qz[alpha] * z)
         return U
 
-    def make_F(self, qx, qy, qz, eta):
+    def _make_F(self, qx, qy, qz, eta, thickness):
         q = [(qx, qy, _qz) for _qz in qz]
         F = np.zeros((len(qz), len(qz)), dtype=complex)
         # Traction boundary conditions on top
         for i, k, alpha, l in np.ndindex(3, 3, len(qz), 3):
             F[i, alpha] += 1j * self.elasticity_tensor(i, 2, k, l) * q[alpha][k] * eta[alpha][l]
         # Displacement boundary conditions on bottom
-        if self._thickness is not None:
+        if len(qz) > 3:
             for i, alpha in np.ndindex(3, len(qz)):
-                F[i + 3, alpha] = np.exp(-1j * q[alpha][2] * self._thickness) * eta[alpha][i]
+                F[i + 3, alpha] = np.exp(-1j * q[alpha][2] * thickness) * eta[alpha][i]
         return F
 
-    def make_U_and_F(self, qx, qy):
+    def _make_U_and_F(self, qx, qy, thickness, exp_tol=100):
         _qz = self.find_eigenvalues(qx, qy)
-        if self._thickness is None:
+        # If thickness*qz > some threshold, then we need to solve for the
+        # problem of infinite thickness, otherwise we get floating point
+        # issues when evaluating exp(-thickness*qz) in _make_F
+        if thickness is None or np.max(np.real(thickness*_qz)) > exp_tol:
             qz = -1j * _qz
         else:
             qz = np.append(-1j * _qz, 1j * _qz)
         eta = self.find_eigenvectors(qx, qy, qz)
-        return self.make_U(qz, eta), self.make_F(qx, qy, qz, eta)
+        return self._make_U(qz, eta), self._make_F(qx, qy, qz, eta, thickness)
 
     def _gamma_stiffness(self):
         """Returns the 3x3 stiffness matrix at the Gamma point (q=0)"""
@@ -173,39 +176,50 @@ class AnisotropicGreensFunction(object):
                          [self._C[3, 4], self._C[3, 3], self._C[2, 3]],
                          [self._C[2, 4], self._C[2, 3], self._C[2, 2]]]) / self._thickness
 
-    def _greens_function(self, qx, qy, zero_tol=1e-6):
-        if self._thickness is not None and abs(qx) < zero_tol and abs(qy) < zero_tol:
+    def _greens_function(self, qx, qy, thickness, zero_tol=1e-6):
+        if thickness is not None and abs(qx) < zero_tol and abs(qy) < zero_tol:
             # This is zero wavevector. We use the analytical solution in this case.
             return np.linalg.inv(self._gamma_stiffness())
-        U, F = self.make_U_and_F(qx, qy)
+        U, F = self._make_U_and_F(qx, qy, thickness)
         return np.linalg.solve(F.T, U.T)[:3, :]
 
-    def _stiffness(self, qx, qy, zero_tol=1e-6):
+    def _stiffness(self, qx, qy, thickness, zero_tol=1e-6):
         if abs(qx) < zero_tol and abs(qy) < zero_tol:
-            if self._thickness is None:
+            if thickness is None:
                 return np.zeros((3, 3))
             else:
                 return self._gamma_stiffness()
-        if self._thickness is None:
-            U, F = self.make_U_and_F(qx, qy)
+        if thickness is None:
+            U, F = self._make_U_and_F(qx, qy, thickness)
             return np.linalg.solve(U.T, F.T)
         else:
-            return np.linalg.inv(self._greens_function(qx, qy, zero_tol=zero_tol))
+            return np.linalg.inv(self._greens_function(qx, qy, thickness, zero_tol=zero_tol))
 
     def greens_function(self, qx, qy, zero_tol=1e-6):
+        # Note: Normalization of the q vectors is required for numerical stability
+        abs_q = np.sqrt(qx**2 + qy**2)
+        abs_q[abs_q == 0] = 1
+        thickness = [None]*len(abs_q) if self._thickness is None else self._thickness*abs_q
+
         if np.isscalar(qx) and np.isscalar(qy):
-            return self._greens_function(qx, qy, zero_tol=zero_tol)
+            return self._greens_function(qx/abs_q, qy/abs_q, thickness, zero_tol=zero_tol)/abs_q
 
         gf = []
-        for _qx, _qy in zip(qx, qy):
-            gf += [self._greens_function(_qx, _qy, zero_tol=zero_tol)]
+        for _qx, _qy, _abs_q, _thickness in zip(qx, qy, abs_q, thickness):
+            gf += [self._greens_function(_qx/_abs_q, _qy/_abs_q, _thickness, zero_tol=zero_tol)/_abs_q]
         return np.array(gf)
 
     def stiffness(self, qx, qy, zero_tol=1e-6):
+        # Note: Normalization of the q vectors is required for numerical stability
+        abs_q = np.sqrt(qx**2 + qy**2)
+        abs_q[abs_q == 0] = 1
+        thickness = [None]*len(abs_q) if self._thickness is None else self._thickness*abs_q
+
         if np.isscalar(qx) and np.isscalar(qy):
-            return self._stiffness(qx, qy)
+            return self._stiffness(qx/abs_q, qy/abs_q, thickness)*abs_q
 
         gf = []
-        for _qx, _qy in zip(qx, qy):
-            gf += [self._stiffness(_qx, _qy)]
+        for _qx, _qy, _abs_q, _thickness in zip(qx, qy, abs_q, thickness):
+            gf += [self._stiffness(_qx/_abs_q, _qy/_abs_q, _thickness)*_abs_q]
         return np.array(gf)
+    __call__ = stiffness

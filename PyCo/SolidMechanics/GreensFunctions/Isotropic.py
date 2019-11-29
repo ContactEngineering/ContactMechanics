@@ -66,3 +66,4 @@ class IsotropicGreensFunction(object):
         for _qx, _qy in zip(qx, qy):
             gf += [self._stiffness(_qx, _qy)]
         return np.array(gf)
+    __call__ = stiffness
