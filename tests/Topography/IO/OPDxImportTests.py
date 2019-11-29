@@ -1,5 +1,6 @@
 #
 # Copyright 2019 Antoine Sanner
+#           2019 Kai Haase
 # 
 # ### MIT license
 # 
@@ -30,6 +31,8 @@ from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, \
     read_name, DektakQuantUnit, read_dimension2d_content, \
     read_quantunit_content, read_named_struct, read_item, OPDxReader
 
+from PyCo.Topography import read_topography
+
 import pytest
 from NuMPI import MPI
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
@@ -45,6 +48,28 @@ class OPDxSurfaceTest(unittest.TestCase):
 
     def setUp(self):
         pass
+
+    def test_read_filestream(self):
+        """
+        The reader has to work when the file was already opened as non-binary for it to work in topobank.
+        """
+        file_path = os.path.join(DATADIR, 'opdx2.OPDx')
+
+        try:
+            read_topography(file_path)
+        except:
+            self.fail("read_topography() raised an exception (not passing a file stream)!")
+
+        try:
+            f = open(file_path)
+            try:
+                read_topography(f)
+            finally:
+                f.close()
+
+        except:
+            self.fail("read_topography() raised an exception (passing a file stream)!")
+
 
     def test_read_header(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
