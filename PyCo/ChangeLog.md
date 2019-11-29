@@ -2,6 +2,22 @@
 Change log for PyCo
 ===================
 
+v0.53.1 (20Nov19)
+-----------------
+- API: Detrended Topographies with mode "center" keep is_periodic property. Other modes lead to is_periodic=False. 
+  See pastewka/TopoBank/#347
+
+v0.53.0 (20Nov19)
+-----------------
+
+- API: ability to set periodic property of HeightContainer in reader.topography (#198)
+- API: default window for computing PSD is choosen according to topography.is_periodic (#217)
+- Feature: interpolate_fourier pipeline function
+- API: Default of check_boundaries in FreeSystem is False
+- Bug fix: fourier synthesis had a padding line in the generation of topographies with odd number of points (#202)
+- Bug fix: `topography.rms_curvature` no returns rms_curvature, previously rms_laplacian (#200)
+- gnuplot scripts to plot logger output
+
 v0.52.0 (25Aug19)
 -----------------
 

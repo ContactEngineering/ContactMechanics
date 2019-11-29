@@ -168,6 +168,23 @@ class IOTest(unittest.TestCase):
                     assert_array_equal(x.positions(), y.positions())
                     assert_array_equal(x.heights(), y.heights())
 
+    def test_periodic_flag(self):
+        file_list = self.text_example_file_list + self.binary_example_file_list
+        for fn in file_list:
+            reader = open_topography(fn)
+            physical_sizes = None
+            if reader.channels[reader.default_channel]['dim'] != 1:
+                physical_sizes = reader.channels[reader.default_channel]['physical_sizes'] \
+                    if 'physical_sizes' in reader.channels[reader.default_channel] \
+                    else [1., ] * reader.channels[reader.default_channel]['dim']
+            t = reader.topography(physical_sizes=physical_sizes, periodic=True)
+            assert t.is_periodic
+
+            t = reader.topography(physical_sizes=physical_sizes, periodic=False)
+            assert not  t.is_periodic
+
+
+
     def test_reader_arguments(self):
         """Check whether all readers have channel, physical_sizes and height_scale_factor arguments.
         Also check whether we can execute `topography` multiple times for all readers"""
