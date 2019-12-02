@@ -34,6 +34,29 @@ from scipy.linalg import null_space
 
 class AnisotropicGreensFunction(object):
     def __init__(self, C11, C12, C44, thickness=None, R=np.eye(3)):
+        """
+        Compute the surface Green's function for a linear elastic half-space
+        with anisotropic elastic constants. The class supports generic
+        elastic tensors but presently only cubic elastic constants can be
+        passed to the constructor.
+
+        Note that this class fails for an isotropic substrate. Use
+        `IsotropicGreensFunction` instead for isotropic materials.
+
+        Parameters
+        ----------
+        C11 : float
+            C11 elastic constant
+        C12 : float
+            C12 elastic constant
+        C44 : float
+            C44 elastic constant (shear modulus)
+        thickness : float
+            Thickness of the elastic substrate. If None (default) then a
+            substrate of infinite thickness will be computed.
+        R : np.ndarray
+            3x3 rotation matrix for rotation of the elastic constants.
+        """
         self._C11 = C11
         self._C12 = C12
         self._C44 = C44
@@ -216,10 +239,10 @@ class AnisotropicGreensFunction(object):
         thickness = [None]*len(abs_q) if self._thickness is None else self._thickness*abs_q
 
         if np.isscalar(qx) and np.isscalar(qy):
-            return self._stiffness(qx/abs_q, qy/abs_q, thickness)*abs_q
+            return self._stiffness(qx/abs_q, qy/abs_q, thickness, zero_tol=zero_tol)*abs_q
 
         gf = []
         for _qx, _qy, _abs_q, _thickness in zip(qx, qy, abs_q, thickness):
-            gf += [self._stiffness(_qx/_abs_q, _qy/_abs_q, _thickness)*_abs_q]
+            gf += [self._stiffness(_qx/_abs_q, _qy/_abs_q, _thickness, zero_tol=zero_tol)*_abs_q]
         return np.array(gf)
     __call__ = stiffness

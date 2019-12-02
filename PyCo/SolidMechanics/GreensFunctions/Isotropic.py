@@ -32,9 +32,20 @@ import numpy as np
 ###
 
 class IsotropicGreensFunction(object):
-    def __init__(self, mu, nu):
-        self._mu = mu
-        self._nu = nu
+    def __init__(self, shear_modulus, Poisson_ratio):
+        """
+        Compute the surface Green's function for a linear elastic half-space
+        with isotropic elastic constants.
+
+        Parameters
+        ----------
+        shear_modulus : float
+            Shear modulus
+        Poisson_ratio : float
+            Poisson ratio
+        """
+        self._mu = shear_modulus
+        self._nu = Poisson_ratio
 
     def _greens_function(self, qx, qy):
         q = np.sqrt(qx ** 2 + qy ** 2)
