@@ -91,10 +91,16 @@ class IBWSurfaceTest(unittest.TestCase):
 
         reader = IBWReader(file_path)
 
+        """
         self.assertEqual(reader.channels, [{'name': 'HeightRetrace', 'dim': 2, 'unit': 'm'},
                                              {'name': 'AmplitudeRetrace', 'dim': 2, 'unit': ''},
                                              {'name': 'PhaseRetrace', 'dim': 2, 'unit': ''},
                                              {'name': 'ZSensorRetrace', 'dim': 2, 'unit': ''}])
+        """
+        self.assertEqual(reader.channels, [{'name': 'HeightRetrace', 'dim': 2},
+                                             {'name': 'AmplitudeRetrace', 'dim': 2},
+                                             {'name': 'PhaseRetrace', 'dim': 2},
+                                             {'name': 'ZSensorRetrace', 'dim': 2}])
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'example.ibw')
