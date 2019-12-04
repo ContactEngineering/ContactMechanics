@@ -61,15 +61,20 @@ class OPDxSurfaceTest(unittest.TestCase):
             self.fail("read_topography() raised an exception (not passing a file stream)!")
 
         try:
-            f = open(file_path)
-            try:
+            with open(file_path, 'r') as f:
                 read_topography(f)
-            finally:
-                f.close()
-
         except:
-            self.fail("read_topography() raised an exception (passing a file stream)!")
+            self.fail("read_topography() raised an exception (passing a non-binary file stream)!")  
+        finally:
+            f.close()
 
+        try:
+            f = open(file_path, 'rb')
+            read_topography(f)
+        except:
+            self.fail("read_topography() raised an exception (passing a binary file stream)!")  
+        finally:
+            f.close()   
 
     def test_read_header(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
