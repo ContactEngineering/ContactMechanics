@@ -2,7 +2,15 @@
 Change log for PyCo
 ===================
 
-v0.53.1 (20Nov19)
+v.54.0 (06Dec19)
+------------------
+
+- MAINT: correct installation problems because Eigen repository has moved
+- ENH: anisotropic cubic Green's Functions 
+- BUG: NPY reader can now handle filestreams (#209, NUMPI/#24)
+- BUG: opdx reader can now handle filestreams (#209)
+
+v0.53.1 (21Nov19)
 -----------------
 - API: Detrended Topographies with mode "center" keep is_periodic property. Other modes lead to is_periodic=False. 
   See pastewka/TopoBank/#347
