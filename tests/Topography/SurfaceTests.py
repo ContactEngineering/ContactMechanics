@@ -315,7 +315,9 @@ class NonuniformLineScanTest(PyCoTestCase):
         t = NonuniformLineScan(x=[1, 2, 3, 4], y=[2, 4, 6, 8])
         q1, C1 = t.power_spectrum_1D(window='hann')
         q1, C1 = t.detrend('center').power_spectrum_1D(window='hann')
+        q1, C1 = t.detrend('center').power_spectrum_1D()
         q1, C1 = t.detrend('height').power_spectrum_1D(window='hann')
+        q1, C1 = t.detrend('height').power_spectrum_1D()
         # ok can be called without errors
         # TODO add check for values
 
