@@ -51,7 +51,7 @@ from PyCo.Topography.IO import readers
 DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../file_format_examples')
 
 
-@pytest.mark.parametrize("reader", readers.values())
+@pytest.mark.parametrize("reader", readers)
 def test_closes_file_on_failure(reader):
     """
     Tests for each reader class that he doesn't raise a Resourcewarning
@@ -144,10 +144,10 @@ class IOTest(unittest.TestCase):
         for fn in file_list:
             reader = open_topography(fn)
             physical_sizes = None
-            if reader.channels[reader.default_channel]['dim'] != 1:
-                physical_sizes = reader.channels[reader.default_channel]['physical_sizes'] \
-                    if 'physical_sizes' in reader.channels[reader.default_channel] \
-                    else [1., ] * reader.channels[reader.default_channel]['dim']
+            if reader.default_channel.dim != 1:
+                physical_sizes = reader.default_channel.physical_sizes \
+                    if reader.default_channel.physical_sizes is not None \
+                    else [1., ] * reader.default_channel.dim
             t = reader.topography(physical_sizes=physical_sizes)
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
@@ -173,10 +173,10 @@ class IOTest(unittest.TestCase):
         for fn in file_list:
             reader = open_topography(fn)
             physical_sizes = None
-            if reader.channels[reader.default_channel]['dim'] != 1:
-                physical_sizes = reader.channels[reader.default_channel]['physical_sizes'] \
-                    if 'physical_sizes' in reader.channels[reader.default_channel] \
-                    else [1., ] * reader.channels[reader.default_channel]['dim']
+            if reader.default_channel.dim != 1:
+                physical_sizes = reader.default_channel.physical_sizes \
+                    if reader.default_channel.physical_sizes is not None \
+                    else [1., ] * reader.default_channel.dim
             t = reader.topography(physical_sizes=physical_sizes, periodic=True)
             assert t.is_periodic
 
@@ -192,17 +192,17 @@ class IOTest(unittest.TestCase):
         for fn in self.text_example_file_list + self.binary_example_file_list:
             # Test open -> topography
             r = open_topography(fn)
-            physical_sizes = None if r.channels[0]['dim'] == 1 else physical_sizes0
-            t = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            physical_sizes = None if r.channels[0].dim == 1 else physical_sizes0
+            t = r.topography(channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t.physical_sizes, physical_sizes)
             # Second call to topography
-            t2 = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            t2 = r.topography(channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t2.physical_sizes, physical_sizes)
             assert_array_equal(t.heights(), t2.heights())
             # Test read_topography
-            t = read_topography(fn, channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            t = read_topography(fn, channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t.physical_sizes, physical_sizes)
 
@@ -214,12 +214,12 @@ class IOTest(unittest.TestCase):
             print(fn)
             # Test open -> topography
             r = open_topography(open(fn, mode='rb'))
-            physical_sizes = None if r.channels[0]['dim'] == 1 else physical_sizes0
-            t = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            physical_sizes = None if r.channels[0].dim == 1 else physical_sizes0
+            t = r.topography(channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t.physical_sizes, physical_sizes)
             # Second call to topography
-            t2 = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            t2 = r.topography(channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t2.physical_sizes, physical_sizes)
             assert_array_equal(t.heights(), t2.heights())
