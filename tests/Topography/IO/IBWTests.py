@@ -55,7 +55,7 @@ class IBWSurfaceTest(unittest.TestCase):
         try:
             read_topography(file_path)
         except:
-            self.fail("read_topography() raised an exception (not passing a file path)!")
+            self.fail("read_topography() raised an exception (not passing a file stream)!")
 
 
         try:
