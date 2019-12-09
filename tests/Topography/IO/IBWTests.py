@@ -44,22 +44,21 @@ DATADIR = os.path.join(
 class IBWSurfaceTest(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.file_path = os.path.join(DATADIR, 'example.ibw')
 
     def test_read_filestream(self):
         """
         The reader has to work when the file was already opened as binary for it to work in topobank.
         """
-        file_path = os.path.join(DATADIR, 'example.ibw')
 
         try:
-            read_topography(file_path)
+            read_topography(self.file_path)
         except:
             self.fail("read_topography() raised an exception (not passing a file stream)!")
 
 
         try:
-            f = open(file_path, 'r')
+            f = open(self.file_path, 'r')
             read_topography(f)
         except:
             self.fail("read_topography() raised an exception (passing a non-binary file stream)!")                
@@ -68,28 +67,25 @@ class IBWSurfaceTest(unittest.TestCase):
         
 
         try:
-            f = open(file_path, 'rb')
+            f = open(self.file_path, 'rb')
             read_topography(f)
         except:
             self.fail("read_topography() raised an exception (passing a binary file stream)!")
         finally:
             f.close()
-        
 
 
     def test_init(self):
-        file_path = os.path.join(DATADIR, 'example.ibw')
 
-        reader = IBWReader(file_path)
+        reader = IBWReader(self.file_path)
 
         self.assertEqual(reader._channels, ['HeightRetrace', 'AmplitudeRetrace', 'PhaseRetrace', 'ZSensorRetrace'])
         self.assertEqual(reader._default_channel, 0)
         self.assertEqual(reader.data['wave_header']['next'], 114425520)
 
     def test_channels(self):
-        file_path = os.path.join(DATADIR, 'example.ibw')
 
-        reader = IBWReader(file_path)
+        reader = IBWReader(self.file_path)
 
         """
         self.assertEqual(reader.channels, [{'name': 'HeightRetrace', 'dim': 2, 'unit': 'm'},
@@ -103,10 +99,17 @@ class IBWSurfaceTest(unittest.TestCase):
                                              {'name': 'ZSensorRetrace', 'dim': 2}])
 
     def test_topography(self):
-        file_path = os.path.join(DATADIR, 'example.ibw')
 
-        reader = IBWReader(file_path)
+        reader = IBWReader(self.file_path)
         topo = reader.topography()
 
         self.assertAlmostEqual(topo.heights()[0, 0], -6.6641803e-10, places=3)
+
+    def test_topography_all_channels(self):
+        """
+        Test whether a topography can be read from every channel.
+        """
+        reader = IBWReader(self.file_path)
+        for channel_no, channel_info in enumerate(reader.channels):
+            reader.topography(channel=channel_no)
 
