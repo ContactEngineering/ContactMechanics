@@ -1059,11 +1059,9 @@ class DerivativeTest(PyCoTestCase):
 
     def test_analytic(self):
         nb_pts = 1488
-        s = 7
+        s = 4*np.pi
         x = np.arange(nb_pts)*s/nb_pts
         h = np.sin(x)
-        x += 0.5*s/nb_pts
-        dh = np.cos(x)
         t1 = UniformLineScan(h, (s,))
         t2 = UniformLineScan(h, (s,), periodic=True)
         t3 = t1.to_nonuniform()
@@ -1072,9 +1070,17 @@ class DerivativeTest(PyCoTestCase):
         d2 = t2.derivative(1)
         d3 = t3.derivative(1)
 
-        self.assertArrayAlmostEqual(d1, dh[:-1], tol=1e-6)
-        self.assertArrayAlmostEqual(d2[:-1], dh[:-1], tol=1e-6)
-        self.assertArrayAlmostEqual(d3, dh[:-1], tol=1e-6)
+        self.assertArrayAlmostEqual(d1, np.cos(x[:-1]+(x[1]-x[0])/2), tol=1e-5)
+        self.assertArrayAlmostEqual(d2, np.cos(x+(x[1]-x[0])/2), tol=1e-5)
+        self.assertArrayAlmostEqual(d3, np.cos(x[:-1]+(x[1]-x[0])/2), tol=1e-5)
+
+        d1 = t1.derivative(2)
+        d2 = t2.derivative(2)
+        d3 = t3.derivative(2)
+
+        self.assertArrayAlmostEqual(d1, -np.sin(x[:-2]+(x[1]-x[0])), tol=1e-5)
+        self.assertArrayAlmostEqual(d2, -np.sin(x+(x[1]-x[0])), tol=1e-5)
+        self.assertArrayAlmostEqual(d3, -np.sin(x[:-2]+(x[1]-x[0])), tol=1e-5)
 
 
 class PickeTest(PyCoTestCase):
