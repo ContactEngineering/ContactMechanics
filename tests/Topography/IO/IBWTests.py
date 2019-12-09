@@ -48,14 +48,14 @@ class IBWSurfaceTest(unittest.TestCase):
 
     def test_read_filestream(self):
         """
-        The reader has to work when the file was already opened as non-binary for it to work in topobank.
+        The reader has to work when the file was already opened as binary for it to work in topobank.
         """
         file_path = os.path.join(DATADIR, 'example.ibw')
 
         try:
             read_topography(file_path)
         except:
-            self.fail("read_topography() raised an exception (not passing a file stream)!")
+            self.fail("read_topography() raised an exception (not passing a file path)!")
 
 
         try:
