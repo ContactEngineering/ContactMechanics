@@ -864,8 +864,8 @@ class diSurfaceTest(unittest.TestCase):
 
 
             for i, (rms, name) in enumerate(rmslist):
-                assert reader.channels[i]["name"] == name
-                surface = reader.topography(channel=i)
+                assert reader.channels[i].name == name
+                surface = reader.topography(channel_index=i)
 
                 nx, ny = surface.nb_grid_pts
                 self.assertEqual(nx, n)
