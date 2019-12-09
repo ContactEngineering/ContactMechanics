@@ -314,9 +314,15 @@ class NonuniformLineScanTest(PyCoTestCase):
         #
         t = NonuniformLineScan(x=[1, 2, 3, 4], y=[2, 4, 6, 8])
         q1, C1 = t.power_spectrum_1D(window='hann')
+        q1, C1 = t.detrend('center').power_spectrum_1D(window='hann')
+        q1, C1 = t.detrend('height').power_spectrum_1D(window='hann')
         # ok can be called without errors
         # TODO add check for values
 
+    def test_detrend(self):
+        t = read_xyz(os.path.join(DATADIR,  'example.asc'))
+        self.assertFalse(t.detrend('center').is_periodic)
+        self.assertFalse(t.detrend('height').is_periodic)
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -955,6 +961,7 @@ class xyzSurfaceTest(unittest.TestCase):
         self.assertEqual(len(x), len(y))
         self.assertFalse(surface.is_uniform)
         self.assertEqual(surface.dim, 1)
+        self.assertFalse(surface.is_periodic)
 
 
 class PipelineTests(unittest.TestCase):
