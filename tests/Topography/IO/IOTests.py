@@ -151,6 +151,7 @@ class IOTest(unittest.TestCase):
             t = reader.topography(physical_sizes=physical_sizes)
             s = pickle.dumps(t)
             pickled_t = pickle.loads(s)
+            print(type(pickled_t))
 
             #
             # Compare some attributes after unpickling
@@ -162,7 +163,7 @@ class IOTest(unittest.TestCase):
                 pickled_t = [pickled_t]
 
             for x, y in zip(t, pickled_t):
-                for attr in ['dim', 'physical_sizes']:
+                for attr in ['dim', 'physical_sizes', 'is_periodic']:
                     assert getattr(x, attr) == getattr(y, attr)
                 if x.physical_sizes is not None:
                     assert_array_equal(x.positions(), y.positions())
