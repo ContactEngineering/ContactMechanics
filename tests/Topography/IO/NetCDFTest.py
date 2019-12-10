@@ -63,7 +63,7 @@ def test_save_and_load(comm):
     # Attempt to open file in parallel
     r = NCReader('parallel_save_test.nc', communicator=comm)
 
-    assert r.channels[0]["nb_grid_pts"] == nb_grid_pts
+    assert r.channels[0].nb_grid_pts == nb_grid_pts
 
     t3 = r.topography(subdomain_locations=substrate.subdomain_locations,
                       nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts)
