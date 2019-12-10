@@ -183,8 +183,6 @@ class IOTest(unittest.TestCase):
             t = reader.topography(physical_sizes=physical_sizes, periodic=False)
             assert not  t.is_periodic
 
-
-
     def test_reader_arguments(self):
         """Check whether all readers have channel, physical_sizes and height_scale_factor arguments.
         Also check whether we can execute `topography` multiple times for all readers"""
