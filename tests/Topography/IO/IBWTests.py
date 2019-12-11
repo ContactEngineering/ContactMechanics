@@ -24,11 +24,12 @@
 #
 
 import unittest
+import pytest
 import os
 
 from PyCo.Topography.IO.IBW import IBWReader
-
 from PyCo.Topography import read_topography
+from PyCo.Topography import open_topography
 
 import pytest
 from NuMPI import MPI
@@ -79,7 +80,7 @@ class IBWSurfaceTest(unittest.TestCase):
 
         reader = IBWReader(self.file_path)
 
-        self.assertEqual(reader._channels, ['HeightRetrace', 'AmplitudeRetrace', 'PhaseRetrace', 'ZSensorRetrace'])
+        self.assertEqual(reader._channel_names, ['HeightRetrace', 'AmplitudeRetrace', 'PhaseRetrace', 'ZSensorRetrace'])
         self.assertEqual(reader._default_channel, 0)
         self.assertEqual(reader.data['wave_header']['next'], 114425520)
 
@@ -87,16 +88,29 @@ class IBWSurfaceTest(unittest.TestCase):
 
         reader = IBWReader(self.file_path)
 
-        """
-        self.assertEqual(reader.channels, [{'name': 'HeightRetrace', 'dim': 2, 'unit': 'm'},
-                                             {'name': 'AmplitudeRetrace', 'dim': 2, 'unit': ''},
-                                             {'name': 'PhaseRetrace', 'dim': 2, 'unit': ''},
-                                             {'name': 'ZSensorRetrace', 'dim': 2, 'unit': ''}])
-        """
-        self.assertEqual(reader.channels, [{'name': 'HeightRetrace', 'dim': 2},
-                                             {'name': 'AmplitudeRetrace', 'dim': 2},
-                                             {'name': 'PhaseRetrace', 'dim': 2},
-                                             {'name': 'ZSensorRetrace', 'dim': 2}])
+        exp_size = 5.009784735812133e-08  # 50 nm, see also gwyddion result
+
+        expected_channels = [
+            {'name': 'HeightRetrace',
+             'dim': 2,
+             'physical_sizes': (exp_size,exp_size)},
+            {'name': 'AmplitudeRetrace',
+             'dim': 2,
+             'physical_sizes': (exp_size,exp_size)},
+            {'name': 'PhaseRetrace',
+             'dim': 2,
+             'physical_sizes': (exp_size,exp_size)},
+            {'name': 'ZSensorRetrace',
+             'dim': 2,
+             'physical_sizes': (exp_size,exp_size)}]
+
+        self.assertEqual(len(reader.channels), len(expected_channels))
+
+        for exp_ch, ch in zip(expected_channels, reader.channels):
+            self.assertEqual(exp_ch['name'], ch['name'])
+            self.assertEqual(exp_ch['dim'], ch['dim'])
+            self.assertAlmostEqual(exp_ch['physical_sizes'][0], ch['physical_sizes'][0])
+            self.assertAlmostEqual(exp_ch['physical_sizes'][1], ch['physical_sizes'][1])
 
     def test_topography(self):
 
@@ -112,4 +126,25 @@ class IBWSurfaceTest(unittest.TestCase):
         reader = IBWReader(self.file_path)
         for channel_no, channel_info in enumerate(reader.channels):
             reader.topography(channel=channel_no)
+
+
+def test_ibw_kpfm_file():
+    """
+    We had an issue with KPFM files, see
+    https://github.com/pastewka/PyCo/pull/231#discussion_r354687995
+
+    This test should ensure that it's fixed.
+    """
+    fn = os.path.join(DATADIR, 'spot_1-1000nm.ibw')
+    reader = open_topography(fn)
+
+    #
+    # Try to read all channels
+    #
+    for channel_no, channel_info in enumerate(reader.channels):
+        assert pytest.approx(channel_info['physical_sizes'][0], abs=0.01) == 2e-05  # 20 µm
+        assert pytest.approx(channel_info['physical_sizes'][1], abs=0.01) == 2e-05  # 20 µm
+
+        reader.topography(channel=channel_no)
+
 
