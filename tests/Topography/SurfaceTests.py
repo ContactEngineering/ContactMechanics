@@ -48,7 +48,7 @@ from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, ma
                              read_topography)
 from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 
-from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz
+from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz, AscReader
 
 from PyCo.Topography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
 from PyCo.Topography.IO import detect_format, CannotDetectFileFormat
@@ -425,6 +425,9 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         bw = surf.bandwidth()
         self.assertAlmostEqual(bw[0], 1.5/10)
         self.assertAlmostEqual(bw[1], 1.5)
+
+        reader = AscReader(os.path.join(DATADIR,  'example5.txt'))
+        self.assertTrue(reader.default_channel.physical_sizes is None)
 
     def test_example6(self):
         topography_file = open_topography(os.path.join(DATADIR, 'example6.txt'))
