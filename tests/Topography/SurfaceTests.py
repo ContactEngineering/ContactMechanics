@@ -901,7 +901,6 @@ class ibwSurfaceTest(unittest.TestCase):
         # how to assign a valid unit to every channel - see IBW.py
         self.assertTrue(surface.is_uniform)
 
-    @pytest.mark.skip("FIXME!!! Test fails")
     def test_detect_format_then_read(self):
         f = open(os.path.join(DATADIR,  'example.ibw'), 'rb')
         fmt = detect_format(f)
