@@ -147,26 +147,32 @@ class IOTest(unittest.TestCase):
             if reader.default_channel.dim != 1:
                 physical_sizes = reader.default_channel.physical_sizes \
                     if reader.default_channel.physical_sizes is not None \
-                    else [1., ] * reader.default_channel.dim
-            t = reader.topography(physical_sizes=physical_sizes)
-            s = pickle.dumps(t)
-            pickled_t = pickle.loads(s)
+                    else (1.,) * reader.default_channel.dim
+            
+            topography = reader.topography(physical_sizes=physical_sizes)
+            topographies = [topography]
+            if hasattr(topography, 'to_uniform'):
+                topographies += [topography.to_uniform(100, 0)]
+            for t in topographies:
+                s = pickle.dumps(t)
+                pickled_t = pickle.loads(s)                
 
-            #
-            # Compare some attributes after unpickling
-            #
-            # sometimes the result is a list of topographies
-            multiple = isinstance(t, list)
-            if not multiple:
-                t = [t]
-                pickled_t = [pickled_t]
+                #
+                # Compare some attributes after unpickling
+                #
+                # sometimes the result is a list of topographies
+                multiple = isinstance(t, list)
+                if not multiple:
+                    t = [t]
+                    pickled_t = [pickled_t]
 
-            for x, y in zip(t, pickled_t):
-                for attr in ['dim', 'physical_sizes']:
-                    assert getattr(x, attr) == getattr(y, attr)
-                if x.physical_sizes is not None:
-                    assert_array_equal(x.positions(), y.positions())
-                    assert_array_equal(x.heights(), y.heights())
+                for x, y in zip(t, pickled_t):
+                    for attr in ['dim', 'physical_sizes', 'is_periodic']:
+                        assert getattr(x, attr) == getattr(y, attr)
+                    if x.physical_sizes is not None:
+                        assert_array_equal(x.positions(), y.positions())
+                        assert_array_equal(x.heights(), y.heights())
+
 
     def test_periodic_flag(self):
         file_list = self.text_example_file_list + self.binary_example_file_list
