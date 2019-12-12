@@ -51,7 +51,7 @@ class OPDxSurfaceTest(unittest.TestCase):
 
     def test_read_filestream(self):
         """
-        The reader has to work when the file was already opened as non-binary for it to work in topobank.
+        The reader has to work when the file was already opened as binary for it to work in topobank.
         """
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
@@ -68,8 +68,17 @@ class OPDxSurfaceTest(unittest.TestCase):
                 f.close()
 
         except:
-            self.fail("read_topography() raised an exception (passing a file stream)!")
+            self.fail("read_topography() raised an exception (passing a non-binary file stream)!")
 
+        try:
+            f = open(file_path, mode='rb')
+            try:
+                read_topography(f)
+            finally:
+                f.close()
+
+        except:
+            self.fail("read_topography() raised an exception (passing a binary file stream)!")
 
     def test_read_header(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
