@@ -2,16 +2,21 @@
 Change log for PyCo
 ===================
 
-v.54.1 (13Dec19)
-------------------
+v.54.2 (13Dec19)
+----------------
 
-- ENH: higher order derivative for periodic surface (234,#227)
+- BUG: fix rms_laplacian for periodic topographies (#247)
+
+v.54.1 (13Dec19)
+----------------
+
+- ENH: higher order derivative for periodic surface (#234,#227)
 - ENH: new reader for Igor Binary Wave files (IBW) (#224)
 - BUG: opdx reader can now handle binary filestreams (#209)
 - BUG: store and restore periodic flag in NonuniformTopography (#240)
 
 v.54.0 (06Dec19)
-------------------
+----------------
 
 - MAINT: correct installation problems because Eigen repository has moved
 - ENH: anisotropic cubic Green's Functions 
