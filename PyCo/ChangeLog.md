@@ -5,7 +5,7 @@ Change log for PyCo
 v.54.1 (13Dec19)
 ------------------
 
-- ENH: higher order derivative for periodic surface (234,#227)
+- ENH: higher order derivative for periodic surface (#234,#227)
 - ENH: new reader for Igor Binary Wave files (IBW) (#224)
 - BUG: opdx reader can now handle binary filestreams (#209)
 - BUG: store and restore periodic flag in NonuniformTopography (#240)
