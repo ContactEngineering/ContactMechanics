@@ -66,7 +66,8 @@ class SinewaveTestUniform(unittest.TestCase):
 
         self.assertEqual(numerical,analytical)
 
-def test_rms_curvature_sinewave_2D():
+@pytest.mark.parametrize("periodic", [False, True])
+def test_rms_curvature_sinewave_2D(periodic):
     precision = 5
 
     n = 256
@@ -75,7 +76,7 @@ def test_rms_curvature_sinewave_2D():
     L = float(n)
     size=(L,L)
 
-    surf = Topography(np.sin(2 * np.pi / L * X) *hm, physical_sizes=size)
+    surf = Topography(np.sin(2 * np.pi / L * X) *hm, physical_sizes=size, periodic=periodic)
     numerical_lapl = surf.rms_laplacian()
     analytical_lapl = np.sqrt((2 * np.pi / L )**4 *hm**2 /2)
     #print(numerical-analytical)
