@@ -261,3 +261,7 @@ class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
         x, y = surface.positions_and_heights()
         self.assertGreater(len(x), 0)
         self.assertEqual(len(x), len(y))
+
+@pytest.mark.parametrize("reader", readers)
+def test_readers_have_name(reader):
+    reader.name()
