@@ -51,7 +51,7 @@ class OPDxSurfaceTest(unittest.TestCase):
 
     def test_read_filestream(self):
         """
-        The reader has to work when the file was already opened as non-binary for it to work in topobank.
+        The reader has to work when the file was already opened as binary for it to work in topobank.
         """
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
@@ -61,15 +61,57 @@ class OPDxSurfaceTest(unittest.TestCase):
             self.fail("read_topography() raised an exception (not passing a file stream)!")
 
         try:
-            f = open(file_path)
+            with open(file_path, 'r') as f:
+                read_topography(f)
+        except:
+            self.fail("read_topography() raised an exception (passing a non-binary file stream)!")  
+        finally:
+            f.close()
+
+        try:
+            f = open(file_path, 'rb')
+            read_topography(f)
+        except:
+            self.fail("read_topography() raised an exception (passing a binary file stream)!")  
+        finally:
+            f.close()   
+
+    def test_read_filestream(self):
+        """
+        The reader has to work when the file was already opened as binary for it to work in topobank.
+        """
+        file_path = os.path.join(DATADIR, 'opdx2.OPDx')
+
+        try:
+            read_topography(file_path)
+        except:
+            self.fail("read_topography() raised an exception (not passing a file stream)!")
+
+        try:
+            with open(file_path, 'r') as f:
+                read_topography(f)
+        except:
+            self.fail("read_topography() raised an exception (passing a non-binary file stream)!")
+        finally:
+            f.close()
+
+        try:
+            f = open(file_path, 'rb')
+            read_topography(f)
+        except:
+            self.fail("read_topography() raised an exception (passing a binary file stream)!")
+        finally:
+            f.close()
+
+        try:
+            f = open(file_path, mode='rb')
             try:
                 read_topography(f)
             finally:
                 f.close()
 
         except:
-            self.fail("read_topography() raised an exception (passing a file stream)!")
-
+            self.fail("read_topography() raised an exception (passing a binary file stream)!")
 
     def test_read_header(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
@@ -83,7 +125,9 @@ class OPDxSurfaceTest(unittest.TestCase):
         # Default channel should be 1, 'raw'
         self.assertEqual(loader._default_channel, 1)
 
+        #
         # Channel 0: Image
+        #
         self.assertEqual(channel_0['Name'], 'Image')
         self.assertEqual(channel_0['Time'], '12:53:14 PM')
 
@@ -94,8 +138,17 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(channel_0['Height_value'], 35.85522403809594)
         self.assertEqual(channel_0['z_scale'], 1.0)
 
-        # Channel 1: Raw
+        # .. mandatory keys
+        self.assertEqual(channel_0['name'], 'Image')
+        self.assertEqual(channel_0['dim'], 2)
+        self.assertAlmostEqual(channel_0['physical_sizes'][0], 35.85522403809594)
+        self.assertAlmostEqual(channel_0['physical_sizes'][1], 47.81942809668896)
+        self.assertAlmostEqual(channel_0['nb_grid_pts'][0], 960)
+        self.assertAlmostEqual(channel_0['nb_grid_pts'][1], 1280)
 
+        #
+        # Channel 1: Raw
+        #
         self.assertEqual(channel_1['Name'], 'Raw')
         self.assertEqual(channel_1['Time'], '12:53:14 PM')
 
@@ -105,6 +158,14 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(channel_1['Width_value'], 47.81942809668896)
         self.assertEqual(channel_1['Height_value'], 35.85522403809594)
         self.assertEqual(channel_1['z_scale'], 78.592625, )
+
+        # .. mandatory keys
+        self.assertEqual(channel_1['name'], 'Raw')
+        self.assertEqual(channel_1['dim'], 2)
+        self.assertAlmostEqual(channel_1['physical_sizes'][0], 35.85522403809594)
+        self.assertAlmostEqual(channel_1['physical_sizes'][1], 47.81942809668896)
+        self.assertAlmostEqual(channel_1['nb_grid_pts'][0], 960)
+        self.assertAlmostEqual(channel_1['nb_grid_pts'][1], 1280)
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
