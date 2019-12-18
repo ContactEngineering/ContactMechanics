@@ -162,5 +162,6 @@ def test_ibw_file_with_one_channel_without_name():
 
     ch_info = reader.channels[0]
 
-    assert ch_info['name'] == 'Default'
+    assert ch_info['name'] == 'no name (1)'  # we could use "Default" here, but what if there are multiple no names?
+    assert ch_info['dim'] == 2
     # What else to check?
