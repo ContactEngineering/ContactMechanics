@@ -147,4 +147,20 @@ def test_ibw_kpfm_file():
 
         reader.topography(channel=channel_no)
 
+def test_ibw_file_with_one_channel_without_name():
+    """
+     After implementing new IBW readers there was an issue
+     https://github.com/pastewka/TopoBank/issues/413
 
+     This test should ensure that it's fixed.
+     """
+    fn = os.path.join(DATADIR, "10x10-one_channel_without_name.ibw")
+
+    reader = open_topography(fn)
+
+    assert len(reader.channels) == 1
+
+    ch_info = reader.channels[0]
+
+    assert ch_info['name'] == 'Default'
+    # What else to check?
