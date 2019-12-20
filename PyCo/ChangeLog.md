@@ -2,6 +2,11 @@
 Change log for PyCo
 ===================
 
+v.54.3 (20Dec19)
+----------------
+
+- BUG: Fixes assertion because of wrong number of channel names (#252)
+
 v.54.2 (13Dec19)
 ----------------
 
