@@ -752,19 +752,38 @@ class LinearCorePotential(ChildPotential):
     makes potentials maximally robust for the use with very bad initial
     parameters. Consider using this instead of loosing time guessing initial
     states for optimization.
+
+    The repulsive part of the potential is linear, meaning that the pressure is
+    constant. This thus corresponds to an ideal plastic model.
     """
-    def __init__(self, parent_potential, r_ti=None):
+    def __init__(self, parent_potential, r_ti=None, hardness=None):
         """
-        Keyword Arguments:
-        r_ti    -- (default r_min/2) transition point between linear function
+        Parameters:
+        -----------
+        r_ti: (default r_min/2) transition point between linear function
                    and lj, defaults to r_min
+        hardness:
+        maximum repulsive stress.
+        r_ti is choosen so that the maximum repulsive stress is hardness
         """
         # pylint: disable=super-init-not-called
         # not calling the superclass's __init__ because this is used in diamond
         # inheritance and I do not want to have to worry about python's method
         # nb_grid_pts order
         super().__init__(parent_potential)
-        self.r_ti = r_ti if r_ti is not None else parent_potential.r_min/2
+
+        if hardness is not None:
+            def f(r):
+                pot, pres, curb =  self.parent_potential.evaluate(r, forces=True, curb=True)
+                return (pres - hardness)
+
+            def fprime(r):
+               pot, pres, curb =  self.parent_potential.evaluate(r, forces=True, curb=True)
+               return -curb
+
+            self.r_ti = scipy.optimize.newton(f, parent_potential.r_min, fprime)
+        else:
+            self.r_ti = r_ti if r_ti is not None else parent_potential.r_min/2
         self.lin_part = self.compute_linear_part()
 
     def __getstate__(self):
