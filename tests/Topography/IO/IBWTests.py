@@ -164,4 +164,5 @@ def test_ibw_file_with_one_channel_without_name():
 
     assert ch_info['name'] == 'no name (1)'  # we could use "Default" here, but what if there are multiple no names?
     assert ch_info['dim'] == 2
-    # What else to check?
+    assert ch_info['nb_grid_pts'] == (10,10)
+    # TODO when the new ChannelInfo objects are used, we should check here if all expected fields are set correclty
