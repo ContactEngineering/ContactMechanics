@@ -2,7 +2,8 @@ from PyCo.Topography.Generation import fourier_synthesis
 import pytest
 import numpy as np
 
-@pytest.mark.parametrize("n", [128,129])
+
+@pytest.mark.parametrize("n", [128, 129])
 def test_fourier_synthesis(n):
     H = 0.74
     rms_slope = 1.2
@@ -18,4 +19,4 @@ def test_fourier_synthesis(n):
     qx, psdx = topography.power_spectrum_1D()
     qy, psdy = topography.transpose().power_spectrum_1D()
 
-    assert psdy[-1] < 10 * psdx[-1] # assert psdy is not much bigger
+    assert psdy[-1] < 10 * psdx[-1]  # assert psdy is not much bigger
