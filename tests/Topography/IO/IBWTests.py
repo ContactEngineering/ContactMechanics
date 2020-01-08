@@ -107,10 +107,10 @@ class IBWSurfaceTest(unittest.TestCase):
         self.assertEqual(len(reader.channels), len(expected_channels))
 
         for exp_ch, ch in zip(expected_channels, reader.channels):
-            self.assertEqual(exp_ch['name'], ch['name'])
-            self.assertEqual(exp_ch['dim'], ch['dim'])
-            self.assertAlmostEqual(exp_ch['physical_sizes'][0], ch['physical_sizes'][0])
-            self.assertAlmostEqual(exp_ch['physical_sizes'][1], ch['physical_sizes'][1])
+            self.assertEqual(exp_ch['name'], ch.name)
+            self.assertEqual(exp_ch['dim'], ch.dim)
+            self.assertAlmostEqual(exp_ch['physical_sizes'][0], ch.physical_sizes[0])
+            self.assertAlmostEqual(exp_ch['physical_sizes'][1], ch.physical_sizes[1])
 
     def test_topography(self):
 
@@ -124,8 +124,8 @@ class IBWSurfaceTest(unittest.TestCase):
         Test whether a topography can be read from every channel.
         """
         reader = IBWReader(self.file_path)
-        for channel_no, channel_info in enumerate(reader.channels):
-            reader.topography(channel=channel_no)
+        for channel_info in reader.channels:
+            channel_info.topography()
 
 
 def test_ibw_kpfm_file():
@@ -141,11 +141,11 @@ def test_ibw_kpfm_file():
     #
     # Try to read all channels
     #
-    for channel_no, channel_info in enumerate(reader.channels):
-        assert pytest.approx(channel_info['physical_sizes'][0], abs=0.01) == 2e-05  # 20 µm
-        assert pytest.approx(channel_info['physical_sizes'][1], abs=0.01) == 2e-05  # 20 µm
+    for channel_info in reader.channels:
+        assert pytest.approx(channel_info.physical_sizes[0], abs=0.01) == 2e-05  # 20 µm
+        assert pytest.approx(channel_info.physical_sizes[1], abs=0.01) == 2e-05  # 20 µm
 
-        reader.topography(channel=channel_no)
+        channel_info.topography()
 
 def test_ibw_file_with_one_channel_without_name():
     """
@@ -162,7 +162,7 @@ def test_ibw_file_with_one_channel_without_name():
 
     ch_info = reader.channels[0]
 
-    assert ch_info['name'] == 'no name (1)'  # we could use "Default" here, but what if there are multiple no names?
-    assert ch_info['dim'] == 2
-    assert ch_info['nb_grid_pts'] == (10,10)
+    assert ch_info.name == 'no name (1)'  # we could use "Default" here, but what if there are multiple no names?
+    assert ch_info.dim == 2
+    assert ch_info.nb_grid_pts == (10, 10)
     # TODO when the new ChannelInfo objects are used, we should check here if all expected fields are set correclty

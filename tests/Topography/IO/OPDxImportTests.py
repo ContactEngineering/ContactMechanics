@@ -123,57 +123,55 @@ class OPDxSurfaceTest(unittest.TestCase):
         # Check if metadata has been read in
 
         # Default channel should be 1, 'raw'
-        self.assertEqual(loader._default_channel, 1)
+        self.assertEqual(loader.default_channel.index, 1)
 
         #
         # Channel 0: Image
         #
-        self.assertEqual(channel_0['Name'], 'Image')
-        self.assertEqual(channel_0['Time'], '12:53:14 PM')
+        self.assertEqual(channel_0.info['Time'], '12:53:14 PM')
 
-        self.assertEqual(channel_0['ImageHeight'], 960)
-        self.assertEqual(channel_0['ImageWidth'], 1280)
+        self.assertEqual(channel_0.info['ImageHeight'], 960)
+        self.assertEqual(channel_0.info['ImageWidth'], 1280)
 
-        self.assertEqual(channel_0['Width_value'], 47.81942809668896)
-        self.assertEqual(channel_0['Height_value'], 35.85522403809594)
-        self.assertEqual(channel_0['z_scale'], 1.0)
+        self.assertEqual(channel_0.info['Width_value'], 47.81942809668896)
+        self.assertEqual(channel_0.info['Height_value'], 35.85522403809594)
+        self.assertEqual(channel_0.info['z_scale'], 1.0)
 
         # .. mandatory keys
-        self.assertEqual(channel_0['name'], 'Image')
-        self.assertEqual(channel_0['dim'], 2)
-        self.assertAlmostEqual(channel_0['physical_sizes'][0], 35.85522403809594)
-        self.assertAlmostEqual(channel_0['physical_sizes'][1], 47.81942809668896)
-        self.assertAlmostEqual(channel_0['nb_grid_pts'][0], 960)
-        self.assertAlmostEqual(channel_0['nb_grid_pts'][1], 1280)
+        self.assertEqual(channel_0.name, 'Image')
+        self.assertEqual(channel_0.dim, 2)
+        self.assertAlmostEqual(channel_0.physical_sizes[0], 35.85522403809594)
+        self.assertAlmostEqual(channel_0.physical_sizes[1], 47.81942809668896)
+        self.assertAlmostEqual(channel_0.nb_grid_pts[0], 960)
+        self.assertAlmostEqual(channel_0.nb_grid_pts[1], 1280)
 
         #
         # Channel 1: Raw
         #
-        self.assertEqual(channel_1['Name'], 'Raw')
-        self.assertEqual(channel_1['Time'], '12:53:14 PM')
+        self.assertEqual(channel_1.info['Time'], '12:53:14 PM')
 
-        self.assertEqual(channel_1['ImageHeight'], 960)
-        self.assertEqual(channel_1['ImageWidth'], 1280)
+        self.assertEqual(channel_1.info['ImageHeight'], 960)
+        self.assertEqual(channel_1.info['ImageWidth'], 1280)
 
-        self.assertEqual(channel_1['Width_value'], 47.81942809668896)
-        self.assertEqual(channel_1['Height_value'], 35.85522403809594)
-        self.assertEqual(channel_1['z_scale'], 78.592625, )
+        self.assertEqual(channel_1.info['Width_value'], 47.81942809668896)
+        self.assertEqual(channel_1.info['Height_value'], 35.85522403809594)
+        self.assertEqual(channel_1.info['z_scale'], 78.592625, )
 
         # .. mandatory keys
-        self.assertEqual(channel_1['name'], 'Raw')
-        self.assertEqual(channel_1['dim'], 2)
-        self.assertAlmostEqual(channel_1['physical_sizes'][0], 35.85522403809594)
-        self.assertAlmostEqual(channel_1['physical_sizes'][1], 47.81942809668896)
-        self.assertAlmostEqual(channel_1['nb_grid_pts'][0], 960)
-        self.assertAlmostEqual(channel_1['nb_grid_pts'][1], 1280)
+        self.assertEqual(channel_1.name, 'Raw')
+        self.assertEqual(channel_1.dim, 2)
+        self.assertAlmostEqual(channel_1.physical_sizes[0], 35.85522403809594)
+        self.assertAlmostEqual(channel_1.physical_sizes[1], 47.81942809668896)
+        self.assertAlmostEqual(channel_1.nb_grid_pts[0], 960)
+        self.assertAlmostEqual(channel_1.nb_grid_pts[1], 1280)
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
         with OPDxReader(file_path) as loader:
-            self.assertEqual(loader._default_channel, 1)
+            self.assertEqual(loader.default_channel.index, 1)
 
-            topography = loader.topography()
+            topography = loader.default_channel.topography()
 
             # Check physical sizes
             self.assertAlmostEqual(topography.physical_sizes[0], 47.819, places=3)
@@ -184,13 +182,13 @@ class OPDxSurfaceTest(unittest.TestCase):
             self.assertEqual(topography.nb_grid_pts[1], 1280)
 
             # Check unit
-            self.assertEqual(topography._info['unit'], 'nm')
+            self.assertEqual(topography.info['unit'], 'nm')
 
             # Check an entry in the metadata
-            self.assertEqual(topography._info['SequenceNumber'], 5972)
+            self.assertEqual(topography.info['SequenceNumber'], 5972)
 
             # Check a height value
-            self.assertAlmostEqual(topography._heights[0, 0], -7731.534, places=3)
+            self.assertAlmostEqual(topography.heights()[0, 0], -7731.534, places=3)
 
     def test_read_with_check(self):
         buffer = ['V', 'C', 'A', ' ', 'D', 'A', 'T', 'A', '\x01', '\x00', '\x00', 'U', '\x07', '\x00', '\x00', '\x00']
