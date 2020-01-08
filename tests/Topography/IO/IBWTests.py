@@ -147,4 +147,22 @@ def test_ibw_kpfm_file():
 
         channel_info.topography()
 
+def test_ibw_file_with_one_channel_without_name():
+    """
+     After implementing new IBW readers there was an issue
+     https://github.com/pastewka/TopoBank/issues/413
 
+     This test should ensure that it's fixed.
+     """
+    fn = os.path.join(DATADIR, "10x10-one_channel_without_name.ibw")
+
+    reader = open_topography(fn)
+
+    assert len(reader.channels) == 1
+
+    ch_info = reader.channels[0]
+
+    assert ch_info['name'] == 'no name (1)'  # we could use "Default" here, but what if there are multiple no names?
+    assert ch_info['dim'] == 2
+    assert ch_info['nb_grid_pts'] == (10,10)
+    # TODO when the new ChannelInfo objects are used, we should check here if all expected fields are set correclty
