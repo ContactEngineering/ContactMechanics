@@ -25,9 +25,9 @@ def test_fourier_synthesis_c0():
     H=0.7
     c0 = 1.
 
-    n=256
+    n=512
     s=n*4.
-    ls = 4
+    ls = 8
     qs = 2 * np.pi / ls
     np.random.seed(0)
     topography = fourier_synthesis((n, n), (s, s),
@@ -40,8 +40,15 @@ def test_fourier_synthesis_c0():
     ref_slope = np.sqrt(1 / (4 * np.pi) * c0 /(1-H) * qs**(2-2*H))
     assert abs(topography.rms_slope() - ref_slope) /  ref_slope < 1e-1
 
-    #import matplotlib.pyplot as plt
+    if False:
+        import matplotlib.pyplot as plt
+        q, psd = topography.power_spectrum_2D()
+        plt.loglog(q, psd)
+        plt.loglog(q, c0 * q**(-2-2*H))
 
-    #plt.loglog(*topography.power_spectrum_1D())
+        plt.show(block=True)
+        q, psd = topography.power_spectrum_1D()
+        plt.loglog(q, psd)
+        plt.loglog(q, c0/np.pi * q**(-1-2*H))
 
-    #plt.show(block=True)
+        plt.show(block=True)
