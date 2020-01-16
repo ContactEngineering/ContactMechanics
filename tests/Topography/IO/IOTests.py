@@ -80,11 +80,22 @@ class IOTest(unittest.TestCase):
     def setUp(self):
         self.binary_example_file_list = [
             os.path.join(DATADIR, 'example1.di'),
-            os.path.join(DATADIR, 'example.ibw'),
+            os.path.join(DATADIR, 'example2.di'),
+            os.path.join(DATADIR, 'example3.di'),
+            os.path.join(DATADIR, 'example4.di'),
+            os.path.join(DATADIR, 'example.ibw'),            
+            os.path.join(DATADIR, 'spot_1-1000nm.ibw'),
+            # os.path.join(DATADIR, 'surface.2048x2048.h5'),
+            os.path.join(DATADIR, '10x10-one_channel_without_name.ibw'),
             os.path.join(DATADIR, 'example1.mat'),
             os.path.join(DATADIR, 'example.opd'),
             os.path.join(DATADIR, 'example.x3p'),
             os.path.join(DATADIR, 'example2.x3p'),
+            os.path.join(DATADIR, 'opdx1.OPDx'),
+            os.path.join(DATADIR, 'opdx2.OPDx'),
+            # Not yet working
+            os.path.join(DATADIR, 'mi1.mi'), 
+            # os.path.join(DATADIR, 'N46E013.hgt'),
         ]
         self.text_example_file_list = [
             os.path.join(DATADIR, 'example.asc'),
@@ -92,7 +103,12 @@ class IOTest(unittest.TestCase):
             os.path.join(DATADIR, 'example2.txt'),
             os.path.join(DATADIR, 'example3.txt'),
             os.path.join(DATADIR, 'example4.txt'),
+            os.path.join(DATADIR, 'example5.txt'),
             os.path.join(DATADIR, 'line_scan_1_minimal_spaces.asc'),
+            os.path.join(DATADIR, 'opdx1.txt'),
+            os.path.join(DATADIR, 'opdx2.txt'),
+            # Not yet working
+            # os.path.join(DATADIR, 'example6.txt'),
         ]
         self.text_example_memory_list = [
             """
