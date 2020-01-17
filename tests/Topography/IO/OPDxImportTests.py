@@ -174,8 +174,8 @@ class OPDxSurfaceTest(unittest.TestCase):
             topography = loader.default_channel.topography()
 
             # Check physical sizes
-            self.assertAlmostEqual(topography.physical_sizes[0], 47.819, places=3)
-            self.assertAlmostEqual(topography.physical_sizes[1], 35.855, places=3)
+            self.assertAlmostEqual(topography.physical_sizes[0], 35.855, places=3)
+            self.assertAlmostEqual(topography.physical_sizes[1], 47.819, places=3)
 
             # Check nb_grid_ptss
             self.assertEqual(topography.nb_grid_pts[0], 960)
