@@ -43,12 +43,22 @@ def test_fourier_synthesis_c0():
     if False:
         import matplotlib.pyplot as plt
         q, psd = topography.power_spectrum_2D()
-        plt.loglog(q, psd)
-        plt.loglog(q, c0 * q**(-2-2*H))
 
+        fig, ax = plt.subplots()
+        ax.loglog(q, psd, label="generated data")
+        ax.loglog(q, c0 * q**(-2-2*H), label=r"$c_0 q^{-2-2H}$")
+
+        ax.set_xlabel("q")
+        ax.set_ylabel(r"$C^{iso}$")
+        ax.legend()
         plt.show(block=True)
-        q, psd = topography.power_spectrum_1D()
-        plt.loglog(q, psd)
-        plt.loglog(q, c0/np.pi * q**(-1-2*H))
 
+        q, psd = topography.power_spectrum_1D()
+        fig, ax = plt.subplots()
+        ax.loglog(q, psd, label="generated data")
+        ax.loglog(q, c0/np.pi * q**(-1-2*H), label=r"$c_0 q^{-1-2H}$")
+
+        ax.legend()
+        ax.set_xlabel("q")
+        ax.set_ylabel(r"$C^{1D}$")
         plt.show(block=True)
