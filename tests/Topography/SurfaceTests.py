@@ -48,7 +48,7 @@ from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, ma
                              read_topography)
 from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
 
-from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz
+from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz, AscReader
 
 from PyCo.Topography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
 from PyCo.Topography.IO import detect_format, CannotDetectFileFormat
@@ -314,9 +314,17 @@ class NonuniformLineScanTest(PyCoTestCase):
         #
         t = NonuniformLineScan(x=[1, 2, 3, 4], y=[2, 4, 6, 8])
         q1, C1 = t.power_spectrum_1D(window='hann')
+        q1, C1 = t.detrend('center').power_spectrum_1D(window='hann')
+        q1, C1 = t.detrend('center').power_spectrum_1D()
+        q1, C1 = t.detrend('height').power_spectrum_1D(window='hann')
+        q1, C1 = t.detrend('height').power_spectrum_1D()
         # ok can be called without errors
         # TODO add check for values
 
+    def test_detrend(self):
+        t = read_xyz(os.path.join(DATADIR,  'example.asc'))
+        self.assertFalse(t.detrend('center').is_periodic)
+        self.assertFalse(t.detrend('height').is_periodic)
 
 class NumpyTxtSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -417,6 +425,9 @@ class NumpyAscSurfaceTest(unittest.TestCase):
         bw = surf.bandwidth()
         self.assertAlmostEqual(bw[0], 1.5/10)
         self.assertAlmostEqual(bw[1], 1.5)
+
+        reader = AscReader(os.path.join(DATADIR,  'example5.txt'))
+        self.assertTrue(reader.default_channel.physical_sizes is None)
 
     def test_example6(self):
         topography_file = open_topography(os.path.join(DATADIR, 'example6.txt'))
@@ -864,8 +875,8 @@ class diSurfaceTest(unittest.TestCase):
 
 
             for i, (rms, name) in enumerate(rmslist):
-                assert reader.channels[i]["name"] == name
-                surface = reader.topography(channel=i)
+                assert reader.channels[i].name == name
+                surface = reader.topography(channel_index=i)
 
                 nx, ny = surface.nb_grid_pts
                 self.assertEqual(nx, n)
@@ -956,6 +967,7 @@ class xyzSurfaceTest(unittest.TestCase):
         self.assertEqual(len(x), len(y))
         self.assertFalse(surface.is_uniform)
         self.assertEqual(surface.dim, 1)
+        self.assertFalse(surface.is_periodic)
 
 
 class PipelineTests(unittest.TestCase):
