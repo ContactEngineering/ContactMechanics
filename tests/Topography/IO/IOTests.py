@@ -22,8 +22,9 @@
 # SOFTWARE.
 #
 
-import os
+import datetime
 import io
+import os
 import pickle
 import unittest
 import warnings
@@ -279,3 +280,7 @@ class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
 @pytest.mark.parametrize("reader", readers)
 def test_readers_have_name(reader):
     reader.name()
+
+def test_di_date():
+    t = read_topography(os.path.join(DATADIR, 'example1.di'))
+    assert t.info['datetime'] == datetime.datetime(2016,1, 12, 9, 57, 48)
