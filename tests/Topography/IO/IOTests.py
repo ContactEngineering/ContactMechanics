@@ -93,9 +93,8 @@ class IOTest(unittest.TestCase):
             os.path.join(DATADIR, 'example2.x3p'),
             os.path.join(DATADIR, 'opdx1.OPDx'),
             os.path.join(DATADIR, 'opdx2.OPDx'),
-            # Not yet working
-            os.path.join(DATADIR, 'mi1.mi'), 
-            # os.path.join(DATADIR, 'N46E013.hgt'),
+            os.path.join(DATADIR, 'mi1.mi'),
+            os.path.join(DATADIR, 'N46E013.hgt'),
         ]
         self.text_example_file_list = [
             os.path.join(DATADIR, 'example.asc'),
@@ -231,7 +230,6 @@ class IOTest(unittest.TestCase):
         Also check whether we can execute `topography` multiple times for all readers"""
         physical_sizes0 = (1.2, 1.3)
         for fn in self.text_example_file_list + self.binary_example_file_list:
-            print(fn)
             # Test open -> topography
             r = open_topography(open(fn, mode='rb'))
             physical_sizes = None if r.channels[0].dim == 1 else physical_sizes0
