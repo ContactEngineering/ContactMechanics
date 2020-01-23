@@ -392,9 +392,9 @@ class NumpyAscSurfaceTest(unittest.TestCase):
 
     def test_example4(self):
         surf = read_asc(os.path.join(DATADIR,  'example4.txt'))
-        self.assertEqual(surf.nb_grid_pts, (305, 75))
-        self.assertAlmostEqual(surf.physical_sizes[0], 0.00011280791)
-        self.assertAlmostEqual(surf.physical_sizes[1], 2.773965e-05)
+        self.assertEqual(surf.nb_grid_pts, (75, 305))
+        self.assertAlmostEqual(surf.physical_sizes[0], 2.773965e-05)
+        self.assertAlmostEqual(surf.physical_sizes[1], 0.00011280791)
         self.assertAlmostEqual(surf.rms_height(), 1.1745891510991089e-07)
         self.assertAlmostEqual(surf.rms_height(kind='Rq'), 1.1745891510991089e-07)
         self.assertAlmostEqual(surf.rms_slope(), 0.067915823359553706)
