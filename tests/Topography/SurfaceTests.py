@@ -1108,3 +1108,15 @@ class PickeTest(PyCoTestCase):
         dt2 = t1_unpickled.detrend(detrend_mode="center")
 
         self.assertAlmostEqual(dt1.coeffs[0], dt2.coeffs[0])
+
+
+def test_txt_example():
+    t = read_topography(os.path.join(DATADIR, 'txt_example.txt'))
+    assert t.physical_sizes == (1e-6, 0.5e-6)
+    assert t.nb_grid_pts == (6, 3)
+
+    assert (t.heights() == np.array([
+        [1.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007],
+        [0.5e-007, 0.5e-007, 0.0e-008, 0.0e-008, 0.0e-008, 0.0e-008],
+        [0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007],
+    ]).T).all()
