@@ -79,10 +79,10 @@ def test_uniform_stylus():
 class IOTest(unittest.TestCase):
     def setUp(self):
         self.binary_example_file_list = [
-            os.path.join(DATADIR, 'example1.di'),
-            os.path.join(DATADIR, 'example2.di'),
-            os.path.join(DATADIR, 'example3.di'),
-            os.path.join(DATADIR, 'example4.di'),
+            os.path.join(DATADIR, 'di1.di'),
+            os.path.join(DATADIR, 'di2.di'),
+            os.path.join(DATADIR, 'di3.di'),
+            os.path.join(DATADIR, 'di4.di'),
             os.path.join(DATADIR, 'example.ibw'),            
             os.path.join(DATADIR, 'spot_1-1000nm.ibw'),
             # os.path.join(DATADIR, 'surface.2048x2048.h5'),
