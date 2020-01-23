@@ -394,7 +394,8 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(item.data.qun.extra, [])
 
 
-def test_opdx_txt_consistency():
+@pytest.mark.skip(reason="See issue #275")
+def test_opdx_txt_absolute_consistency():
     t_opdx = read_topography(os.path.join(DATADIR, 'opdx2.OPDx'))
     t_txt = read_topography(os.path.join(DATADIR, 'opdx2.txt'))
     print(t_opdx.pixel_size)
@@ -404,3 +405,17 @@ def test_opdx_txt_consistency():
                  / t_opdx.physical_sizes) < 1e-3).all()
     assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
     npt.assert_all_close(t_opdx.heights, t_txt.heights)
+
+def test_opdx_txt_consistency():
+    t_opdx = read_topography(os.path.join(DATADIR, 'opdx2.OPDx'))
+    t_txt = read_topography(os.path.join(DATADIR, 'opdx2.txt'))
+    print(t_opdx.pixel_size)
+    assert abs(t_opdx.pixel_size[0]/t_opdx.pixel_size[1] - 1 ) < 1e-3
+    assert abs(t_txt.pixel_size[0]/t_txt.pixel_size[1] - 1 ) < 1e-3
+
+    ratio_ref = t_opdx.physical_sizes[1]/t_opdx.physical_sizes[0]
+
+    assert (t_txt.physical_sizes[1]/t_txt.physical_sizes[0] - ratio_ref) / ratio_ref < 1e-3
+    assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
+    npt.assert_allclose(t_opdx.heights(), t_txt.heights())
+
