@@ -25,6 +25,7 @@
 
 import unittest
 import os
+import numpy.testing as npt
 
 from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, \
     read_int16, read_int32, read_int64, read_varlen, read_structured, \
@@ -391,3 +392,15 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(item.data.qun.symbol, 'SYM')
         self.assertAlmostEqual(item.data.qun.value, 0.73, places=10)
         self.assertEqual(item.data.qun.extra, [])
+
+
+def test_opdx_txt_consistency():
+    t_opdx = read_topography(os.path.join(DATADIR, 'opdx2.OPDx'))
+    t_txt = read_topography(os.path.join(DATADIR, 'opdx2.txt'))
+    print(t_opdx.pixel_size)
+    assert ((abs(t_opdx.pixel_size - t_txt.pixel_size)
+                 / t_opdx.pixel_size) < 1e-3).all()
+    assert ((abs(t_opdx.physical_sizes - t_txt.physical_sizes)
+                 / t_opdx.physical_sizes) < 1e-3).all()
+    assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
+    npt.assert_all_close(t_opdx.heights, t_txt.heights)
