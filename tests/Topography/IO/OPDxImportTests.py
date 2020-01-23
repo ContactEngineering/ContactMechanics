@@ -26,6 +26,7 @@
 import unittest
 import os
 import numpy.testing as npt
+import numpy as np
 
 from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, \
     read_int16, read_int32, read_int64, read_varlen, read_structured, \
@@ -417,5 +418,6 @@ def test_opdx_txt_consistency():
 
     assert (t_txt.physical_sizes[1]/t_txt.physical_sizes[0] - ratio_ref) / ratio_ref < 1e-3
     assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
-    npt.assert_allclose(t_opdx.heights(), t_txt.heights())
 
+    # opd heights are in nm, txt in m
+    npt.assert_allclose(t_opdx.detrend().heights(), t_txt.detrend().scale(1e9).heights(), rtol=1e-3, atol=1e-3)
