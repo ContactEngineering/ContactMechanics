@@ -283,4 +283,4 @@ def test_readers_have_name(reader):
 
 def test_di_date():
     t = read_topography(os.path.join(DATADIR, 'example1.di'))
-    assert t.info['datetime'] == datetime.datetime(2016,1, 12, 9, 57, 48)
+    assert t.info['acquisition_time'] == datetime.datetime(2016,1, 12, 9, 57, 48)
