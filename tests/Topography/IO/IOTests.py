@@ -282,5 +282,5 @@ def test_readers_have_name(reader):
     reader.name()
 
 def test_di_date():
-    t = read_topography(os.path.join(DATADIR, 'example1.di'))
+    t = read_topography(os.path.join(DATADIR, 'di1.di'))
     assert t.info['acquisition_time'] == datetime.datetime(2016,1, 12, 9, 57, 48)
