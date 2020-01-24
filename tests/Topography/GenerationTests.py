@@ -63,3 +63,21 @@ def test_fourier_synthesis_c0():
         ax.set_xlabel("q")
         ax.set_ylabel(r"$C^{1D}$")
         plt.show(block=True)
+
+def test_fourier_synthesis_1D_input():
+    H = 0.7
+    c0 = 1.
+
+    n = 512
+    s = n * 4.
+    ls = 8
+    qs = 2 * np.pi / ls
+    np.random.seed(0)
+    topography = fourier_synthesis((n,), (s,),
+                                   H,
+                                   c0=c0,
+                                   long_cutoff=s / 2,
+                                   short_cutoff=ls,
+                                   amplitude_distribution=lambda n: np.ones(n)
+                                   )
+
