@@ -22,6 +22,7 @@ def test_fourier_synthesis(n):
     assert psdy[-1] < 10 * psdx[-1]  # assert psdy is not much bigger
     assert abs(topography.rms_slope() - rms_slope) / rms_slope < 1e-1
 
+
 def test_fourier_synthesis_rms_height_more_wavevectors():
     """
     Set amplitude to 0 (rolloff = 0) outside the self affine region.
@@ -40,13 +41,14 @@ def test_fourier_synthesis_rms_height_more_wavevectors():
                                        H,
                                        rms_height=rms_height,
                                        rolloff=0,
-                                       long_cutoff=s/8,
+                                       long_cutoff=s / 8,
                                        short_cutoff=4 * s / n,
-                                       #amplitude_distribution=lambda n: np.ones(n)
+                                       # amplitude_distribution=lambda n: np.ones(n)
                                        )
         realised_rms_heights.append(topography.rms_height())
-    #print(abs(np.mean(realised_rms_heights) - rms_height) / rms_height)
-    assert abs(np.mean(realised_rms_heights) - rms_height) / rms_height < 0.1 # TODO: this is not very accurate !
+    # print(abs(np.mean(realised_rms_heights) - rms_height) / rms_height)
+    assert abs(np.mean(realised_rms_heights) - rms_height) / rms_height < 0.1  # TODO: this is not very accurate !
+
 
 def test_fourier_synthesis_rms_height():
     n = 256
@@ -61,10 +63,11 @@ def test_fourier_synthesis_rms_height():
                                        rms_height=rms_height,
                                        long_cutoff=None,
                                        short_cutoff=4 * s / n,
-                                       #amplitude_distribution=lambda n: np.ones(n)
+                                       # amplitude_distribution=lambda n: np.ones(n)
                                        )
         realised_rms_heights.append(topography.rms_height())
     assert abs(np.mean(realised_rms_heights) - rms_height) / rms_height < 0.5  # TODO: this is not very accurate !
+
 
 def test_fourier_synthesis_c0():
     H = 0.7
@@ -91,7 +94,7 @@ def test_fourier_synthesis_c0():
 
         fig, ax = plt.subplots()
         ax.loglog(q, psd, label="generated data")
-        ax.loglog(q, c0 * q ** (-2 - 2 * H), "--",label=r"$c_0 q^{-2-2H}$")
+        ax.loglog(q, c0 * q ** (-2 - 2 * H), "--", label=r"$c_0 q^{-2-2H}$")
 
         ax.set_xlabel("q")
         ax.set_ylabel(r"$C^{iso}$")
@@ -108,6 +111,7 @@ def test_fourier_synthesis_c0():
         ax.set_xlabel("q")
         ax.set_ylabel(r"$C^{1D}$")
         plt.show(block=True)
+
 
 def test_fourier_synthesis_1D_input():
     H = 0.7
@@ -127,7 +131,7 @@ def test_fourier_synthesis_1D_input():
                                    )
 
 
-@pytest.mark.parametrize("n", (256,1024))
+@pytest.mark.parametrize("n", (256, 1024))
 def test_fourier_synthesis_linescan_c0(n):
     H = 0.7
     c0 = 8.
@@ -143,7 +147,7 @@ def test_fourier_synthesis_linescan_c0(n):
         long_cutoff=s / 2,
         short_cutoff=ls,
         amplitude_distribution=lambda n: np.ones(n)
-       )
+    )
 
     if False:
         import matplotlib.pyplot as plt
@@ -151,7 +155,7 @@ def test_fourier_synthesis_linescan_c0(n):
 
         fig, ax = plt.subplots()
         ax.plot(q, psd)
-        ax.plot(q, c0*q**(-1-2*H))
+        ax.plot(q, c0 * q ** (-1 - 2 * H))
 
         ax.set_xscale("log")
         ax.set_yscale("log")
@@ -162,6 +166,7 @@ def test_fourier_synthesis_linescan_c0(n):
     ref_slope = np.sqrt(1 / (2 * np.pi) * c0 / (1 - H) * qs ** (2 - 2 * H))
     assert abs(t.rms_slope() - ref_slope) / ref_slope < 1e-1
 
+
 def test_fourier_synthesis_linescan_hprms():
     H = 0.7
     hprms = .2
@@ -170,16 +175,16 @@ def test_fourier_synthesis_linescan_hprms():
     s = n * 4.
     ls = 64
     qs = 2 * np.pi / ls
-    #np.random.seed(0)
+    # np.random.seed(0)
     realised_rms_slopes = []
     for i in range(20):
         t = fourier_synthesis((n,), (s,),
-                                       rms_slope = hprms,
-                                       hurst=H,
-                                       long_cutoff=s / 2,
-                                       short_cutoff=ls,
-                                       amplitude_distribution=lambda n: np.ones(n)
-                                              )
+                              rms_slope=hprms,
+                              hurst=H,
+                              long_cutoff=s / 2,
+                              short_cutoff=ls,
+                              amplitude_distribution=lambda n: np.ones(n)
+                              )
         realised_rms_slopes.append(t.rms_slope())
     ref_slope = hprms
     assert abs(np.mean(realised_rms_slopes) - ref_slope) / ref_slope < 1e-1
@@ -192,17 +197,16 @@ def test_fourier_synthesis_linescan_hrms():
     s = n * 4.
     ls = 8
     qs = 2 * np.pi / ls
-    #np.random.seed(0)
+    # np.random.seed(0)
     realised_rms_heights = []
     for i in range(50):
         t = fourier_synthesis((n,), (s,),
-                               rms_height=hrms,
-                               hurst=H,
-                               long_cutoff=None,
-                               short_cutoff=ls,
-                               amplitude_distribution=lambda n: np.ones(n)
-                                      )
+                              rms_height=hrms,
+                              hurst=H,
+                              long_cutoff=None,
+                              short_cutoff=ls,
+                              amplitude_distribution=lambda n: np.ones(n)
+                              )
         realised_rms_heights.append(t.rms_height())
     ref_height = hrms
-    assert abs(np.mean(realised_rms_heights) - ref_height) / ref_height < 0.5 #
-
+    assert abs(np.mean(realised_rms_heights) - ref_height) / ref_height < 0.5  #
