@@ -22,6 +22,32 @@ def test_fourier_synthesis(n):
     assert psdy[-1] < 10 * psdx[-1]  # assert psdy is not much bigger
     assert abs(topography.rms_slope() - rms_slope) / rms_slope < 1e-1
 
+def test_fourier_synthesis_rms_height_more_wavevectors():
+    """
+    Set amplitude to 0 (rolloff = 0) outside the self affine region.
+
+    Long cutoff wavelength is smaller then the box size so that we get closer
+    to a continuum of wavevectors
+    """
+    n = 256
+    H = 0.74
+    rms_height = 7.
+    s = 1.
+
+    realised_rms_heights = []
+    for i in range(50):
+        topography = fourier_synthesis((n, n), (s, s),
+                                       H,
+                                       rms_height=rms_height,
+                                       rolloff=0,
+                                       long_cutoff=s/8,
+                                       short_cutoff=4 * s / n,
+                                       #amplitude_distribution=lambda n: np.ones(n)
+                                       )
+        realised_rms_heights.append(topography.rms_height())
+    #print(abs(np.mean(realised_rms_heights) - rms_height) / rms_height)
+    assert abs(np.mean(realised_rms_heights) - rms_height) / rms_height < 0.1 # TODO: this is not very accurate !
+
 def test_fourier_synthesis_rms_height():
     n = 256
     H = 0.74
