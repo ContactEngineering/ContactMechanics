@@ -22,8 +22,9 @@
 # SOFTWARE.
 #
 
-import os
+import datetime
 import io
+import os
 import pickle
 import unittest
 import warnings
@@ -79,12 +80,22 @@ def test_uniform_stylus():
 class IOTest(unittest.TestCase):
     def setUp(self):
         self.binary_example_file_list = [
-            os.path.join(DATADIR, 'example1.di'),
-            os.path.join(DATADIR, 'example.ibw'),
+            os.path.join(DATADIR, 'di1.di'),
+            os.path.join(DATADIR, 'di2.di'),
+            os.path.join(DATADIR, 'di3.di'),
+            os.path.join(DATADIR, 'di4.di'),
+            os.path.join(DATADIR, 'example.ibw'),            
+            os.path.join(DATADIR, 'spot_1-1000nm.ibw'),
+            # os.path.join(DATADIR, 'surface.2048x2048.h5'),
+            os.path.join(DATADIR, '10x10-one_channel_without_name.ibw'),
             os.path.join(DATADIR, 'example1.mat'),
             os.path.join(DATADIR, 'example.opd'),
             os.path.join(DATADIR, 'example.x3p'),
             os.path.join(DATADIR, 'example2.x3p'),
+            os.path.join(DATADIR, 'opdx1.OPDx'),
+            os.path.join(DATADIR, 'opdx2.OPDx'),
+            os.path.join(DATADIR, 'mi1.mi'),
+            os.path.join(DATADIR, 'N46E013.hgt'),
         ]
         self.text_example_file_list = [
             os.path.join(DATADIR, 'example.asc'),
@@ -92,7 +103,12 @@ class IOTest(unittest.TestCase):
             os.path.join(DATADIR, 'example2.txt'),
             os.path.join(DATADIR, 'example3.txt'),
             os.path.join(DATADIR, 'example4.txt'),
+            os.path.join(DATADIR, 'example5.txt'),
             os.path.join(DATADIR, 'line_scan_1_minimal_spaces.asc'),
+            os.path.join(DATADIR, 'opdx1.txt'),
+            os.path.join(DATADIR, 'opdx2.txt'),
+            # Not yet working
+            # os.path.join(DATADIR, 'example6.txt'),
         ]
         self.text_example_memory_list = [
             """
@@ -215,7 +231,6 @@ class IOTest(unittest.TestCase):
         Also check whether we can execute `topography` multiple times for all readers"""
         physical_sizes0 = (1.2, 1.3)
         for fn in self.text_example_file_list + self.binary_example_file_list:
-            print(fn)
             # Test open -> topography
             r = open_topography(open(fn, mode='rb'))
             physical_sizes = None if r.channels[0].dim == 1 else physical_sizes0
@@ -265,3 +280,7 @@ class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
 @pytest.mark.parametrize("reader", readers)
 def test_readers_have_name(reader):
     reader.name()
+
+def test_di_date():
+    t = read_topography(os.path.join(DATADIR, 'di1.di'))
+    assert t.info['acquisition_time'] == datetime.datetime(2016,1, 12, 9, 57, 48)

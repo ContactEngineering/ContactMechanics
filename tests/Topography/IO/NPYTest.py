@@ -40,7 +40,7 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
 def test_save_and_load(comm_self, file_format_examples):
     # sometimes the surface isn't transposed the same way when
     topography = open_topography(
-        os.path.join(file_format_examples, 'example4.di'),
+        os.path.join(file_format_examples, 'di4.di'),
         format="di").topography()
 
     npyfile = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -61,7 +61,7 @@ def test_save_and_load_np(comm_self, file_format_examples):
     # sometimes the surface isn't transposed the same way when
 
     topography = open_topography(
-        os.path.join(file_format_examples, 'example4.di'),
+        os.path.join(file_format_examples, 'di4.di'),
         format="di").topography()
 
     npyfile = "test_save_and_load_np.npy"

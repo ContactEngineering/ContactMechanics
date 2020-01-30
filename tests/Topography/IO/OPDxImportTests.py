@@ -25,6 +25,8 @@
 
 import unittest
 import os
+import numpy.testing as npt
+import numpy as np
 
 from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, \
     read_int16, read_int32, read_int64, read_varlen, read_structured, \
@@ -178,8 +180,8 @@ class OPDxSurfaceTest(unittest.TestCase):
             self.assertAlmostEqual(topography.physical_sizes[1], 35.855, places=3)
 
             # Check nb_grid_ptss
-            self.assertEqual(topography.nb_grid_pts[0], 960)
-            self.assertEqual(topography.nb_grid_pts[1], 1280)
+            self.assertEqual(topography.nb_grid_pts[0], 1280)
+            self.assertEqual(topography.nb_grid_pts[1], 960)
 
             # Check unit
             self.assertEqual(topography.info['unit'], 'nm')
@@ -391,3 +393,31 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(item.data.qun.symbol, 'SYM')
         self.assertAlmostEqual(item.data.qun.value, 0.73, places=10)
         self.assertEqual(item.data.qun.extra, [])
+
+
+@pytest.mark.skip(reason="See issue #275")
+def test_opdx_txt_absolute_consistency():
+    t_opdx = read_topography(os.path.join(DATADIR, 'opdx2.OPDx'))
+    t_txt = read_topography(os.path.join(DATADIR, 'opdx2.txt'))
+    print(t_opdx.pixel_size)
+    assert ((abs(t_opdx.pixel_size - t_txt.pixel_size)
+                 / t_opdx.pixel_size) < 1e-3).all()
+    assert ((abs(t_opdx.physical_sizes - t_txt.physical_sizes)
+                 / t_opdx.physical_sizes) < 1e-3).all()
+    assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
+    npt.assert_all_close(t_opdx.heights, t_txt.heights)
+
+def test_opdx_txt_consistency():
+    t_opdx = read_topography(os.path.join(DATADIR, 'opdx2.OPDx'))
+    t_txt = read_topography(os.path.join(DATADIR, 'opdx2.txt'))
+    print(t_opdx.pixel_size)
+    assert abs(t_opdx.pixel_size[0]/t_opdx.pixel_size[1] - 1 ) < 1e-3
+    assert abs(t_txt.pixel_size[0]/t_txt.pixel_size[1] - 1 ) < 1e-3
+
+    ratio_ref = t_opdx.physical_sizes[1]/t_opdx.physical_sizes[0]
+
+    assert (t_txt.physical_sizes[1]/t_txt.physical_sizes[0] - ratio_ref) / ratio_ref < 1e-3
+    assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
+
+    # opd heights are in nm, txt in m
+    npt.assert_allclose(t_opdx.detrend().heights(), t_txt.detrend().scale(1e9).heights(), rtol=1e-3, atol=1e-3)
