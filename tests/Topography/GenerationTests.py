@@ -190,23 +190,30 @@ def test_fourier_synthesis_linescan_hprms():
     assert abs(np.mean(realised_rms_slopes) - ref_slope) / ref_slope < 1e-1
 
 
-def test_fourier_synthesis_linescan_hrms():
+def test_fourier_synthesis_linescan_hrms_more_wavevectors():
+    """
+    Set amplitude to 0 (rolloff = 0) outside the self affine region.
+
+    Long cutoff wavelength is smaller then the box size so that we get closer
+    to a continuum of wavevectors
+    """
     H = 0.7
     hrms = 4.
     n = 4096
     s = n * 4.
     ls = 8
     qs = 2 * np.pi / ls
-    # np.random.seed(0)
+    np.random.seed(0)
     realised_rms_heights = []
     for i in range(50):
         t = fourier_synthesis((n,), (s,),
                               rms_height=hrms,
                               hurst=H,
-                              long_cutoff=None,
+                              rolloff=0,
+                              long_cutoff=s/8,
                               short_cutoff=ls,
                               amplitude_distribution=lambda n: np.ones(n)
                               )
         realised_rms_heights.append(t.rms_height())
     ref_height = hrms
-    assert abs(np.mean(realised_rms_heights) - ref_height) / ref_height < 0.5  #
+    assert abs(np.mean(realised_rms_heights) - ref_height) / ref_height < 0.1  #
