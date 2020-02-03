@@ -1,7 +1,7 @@
 from PyCo.Topography.Generation import fourier_synthesis
 import pytest
 import numpy as np
-
+from NuMPI import MPI
 
 @pytest.mark.parametrize("n", [128, 129])
 def test_fourier_synthesis(n):
@@ -23,7 +23,7 @@ def test_fourier_synthesis(n):
     assert abs(topography.rms_slope() - rms_slope) / rms_slope < 1e-1
 
 
-def test_fourier_synthesis_rms_height_more_wavevectors():
+def test_fourier_synthesis_rms_height_more_wavevectors(comm_self):
     """
     Set amplitude to 0 (rolloff = 0) outside the self affine region.
 
@@ -44,7 +44,8 @@ def test_fourier_synthesis_rms_height_more_wavevectors():
                                        long_cutoff=s / 8,
                                        short_cutoff=4 * s / n,
                                        # amplitude_distribution=lambda n: np.ones(n)
-                                       )
+                                        )
+
         realised_rms_heights.append(topography.rms_height())
     # print(abs(np.mean(realised_rms_heights) - rms_height) / rms_height)
     assert abs(np.mean(realised_rms_heights) - rms_height) / rms_height < 0.1  # TODO: this is not very accurate !
@@ -112,7 +113,8 @@ def test_fourier_synthesis_c0():
         ax.set_ylabel(r"$C^{1D}$")
         plt.show(block=True)
 
-
+@pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="linescans are not supported in MPI programs")
 def test_fourier_synthesis_1D_input():
     H = 0.7
     c0 = 1.
@@ -130,7 +132,8 @@ def test_fourier_synthesis_1D_input():
                                    amplitude_distribution=lambda n: np.ones(n)
                                    )
 
-
+@pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="linescans are not supported in MPI programs")
 @pytest.mark.parametrize("n", (256, 1024))
 def test_fourier_synthesis_linescan_c0(n):
     H = 0.7
@@ -166,7 +169,8 @@ def test_fourier_synthesis_linescan_c0(n):
     ref_slope = np.sqrt(1 / (2 * np.pi) * c0 / (1 - H) * qs ** (2 - 2 * H))
     assert abs(t.rms_slope() - ref_slope) / ref_slope < 1e-1
 
-
+@pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="linescans are not supported in MPI programs")
 def test_fourier_synthesis_linescan_hprms():
     H = 0.7
     hprms = .2
@@ -183,13 +187,13 @@ def test_fourier_synthesis_linescan_hprms():
                               hurst=H,
                               long_cutoff=s / 2,
                               short_cutoff=ls,
-                              amplitude_distribution=lambda n: np.ones(n)
                               )
         realised_rms_slopes.append(t.rms_slope())
     ref_slope = hprms
     assert abs(np.mean(realised_rms_slopes) - ref_slope) / ref_slope < 1e-1
 
-
+@pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="linescans are not supported in MPI programs")
 def test_fourier_synthesis_linescan_hrms_more_wavevectors():
     """
     Set amplitude to 0 (rolloff = 0) outside the self affine region.
@@ -212,8 +216,9 @@ def test_fourier_synthesis_linescan_hrms_more_wavevectors():
                               rolloff=0,
                               long_cutoff=s/8,
                               short_cutoff=ls,
-                              amplitude_distribution=lambda n: np.ones(n)
                               )
         realised_rms_heights.append(t.rms_height())
+    realised_rms_heights = np.array(realised_rms_heights)
     ref_height = hrms
+    #print(np.sqrt(np.mean((realised_rms_heights - np.mean(realised_rms_heights))**2)))
     assert abs(np.mean(realised_rms_heights) - ref_height) / ref_height < 0.1  #
