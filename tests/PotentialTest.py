@@ -35,6 +35,7 @@ from PyCo.ContactMechanics import LJ93smoothMin
 from PyCo.ContactMechanics import LJ93SimpleSmooth
 from PyCo.ContactMechanics import LJ93SimpleSmoothMin
 
+from PyCo.ContactMechanics import Lj82
 from PyCo.ContactMechanics import VDW82
 from PyCo.ContactMechanics import VDW82smooth
 from PyCo.ContactMechanics import VDW82smoothMin
@@ -733,6 +734,7 @@ def test_lj93_masked(pot_class):
                         'RepulsiveExponential(1., 0.5, 1., 1.)'
                          ])
 def test_max_tensile(pot_creation):
+
     eps = 1.7294663266397667
     sig = 3.253732668164946
 
@@ -740,10 +742,42 @@ def test_max_tensile(pot_creation):
     hamaker = 68.1e-21
 
     pot = eval(pot_creation)
-
-
     en1=np.isscalar(pot.max_tensile)
 
     # print("{}".format(en1))
 
     assert en1
+    assert en1
+
+@pytest.mark.parametrize("pot_creation", [
+                        'LJ93(eps, sig)',
+                        'LJ93SimpleSmooth(eps, sig, 3*sig)',
+                        'LJ93smooth(eps, sig)',
+                        'LJ93smoothMin(eps, sig)',
+                        'LJ93smooth(eps,  sig, r_t="inflection")',
+                        'LJ93smoothMin(eps, sig, r_t_ls="inflection")',
+                        'LJ93smooth(eps,  sig, r_t=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93smoothMin(eps,  sig, r_t_ls=LJ93(eps, sig).r_infl*1.05)',
+                        'LJ93SimpleSmoothMin(eps, sig, LJ93(eps, sig).r_infl * 2,  LJ93(eps, sig).r_min * 0.8)',
+                        'Lj82(w, z0)',
+                        'VDW82(c_sr, hamaker)',
+                        'VDW82smooth(c_sr,  hamaker)',
+                        'VDW82smoothMin(c_sr,  hamaker)',
+                        'VDW82smooth(c_sr,  hamaker, r_t="inflection")',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls="inflection")',
+                        'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
+                        'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
+                        'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
+                        'RepulsiveExponential(1., 0.5, 1., 1.)'
+                         ])
+def test_max_tensile_array(pot_creation):
+    eps = 1.7
+    sig = np.array([[3., 3.2], [2.6, 4.]])
+    z0=eps
+    w = sig
+
+    c_sr = w * z0 ** 8 / 3
+    hamaker =  16 * np.pi * w * z0 ** 2
+    pot = eval(pot_creation)
+
+    assert pot.max_tensile.shape == sig.shape
