@@ -157,7 +157,9 @@ class OPDxSurfaceTest(unittest.TestCase):
 
         self.assertEqual(channel_1.info['Width_value'], 47.81942809668896)
         self.assertEqual(channel_1.info['Height_value'], 35.85522403809594)
-        self.assertEqual(channel_1.info['z_scale'], 78.592625, )
+        self.assertEqual(channel_1.info['z_scale'], 78.592625)
+
+        self.assertEqual(channel_1.info['unit'], 'µm')  # see GH 281
 
         # .. mandatory keys
         self.assertEqual(channel_1.name, 'Raw')
