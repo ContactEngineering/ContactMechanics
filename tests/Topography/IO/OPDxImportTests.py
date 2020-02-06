@@ -186,7 +186,7 @@ class OPDxSurfaceTest(unittest.TestCase):
             self.assertEqual(topography.nb_grid_pts[1], 960)
 
             # Check unit
-            self.assertEqual(topography.info['unit'], 'nm')
+            self.assertEqual(topography.info['unit'], 'µm')  # see GH 281
 
             # Check an entry in the metadata
             self.assertEqual(topography.info['SequenceNumber'], 5972)
