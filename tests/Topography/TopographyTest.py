@@ -37,11 +37,12 @@ from PyCo.Topography.UniformLineScanAndTopography import DetrendedUniformTopogra
 
 from ..PyCoTest import PyCoTestCase
 
+
 def test_positions(comm, fftengine_type):
-    nx, ny = (12*comm.Get_size(), 10 * comm.Get_size() +1)
+    nx, ny = (12 * comm.Get_size(), 10 * comm.Get_size() + 1)
     sx = 33.
     sy = 54.
-    fftengine=FFT((nx, ny), fft=fftengine_type, communicator=comm)
+    fftengine = FFT((nx, ny), fft=fftengine_type, communicator=comm)
 
     surf = Topography(np.zeros(fftengine.nb_subdomain_grid_pts),
                       physical_sizes=(sx, sy),
@@ -55,20 +56,19 @@ def test_positions(comm, fftengine_type):
     assert y.shape == fftengine.nb_subdomain_grid_pts
 
     assert Reduction(comm).min(x) == 0
-    assert abs(Reduction(comm).max(x) - sx * (1-1./nx)) < 1e-8 * sx/ nx, "{}".format(x)
+    assert abs(Reduction(comm).max(x) - sx * (1 - 1. / nx)) < 1e-8 * sx / nx, "{}".format(x)
     assert Reduction(comm).min(y) == 0
-    assert abs(Reduction(comm).max(y) - sy * (1-1./ny)) < 1e-8
+    assert abs(Reduction(comm).max(y) - sy * (1 - 1. / ny)) < 1e-8
 
 
 class TopographyTest(PyCoTestCase):
 
     def test_positions_and_heights(self):
-
         X = np.arange(3).reshape(1, 3)
         Y = np.arange(4).reshape(4, 1)
-        h = X+Y
+        h = X + Y
 
-        t = Topography(h, (8,6))
+        t = Topography(h, (8, 6))
 
         self.assertEqual(t.nb_grid_pts, (4, 3))
 
@@ -137,8 +137,8 @@ class TopographyTest(PyCoTestCase):
     def test_attribute_error(self):
         X = np.arange(3).reshape(1, 3)
         Y = np.arange(4).reshape(4, 1)
-        h = X+Y
-        t = Topography(h, (8,6))
+        h = X + Y
+        t = Topography(h, (8, 6))
 
         # nonsense attributes return attribute error
         with self.assertRaises(AttributeError):
@@ -193,35 +193,34 @@ class TopographyTest(PyCoTestCase):
         self.assertEqual(dm3, 'height')
 
     def test_init_with_lists_calling_scale_and_detrend(self):
-
-        t = Topography(np.array([[1,1,1,1],
-                                 [1,1,1,1],
-                                 [1,1,1,1]]), physical_sizes=(1, 1))
+        t = Topography(np.array([[1, 1, 1, 1],
+                                 [1, 1, 1, 1],
+                                 [1, 1, 1, 1]]), physical_sizes=(1, 1))
 
         # the following commands should be possible without errors
         st = t.scale(1)
         dt = st.detrend(detrend_mode='center')
 
     def test_power_spectrum_1D(self):
-
         X = np.arange(3).reshape(1, 3)
         Y = np.arange(4).reshape(4, 1)
-        h = X+Y
+        h = X + Y
 
-        t = Topography(h, (8,6))
+        t = Topography(h, (8, 6))
 
         q1, C1 = t.power_spectrum_1D(window='hann')
 
         # TODO add check for values
 
+
 def test_translate(comm_self):
-    topography=Topography(np.array([[0,1,0],[0,0,0]]), physical_sizes=(4., 3.))
+    topography = Topography(np.array([[0, 1, 0], [0, 0, 0]]), physical_sizes=(4., 3.))
     print(topography.heights().shape)
 
     assert (topography.translate(offset=(1, 0)).heights()
             ==
-           np.array([[0,0,0],
-                     [0,1,0]])).all()
+            np.array([[0, 0, 0],
+                      [0, 1, 0]])).all()
 
     assert (topography.translate(offset=(2, 0)).heights()
             ==
@@ -233,6 +232,7 @@ def test_translate(comm_self):
             np.array([[1, 0, 0],
                       [0, 0, 0]])).all()
 
+
 def test_pipeline():
     t1 = fourier_synthesis((511, 511), (1., 1.), 0.8, rms_height=1)
     t2 = t1.detrend()
@@ -240,8 +240,15 @@ def test_pipeline():
     assert isinstance(p[0], Topography)
     assert isinstance(p[1], DetrendedUniformTopography)
 
+
 def test_uniform_detrended_periodicity():
-    topography=Topography(np.array([[0,1,0],[0,0,0]]), physical_sizes=(4., 3.), periodic=True)
+    topography = Topography(np.array([[0, 1, 0], [0, 0, 0]]), physical_sizes=(4., 3.), periodic=True)
     assert topography.detrend("center").is_periodic
     assert not topography.detrend("height").is_periodic
     assert not topography.detrend("curvature").is_periodic
+
+
+def test_passing_of_docstring():
+    from PyCo.Topography.Uniform.PowerSpectrum import power_spectrum_1D
+    topography = Topography(np.array([[0, 1, 0], [0, 0, 0]]), physical_sizes=(4., 3.), periodic=True)
+    assert topography.power_spectrum_1D.__doc__ == power_spectrum_1D.__doc__

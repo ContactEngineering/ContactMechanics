@@ -2,21 +2,39 @@
 Change log for PyCo
 ===================
 
-v.54.2 (13Dec19)
-----------------
+v0.55.0 (not yet released)
+--------------------------
+
+- API: Readers now report channel info in ChannelInfo class, fixes inconsistencies in reporting channel information (#190, #192, #236)
+- ENH: Readers report format identifier and are self-documented (#229, #238)
+- ENH: DI reader now read acquisition date and stores it in the info dictionary
+- BUG: DI reader autodetection did not work (#258)
+
+v0.54.4 (20Dec19)
+-----------------
+
+- BUG: Fixes missing 'nb_grid_pts' key in channels from IBW reader
+
+v0.54.3 (20Dec19)
+-----------------
+
+- BUG: Fixes assertion because of wrong number of channel names (#252)
+
+v0.54.2 (13Dec19)
+-----------------
 
 - BUG: fix rms_laplacian for periodic topographies (#247)
 
-v.54.1 (13Dec19)
-----------------
+v0.54.1 (13Dec19)
+-----------------
 
 - ENH: higher order derivative for periodic surface (#234,#227)
 - ENH: new reader for Igor Binary Wave files (IBW) (#224)
 - BUG: opdx reader can now handle binary filestreams (#209)
 - BUG: store and restore periodic flag in NonuniformTopography (#240)
 
-v.54.0 (06Dec19)
-----------------
+v0.54.0 (06Dec19)
+-----------------
 
 - MAINT: correct installation problems because Eigen repository has moved
 - ENH: anisotropic cubic Green's Functions 

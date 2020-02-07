@@ -25,6 +25,8 @@
 
 import unittest
 import os
+import numpy.testing as npt
+import numpy as np
 
 from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, \
     read_int16, read_int32, read_int64, read_varlen, read_structured, \
@@ -123,74 +125,72 @@ class OPDxSurfaceTest(unittest.TestCase):
         # Check if metadata has been read in
 
         # Default channel should be 1, 'raw'
-        self.assertEqual(loader._default_channel, 1)
+        self.assertEqual(loader.default_channel.index, 1)
 
         #
         # Channel 0: Image
         #
-        self.assertEqual(channel_0['Name'], 'Image')
-        self.assertEqual(channel_0['Time'], '12:53:14 PM')
+        self.assertEqual(channel_0.info['Time'], '12:53:14 PM')
 
-        self.assertEqual(channel_0['ImageHeight'], 960)
-        self.assertEqual(channel_0['ImageWidth'], 1280)
+        self.assertEqual(channel_0.info['ImageHeight'], 960)
+        self.assertEqual(channel_0.info['ImageWidth'], 1280)
 
-        self.assertEqual(channel_0['Width_value'], 47.81942809668896)
-        self.assertEqual(channel_0['Height_value'], 35.85522403809594)
-        self.assertEqual(channel_0['z_scale'], 1.0)
+        self.assertEqual(channel_0.info['Width_value'], 47.81942809668896)
+        self.assertEqual(channel_0.info['Height_value'], 35.85522403809594)
+        self.assertEqual(channel_0.info['z_scale'], 1.0)
 
         # .. mandatory keys
-        self.assertEqual(channel_0['name'], 'Image')
-        self.assertEqual(channel_0['dim'], 2)
-        self.assertAlmostEqual(channel_0['physical_sizes'][0], 35.85522403809594)
-        self.assertAlmostEqual(channel_0['physical_sizes'][1], 47.81942809668896)
-        self.assertAlmostEqual(channel_0['nb_grid_pts'][0], 960)
-        self.assertAlmostEqual(channel_0['nb_grid_pts'][1], 1280)
+        self.assertEqual(channel_0.name, 'Image')
+        self.assertEqual(channel_0.dim, 2)
+        self.assertAlmostEqual(channel_0.physical_sizes[0], 35.85522403809594)
+        self.assertAlmostEqual(channel_0.physical_sizes[1], 47.81942809668896)
+        self.assertAlmostEqual(channel_0.nb_grid_pts[0], 960)
+        self.assertAlmostEqual(channel_0.nb_grid_pts[1], 1280)
 
         #
         # Channel 1: Raw
         #
-        self.assertEqual(channel_1['Name'], 'Raw')
-        self.assertEqual(channel_1['Time'], '12:53:14 PM')
+        self.assertEqual(channel_1.info['Time'], '12:53:14 PM')
 
-        self.assertEqual(channel_1['ImageHeight'], 960)
-        self.assertEqual(channel_1['ImageWidth'], 1280)
+        self.assertEqual(channel_1.info['ImageHeight'], 960)
+        self.assertEqual(channel_1.info['ImageWidth'], 1280)
 
-        self.assertEqual(channel_1['Width_value'], 47.81942809668896)
-        self.assertEqual(channel_1['Height_value'], 35.85522403809594)
-        self.assertEqual(channel_1['z_scale'], 78.592625, )
+        self.assertEqual(channel_1.info['Width_value'], 47.81942809668896)
+        self.assertEqual(channel_1.info['Height_value'], 35.85522403809594)
+        self.assertEqual(channel_1.info['z_scale'], 78.592625, )
 
         # .. mandatory keys
-        self.assertEqual(channel_1['name'], 'Raw')
-        self.assertEqual(channel_1['dim'], 2)
-        self.assertAlmostEqual(channel_1['physical_sizes'][0], 35.85522403809594)
-        self.assertAlmostEqual(channel_1['physical_sizes'][1], 47.81942809668896)
-        self.assertAlmostEqual(channel_1['nb_grid_pts'][0], 960)
-        self.assertAlmostEqual(channel_1['nb_grid_pts'][1], 1280)
+        self.assertEqual(channel_1.name, 'Raw')
+        self.assertEqual(channel_1.dim, 2)
+        self.assertAlmostEqual(channel_1.physical_sizes[0], 35.85522403809594)
+        self.assertAlmostEqual(channel_1.physical_sizes[1], 47.81942809668896)
+        self.assertAlmostEqual(channel_1.nb_grid_pts[0], 960)
+        self.assertAlmostEqual(channel_1.nb_grid_pts[1], 1280)
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
 
         with OPDxReader(file_path) as loader:
-            self.assertEqual(loader._default_channel, 1)
+            self.assertEqual(loader.default_channel.index, 1)
 
-            topography = loader.topography()
+            topography = loader.default_channel.topography()
 
             # Check physical sizes
             self.assertAlmostEqual(topography.physical_sizes[0], 47.819, places=3)
             self.assertAlmostEqual(topography.physical_sizes[1], 35.855, places=3)
 
             # Check nb_grid_ptss
-            self.assertEqual(topography.nb_grid_pts[0], 960)
-            self.assertEqual(topography.nb_grid_pts[1], 1280)
+            self.assertEqual(topography.nb_grid_pts[0], 1280)
+            self.assertEqual(topography.nb_grid_pts[1], 960)
 
             # Check unit
-            self.assertEqual(topography._info['unit'], 'nm')
+            self.assertEqual(topography.info['unit'], 'nm')
 
             # Check an entry in the metadata
-            self.assertEqual(topography._info['SequenceNumber'], 5972)
+            self.assertEqual(topography.info['SequenceNumber'], 5972)
 
             # Check a height value
-            self.assertAlmostEqual(topography._heights[0, 0], -7731.534, places=3)
+            self.assertAlmostEqual(topography.heights()[0, 0], -7731.534, places=3)
 
     def test_read_with_check(self):
         buffer = ['V', 'C', 'A', ' ', 'D', 'A', 'T', 'A', '\x01', '\x00', '\x00', 'U', '\x07', '\x00', '\x00', '\x00']
@@ -393,3 +393,31 @@ class OPDxSurfaceTest(unittest.TestCase):
         self.assertEqual(item.data.qun.symbol, 'SYM')
         self.assertAlmostEqual(item.data.qun.value, 0.73, places=10)
         self.assertEqual(item.data.qun.extra, [])
+
+
+@pytest.mark.skip(reason="See issue #275")
+def test_opdx_txt_absolute_consistency():
+    t_opdx = read_topography(os.path.join(DATADIR, 'opdx2.OPDx'))
+    t_txt = read_topography(os.path.join(DATADIR, 'opdx2.txt'))
+    print(t_opdx.pixel_size)
+    assert ((abs(t_opdx.pixel_size - t_txt.pixel_size)
+                 / t_opdx.pixel_size) < 1e-3).all()
+    assert ((abs(t_opdx.physical_sizes - t_txt.physical_sizes)
+                 / t_opdx.physical_sizes) < 1e-3).all()
+    assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
+    npt.assert_all_close(t_opdx.heights, t_txt.heights)
+
+def test_opdx_txt_consistency():
+    t_opdx = read_topography(os.path.join(DATADIR, 'opdx2.OPDx'))
+    t_txt = read_topography(os.path.join(DATADIR, 'opdx2.txt'))
+    print(t_opdx.pixel_size)
+    assert abs(t_opdx.pixel_size[0]/t_opdx.pixel_size[1] - 1 ) < 1e-3
+    assert abs(t_txt.pixel_size[0]/t_txt.pixel_size[1] - 1 ) < 1e-3
+
+    ratio_ref = t_opdx.physical_sizes[1]/t_opdx.physical_sizes[0]
+
+    assert (t_txt.physical_sizes[1]/t_txt.physical_sizes[0] - ratio_ref) / ratio_ref < 1e-3
+    assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
+
+    # opd heights are in nm, txt in m
+    npt.assert_allclose(t_opdx.detrend().heights(), t_txt.detrend().scale(1e9).heights(), rtol=1e-3, atol=1e-3)

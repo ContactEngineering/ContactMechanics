@@ -22,8 +22,9 @@
 # SOFTWARE.
 #
 
-import os
+import datetime
 import io
+import os
 import pickle
 import unittest
 import warnings
@@ -51,7 +52,7 @@ from PyCo.Topography.IO import readers
 DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../file_format_examples')
 
 
-@pytest.mark.parametrize("reader", readers.values())
+@pytest.mark.parametrize("reader", readers)
 def test_closes_file_on_failure(reader):
     """
     Tests for each reader class that he doesn't raise a Resourcewarning
@@ -79,12 +80,22 @@ def test_uniform_stylus():
 class IOTest(unittest.TestCase):
     def setUp(self):
         self.binary_example_file_list = [
-            os.path.join(DATADIR, 'example1.di'),
-            os.path.join(DATADIR, 'example.ibw'),
+            os.path.join(DATADIR, 'di1.di'),
+            os.path.join(DATADIR, 'di2.di'),
+            os.path.join(DATADIR, 'di3.di'),
+            os.path.join(DATADIR, 'di4.di'),
+            os.path.join(DATADIR, 'example.ibw'),            
+            os.path.join(DATADIR, 'spot_1-1000nm.ibw'),
+            # os.path.join(DATADIR, 'surface.2048x2048.h5'),
+            os.path.join(DATADIR, '10x10-one_channel_without_name.ibw'),
             os.path.join(DATADIR, 'example1.mat'),
             os.path.join(DATADIR, 'example.opd'),
             os.path.join(DATADIR, 'example.x3p'),
             os.path.join(DATADIR, 'example2.x3p'),
+            os.path.join(DATADIR, 'opdx1.OPDx'),
+            os.path.join(DATADIR, 'opdx2.OPDx'),
+            os.path.join(DATADIR, 'mi1.mi'),
+            os.path.join(DATADIR, 'N46E013.hgt'),
         ]
         self.text_example_file_list = [
             os.path.join(DATADIR, 'example.asc'),
@@ -92,7 +103,12 @@ class IOTest(unittest.TestCase):
             os.path.join(DATADIR, 'example2.txt'),
             os.path.join(DATADIR, 'example3.txt'),
             os.path.join(DATADIR, 'example4.txt'),
+            os.path.join(DATADIR, 'example5.txt'),
             os.path.join(DATADIR, 'line_scan_1_minimal_spaces.asc'),
+            os.path.join(DATADIR, 'opdx1.txt'),
+            os.path.join(DATADIR, 'opdx2.txt'),
+            # Not yet working
+            # os.path.join(DATADIR, 'example6.txt'),
         ]
         self.text_example_memory_list = [
             """
@@ -144,18 +160,18 @@ class IOTest(unittest.TestCase):
         for fn in file_list:
             reader = open_topography(fn)
             physical_sizes = None
-            if reader.channels[reader.default_channel]['dim'] != 1:
-                physical_sizes = reader.channels[reader.default_channel]['physical_sizes'] \
-                    if 'physical_sizes' in reader.channels[reader.default_channel] \
-                    else [1., ] * reader.channels[reader.default_channel]['dim']
+            if reader.default_channel.dim != 1:
+                physical_sizes = reader.default_channel.physical_sizes \
+                    if reader.default_channel.physical_sizes is not None \
+                    else (1.,) * reader.default_channel.dim
+            
             topography = reader.topography(physical_sizes=physical_sizes)
             topographies = [topography]
             if hasattr(topography, 'to_uniform'):
                 topographies += [topography.to_uniform(100, 0)]
             for t in topographies:
                 s = pickle.dumps(t)
-                pickled_t = pickle.loads(s)
-                print(type(pickled_t))
+                pickled_t = pickle.loads(s)                
 
                 #
                 # Compare some attributes after unpickling
@@ -173,22 +189,21 @@ class IOTest(unittest.TestCase):
                         assert_array_equal(x.positions(), y.positions())
                         assert_array_equal(x.heights(), y.heights())
 
+
     def test_periodic_flag(self):
         file_list = self.text_example_file_list + self.binary_example_file_list
         for fn in file_list:
             reader = open_topography(fn)
             physical_sizes = None
-            if reader.channels[reader.default_channel]['dim'] != 1:
-                physical_sizes = reader.channels[reader.default_channel]['physical_sizes'] \
-                    if 'physical_sizes' in reader.channels[reader.default_channel] \
-                    else [1., ] * reader.channels[reader.default_channel]['dim']
+            if reader.default_channel.dim != 1:
+                physical_sizes = reader.default_channel.physical_sizes \
+                    if reader.default_channel.physical_sizes is not None \
+                    else [1., ] * reader.default_channel.dim
             t = reader.topography(physical_sizes=physical_sizes, periodic=True)
             assert t.is_periodic
 
             t = reader.topography(physical_sizes=physical_sizes, periodic=False)
             assert not  t.is_periodic
-
-
 
     def test_reader_arguments(self):
         """Check whether all readers have channel, physical_sizes and height_scale_factor arguments.
@@ -197,17 +212,17 @@ class IOTest(unittest.TestCase):
         for fn in self.text_example_file_list + self.binary_example_file_list:
             # Test open -> topography
             r = open_topography(fn)
-            physical_sizes = None if r.channels[0]['dim'] == 1 else physical_sizes0
-            t = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            physical_sizes = None if r.channels[0].dim == 1 else physical_sizes0
+            t = r.topography(channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t.physical_sizes, physical_sizes)
             # Second call to topography
-            t2 = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            t2 = r.topography(channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t2.physical_sizes, physical_sizes)
             assert_array_equal(t.heights(), t2.heights())
             # Test read_topography
-            t = read_topography(fn, channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            t = read_topography(fn, channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t.physical_sizes, physical_sizes)
 
@@ -216,15 +231,14 @@ class IOTest(unittest.TestCase):
         Also check whether we can execute `topography` multiple times for all readers"""
         physical_sizes0 = (1.2, 1.3)
         for fn in self.text_example_file_list + self.binary_example_file_list:
-            print(fn)
             # Test open -> topography
             r = open_topography(open(fn, mode='rb'))
-            physical_sizes = None if r.channels[0]['dim'] == 1 else physical_sizes0
-            t = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            physical_sizes = None if r.channels[0].dim == 1 else physical_sizes0
+            t = r.topography(channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t.physical_sizes, physical_sizes)
             # Second call to topography
-            t2 = r.topography(channel=0, physical_sizes=physical_sizes, height_scale_factor=None)
+            t2 = r.topography(channel_index=0, physical_sizes=physical_sizes, height_scale_factor=None)
             if physical_sizes is not None:
                 self.assertEqual(t2.physical_sizes, physical_sizes)
             assert_array_equal(t.heights(), t2.heights())
@@ -262,3 +276,11 @@ class LineScanInFileWithMinimalSpacesTest(unittest.TestCase):
         x, y = surface.positions_and_heights()
         self.assertGreater(len(x), 0)
         self.assertEqual(len(x), len(y))
+
+@pytest.mark.parametrize("reader", readers)
+def test_readers_have_name(reader):
+    reader.name()
+
+def test_di_date():
+    t = read_topography(os.path.join(DATADIR, 'di1.di'))
+    assert t.info['acquisition_time'] == datetime.datetime(2016,1, 12, 9, 57, 48)
