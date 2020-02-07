@@ -780,3 +780,24 @@ def test_max_tensile_array(pot_creation):
     pot = eval(pot_creation)
 
     assert pot.max_tensile.shape == sig.shape
+
+def test_work_range_array():
+    "tests that it is possible to change interaction range and work of adhesion at the same time"
+
+    x = np.linspace(0,1)
+    dw = 0.5
+    work_fluctuation = dw * np.cos(np.pi * x)
+    work_factor = 1 + work_fluctuation
+
+    # base values around which the work will fluctuate
+    w = 1.
+    rho = 0.1
+    sigma = w / rho
+    interaction = Exponential(w * work_factor , rho * np.sqrt(work_factor))
+
+    np.testing.assert_allclose(-interaction.max_tensile, sigma * np.sqrt(work_factor))
+
+    # test evaluation
+
+    interaction.evaluate(np.random.uniform(0,2, size=x.shape),True, True, True, area_scale = 0.1)
+

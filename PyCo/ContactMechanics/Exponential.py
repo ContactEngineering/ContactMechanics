@@ -89,7 +89,7 @@ class Exponential(Potential):
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
-        g = -r/self.rho
+        g = -r/self.rho[mask]
 
         # Use exponential only for r > 0
         m = g < 0.0
