@@ -37,7 +37,7 @@ class Exponential(Potential):
 
     name = "adh"
 
-    def __init__(self, gamma0,rho,r_cut=float('inf'), communicator=MPI.COMM_WORLD):
+    def __init__(self, gamma0, rho, r_cut=float('inf'), communicator=MPI.COMM_WORLD):
         """
         Keyword Arguments:
         gamma0 -- surface energy at perfect contact
@@ -45,7 +45,7 @@ class Exponential(Potential):
         """
         self.rho = rho
         self.gam = gamma0
-        Potential.__init__(self,r_cut,communicator=communicator)
+        Potential.__init__(self, r_cut, communicator=communicator)
 
 
     def __repr__(self, ):
