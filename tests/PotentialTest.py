@@ -747,7 +747,6 @@ def test_max_tensile(pot_creation):
     # print("{}".format(en1))
 
     assert en1
-    assert en1
 
 @pytest.mark.parametrize("pot_creation", [
                         'LJ93(eps, sig)',
