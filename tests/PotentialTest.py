@@ -389,7 +389,7 @@ class PotentialTest(unittest.TestCase):
         assert abs(pot.evaluate(r_ti, True, True)[1] -hardness) < 1e-10
 
         "".format(LinearCorePotential)
-        if True:
+        if False:
             import matplotlib.pyplot as plt
             import subprocess
             fig, ax = plt.subplots(3)
