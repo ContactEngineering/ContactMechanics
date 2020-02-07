@@ -79,7 +79,7 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
         return opt
 
 
-class PlasticNonSmoothContactSystem(SmoothContactSystem):
+class PlasticSmoothContactSystem(SmoothContactSystem):
     """
     This system implements a simple penetration hardness model.
     """
