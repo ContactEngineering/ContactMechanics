@@ -42,6 +42,7 @@ from PyCo.ContactMechanics import VDW82smoothMin
 from PyCo.ContactMechanics import VDW82SimpleSmooth
 from PyCo.ContactMechanics import LinearCorePotential
 
+from PyCo.ContactMechanics import PowerLaw
 from PyCo.ContactMechanics import Exponential
 from PyCo.ContactMechanics import RepulsiveExponential
 import PyCo.Tools as Tools
@@ -595,7 +596,9 @@ import pytest
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
                         'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
-                        'RepulsiveExponential(1., 0.5, 1., 1.)'
+                        'RepulsiveExponential(1., 0.5, 1., 1.)',
+                        'Exponential(sig, eps)',
+                        'PowerLaw(sig, eps, 3)'
                          ])
 def test_deepcopy(pot_creation):
     import copy
@@ -670,7 +673,8 @@ def test_deepcopy(pot_creation):
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
                         'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
-                        'RepulsiveExponential(1., 0.5, 1., 1.)'
+                        'RepulsiveExponential(1., 0.5, 1., 1.)',
+                        'PowerLaw(sig, eps, 3)'
                          ])
 def test_masked_arrays(pot_creation, fill_value):
     eps = 1.7294663266397667
@@ -731,7 +735,8 @@ def test_lj93_masked(pot_class):
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
                         'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
-                        'RepulsiveExponential(1., 0.5, 1., 1.)'
+                        'RepulsiveExponential(1., 0.5, 1., 1.)',
+                        'PowerLaw(sig, eps, 3)'
                          ])
 def test_max_tensile(pot_creation):
 
@@ -767,7 +772,8 @@ def test_max_tensile(pot_creation):
                         'VDW82smooth(c_sr,  hamaker, r_t=VDW82(c_sr, hamaker).r_infl * 1.05)',
                         'VDW82smoothMin(c_sr,  hamaker, r_t_ls=VDW82(c_sr, hamaker).r_infl*1.05)',
                         'VDW82SimpleSmooth(c_sr, hamaker, r_c=VDW82(c_sr, hamaker).r_infl * 2)',
-                        'RepulsiveExponential(1., 0.5, 1., 1.)'
+                        'RepulsiveExponential(1., 0.5, 1., 1.)',
+                        'PowerLaw(sig, eps, 3)'
                          ])
 def test_max_tensile_array(pot_creation):
     eps = 1.7
@@ -781,7 +787,11 @@ def test_max_tensile_array(pot_creation):
 
     assert pot.max_tensile.shape == sig.shape
 
-def test_work_range_array():
+@pytest.mark.parametrize("pot_creation", [
+                        'Exponential(w, rho,)',
+                        'PowerLaw(w, 3*rho, 3)'
+                         ])
+def test_work_range_array(pot_creation):
     "tests that it is possible to change interaction range and work of adhesion at the same time"
 
     x = np.linspace(0,1)
@@ -790,10 +800,13 @@ def test_work_range_array():
     work_factor = 1 + work_fluctuation
 
     # base values around which the work will fluctuate
-    w = 1.
-    rho = 0.1
-    sigma = w / rho
-    interaction = Exponential(w * work_factor , rho * np.sqrt(work_factor))
+    w0 = 1.
+    rho0 = 0.1
+    sigma = w0 / rho0
+
+    w = w0 * work_factor
+    rho = rho0 * np.sqrt(work_factor)
+    interaction = eval(pot_creation)
 
     np.testing.assert_allclose(-interaction.max_tensile, sigma * np.sqrt(work_factor))
 
