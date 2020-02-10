@@ -16,8 +16,8 @@ class PowerLaw(Potential):
         gamma0 -- surface energy at perfect contact
         rho   -- attenuation length
         """
-        self.r_c = cutoff_radius
-        self.w = work_adhesion
+        self.r_c = self.rho = cutoff_radius
+        self.gam = work_adhesion
         self.p = exponent
         SoftWall.__init__(self, communicator=communicator)
         self.offset = 0  # cutoff is intrinsic to the potential so that there is no offset needed.
@@ -25,15 +25,15 @@ class PowerLaw(Potential):
     def __repr__(self, ):
         # TODO
         return ("Potential '{0.name}': eps = {0.eps}, sig = {0.sig},"
-                "r_c = {1}").format(
-            self.w, self.r_c if self.has_cutoff else 'None')
+                "rho = {1}").format(
+            self.gam, self.rho if self.has_cutoff else 'None')
 
     def __getstate__(self):
-        state = super().__getstate__(), self.p, self.r_c, self.w
+        state = super().__getstate__(), self.p, self.rho, self.gam
         return state
 
     def __setstate__(self, state):
-        superstate, self.p, self.r_c, self.w = state
+        superstate, self.p, self.rho, self.gam = state
         super().__setstate__(superstate)
 
     @property
@@ -46,7 +46,7 @@ class PowerLaw(Potential):
 
     @property
     def max_tensile(self):
-        return - self.w / self.r_c * self.p
+        return - self.gam / self.rho * self.p
 
     def naive_pot(self, r, pot=True, forces=False, curb=False, mask=(slice(None), slice(None))):
         """ Evaluates the potential and its derivatives without cutoffs or
@@ -65,8 +65,8 @@ class PowerLaw(Potential):
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
 
-        w = self.w if np.isscalar(self.w) else self.w[mask]
-        rc = self.r_c if np.isscalar(self.r_c) else self.r_c[mask]
+        w = self.gam if np.isscalar(self.gam) else self.gam[mask]
+        rc = self.rho if np.isscalar(self.rho) else self.rho[mask]
         p = self.p
 
         g = (1 - r / rc)
@@ -76,10 +76,10 @@ class PowerLaw(Potential):
         gpm1 = gpm2 * g
 
         if pot:
-            V = w * gpm1 * g
+            V = - w * gpm1 * g
         if forces:
-            dV = p * w / rc * gpm1
+            dV = - p * w / rc * gpm1
         if curb:
-            dV = p * (p - 1) * w / rc ** 2 * gpm2
+            ddV = - p * (p - 1) * w / rc ** 2 * gpm2
 
         return V, dV, ddV

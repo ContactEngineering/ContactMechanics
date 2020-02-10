@@ -89,7 +89,9 @@ class Exponential(Potential):
         """
         # pylint: disable=bad-whitespace
         # pylint: disable=invalid-name
-        g = -r/self.rho[mask]
+
+        rho = self.rho if  np.isscalar(self.rho) else self.rho[mask]
+        g = -r/ rho
 
         # Use exponential only for r > 0
         m = g < 0.0
