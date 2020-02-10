@@ -28,6 +28,7 @@ import os
 import pickle
 import unittest
 import warnings
+import numpy as np
 
 import pytest
 from numpy.testing import assert_array_equal
@@ -310,3 +311,46 @@ def test_readers_have_name(reader):
 def test_di_date():
     t = read_topography(os.path.join(DATADIR, 'di1.di'))
     assert t.info['acquisition_time'] == datetime.datetime(2016,1, 12, 9, 57, 48)
+
+# yes, the German version still has "Value units"
+@pytest.mark.parametrize("lang_filename_infix", ["english", "german"])
+def test_gwyddion_txt_import(lang_filename_infix):
+
+    fname = os.path.join(DATADIR, f'gwyddion-export-{lang_filename_infix}.txt')
+
+    #
+    # test channel infos
+    #
+    reader = open_topography(fname)
+
+    assert len(reader.channels) == 1
+    channel = reader.default_channel
+
+    # assert channel.name == "My Channel Name"
+    assert channel.info['unit'] == 'm'
+    assert pytest.approx(channel.physical_sizes[0]) == 12.34*1e-6  # was given as µm
+    assert pytest.approx(channel.physical_sizes[1]) == 5678.9*1e-9  # was given as nm
+
+    #
+    # test metadata of topography
+    #
+    topo = reader.topography()
+    assert topo.info['unit'] == 'm'
+    assert pytest.approx(topo.physical_sizes[0]) == 12.34 * 1e-6  # was given as µm
+    assert pytest.approx(topo.physical_sizes[1]) == 5678.9 * 1e-9  # was given as nm
+
+    #
+    # test scaling of data
+    #
+    expected_heights = [[ 1, 1.5,  3],
+                        [-2,  -3, -6],
+                        [ 0,   0,  0],
+                        [ 9,   9,  9]]
+    np.testing.assert_allclose(topo.heights(), expected_heights)
+
+
+
+
+
+
+
