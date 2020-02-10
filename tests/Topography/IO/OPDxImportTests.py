@@ -142,10 +142,10 @@ class OPDxSurfaceTest(unittest.TestCase):
         # .. mandatory keys
         self.assertEqual(channel_0.name, 'Image')
         self.assertEqual(channel_0.dim, 2)
-        self.assertAlmostEqual(channel_0.physical_sizes[0], 35.85522403809594)
-        self.assertAlmostEqual(channel_0.physical_sizes[1], 47.81942809668896)
-        self.assertAlmostEqual(channel_0.nb_grid_pts[0], 960)
-        self.assertAlmostEqual(channel_0.nb_grid_pts[1], 1280)
+        self.assertAlmostEqual(channel_0.physical_sizes[1], 35.85522403809594)
+        self.assertAlmostEqual(channel_0.physical_sizes[0], 47.81942809668896)
+        self.assertAlmostEqual(channel_0.nb_grid_pts[1], 960)
+        self.assertAlmostEqual(channel_0.nb_grid_pts[0], 1280)
 
         #
         # Channel 1: Raw
@@ -162,10 +162,10 @@ class OPDxSurfaceTest(unittest.TestCase):
         # .. mandatory keys
         self.assertEqual(channel_1.name, 'Raw')
         self.assertEqual(channel_1.dim, 2)
-        self.assertAlmostEqual(channel_1.physical_sizes[0], 35.85522403809594)
-        self.assertAlmostEqual(channel_1.physical_sizes[1], 47.81942809668896)
-        self.assertAlmostEqual(channel_1.nb_grid_pts[0], 960)
-        self.assertAlmostEqual(channel_1.nb_grid_pts[1], 1280)
+        self.assertAlmostEqual(channel_1.physical_sizes[1], 35.85522403809594)
+        self.assertAlmostEqual(channel_1.physical_sizes[0], 47.81942809668896)
+        self.assertAlmostEqual(channel_1.nb_grid_pts[1], 960)
+        self.assertAlmostEqual(channel_1.nb_grid_pts[0], 1280)
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
@@ -420,4 +420,26 @@ def test_opdx_txt_consistency():
     assert t_opdx.nb_grid_pts == t_txt.nb_grid_pts
 
     # opd heights are in nm, txt in m
-    npt.assert_allclose(t_opdx.detrend().heights(), t_txt.detrend().scale(1e9).heights(), rtol=1e-3, atol=1e-3)
+    npt.assert_allclose(t_opdx.detrend().heights(), t_txt.detrend().scale(1e9).heights(), rtol=1e-6, atol=1e-3)
+
+    if False:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        plt.colorbar(ax.imshow(t_txt.scale(1e9).heights()))
+        fig2, ax2 = plt.subplots()
+        plt.colorbar(ax2.imshow(t_opdx.heights()))
+        plt.show(block=True)
+
+def test_opdx_txt_heights_lateral_consistency():
+    t_txt = read_topography(os.path.join(DATADIR, 'opdx2.txt'))
+
+    assert t_txt.info["unit"] == "m"
+
+    # the radius of the sphere should be 250 µm
+    R = 250 * 1e-6
+
+    rhoxx, rhoyy, rhoxy = t_txt.detrend(detrend_mode="curvature").curvatures
+
+
+    assert (1/rhoxx - R) / R < 0.01
+    assert (1/rhoyy - R) / R < 0.01

@@ -243,6 +243,32 @@ class IOTest(unittest.TestCase):
                 self.assertEqual(t2.physical_sizes, physical_sizes)
             assert_array_equal(t.heights(), t2.heights())
 
+    def test_reader_topography_same(self):
+        """
+        Tests that properties like physical sizes, units and nb_grid_pts are
+        the  same in the ChannelInfo and the loaded topography
+        """
+
+        for fn in self.text_example_file_list + self.binary_example_file_list:
+
+            reader = open_topography(fn)
+
+            for channel in reader.channels:
+
+                topography = channel.topography(
+                    physical_sizes=
+                    (1, 1) if channel.physical_sizes is None
+                    else None)
+                assert channel.nb_grid_pts == topography.nb_grid_pts
+                if "unit" in channel.info.keys() or  "unit" in topography.info.keys():
+                    assert channel.info["unit"] == topography.info["unit"]
+
+                if channel.physical_sizes is not None:
+                    assert channel.physical_sizes == topography.physical_sizes
+
+
+
+
 class UnknownFileFormatGivenTest(unittest.TestCase):
 
     def test_read(self):
