@@ -142,10 +142,10 @@ class OPDxSurfaceTest(unittest.TestCase):
         # .. mandatory keys
         self.assertEqual(channel_0.name, 'Image')
         self.assertEqual(channel_0.dim, 2)
-        self.assertAlmostEqual(channel_0.physical_sizes[0], 35.85522403809594)
-        self.assertAlmostEqual(channel_0.physical_sizes[1], 47.81942809668896)
-        self.assertAlmostEqual(channel_0.nb_grid_pts[0], 960)
-        self.assertAlmostEqual(channel_0.nb_grid_pts[1], 1280)
+        self.assertAlmostEqual(channel_0.physical_sizes[1], 35.85522403809594)
+        self.assertAlmostEqual(channel_0.physical_sizes[0], 47.81942809668896)
+        self.assertAlmostEqual(channel_0.nb_grid_pts[1], 960)
+        self.assertAlmostEqual(channel_0.nb_grid_pts[0], 1280)
 
         #
         # Channel 1: Raw
@@ -162,10 +162,10 @@ class OPDxSurfaceTest(unittest.TestCase):
         # .. mandatory keys
         self.assertEqual(channel_1.name, 'Raw')
         self.assertEqual(channel_1.dim, 2)
-        self.assertAlmostEqual(channel_1.physical_sizes[0], 35.85522403809594)
-        self.assertAlmostEqual(channel_1.physical_sizes[1], 47.81942809668896)
-        self.assertAlmostEqual(channel_1.nb_grid_pts[0], 960)
-        self.assertAlmostEqual(channel_1.nb_grid_pts[1], 1280)
+        self.assertAlmostEqual(channel_1.physical_sizes[1], 35.85522403809594)
+        self.assertAlmostEqual(channel_1.physical_sizes[0], 47.81942809668896)
+        self.assertAlmostEqual(channel_1.nb_grid_pts[1], 960)
+        self.assertAlmostEqual(channel_1.nb_grid_pts[0], 1280)
 
     def test_topography(self):
         file_path = os.path.join(DATADIR, 'opdx2.OPDx')
