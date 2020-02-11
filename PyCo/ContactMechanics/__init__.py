@@ -35,4 +35,4 @@ from .Potentials import LinearCorePotential, ParabolicCutoffPotential
 from .Exponential import Exponential, RepulsiveExponential
 from .Harmonic import Harmonic
 from .Lj93 import LJ93, LJ93smooth, LJ93smoothMin, LJ93SimpleSmooth, LJ93SimpleSmoothMin
-from .VdW82 import VDW82, VDW82smooth, VDW82smoothMin, VDW82SimpleSmooth, VDW82SimpleSmoothMin
+from .VdW82 import VDW82, VDW82smooth, VDW82smoothMin, VDW82SimpleSmooth, VDW82SimpleSmoothMin, Lj82

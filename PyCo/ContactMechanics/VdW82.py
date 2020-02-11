@@ -214,3 +214,6 @@ def VDW82SimpleSmooth(c_sr, hamaker, r_c, communicator=MPI.COMM_WORLD):
 
 def VDW82SimpleSmoothMin(c_sr, hamaker, r_c, r_ti, communicator=MPI.COMM_WORLD):
     return LinearCorePotential(VDW82SimpleSmooth(c_sr, hamaker, r_c, communicator=communicator), r_ti=r_ti)
+
+def Lj82(w, z0, **kwargs):
+    return VDW82(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, **kwargs)
