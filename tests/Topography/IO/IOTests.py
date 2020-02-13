@@ -326,7 +326,7 @@ def test_gwyddion_txt_import(lang_filename_infix):
     assert len(reader.channels) == 1
     channel = reader.default_channel
 
-    # assert channel.name == "My Channel Name"
+    assert channel.name == "My Channel Name"
     assert channel.info['unit'] == 'm'
     assert pytest.approx(channel.physical_sizes[0]) == 12.34*1e-6  # was given as µm
     assert pytest.approx(channel.physical_sizes[1]) == 5678.9*1e-9  # was given as nm
