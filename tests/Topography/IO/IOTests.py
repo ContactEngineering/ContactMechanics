@@ -340,7 +340,10 @@ def test_gwyddion_txt_import(lang_filename_infix):
     assert pytest.approx(topo.physical_sizes[1]) == 5678.9 * 1e-9  # was given as nm
 
     #
-    # test scaling of data
+    # test scaling and order of data
+    #
+    # The order of the lines in the text files mimic the lines as they
+    # are shown in the gwyddion plot.
     #
     expected_heights = [[ 1, 1.5,  3],
                         [-2,  -3, -6],
