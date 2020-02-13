@@ -345,10 +345,26 @@ def test_gwyddion_txt_import(lang_filename_infix):
     # The order of the lines in the text files mimic the lines as they
     # are shown in the gwyddion plot.
     #
-    expected_heights = [[ 1, 1.5,  3],
-                        [-2,  -3, -6],
-                        [ 0,   0,  0],
-                        [ 9,   9,  9]]
+    # In gwyddion's text export:
+    # - first index corresponds to y dimension (rows), second index (columns) to x dimension
+    # - y coordinates grow from top row to bottom row
+    # - x coordinates grow from left column to column of array
+    #
+    # PyCo's heights() has a different order:
+    # - first index corresponds to x dimension, second index to y dimension
+    # - x coordinates grow from top row to bottom row of array
+    # - y coordinates grow from left column to column of array
+    # - plot from the heights correspond to same image in gwyddion if plotted with "pcolormesh(t.heights.T)"
+    #
+    # => heights() must be same array as in file, but transposed
+    #
+    heights_in_file = [[ 1, 1.5,  3],
+                       [-2,  -3, -6],
+                       [ 0,   0,  0],
+                       [ 9,   9,  9]]
+
+    expected_heights = np.array(heights_in_file).T
+
     np.testing.assert_allclose(topo.heights(), expected_heights)
 
 
