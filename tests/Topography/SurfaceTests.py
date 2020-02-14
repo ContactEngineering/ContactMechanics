@@ -893,6 +893,30 @@ class diSurfaceTest(unittest.TestCase):
                     self.assertEqual(unit, 'nm')
                 self.assertTrue(surface.is_uniform)
 
+def test_di_orientation():
+    #
+    # topography.heights() should return an array where
+    # - first index corresponds to x with lowest x in top rows and largest x in bottom rows
+    # - second index corresponds to y with lowest y in left column and largest x in right column
+    #
+    # This is given when reading di.txt, see test elsewhere.
+    #
+    # The heights should be equal to those from txt reader
+    di_fn = os.path.join(DATADIR, "di1.di")
+
+    di_t = read_topography(di_fn)
+
+    assert di_t.info['unit'] == 'nm'
+
+    #
+    # Check values in 4 corners, this should fix orientation
+    #
+    di_heights = di_t.heights()
+    assert pytest.approx(di_heights[0,0]) == 6.9
+    assert pytest.approx(di_heights[0, -1]) == 2.8
+    assert pytest.approx(di_heights[-1, 0]) == -9.7
+    assert pytest.approx(di_heights[-1, -1]) == -31.1
+
 
 class ibwSurfaceTest(unittest.TestCase):
     def setUp(self):
