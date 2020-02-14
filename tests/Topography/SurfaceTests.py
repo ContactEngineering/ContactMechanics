@@ -912,10 +912,10 @@ def test_di_orientation():
     # Check values in 4 corners, this should fix orientation
     #
     di_heights = di_t.heights()
-    assert pytest.approx(di_heights[0,0]) == 6.9
-    assert pytest.approx(di_heights[0, -1]) == 2.8
-    assert pytest.approx(di_heights[-1, 0]) == -9.7
-    assert pytest.approx(di_heights[-1, -1]) == -31.1
+    assert pytest.approx(di_heights[0,0], abs=1e-3) == 6.060
+    assert pytest.approx(di_heights[0, -1], abs=1e-3) == 2.843
+    assert pytest.approx(di_heights[-1, 0], abs=1e-3) == -9.740
+    assert pytest.approx(di_heights[-1, -1], abs=1e-3) == -30.306
 
 
 class ibwSurfaceTest(unittest.TestCase):
