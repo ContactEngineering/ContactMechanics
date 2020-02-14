@@ -12,6 +12,7 @@ v0.55.0 (14Feb20)
 - ENH: DI reader now read acquisition date and stores it in the info dictionary
 - BUG: DI reader autodetection did not work (#258)
 - BUG: Fixes orientation for DI files (#291)
+- DOC: Added notebook showing how 2D topographies can be plotted
 - TST: Added demo notebook which shows how to plot 2D topographies
 
 v0.54.4 (20Dec19)
