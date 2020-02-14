@@ -5,10 +5,13 @@ Change log for PyCo
 v0.55.0 (not yet released)
 --------------------------
 
-- API: Readers now report channel info in ChannelInfo class, fixes inconsistencies in reporting channel information (#190, #192, #236)
+- API: Readers now report channel info in ChannelInfo class,
+       fixes inconsistencies in reporting channel information (#190, #192, #236)
 - ENH: Readers report format identifier and are self-documented (#229, #238)
+- ENH: Readers now support Gwyddion's text export format for English and German locale (#230)
 - ENH: DI reader now read acquisition date and stores it in the info dictionary
 - BUG: DI reader autodetection did not work (#258)
+- TST: Added demo notebook which shows how to plot 2D topographies
 
 v0.54.4 (20Dec19)
 -----------------
