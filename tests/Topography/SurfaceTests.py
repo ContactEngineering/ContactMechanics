@@ -1140,8 +1140,10 @@ def test_txt_example():
     assert t.physical_sizes == (1e-6, 0.5e-6)
     assert t.nb_grid_pts == (6, 3)
 
-    assert (t.heights() == np.array([
+    expected_heights = np.rot90([
         [1.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007],
         [0.5e-007, 0.5e-007, 0.0e-008, 0.0e-008, 0.0e-008, 0.0e-008],
         [0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007],
-    ]).T).all()
+    ], axes=(1,0))
+
+    np.testing.assert_allclose(t.heights(), expected_heights)

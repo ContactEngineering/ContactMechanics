@@ -352,18 +352,16 @@ def test_gwyddion_txt_import(lang_filename_infix):
     #
     # PyCo's heights() has a different order:
     # - first index corresponds to x dimension, second index to y dimension
-    # - x coordinates grow from top row to bottom row of array
-    # - y coordinates grow from left column to column of array
     # - plot from the heights correspond to same image in gwyddion if plotted with "pcolormesh(t.heights.T)"
     #
-    # => heights() must be same array as in file, but transposed
+    # => heights() must be same array as in file, but rotated by 90 deg
     #
     heights_in_file = [[ 1, 1.5,  3],
                        [-2,  -3, -6],
                        [ 0,   0,  0],
                        [ 9,   9,  9]]
 
-    expected_heights = np.array(heights_in_file).T
+    expected_heights = np.rot90(heights_in_file, axes=(1,0))
 
     np.testing.assert_allclose(topo.heights(), expected_heights)
 
