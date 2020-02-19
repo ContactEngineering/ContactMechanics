@@ -194,7 +194,7 @@ class OPDxSurfaceTest(unittest.TestCase):
             self.assertEqual(topography.info['SequenceNumber'], 5972)
 
             # Check a height value
-            self.assertAlmostEqual(topography.heights()[0, 0], -7.731534, places=6)
+            self.assertAlmostEqual(topography.heights()[0, -1], -7.731534, places=6)
 
     def test_read_with_check(self):
         buffer = ['V', 'C', 'A', ' ', 'D', 'A', 'T', 'A', '\x01', '\x00', '\x00', 'U', '\x07', '\x00', '\x00', '\x00']
