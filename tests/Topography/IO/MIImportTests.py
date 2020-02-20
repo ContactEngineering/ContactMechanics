@@ -49,6 +49,10 @@ class MISurfaceTest(unittest.TestCase):
 
         loader = MIReader(file_path)
 
+        # Like in Gwyddion, there should be 4 channels in total
+        assert len(loader.channels) == 4
+        assert [ ch.name for ch in loader.channels ] == [ 'Topography', 'Deflection', 'Friction', 'Friction' ]
+
         # Check if metadata has been read in correctly
         self.assertEqual(loader.channels[0].dim, 2)
         self.assertEqual(loader.channels[0].nb_grid_pts, (256, 256))
