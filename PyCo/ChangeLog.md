@@ -2,6 +2,14 @@
 Change log for PyCo
 ===================
 
+v0.56.0 (not released yet)
+--------------------------
+
+- ENH: Change orientation of some readers such that all topographies
+       look like the image in Gwyddion when plotted with
+       "plotcolormesh(t.heights().T" (#295)
+
+
 v0.55.0 (14Feb20)
 -----------------
 
