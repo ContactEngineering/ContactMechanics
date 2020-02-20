@@ -15,13 +15,70 @@ Handling of topography data, either two-dimensional topography maps or line scan
 - :class:`UniformLineScan` is a representation of a one-dimensional line-scan that lives on a uniform grid.
 - :class:`NonuniformTopography` is a representation of a one-dimensional line-scan that lives on a nonuniform grid. This class assumes that height information in between grid points can be obtained by a linear interpolation.
 
-Nonuniform line-scans are therefore always interpreted as a set of points connected by straight lines (linear interpolation). No interpolation is carried out for topography maps and uniform line scans.
+Nonuniform line-scans are therefore always interpreted as a set of points connected by straight lines
+(linear interpolation). No interpolation is carried out for topography maps and uniform line scans.
 
-Topographies can be read from a file through the reader in :mod:`PyCo.Topography.FromFile`. Each reader returns one of the basic topography classes, depending on the structure of the data contained in the file. The classes expose a homogeneous interface for handling topographies.
+Topographies can be read from a file through the reader in :mod:`PyCo.Topography.FromFile`.
+Each reader returns one of the basic topography classes, depending on the structure of the data contained in the file.
+The classes expose a homogeneous interface for handling topographies.
 
-The raw data can be accesses via the `heights` method that return a one- or two-dimensional array containing height information. The `positions` method contains return the corresponding positions. For two-dimensional maps, it return two array for the `x` and `y` positions. For uniform topographies, these positions are uniformly spaced but for nonuniform topographies they may have any value.
+The raw data can be accesses via the `heights` method that return a one- or two-dimensional array containing height information.
+The `positions` method contains return the corresponding positions. For two-dimensional maps, it return two array for the `x` and `y` positions.
+For uniform topographies, these positions are uniformly spaced but for nonuniform topographies they may have any value.
 
-Operations on topographies can be analysis functions that compute some value or property, such as the root mean square height of the topography, or pipeline functions that compute a new topography, e.g. a detrended one, from the current topography. Both are described in the following.
+Operations on topographies can be analysis functions that compute some value or property,
+such as the root mean square height of the topography, or pipeline functions that compute a new topography,
+e.g. a detrended one, from the current topography. Both are described in the following.
+
+Data Orientation
+++++++++++++++++
+
+When working with 2D topographies it is useful to know, how the data in PyCo is oriented,
+also when compared against the expected image.
+
+After loading a topography, e.g. by
+
+.. code-block:: python
+
+    from PyCo.Topography.IO import open_topography
+    reader = open_topography("example.opd")   # you can find this file in the folder 'tests/file_format_examples'
+    topo = reader.topography()
+
+the heights array can be accessed by
+
+.. code-block:: python
+
+    topo.heights()
+
+or if you need also the coordinates of the heights, use
+
+.. code-block:: python
+
+    topo.positions_and_heights()
+
+If matplotlib has been installed, these heights can be plotted by
+
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    plt.pcolormesh(topo.heights().T)   # only heights, axes labels are just indices
+    # or
+    plt.pcolormesh(*topo.positions_and_heights())   # heights and coordinates, axes labels are positions
+
+These two variants plot the origin in the lower left, in a typical cartesian coordinate system.
+If you like to have a plot of the topography as seen during measurement, similar to the output
+of other software as e.g. Gwyddion, use
+
+.. code-block:: python
+
+   plt.imshow(topo.heights().T)
+
+
+
+
+
+
+
 
 Analysis functions
 ++++++++++++++++++
@@ -37,11 +94,11 @@ All topography classes implement the following analysis functions that can retur
 
 Example:::
 
-    from PyCo.Topography import open_topography
-    surface = open_topography('my_surface.opd')
-    print('rms height =', surface.rms_height())
-    print('rms slope =', surface.rms_slope())
-    print('rms curvature =', surface.rms_curvature())
+    from PyCo.Topography import read_topography
+    topo = read_topography('my_surface.opd')
+    print('rms height =', topo.rms_height())
+    print('rms slope =', topo.rms_slope())
+    print('rms curvature =', topo.rms_curvature())
 
 Pipelines
 +++++++++
@@ -53,12 +110,12 @@ Pipeline functions return a new topography. This topography does not own the ori
 
 Example:::
 
-    from PyCo.Topography import open_topography
-    surface = open_topography('my_surface.opd')
-    print('rms height before detrending =', surface.rms_height())
-    print('rms height after detrending =', surface.detrend(detrend_mode='curvature').rms_height())
+    from PyCo.Topography import read_topography
+    topo = read_topography('my_surface.opd')
+    print('rms height before detrending =', topo.rms_height())
+    print('rms height after detrending =', topo.detrend(detrend_mode='curvature').rms_height())
     print('rms height after detrending and rescaling =',
-          surface.detrend(detrend_mode='curvature').scale(2.0).rms_height())
+          topo.detrend(detrend_mode='curvature').scale(2.0).rms_height())
 
 Elastic half-space module
 -------------------------
