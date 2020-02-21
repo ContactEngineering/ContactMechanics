@@ -61,12 +61,12 @@ if __name__== '__main__':
     # plt.ion()
 
     filenames = [
-        #'../data/issues/230/di1.txt',
-        #'tests/file_format_examples/di1.di',
-        #'tests/file_format_examples/opdx2.OPDx',
-        # 'tests/file_format_examples/example.opd',
-        # 'tests/file_format_examples/example2.x3p',
-        #'tests/file_format_examples/mi1.mi',
+        # '../data/issues/230/di1.txt',  # this file you have to export yourself with gwyddion
+        'tests/file_format_examples/di1.di',
+        'tests/file_format_examples/opdx2.OPDx',
+        'tests/file_format_examples/example.opd',
+        'tests/file_format_examples/example2.x3p',
+        'tests/file_format_examples/mi1.mi',
         'tests/file_format_examples/example.ibw',
     ]
 
