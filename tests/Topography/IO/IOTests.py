@@ -355,7 +355,7 @@ def test_gwyddion_txt_import(lang_filename_infix):
     # - plot from the heights correspond to same image in gwyddion if plotted with "pcolormesh(t.heights.T)",
     #   but with origin in lower left, i.e. the image looks flipped vertically when compared to gwyddion
     #
-    # => heights() must be same array as in file, but rotated by 90 deg
+    # => heights() must be same array as in file, but transposed
     #
     heights_in_file = [[ 1, 1.5,  3],
                        [-2,  -3, -6],
