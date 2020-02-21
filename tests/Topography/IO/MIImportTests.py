@@ -63,7 +63,7 @@ class MISurfaceTest(unittest.TestCase):
                           'acqMode': 'Main',
                           'label': 'Topography',
                           'range': '2.9025000000000003e+000',
-                          'unit': 'um',
+                          'unit': 'µm',
                           'direction': 'Trace',
                           'filter': '3rd_order',
                           'name': 'Topography',
@@ -92,4 +92,4 @@ class MISurfaceTest(unittest.TestCase):
         self.assertTrue('zDacRange' in topography.info.keys())
 
         # Check the value of one of the metadata
-        self.assertEqual(topography.info['unit'], 'um')
+        self.assertEqual(topography.info['unit'], 'µm')
