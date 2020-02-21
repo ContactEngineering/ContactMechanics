@@ -7,7 +7,9 @@ v0.56.0 (not released yet)
 
 - ENH: Change orientation of some readers such that all topographies
        look like the image in Gwyddion when plotted with
-       "plotcolormesh(t.heights().T" (#295)
+       "pcolormesh(t.heights().T)" (#295)
+- BUG: Fixes unknown unit "um" when reading mi file (#296)
+- BUG: Fixes missing channel name for mi files (#294)
 
 
 v0.55.0 (14Feb20)
