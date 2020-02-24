@@ -18,9 +18,38 @@ Handling of topography data, either two-dimensional topography maps or line scan
 Nonuniform line-scans are therefore always interpreted as a set of points connected by straight lines
 (linear interpolation). No interpolation is carried out for topography maps and uniform line scans.
 
-Topographies can be read from a file through the reader in :mod:`PyCo.Topography.FromFile`.
-Each reader returns one of the basic topography classes, depending on the structure of the data contained in the file.
-The classes expose a homogeneous interface for handling topographies.
+Topographies can be read from a file through a reader returned by :func:`PyCo.Topography.open_topography`.
+Each reader provides an interface to one or more channels in the file.
+Each channel returns one of the basic topography classes, depending on the structure of the data contained in the file.
+The classes expose a homogeneous interface for handling topographies. Example:
+
+.. code-block:: python
+
+    from PyCo.Topography import open_topography
+
+    # get a handle to the file ("reader")
+    reader = open_topography("example.opd")   # you can find this file in the folder 'tests/file_format_examples'
+
+    # each file has a list of channels (one or more)
+    print(reader.channels)  # returns list of channels
+    ch = reader.channel[0]  # first channel, alternatively use ..
+    ch = reader.default_channel  # .. - one of the channels is the "default" channel
+
+    # each channel has some defined meta data
+    print(ch.name)  # channel name
+    print(ch.physical_sizes)  # lateral dimensions
+    print(ch.nb_grid_pts)  # number of grid points
+    print(ch.dim)  # number of dimensions (1 or 2)
+    print(ch.info)  # more metadata, e.g. 'unit' if unit was given in file
+
+    # you can get a topography from a channel
+    topo = ch.topography()   # here meta data from the file is taken
+    topo = ch.topography(physical_sizes=(20,30))   # like this, you can overwrite meta data in file
+
+    # each topography has a rich set of methods and properties for meta data and analysis
+    print(topo.physical_sizes)  # lateral dimension
+    print(topo.rms_height())  # Root mean square of heights
+    h = topo.heights()  # access to the heights array
 
 The raw data can be accesses via the `heights` method that return a one- or two-dimensional array containing height information.
 The `positions` method contains return the corresponding positions. For two-dimensional maps, it return two array for the `x` and `y` positions.
@@ -28,7 +57,7 @@ For uniform topographies, these positions are uniformly spaced but for nonunifor
 
 Operations on topographies can be analysis functions that compute some value or property,
 such as the root mean square height of the topography, or pipeline functions that compute a new topography,
-e.g. a detrended one, from the current topography. Both are described in the following.
+e.g. a detrended one, from the current topography. Both are described in the section :ref:`analysis-functions` below.
 
 Data Orientation
 ++++++++++++++++
@@ -40,9 +69,9 @@ After loading a topography, e.g. by
 
 .. code-block:: python
 
-    from PyCo.Topography.IO import open_topography
+    from PyCo.Topography import open_topography
     reader = open_topography("example.opd")   # you can find this file in the folder 'tests/file_format_examples'
-    topo = reader.topography()
+    topo = reader.topography()  # returns the default channel
 
 the heights array can be accessed by
 
@@ -78,7 +107,7 @@ of other software as e.g. Gwyddion, use
 
 
 
-
+.. _analysis-functions:
 
 Analysis functions
 ++++++++++++++++++
