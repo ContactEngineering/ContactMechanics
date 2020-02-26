@@ -7,9 +7,12 @@ v0.56.0 (26Feb20)
 
 - ENH: Change orientation of some readers such that all topographies
        look like the image in Gwyddion when plotted with
-       "plotcolormesh(t.heights().T" (#295)
+       "pcolormesh(t.heights().T)" (#295)
+- BUG: Fixes unknown unit "um" when reading mi file (#296)
+- BUG: Fixes missing channel name for mi files (#294)
 - ENH: generate self-affine random surfaces by specifying the self-affine prefactor (#261, #278, #279)
 - BUG: now fourier synthesis can generate Linescans again (#277, #279)
+
 
 v0.55.0 (14Feb20)
 -----------------
