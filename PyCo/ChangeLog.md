@@ -2,6 +2,18 @@
 Change log for PyCo
 ===================
 
+v0.56.0 (26Feb20)
+--------------------------
+
+- ENH: Change orientation of some readers such that all topographies
+       look like the image in Gwyddion when plotted with
+       "pcolormesh(t.heights().T)" (#295)
+- BUG: Fixes unknown unit "um" when reading mi file (#296)
+- BUG: Fixes missing channel name for mi files (#294)
+- ENH: generate self-affine random surfaces by specifying the self-affine prefactor (#261, #278, #279)
+- BUG: now fourier synthesis can generate Linescans again (#277, #279)
+
+
 v0.55.0 (14Feb20)
 -----------------
 
@@ -14,6 +26,7 @@ v0.55.0 (14Feb20)
 - BUG: Fixes orientation for DI files (#291)
 - DOC: Added notebook showing how 2D topographies can be plotted
 - TST: Added demo notebook which shows how to plot 2D topographies
+- ENH: adhesive ideal plastic simulations with Softwall system (#260, #283)
 
 v0.54.4 (20Dec19)
 -----------------

@@ -49,6 +49,10 @@ class MISurfaceTest(unittest.TestCase):
 
         loader = MIReader(file_path)
 
+        # Like in Gwyddion, there should be 4 channels in total
+        assert len(loader.channels) == 4
+        assert [ ch.name for ch in loader.channels ] == [ 'Topography', 'Deflection', 'Friction', 'Friction' ]
+
         # Check if metadata has been read in correctly
         self.assertEqual(loader.channels[0].dim, 2)
         self.assertEqual(loader.channels[0].nb_grid_pts, (256, 256))
@@ -59,7 +63,7 @@ class MISurfaceTest(unittest.TestCase):
                           'acqMode': 'Main',
                           'label': 'Topography',
                           'range': '2.9025000000000003e+000',
-                          'unit': 'um',
+                          'unit': 'µm',
                           'direction': 'Trace',
                           'filter': '3rd_order',
                           'name': 'Topography',
@@ -88,4 +92,4 @@ class MISurfaceTest(unittest.TestCase):
         self.assertTrue('zDacRange' in topography.info.keys())
 
         # Check the value of one of the metadata
-        self.assertEqual(topography.info['unit'], 'um')
+        self.assertEqual(topography.info['unit'], 'µm')

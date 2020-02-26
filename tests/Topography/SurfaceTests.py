@@ -912,10 +912,11 @@ def test_di_orientation():
     # Check values in 4 corners, this should fix orientation
     #
     di_heights = di_t.heights()
-    assert pytest.approx(di_heights[0,0], abs=1e-3) == 6.060
+    assert pytest.approx(di_heights[ 0,  0], abs=1e-3) == 6.060
     assert pytest.approx(di_heights[0, -1], abs=1e-3) == 2.843
-    assert pytest.approx(di_heights[-1, 0], abs=1e-3) == -9.740
+    assert pytest.approx(di_heights[-1,  0], abs=1e-3) == -9.740
     assert pytest.approx(di_heights[-1, -1], abs=1e-3) == -30.306
+
 
 
 class ibwSurfaceTest(unittest.TestCase):
@@ -1139,8 +1140,10 @@ def test_txt_example():
     assert t.physical_sizes == (1e-6, 0.5e-6)
     assert t.nb_grid_pts == (6, 3)
 
-    assert (t.heights() == np.array([
+    expected_heights = np.array([
         [1.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007],
         [0.5e-007, 0.5e-007, 0.0e-008, 0.0e-008, 0.0e-008, 0.0e-008],
         [0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007],
-    ]).T).all()
+    ]).T
+
+    np.testing.assert_allclose(t.heights(), expected_heights)

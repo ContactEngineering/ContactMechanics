@@ -352,9 +352,8 @@ def test_gwyddion_txt_import(lang_filename_infix):
     #
     # PyCo's heights() has a different order:
     # - first index corresponds to x dimension, second index to y dimension
-    # - x coordinates grow from top row to bottom row of array
-    # - y coordinates grow from left column to column of array
-    # - plot from the heights correspond to same image in gwyddion if plotted with "pcolormesh(t.heights.T)"
+    # - plot from the heights correspond to same image in gwyddion if plotted with "pcolormesh(t.heights.T)",
+    #   but with origin in lower left, i.e. the image looks flipped vertically when compared to gwyddion
     #
     # => heights() must be same array as in file, but transposed
     #
