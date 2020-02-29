@@ -1,7 +1,7 @@
 PyCo
 ====
 
-Contact mechanics with Python. This code implements computation of contact geometry and pressure of a rigid object on a flat elastic half-space. All calculations assume small deformations; in that limit, the contact of any two objects of arbitrary geometry and elastic moduli can be mapped on that of a rigid on an elastic flat.
+*Contact mechanics with Python.* This code implements computation of contact geometry and pressure of a rigid object on a flat elastic half-space. All calculations assume small deformations; in that limit, the contact of any two objects of arbitrary geometry and elastic moduli can be mapped on that of a rigid on an elastic flat.
 
 The methods that are implemented in this code are described in various papers:
 
@@ -18,6 +18,8 @@ The methods that are implemented in this code are described in various papers:
     - [Pastewka, Robbins, PNAS 111, 3298 (2014)](https://doi.org/10.1073/pnas.1320846111)
 - Contact plasticity.
     - [Weber, Suhina, Junge, Pastewka, Brouwer, Bonn, Nature Comm. 9, 888 (2018)](https://doi.org/10.1038/s41467-018-02981-y)
+
+*Analyzing surface topography data with Python.* This code also contains a rich set of import filters for experimental surface topography data. Surface topographies can be easily analyzed using standard (rms height, power spectrum, ...) and some special purpose (autocorrelation function, variable bandwidth analysis, ...) statistical techniques.
 
 Build status
 ------------
