@@ -1147,3 +1147,19 @@ def test_txt_example():
     ]).T
 
     np.testing.assert_allclose(t.heights(), expected_heights)
+
+def test_different_dictionary_instance_UniformLineScan():
+    """
+    see issue #301
+    """
+    a = UniformLineScan(np.array([1,2,3,4]), physical_sizes=2)
+    b = UniformLineScan(np.array([1,8,2,4]), physical_sizes=1)
+
+    assert id(a.info) != id(b.info)
+
+def test_different_dictionary_instance_Topography():
+    a = Topography(np.array([[1,2],[3,4]]), physical_sizes=(2,1))
+    b = Topography(np.array([[1,8],[2,4]]), physical_sizes=(1,3))
+
+    assert id(a.info) != id(b.info)
+
