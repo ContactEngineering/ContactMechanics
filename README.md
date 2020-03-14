@@ -89,7 +89,7 @@ Tests that are parallelizable have to run with [runtests](https://github.com/Ant
 python run-tests.py 
 ``` 
 
-You can choose the number of processors with the option `--mpirun="mpirun -np 4"`. For development purposes you can go beyound the number of processorce of your computer wusing `--mpirun="mpirun -np 10 --oversubscribe"`
+You can choose the number of processors with the option `--mpirun="mpirun -np 4"`. For development purposes you can go beyond the number of processors of your computer using `--mpirun="mpirun -np 10 --oversubscribe"`
 
 Other usefull flags:
 - `--xterm`: one window per processor
