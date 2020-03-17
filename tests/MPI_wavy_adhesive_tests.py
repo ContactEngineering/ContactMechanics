@@ -36,7 +36,7 @@ try:
                                                surface_stress)
     from NuMPI.Optimization import LBFGS
     from NuMPI.Tools.Reduction import Reduction
-    from mpi4py import MPI
+    from NuMPI import MPI
     from PyCo.ContactMechanics import VDW82smoothMin, VDW82
     from PyCo.System import SmoothContactSystem
     from PyCo.Tools.NetCDF import NetCDFContainer
