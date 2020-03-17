@@ -290,7 +290,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
                                              method=method, jac=gradient,
                                              callback=callback, **kwargs)
-        self.offset=offset
+        self.offset = offset
         self.disp = self.shape_minimisation_output(result.x*disp_scale)
         self.evaluate(self.disp, offset, forces=gradient)
         result.x = self.shape_minimisation_output(result.x)
@@ -389,15 +389,15 @@ class SmoothContactSystem(SystemBase):
 
     def compute_repulsive_force(self):
         "computes and returns the sum of all repulsive forces"
-        return np.where(
+        return self.pnp.sum(np.where(
             self.interaction.force > 0, self.interaction.force, 0
-            ).sum()
+            ))
 
     def compute_attractive_force(self):
         "computes and returns the sum of all attractive forces"
-        return np.where(
+        return self.pnp.sum(np.where(
             self.interaction.force < 0, self.interaction.force, 0
-            ).sum()
+            ))
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
