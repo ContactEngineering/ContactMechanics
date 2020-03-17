@@ -59,16 +59,14 @@ def test_wavy(comm, fftengine_type):
     R = 100
     w = 0.01*z0 * Es
 
-    fftengine = fftengine_type((n, n), comm=comm)
-
     pnp = Reduction(comm=comm)
 
-    inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w,pnp = pnp)
+    inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w,communicator=comm)
 
     # Parallel Topography Patch
 
     substrate = PeriodicFFTElasticHalfSpace(surf_res, young=Es,
-                                            physical_sizes=surf_size, pnp=pnp)
+                                            physical_sizes=surf_size, communicator=comm, fft=fftengine_type)
 
     surface = Topography(
         np.cos(np.arange(0, n) * np.pi * 2. / n) * np.ones((n, 1)),
@@ -77,7 +75,8 @@ def test_wavy(comm, fftengine_type):
     psurface = Topography(surface.heights(), physical_sizes=surface.physical_sizes,
                           subdomain_locations=substrate.topography_subdomain_locations,
                           nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts,
-                          periodic=True, pnp=pnp)
+                          periodic=True, communicator=comm,
+                          decomposition="domain")
 
     system = SmoothContactSystem(substrate, inter, psurface)
 
@@ -86,12 +85,16 @@ def test_wavy(comm, fftengine_type):
     force = np.zeros_like(offsets)
 
     nsteps = len(offsets)
-
+    disp0 = np.zeros(substrate.nb_subdomain_grid_pts)
     for i in range(nsteps):
-        result = system.minimize_proxy(offsets[i], disp0=None,method=LBFGS,
-                                       options=dict(gtol=1e-5, maxiter=100, maxls=10, pnp=pnp))
+        result = LBFGS(system.objective(offsets[i], gradient=True), disp0, jac=True,
+                       maxcor=3,
+                       gtol=1e-5, pnp=pnp)
         assert result.success
         force[i] = system.compute_normal_force()
+
+        np.testing.assert_allclose(force[i], (system.compute_repulsive_force() + system.compute_attractive_force()))
+
         #print("step {}".format(i))
 
     toPlot = comm.Get_rank() == 0 and _toplot
