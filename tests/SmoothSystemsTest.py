@@ -1,9 +1,18 @@
+
+import numpy as np
+import pytest
+
 from PyCo.Topography import make_sphere
 from PyCo.ContactMechanics import Exponential, Lj82, LinearCorePotential
 from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
                                      PeriodicFFTElasticHalfSpace)
 from PyCo.System import SmoothContactSystem, BoundedSmoothContactSystem
-import numpy as np
+from NuMPI import MPI
+
+
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
 
 def test_smooth_contact_postprocessing():
     """
@@ -36,7 +45,7 @@ def test_smooth_contact_postprocessing():
     sol = smoothsystem.minimize_proxy(penetration-rho, options=dict( maxcor=3, ftol=0, gtol=1e-6 * (w/rho) * surface.area_per_pt ))
     assert sol.success
 
-    if True:
+    if False:
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots()
 
