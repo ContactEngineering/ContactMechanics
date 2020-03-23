@@ -478,7 +478,7 @@ class SmoothContactSystem(SystemBase):
                -self.pnp.sum(self.substrate.force),
                self.pnp.sum(self.interaction.force)])
 
-    def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
+    def  evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement
         field
@@ -581,8 +581,7 @@ class BoundedSmoothContactSystem(SmoothContactSystem):
 
     def compute_nb_contact_pts(self):
         """
-        compute and return the number of contact points. Note that this is of
-        no physical interest, as it is a purely numerical artefact
+        compute and return the number of contact points.
         """
         return self.pnp.sum(np.where(self.gap == 0., 1., 0.))
 
@@ -597,10 +596,68 @@ class BoundedSmoothContactSystem(SmoothContactSystem):
 
         # sum of the jacobian in the contact area (Lagrange multiplier)
         # and the ineraction forces.
-        # can also be computed easily from the substrate forces
-        raise NotImplementedError
+        # can also be computed easily from the substrate forces, what we do here
+        return self.pnp.sum( - self.substrate.force[self.substrate.topography_subdomain_slices])
 
+    def compute_repulsive_force(self):
+        """computes and returns the sum of all repulsive forces
 
+        Assumptions: there
+        """
+        return self.pnp.sum(np.where( - self.substrate.force[self.substrate.topography_subdomain_slices] > 0,
+                 - self.substrate.force[self.substrate.topography_subdomain_slices], 0.))
+
+    def compute_attractive_force(self):
+        "computes and returns the sum of all attractive forces"
+        return self.pnp.sum(np.where( - self.substrate.force[self.substrate.topography_subdomain_slices] < 0,
+                - self.substrate.force[self.substrate.topography_subdomain_slices], 0.))
+
+    def compute_nb_repulsive_pts(self):
+        """
+        compute and return the number of contact points under repulsive
+        pressure.
+
+        """
+        return self.pnp.sum(np.where(np.logical_and(self.gap == 0., - self.substrate.force[self.substrate.topography_subdomain_slices] > 0), 1., 0.))
+
+    def compute_nb_attractive_pts(self):
+        """
+        compute and return the number of contact points under attractive
+        pressure.
+        """
+
+        # Compute points where substrate force is negative or there is no contact
+        pts = np.logical_or( - self.substrate.force[self.substrate.topography_subdomain_slices] < 0,
+                                            self.gap > 0.)
+
+        # exclude points where there is no contact and the interaction force is 0.
+        pts[np.logical_and(self.gap > 0.,
+            self.interaction.force == 0.)] = 0.
+
+        return self.pnp.sum(pts)
+
+    def compute_repulsive_coordinates(self):
+        """
+        returns an array of all coordinates, where contact pressure is
+        repulsive. Useful for evaluating the number of contact islands etc.
+        """
+        return np.argwhere(np.logical_and(self.gap == 0., - self.substrate.force[self.substrate.topography_subdomain_slices] > 0))
+
+    def compute_attractive_coordinates(self):
+        """
+        returns an array of all coordinates, where contact pressure is
+        attractive. Useful for evaluating the number of contact islands etc.
+        """
+
+        # Compute points where substrate force is negative or there is no contact
+        pts = np.logical_or( - self.substrate.force[self.substrate.topography_subdomain_slices] < 0,
+                                            self.gap > 0.)
+
+        # exclude points where there is no contact and the interaction force is 0.
+        pts[np.logical_and(self.gap > 0.,
+            self.interaction.force == 0.)] = 0.
+
+        return np.argwhere(pts)
 
 class NonSmoothContactSystem(SystemBase):
     """
