@@ -31,8 +31,9 @@ def test_hard_wall_bearing_area(comm, fftengine_type):
                          nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                          communicator=substrate.communicator)
 
+    plastic_surface = PlasticTopography(surface, 1e-12)
     system = make_system(substrate,
-                         HardWall(), PlasticTopography(surface, 0.0))
+                         HardWall(), plastic_surface)
     offset = -0.002
     if comm.rank == 0:
         def cb(it, p_r, d):
@@ -45,6 +46,7 @@ def test_hard_wall_bearing_area(comm, fftengine_type):
     assert result.success
     c = result.jac > 0.0
     ncontact = pnp.sum(c)
+    assert plastic_surface.plastic_area == ncontact * surface.area_per_pt
     bearing_area = bisect(lambda x: pnp.sum((surface.heights() > x)) - ncontact,
                           -0.03, 0.03)
     cba = surface.heights() > bearing_area
