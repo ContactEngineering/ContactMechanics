@@ -1,16 +1,16 @@
 import numpy as np
-import pytest
+import os
 from scipy.optimize import bisect
+
+from NuMPI.Tools.Reduction import Reduction
+from NuMPI import MPI
+
 from PyCo.ContactMechanics import HardWall
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.Topography import open_topography, PlasticTopography
 from PyCo.System import make_system
-from NuMPI.Tools.Reduction import Reduction
-from PyCo.Tools.Logger import screen
 from PyCo.Topography import Topography
-from runtests.mpi import MPITest
-import os
-import PyCo
+
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
