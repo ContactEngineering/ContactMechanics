@@ -191,6 +191,46 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             return in_array.reshape(self.substrate.nb_subdomain_grid_pts)
         raise IncompatibleResolutionError()
 
+    def _reshape_bounds(self, lbounds=None, ubounds=None, disp_scale=1.):
+        bnds = None
+        if lbounds is not None and ubounds is not None:
+            ubounds = disp_scale * self.shape_minimisation_input(ubounds)
+            lbounds = disp_scale * self.shape_minimisation_input(lbounds)
+            bnds = tuple(zip(lbounds.tolist(), ubounds.tolist()))
+        elif lbounds is not None:
+            lbounds = disp_scale * self.shape_minimisation_input(lbounds)
+            bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
+        elif ubounds is not None:
+            ubounds = disp_scale * self.shape_minimisation_input(ubounds)
+            bnds = tuple(zip([None for i in range(len(ubounds))], ubounds.tolist()))
+        return bnds
+
+    def _lbounds_from_heights(self, offset):
+
+        lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
+        lbounds.mask[self.substrate.topography_subdomain_slices] = False
+        lbounds[self.substrate.topography_subdomain_slices] \
+            = self.surface.heights() + offset
+        lbounds.set_fill_value(-np.inf)
+
+        return lbounds
+
+    def _update_state(self, offset, result, gradient=True, disp_scale=1.):
+        self.offset = offset
+        self.disp = self.shape_minimisation_output(result.x * disp_scale)
+        self.evaluate(self.disp, offset, forces=gradient)
+        result.x = self.shape_minimisation_output(result.x)
+        result.jac = self.shape_minimisation_output(result.jac)
+        self.substrate.check(force=self.interaction.force)
+        # the variable (= imposed by the minimzer) is here the displacement,
+        # in contrast to Polonsky and Keer where it is the pressure.
+        # Grad(objective) = substrate.force + interaction.force
+        # norm(Grad(objective))< numerical tolerance
+        # We can ensure that interaction.force is zero at the boundary by
+        # adapting the geometry and the potential (cutoff)
+        # substrate.force will still be nonzero within the numerical tolerance
+        # given by the convergence criterion.
+
     def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
                        gradient=True, lbounds=None, ubounds=None, callback=None,
                        disp_scale=1., logger=None, **kwargs):
@@ -259,30 +299,17 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         # convenience automatic choose of the lower bound
         if isinstance(lbounds, str):
             if lbounds == "auto":
-                lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
-                lbounds.mask[self.substrate.topography_subdomain_slices] = False
-                lbounds[self.substrate.topography_subdomain_slices] \
-                    = self.surface.heights() + offset
-                lbounds.set_fill_value(-np.inf)
+                lbounds = self._lbounds_from_heights(offset)
             else:
-                raise ValueError()
+                raise ValueError
 
-        bnds = None
-        if lbounds is not None and ubounds is not None:
-            ubounds = disp_scale*self.shape_minimisation_input(ubounds)
-            lbounds = disp_scale*self.shape_minimisation_input(lbounds)
-            bnds = tuple(zip(lbounds.tolist(),ubounds.tolist()))
-        elif lbounds is not None:
-            lbounds = disp_scale*self.shape_minimisation_input(lbounds)
-            bnds = tuple(zip(lbounds.tolist(),[None for i in range(len(lbounds))]))
-        elif ubounds is not None:
-            ubounds = disp_scale*self.shape_minimisation_input(ubounds)
-            bnds = tuple(zip([None for i in range(len(ubounds))],ubounds.tolist()))
+        bnds = self._reshape_bounds(lbounds, ubounds, disp_scale=disp_scale)
+
         # Scipy minimizers that accept bounds
-        bounded_minimizers = {'L-BFGS-B','TNC','SLSQP'}
+        bounded_minimizers = {'L-BFGS-B', 'TNC', 'SLSQP'}
 
         if method in bounded_minimizers:
-            result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
+            result = scipy.optimize.minimize(fun, x0=disp_scale * disp0,
                                              method=method, jac=gradient,
                                              bounds=bnds, callback=callback,
                                              **kwargs)
@@ -290,21 +317,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
                                              method=method, jac=gradient,
                                              callback=callback, **kwargs)
-        self.offset=offset
-        self.disp = self.shape_minimisation_output(result.x*disp_scale)
-        self.evaluate(self.disp, offset, forces=gradient)
-        result.x = self.shape_minimisation_output(result.x)
-        result.jac = self.shape_minimisation_output(result.jac)
-        self.substrate.check(force=self.interaction.force)
-        # the variable (= imposed by the minimzer) is here the displacement,
-        # in contrast to Polonsky and Keer where it is the pressure.
-        # Grad(objective) = substrate.force + interaction.force
-        # norm(Grad(objective))< numerical tolerance
-        # We can ensure that interaction.force is zero at the boundary by
-        # adapting the geometry and the potential (cutoff)
-        # substrate.force will still be nonzero within the numerical tolerance
-        # given by the convergence criterion.
 
+        self._update_state(offset, result, gradient, disp_scale)
         return result
 
     @abc.abstractmethod
@@ -389,15 +403,15 @@ class SmoothContactSystem(SystemBase):
 
     def compute_repulsive_force(self):
         "computes and returns the sum of all repulsive forces"
-        return np.where(
+        return self.pnp.sum(np.where(
             self.interaction.force > 0, self.interaction.force, 0
-            ).sum()
+            ))
 
     def compute_attractive_force(self):
         "computes and returns the sum of all attractive forces"
-        return np.where(
+        return self.pnp.sum(np.where(
             self.interaction.force < 0, self.interaction.force, 0
-            ).sum()
+            ))
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
@@ -825,8 +839,6 @@ class NonSmoothContactSystem(SystemBase):
             self.substrate,
             self.surface,
             **kwargs)
-
-
         if result.success:
             self.offset = result.offset
             self.disp = result.x
