@@ -55,8 +55,9 @@ extensions = [
     Extension(
         name='_PyCo',
         sources=['c/autocorrelation.c',
-                 'c/patchfinder.cpp',
-                 'c/PyCo_module.cpp'],
+                  'c/bicubic.cpp',
+                  'c/patchfinder.cpp',
+                  'c/PyCo_module.cpp'],
     )
 ]
 

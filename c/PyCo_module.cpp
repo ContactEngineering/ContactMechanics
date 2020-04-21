@@ -35,6 +35,7 @@ SOFTWARE.
 #include <numpy/arrayobject.h>
 
 #include "autocorrelation.h"
+#include "bicubic.h"
 #include "patchfinder.h"
 
 static PyMethodDef PyCo_methods[] = {
@@ -80,6 +81,13 @@ MOD_INIT(_PyCo)  {
 
   MOD_DEF(m, "_PyCo", PyCo_methods,
           "C support functions for PyCo.");
+
+  if (PyType_Ready(&bicubic_type) < 0)
+    return;
+
+  Py_INCREF(&bicubic_type);
+  PyModule_AddObject(m, "Bicubic",
+		     (PyObject *) &bicubic_type);
 
 #if PY_MAJOR_VERSION >= 3
     return m;

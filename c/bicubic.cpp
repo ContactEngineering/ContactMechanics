@@ -149,6 +149,62 @@ Bicubic::~Bicubic()
 }
 
 
+void Bicubic::compute_spline_coefficients(int nhbox, int ncbox, double **values, double **coeff) {
+  const int ix1[NCORN] = { 0,1,1,0 };
+  const int ix2[NCORN] = { 0,0,1,1 };
+
+  /*
+   * construct the 16 r.h.s. vectors ( 1 for each box ).
+   * loop through boxes.
+   */
+
+  double B[NPARA];
+
+  for (int irow = 0; irow < NCORN; irow++) {
+    int nx1  = ix1[irow]+nhbox;
+    int nx2  = ix2[irow]+ncbox;
+    /* wrap to box */
+    WRAPX(nx1);
+    WRAPY(nx2);
+    /* values of function and derivatives at corner. */
+    B[irow   ] = values[nx1][nx2];
+    /* interpolate derivatives */
+    if (interp_) {
+      int nx1p = nx1+1;
+      int nx1m = nx1-1;
+      int nx2p = nx2+1;
+      int nx2m = nx2-1;
+      WRAPX(nx1p);
+      WRAPX(nx1m);
+      WRAPY(nx2p);
+      WRAPY(nx2m);
+      B[irow+4 ] = (values[nx1p][nx2]-values[nx1m][nx2])/2;
+      B[irow+8 ] = (values[nx1][nx2p]-values[nx1][nx2m])/2;
+    }
+    else {
+      B[irow+4 ] = 0.0;
+      B[irow+8 ] = 0.0;
+    }
+    B[irow+12] = 0.0;
+  }
+
+  double tmp[NPARA];
+  mat_mul_vec(NPARA, &A_[0][0], B, tmp);
+
+  /*
+   * get the coefficient values.
+   */
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      int irow = 4*i+j;
+
+      coeff[i][j] = tmp[irow];
+    }
+  }
+}
+
+
 void Bicubic::eval(double x, double y, double &f)
 {
   int r1box = (int) floor( x );
@@ -492,22 +548,3 @@ PyTypeObject bicubic_type = {
     0,                                          /* tp_alloc */
     bicubic_new,                                /* tp_new */
 };
-
-
-extern "C"
-void initbicubic()  {
-  PyObject *m;
-
-  m = Py_InitModule("bicubic", NULL);
-  if (!m)
-    return;
-
-  import_array();
-
-  if (PyType_Ready(&bicubic_type) < 0)
-    return;
-
-  Py_INCREF(&bicubic_type);
-  PyModule_AddObject(m, "Bicubic",
-		     (PyObject *) &bicubic_type);
-}
