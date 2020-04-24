@@ -40,10 +40,13 @@ SOFTWARE.
 
 #include "bicubic.h"
 
+#define DGESV dgesv_
+
 /*
  * signature of dgesv. This should be present once numpy is loaded.
  */
-void dgesv(int const* n, int const* nrhs, double* A, int const* lda, int* ipiv, double* B, int const* ldb, int* info);
+extern "C" void
+DGESV(int const* n, int const* nrhs, double* A, int const* lda, int* ipiv, double* B, int const* ldb, int* info);
 
 /*
  * invert a square matrix
@@ -64,7 +67,7 @@ int invert_matrix(int n, double *mat)
     tmp2[_row_major(i, i, n, n)] = 1.0;
   }
 
-  dgesv(&n, &n, tmp1, &n, ipiv, tmp2, &n, &info);
+  DGESV(&n, &n, tmp1, &n, ipiv, tmp2, &n, &info);
 
   if (info)
     return info;

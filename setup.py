@@ -24,6 +24,7 @@
 # SOFTWARE.
 #
 
+import glob
 import re
 
 import versioneer
@@ -55,7 +56,10 @@ except ImportError:
     print("WARNING: Could not find numpy, skipping LAPACK detection.")
     np = None
 
+lib_dirs = []
+libs = []
 extra_link_args = []
+extra_objects = []
 if np is not None:
     for k, v in np.__config__.__dict__.items():
         if re.match('lapack_.*_info', k):
@@ -80,9 +84,14 @@ if np is not None:
                 # We use whichever lapack_*_info comes first, hopefully there is
                 # just one.
                 break
+    if len(libs) == 0:
+        # No entries from np.__config__
+        print("* Using lapack_lite")
+        extra_objects += [glob.glob(np.linalg.__path__[0]+'/lapack_lite*.so')[0]]
 
 
 extra_compile_args = ["-std=c++11"]
+print(extra_objects)
 
 scripts = ['commandline/hard_wall.py',
            'commandline/soft_wall.py',
@@ -94,11 +103,14 @@ extensions = [
     Extension(
         name='_PyCo',
         sources=['c/autocorrelation.c',
-                  'c/bicubic.cpp',
-                  'c/patchfinder.cpp',
-                  'c/PyCo_module.cpp'],
+                 'c/bicubic.cpp',
+                 'c/patchfinder.cpp',
+                 'c/PyCo_module.cpp'],
         extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args
+        library_dirs=lib_dirs,
+        libraries=libs,
+        extra_link_args=extra_link_args,
+        extra_objects=extra_objects
     )
 ]
 
