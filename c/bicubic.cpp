@@ -32,6 +32,7 @@ SOFTWARE.
 
 #include <cmath>
 #include <stdexcept>
+#include <iostream>
 
 #include <Python.h>
 #define PY_ARRAY_UNIQUE_SYMBOL PYCO_ARRAY_API
@@ -56,7 +57,7 @@ int invert_matrix(int n, double *mat)
   int n_sq = n*n;
 
   int ipiv[n];
-  int info;
+  int info = 0;
 
   double tmp1[n_sq], tmp2[n_sq];
 
@@ -73,7 +74,6 @@ int invert_matrix(int n, double *mat)
     return info;
 
   memcpy(mat, tmp2, n_sq*sizeof(double));
-
   return info; /* should be zero */
 }
 
@@ -123,7 +123,6 @@ Bicubic::Bicubic(int n1, int n2, double *values, bool interp, bool lowmem)
    *    \within cubic/     \ of 2d cubic  /     \    values    /
    */
 
-
   /*
    * construct the matrix.
    * this is the same for all boxes as coordinates are normalised.
@@ -141,7 +140,7 @@ Bicubic::Bicubic(int n1, int n2, double *values, bool interp, bool lowmem)
                          npow2m = npow2-1;
         if (npow2m < 0)  npow2m=0;
 
-        icol = 4*npow1+npow2;
+        icol = _row_major(npow1, npow2, 4, 4);
 
         /* values of products within cubic and derivatives. */
         A_[irow   ][icol] = 1.0*(      pow(ci1,npow1 )      *pow(ci2,npow2 ) );
@@ -152,12 +151,11 @@ Bicubic::Bicubic(int n1, int n2, double *values, bool interp, bool lowmem)
     }
   }
 
-
   /*
    * invert A matrix.
    */
 
-  if (!invert_matrix(NPARA, this->A_[0])) {
+  if (invert_matrix(NPARA, this->A_[0])) {
     throw std::runtime_error("Could not compute spline coefficients.");
   }
 
@@ -168,8 +166,7 @@ Bicubic::Bicubic(int n1, int n2, double *values, bool interp, bool lowmem)
   if (this->coeff_.size()) {
     for (int i1 = 0; i1 < n1_; i1++) {
       for (int i2 = 0; i2 < n2_; i2++) {
-        int icol = n2_*i1+i2;
-        compute_spline_coefficients(i1, i2, values, &this->coeff_[icol*4*4]);
+        compute_spline_coefficients(i1, i2, values, &this->coeff_[_row_major(i1, i2, this->n1_, this->n2_)]);
       }
     }
   }
@@ -227,19 +224,7 @@ Bicubic::compute_spline_coefficients(int i1, int i2, double *values, double *coe
     B[irow+12] = 0.0;
   }
 
-  double tmp[NPARA];
-  mat_mul_vec(NPARA, &A_[0][0], B, tmp);
-
-  /*
-   * get the coefficient values.
-   */
-
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      int irow = 4*i+j;
-      coeff[_row_major(i, j, 4, 4)] = tmp[irow];
-    }
-  }
+  mat_mul_vec(NPARA, &A_[0][0], B, coeff);
 }
 
 
