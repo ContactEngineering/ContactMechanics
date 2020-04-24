@@ -440,8 +440,7 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
     double *v = (double *) PyArray_DATA(py_v);
 
     for (int i = 0; i < n; i++) {
-      double dx, dy;
-      self->map_->eval(r[2*i], r[2*i+1], v[i], dx, dy);
+      self->map_->eval(r[2*i], r[2*i+1], v[i]);
     }
 
     Py_DECREF(py_r);
