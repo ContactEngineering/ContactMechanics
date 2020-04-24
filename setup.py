@@ -24,6 +24,8 @@
 # SOFTWARE.
 #
 
+import re
+
 import versioneer
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
@@ -43,6 +45,43 @@ class CustomBuildExtCommand(build_ext):
         build_ext.run(self)
 
 
+#
+# Optain LAPACK configuration from numpy
+#
+
+try:
+    import numpy as np
+except ImportError:
+    print("WARNING: Could not find numpy, skipping LAPACK detection.")
+    np = None
+
+extra_link_args = []
+if np is not None:
+    for k, v in np.__config__.__dict__.items():
+        if re.match('lapack_.*_info', k):
+            if v:
+                print("* Using LAPACK information from '%s' dictionary in " \
+                    "numpy.__config__" % k)
+                try:
+                    print("    library_dirs = '%s'" % v['library_dirs'])
+                    lib_dirs += v['library_dirs']
+                except:
+                    print("    No 'library_dirs' entry found.")
+                try:
+                    print("    libraries = '%s'" % v['libraries'])
+                    libs += v['libraries']
+                except:
+                    print("    No 'libraries' entry found.")
+                try:
+                    print("    extra_link_args = '%s'" % v['extra_link_args'])
+                    extra_link_args += v['extra_link_args']
+                except:
+                    print("    No 'extra_link_args' entry found.")
+                # We use whichever lapack_*_info comes first, hopefully there is
+                # just one.
+                break
+
+
 extra_compile_args = ["-std=c++11"]
 
 scripts = ['commandline/hard_wall.py',
@@ -58,6 +97,8 @@ extensions = [
                   'c/bicubic.cpp',
                   'c/patchfinder.cpp',
                   'c/PyCo_module.cpp'],
+        extra_compile_args=extra_compile_args,
+        extra_link_args=extra_link_args
     )
 ]
 
