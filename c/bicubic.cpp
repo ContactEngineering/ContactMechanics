@@ -237,8 +237,8 @@ Bicubic::eval(double x, double y, double &f)
   /*
    * find which box we're in and convert to normalised coordinates.
    */
-  double x1 = x - xbox;
-  double x2 = y - ybox;
+  double dx = x - xbox;
+  double dy = y - ybox;
   _wrap(xbox, this->n1_);
   _wrap(ybox, this->n2_);
 
@@ -254,9 +254,9 @@ Bicubic::eval(double x, double y, double &f)
   for (int i = 3; i >= 0; i--) {
     double sf = 0.0;
     for (int j = 3; j >= 0; j--) {
-      sf = sf*x2 + coeffi[_row_major(i, j, 4, 4)];
+      sf = sf*dy + coeffi[_row_major(i, j, 4, 4)];
     }
-    f = f*x1 + sf;
+    f = f*dx + sf;
   }
 }
 
@@ -479,8 +479,8 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
       npy_intp d = PyArray_DIM(py_yd, i);
 
       if (dims[i] != d) {
-	PyErr_SetString(PyExc_TypeError, "x- and y-components vectors need to have the same length.");
-	return NULL;
+	    PyErr_SetString(PyExc_TypeError, "x- and y-components vectors need to have the same length.");
+	    return NULL;
       }
 
       n *= d;
@@ -494,7 +494,7 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
 
     for (int i = 0; i < n; i++) {
       double dx, dy;
-      self->map_->eval(x[i], y[i], v[i], dx, dy);
+      self->map_->eval(x[i], y[i], v[i]);
     }
 
     Py_DECREF(py_xd);
