@@ -1,6 +1,6 @@
 
 Bootstrap: localimage
-From: dev_serial.sif
+From: dep_serial.sif
 
 %labels
     Author antoine.sanner@imtek.uni-freiburg.de
@@ -13,8 +13,6 @@ From: dev_serial.sif
 
     # Install the rest using 
     cd PyCo 
-    #python4 -m pip install $(grep numpy requirements.txt)
-    #python4 -m pip install -r requirements.txt 
     python3 -m pip install git+file:$PWD
 
 %environment
