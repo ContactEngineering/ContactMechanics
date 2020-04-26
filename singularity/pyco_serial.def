@@ -1,0 +1,26 @@
+
+Bootstrap: localimage
+From: dev_serial.sif
+
+%labels
+    Author antoine.sanner@imtek.uni-freiburg.de
+
+%files
+    ../ PyCo
+
+%post 
+    # note: -y is to automatically accept when apt asks for confirmation. Otherwise the recipe fails
+
+    # Install the rest using 
+    cd PyCo 
+    #python4 -m pip install $(grep numpy requirements.txt)
+    #python4 -m pip install -r requirements.txt 
+    python3 -m pip install git+file:$PWD
+
+%environment
+    # prevent OMP jobs to use all want he thinks is available                      
+    export OMP_NUM_THREADS=1
+
+%runscript
+    python3 "$@" 
+    
