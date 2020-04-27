@@ -26,15 +26,44 @@
 Tests for the bicubic interpolation module
 """
 
+import pytest
+
 import numpy as np
 
-from _PyCo import Bicubic
+from PyCo.Tools.Interpolation import Bicubic
 
 def test_grid_values(tol=1e-9):
     nx = 20
     ny = 21
     field = np.random.random([nx, ny])
     interp = Bicubic(field)
+    for i in range(nx):
+        for j in range(ny):
+            assert abs(interp(i, j) - field[i, j]) < tol
+
+    x, y = np.mgrid[:nx, :ny]
+
+    interp_field = interp(x, y)
+    assert np.allclose(interp_field, field)
+
+
+def test_raises(tol=1e-9):
+    nx = 20
+    ny = 21
+    field = np.random.random([nx, ny])
+    derx = np.random.random([nx, ny-1])
+    dery = np.random.random([nx, ny])
+    with pytest.raises(ValueError):
+        Bicubic(field, derx, dery)
+
+
+def test_grid_derivatives(tol=1e-9):
+    nx = 20
+    ny = 21
+    field = np.random.random([nx, ny])
+    derx = np.random.random([nx, ny])
+    dery = np.random.random([nx, ny])
+    interp = Bicubic(field, derx, dery)
     for i in range(nx):
         for j in range(ny):
             assert abs(interp(i, j) - field[i, j]) < tol

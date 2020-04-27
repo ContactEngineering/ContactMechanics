@@ -80,8 +80,8 @@ int invert_matrix(int n, double *mat)
 /*
  * values are supposed to be of size [0:nx][0:ny] and stored in row-major order
  */
-Bicubic::Bicubic(int n1, int n2, double *values, bool interp, bool lowmem)
-  : n1_{n1}, n2_{n2}, coeff_{}, coeff_lowmem_{}
+Bicubic::Bicubic(int n1, int n2, double *values, double *derivativex, double *derivativey, bool interp, bool lowmem)
+  : n1_{n1}, n2_{n2}, values_{values}, derivativex_{derivativex}, derivativey_{derivativey}, coeff_{}, coeff_lowmem_{}
 {
   const int box1[NCORN] = { 0,1,1,0 };
   const int box2[NCORN] = { 0,0,1,1 };
@@ -109,10 +109,11 @@ Bicubic::Bicubic(int n1, int n2, double *values, bool interp, bool lowmem)
 
   if (lowmem) {
     this->coeff_lowmem_.resize(4*4);
-    this->values_ = values;
   }
   else {
-    this->values_ = NULL;
+    this->values_ = NULL; // this indicates that we have precomputed coefficients
+    this->derivativex_ = NULL;
+    this->derivativey_ = NULL;
     this->coeff_.resize(this->n1_*this->n2_*4*4);
   }
 
@@ -166,7 +167,8 @@ Bicubic::Bicubic(int n1, int n2, double *values, bool interp, bool lowmem)
   if (this->coeff_.size()) {
     for (int i1 = 0; i1 < n1_; i1++) {
       for (int i2 = 0; i2 < n2_; i2++) {
-        compute_spline_coefficients(i1, i2, values, &this->coeff_[_row_major(i1, i2, this->n1_, this->n2_)]);
+        compute_spline_coefficients(i1, i2, values, derivativex, derivativey,
+                                    &this->coeff_[_row_major(i1, i2, this->n1_, this->n2_)]);
       }
     }
   }
@@ -179,7 +181,8 @@ Bicubic::~Bicubic()
 
 
 void
-Bicubic::compute_spline_coefficients(int i1, int i2, double *values, double *coeff) {
+Bicubic::compute_spline_coefficients(int i1, int i2, double *values, double *derivativex, double *derivativey,
+                                     double *coeff) {
   const int box1[NCORN] = { 0,1,1,0 };
   const int box2[NCORN] = { 0,0,1,1 };
 
@@ -218,8 +221,18 @@ Bicubic::compute_spline_coefficients(int i1, int i2, double *values, double *coe
         )/2;
     }
     else {
-      B[irow+4 ] = 0.0;
-      B[irow+8 ] = 0.0;
+      if (derivativex) {
+        B[irow+4 ] = derivativex[_row_major(ci1, ci2, this->n1_, this->n2_)];
+      }
+      else {
+        B[irow+4 ] = 0.0;
+      }
+      if (derivativey) {
+        B[irow+8 ] = derivativey[_row_major(ci1, ci2, this->n1_, this->n2_)];
+      }
+      else {
+        B[irow+8 ] = 0.0;
+      }
     }
     B[irow+12] = 0.0;
   }
@@ -383,23 +396,56 @@ bicubic_dealloc(bicubic_t *self)
 static int
 bicubic_init(bicubic_t *self, PyObject *args, PyObject *kwargs)
 {
-  PyObject *py_map_data_in;
+  PyObject *py_values_in, *py_derivativex_in{NULL}, *py_derivativey_in{NULL};
 
-  if (!PyArg_ParseTuple(args, "O|O", &py_map_data_in))
+  if (!PyArg_ParseTuple(args, "O|OO", &py_values_in, &py_derivativex_in, &py_derivativey_in))
     return -1;
 
-  PyObject *py_map_data;
+  PyObject *py_values, *py_derivativex{NULL}, *py_derivativey{NULL};
   npy_intp nx, ny;
 
-  py_map_data = PyArray_FROMANY(py_map_data_in, NPY_DOUBLE, 2, 2, NPY_ARRAY_C_CONTIGUOUS);
-  if (!py_map_data)
+  py_values = PyArray_FROMANY(py_values_in, NPY_DOUBLE, 2, 2, NPY_ARRAY_C_CONTIGUOUS);
+  if (!py_values)
     return -1;
-  nx = PyArray_DIM(py_map_data, 0);
-  ny = PyArray_DIM(py_map_data, 1);
+  nx = PyArray_DIM(py_values, 0);
+  ny = PyArray_DIM(py_values, 1);
 
-  self->map_ = new Bicubic(nx, ny, static_cast<double*>(PyArray_DATA(py_map_data)), true, false);
+  if (py_derivativex_in) {
+    py_derivativex = PyArray_FROMANY(py_derivativex_in, NPY_DOUBLE, 2, 2, NPY_ARRAY_C_CONTIGUOUS);
+    if (!py_derivativex)
+      return -1;
+    if (PyArray_DIM(py_derivativex, 0) != nx || PyArray_DIM(py_derivativex, 1) != ny) {
+	  PyErr_SetString(PyExc_ValueError, "x-derivative must have same shape as values.");
+	  return -1;
+    }
+  }
 
-  Py_DECREF(py_map_data);
+  if (py_derivativey_in) {
+    py_derivativey = PyArray_FROMANY(py_derivativey_in, NPY_DOUBLE, 2, 2, NPY_ARRAY_C_CONTIGUOUS);
+    if (!py_derivativey)
+      return -1;
+    if (PyArray_DIM(py_derivativey, 0) != nx || PyArray_DIM(py_derivativey, 1) != ny) {
+	  PyErr_SetString(PyExc_ValueError, "y-derivative must have same shape as values.");
+	  return -1;
+    }
+  }
+
+  double *derivativex{NULL}, *derivativey{NULL};
+  if (py_derivativex) {
+    derivativex = static_cast<double*>(PyArray_DATA(py_derivativex));
+  }
+  if (py_derivativey) {
+    derivativey = static_cast<double*>(PyArray_DATA(py_derivativey));
+  }
+
+  if (derivativex || derivativey) {
+    self->map_ = new Bicubic(nx, ny, static_cast<double*>(PyArray_DATA(py_values)), derivativex, derivativey, false,
+                             false);
+  }
+  else {
+    self->map_ = new Bicubic(nx, ny, static_cast<double*>(PyArray_DATA(py_values)), NULL, NULL, true, false);
+  }
+  Py_DECREF(py_values);
 
   return 0;
 }
@@ -429,7 +475,7 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
       return NULL;
 
     if (PyArray_DIM(py_r, 1) != 2) {
-      PyErr_SetString(PyExc_TypeError, "Map index needs to have x- and y-component only.");
+      PyErr_SetString(PyExc_ValueError, "Map index needs to have x- and y-component only.");
       return NULL;
     }
 
@@ -466,7 +512,7 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
 
     /* Check that x and y have the same number of dimensions */
     if (PyArray_NDIM(py_xd) != PyArray_NDIM(py_yd)) {
-      PyErr_SetString(PyExc_TypeError, "x- and y-components need to have identical number of dimensions.");
+      PyErr_SetString(PyExc_ValueError, "x- and y-components need to have identical number of dimensions.");
       return NULL;
     }
 
@@ -478,7 +524,7 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
       npy_intp d = PyArray_DIM(py_yd, i);
 
       if (dims[i] != d) {
-	    PyErr_SetString(PyExc_TypeError, "x- and y-components vectors need to have the same length.");
+	    PyErr_SetString(PyExc_ValueError, "x- and y-components vectors need to have the same length.");
 	    return NULL;
       }
 
@@ -492,7 +538,6 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
     double *v = (double *) PyArray_DATA(py_v);
 
     for (int i = 0; i < n; i++) {
-      double dx, dy;
       self->map_->eval(x[i], y[i], v[i]);
     }
 

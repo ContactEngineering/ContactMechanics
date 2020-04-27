@@ -78,11 +78,12 @@ class Bicubic {
    *            but are required during evaluation if lowmem is true. This means the
    *            pointer must remain valid throughout the lifetime of the Bicubic class
    *            if lowmem is set to true.)
-   *   interp: bicubic interpolation if true
+   *   derivativex, derivativey: map containing the derivative values (can be NULL)
+   *   interp: interpolate derivative using a finite-differences scheme if true
    *   lowmem: don't store spline coefficients but recompute on evaluation if true
    *           (This is slow but saves memory.)
    */
-  Bicubic(int n1, int n2, double *values, bool interp, bool lowmem);
+  Bicubic(int n1, int n2, double *values, double *derivativex, double *derivativey, bool interp, bool lowmem);
   ~Bicubic();
 
   void eval(double x, double y, double &f);
@@ -100,6 +101,9 @@ class Bicubic {
   /* values */
   double *values_;
 
+  /* derivatives */
+  double *derivativex_, *derivativey_;
+
   /* spline coefficients */
   std::vector<double> coeff_;
 
@@ -114,12 +118,14 @@ class Bicubic {
       return &this->coeff_[_row_major(i1, i2, this->n1_, this->n2_)];
     }
     else {
-      compute_spline_coefficients(i1, i2, this->values_, this->coeff_lowmem_.data());
+      compute_spline_coefficients(i1, i2, this->values_, this->derivativex_, this->derivativey_,
+                                  this->coeff_lowmem_.data());
       return this->coeff_lowmem_.data();
     }
   }
 
-  void compute_spline_coefficients(int i1, int i2, double *values, double *coeff);
+  void compute_spline_coefficients(int i1, int i2, double *values, double *derivativex, double *derivativey,
+                                   double *coeff);
 };
 
 typedef struct {
