@@ -37,22 +37,6 @@ SOFTWARE.
 
 #include <Python.h>
 
-/* ----------------------------------------------------------------------
- * inlined method, to do matrix-vector multiplication for
- * matrix and vector; square matrix is required and output vector is
- * overwritten.
- * --------------------------------------------------------------------*/
-template<typename T>
-void mat_mul_vec(int dim, const T *Mat, const T *Vin, T *Vout)
-{
-  for (int i = 0; i < dim; i++, Vout++){
-    *Vout = 0.0;
-    for (int j = 0; j < dim; j++, Mat++) {
-      *Vout += (*Mat)*Vin[j];
-    }
-  }
-}
-
 #define NPARA (4*4)   // 4^dim
 #define NCORN 4
 
@@ -115,7 +99,7 @@ class Bicubic {
 
   const double *get_spline_coefficients(int i1, int i2) {
     if (this->coeff_.size() > 0) {
-      return &this->coeff_[_row_major(i1, i2, this->n1_, this->n2_)];
+      return &this->coeff_[_row_major(i1, i2, this->n1_, this->n2_)*NPARA];
     }
     else {
       compute_spline_coefficients(i1, i2, this->values_, this->derivativex_, this->derivativey_,

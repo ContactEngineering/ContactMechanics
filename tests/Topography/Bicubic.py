@@ -32,9 +32,10 @@ import numpy as np
 
 from PyCo.Tools.Interpolation import Bicubic
 
+nx = 17
+ny = 22
+
 def test_grid_values(tol=1e-9):
-    nx = 20
-    ny = 21
     field = np.random.random([nx, ny])
     interp = Bicubic(field)
     for i in range(nx):
@@ -43,13 +44,26 @@ def test_grid_values(tol=1e-9):
 
     x, y = np.mgrid[:nx, :ny]
 
-    interp_field = interp(x, y)
-    assert np.allclose(interp_field, field)
+    for der in [0, 1, 2]:
+        if der == 0:
+            interp_field = interp(x, y, derivative=der)
+        elif der == 1:
+            interp_field, _, _ = interp(x, y, derivative=der)
+        else:
+            interp_field, _, _, _, _, _ = interp(x, y, derivative=der)
+        assert np.allclose(interp_field, field)
 
 
-def test_raises(tol=1e-9):
-    nx = 20
-    ny = 21
+def test_wrong_derivative(tol=1e-9):
+    field = np.random.random([nx, ny])
+    interp = Bicubic(field)
+    with pytest.raises(ValueError):
+        interp(1, 1, derivative=3)
+    with pytest.raises(ValueError):
+        interp(1, 1, derivative=-1)
+
+
+def test_wrong_grid(tol=1e-9):
     field = np.random.random([nx, ny])
     derx = np.random.random([nx, ny-1])
     dery = np.random.random([nx, ny])
@@ -58,8 +72,6 @@ def test_raises(tol=1e-9):
 
 
 def test_grid_derivatives(tol=1e-9):
-    nx = 20
-    ny = 21
     field = np.random.random([nx, ny])
     derx = np.random.random([nx, ny])
     dery = np.random.random([nx, ny])
@@ -70,5 +82,7 @@ def test_grid_derivatives(tol=1e-9):
 
     x, y = np.mgrid[:nx, :ny]
 
-    interp_field = interp(x, y)
+    interp_field, interp_derx, interp_dery = interp(x, y, derivative=1)
     assert np.allclose(interp_field, field)
+    assert np.allclose(interp_derx, derx)
+    assert np.allclose(interp_dery, dery)

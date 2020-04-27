@@ -42,12 +42,21 @@ SOFTWARE.
 #include "bicubic.h"
 
 #define DGESV dgesv_
+#define DGEMV dgemv_
 
 /*
  * signature of dgesv. This should be present once numpy is loaded.
  */
 extern "C" void
 DGESV(int const* n, int const* nrhs, double* A, int const* lda, int* ipiv, double* B, int const* ldb, int* info);
+
+/*
+ * signature of dgemv. This should be present once numpy is loaded.
+ */
+extern "C" void
+DGEMV(char const* trans, int const* m, int const* n, double const* alpha, double const* A, int const* lda,
+      double const* x, int const* incx, double const* beta, double *y, int const* incy);
+
 
 /*
  * invert a square matrix
@@ -96,8 +105,6 @@ Bicubic::Bicubic(int n1, int n2, double *values, double *derivativex, double *de
    *  1-->--2
    */
 
-  int irow, icol, ci1, ci2, npow1, npow2, npow1m, npow2m;
-
   /* --- */
 
   this->interp_ = interp;
@@ -108,13 +115,13 @@ Bicubic::Bicubic(int n1, int n2, double *values, double *derivativex, double *de
    */
 
   if (lowmem) {
-    this->coeff_lowmem_.resize(4*4);
+    this->coeff_lowmem_.resize(NPARA*NPARA);
   }
   else {
     this->values_ = NULL; // this indicates that we have precomputed coefficients
     this->derivativex_ = NULL;
     this->derivativey_ = NULL;
-    this->coeff_.resize(this->n1_*this->n2_*4*4);
+    this->coeff_.resize(this->n1_*this->n2_*NPARA);
   }
 
   /*
@@ -130,18 +137,19 @@ Bicubic::Bicubic(int n1, int n2, double *values, double *derivativex, double *de
    * loop through corners.
    */
 
-  for (irow = 0; irow < NCORN; irow++) {
-    ci1 = box1[irow];
-    ci2 = box2[irow];
+  for (int irow = 0; irow < NCORN; irow++) {
+    int ci1 = box1[irow];
+    int ci2 = box2[irow];
     /* loop through powers of variables. */
-    for (npow1 = 0; npow1 <= 3; npow1++) {
-      for (npow2 = 0; npow2 <= 3; npow2++) {
-                         npow1m = npow1-1;
+    /* loop through powers of variables. */
+    for (int npow1 = 0; npow1 <= 3; npow1++) {
+      for (int npow2 = 0; npow2 <= 3; npow2++) {
+        int              npow1m = npow1-1;
         if (npow1m < 0)  npow1m = 0;
-                         npow2m = npow2-1;
+        int              npow2m = npow2-1;
         if (npow2m < 0)  npow2m=0;
 
-        icol = _row_major(npow1, npow2, 4, 4);
+        int icol = _row_major(npow1, npow2, 4, 4);
 
         /* values of products within cubic and derivatives. */
         A_[irow   ][icol] = 1.0*(      pow(ci1,npow1 )      *pow(ci2,npow2 ) );
@@ -165,10 +173,10 @@ Bicubic::Bicubic(int n1, int n2, double *values, double *derivativex, double *de
    */
 
   if (this->coeff_.size()) {
-    for (int i1 = 0; i1 < n1_; i1++) {
-      for (int i2 = 0; i2 < n2_; i2++) {
+    for (int i1 = 0; i1 < this->n1_; i1++) {
+      for (int i2 = 0; i2 < this->n2_; i2++) {
         compute_spline_coefficients(i1, i2, values, derivativex, derivativey,
-                                    &this->coeff_[_row_major(i1, i2, this->n1_, this->n2_)]);
+                                    &this->coeff_[_row_major(i1, i2, this->n1_, this->n2_)*NPARA]);
       }
     }
   }
@@ -194,11 +202,11 @@ Bicubic::compute_spline_coefficients(int i1, int i2, double *values, double *der
   double B[NPARA];
 
   for (int irow = 0; irow < NCORN; irow++) {
-    int ci1  = box1[irow]+i1;
-    int ci2  = box2[irow]+i2;
+    int ci1 = box1[irow]+i1;
+    int ci2 = box2[irow]+i2;
     /* wrap to box */
-    _wrap(ci1, this->n1_);
-    _wrap(ci2, this->n2_);
+    ci1 = _wrap(ci1, this->n1_);
+    ci2 = _wrap(ci2, this->n2_);
     /* values of function and derivatives at corner. */
     B[irow   ] = values[_row_major(ci1, ci2, this->n1_, this->n2_)];
     /* interpolate derivatives */
@@ -207,10 +215,10 @@ Bicubic::compute_spline_coefficients(int i1, int i2, double *values, double *der
       int ci1m = ci1-1;
       int ci2p = ci2+1;
       int ci2m = ci2-1;
-      _wrap(ci1p, this->n1_);
-      _wrap(ci1m, this->n1_);
-      _wrap(ci2p, this->n2_);
-      _wrap(ci2m, this->n2_);
+      ci1p = _wrap(ci1p, this->n1_);
+      ci1m = _wrap(ci1m, this->n1_);
+      ci2p = _wrap(ci2p, this->n2_);
+      ci2m = _wrap(ci2m, this->n2_);
       B[irow+4 ] = (
         values[_row_major(ci1p, ci2, this->n1_, this->n2_)] -
         values[_row_major(ci1m, ci2, this->n1_, this->n2_)]
@@ -237,7 +245,9 @@ Bicubic::compute_spline_coefficients(int i1, int i2, double *values, double *der
     B[irow+12] = 0.0;
   }
 
-  mat_mul_vec(NPARA, &A_[0][0], B, coeff);
+  int npara{NPARA}, inc{1};
+  double alpha{1}, beta{0};
+  DGEMV("T", &npara, &npara, &alpha, this->A_[0], &npara, B, &inc, &beta, coeff, &inc);
 }
 
 
@@ -252,8 +262,8 @@ Bicubic::eval(double x, double y, double &f)
    */
   double dx = x - xbox;
   double dy = y - ybox;
-  _wrap(xbox, this->n1_);
-  _wrap(ybox, this->n2_);
+  xbox = _wrap(xbox, this->n1_);
+  ybox = _wrap(ybox, this->n2_);
 
   /*
    * get spline coefficients
@@ -285,8 +295,8 @@ Bicubic::eval(double x, double y, double &f, double &dfdx, double &dfdy)
    */
   double dx = x - xbox;
   double dy = y - ybox;
-  _wrap(xbox, this->n1_);
-  _wrap(ybox, this->n2_);
+  xbox = _wrap(xbox, this->n1_);
+  ybox = _wrap(ybox, this->n2_);
 
   /*
    * get spline coefficients
@@ -306,6 +316,7 @@ Bicubic::eval(double x, double y, double &f, double &dfdx, double &dfdy)
       double      coefij = coeffi[_row_major(i, j, 4, 4)];
                   sf   =   sf*dy +   coefij;
       if (j > 0)  sfdy = sfdy*dy + j*coefij;
+      f += coefij * pow(dx, i) * pow(dy, j);
     }
                 f    = f   *dx +   sf;
     if (i > 0)  dfdx = dfdx*dx + i*sf;
@@ -328,8 +339,8 @@ Bicubic::eval(double x, double y, double &f,
    */
   double dx = x - xbox;
   double dy = y - ybox;
-  _wrap(xbox, this->n1_);
-  _wrap(ybox, this->n2_);
+  xbox = _wrap(xbox, this->n1_);
+  ybox = _wrap(ybox, this->n2_);
 
   /*
    * get spline coefficients
@@ -456,15 +467,23 @@ bicubic_init(bicubic_t *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
 {
+  static char *kwlist[] = {"x", "y", "derivative", NULL};
+
   PyObject *py_x, *py_y;
+  int derivative = 0;
 
   /* We support passing coordinates (x, y), numpy arrays (x, y)
      and numpy arrays r */
 
   py_x = NULL;
   py_y = NULL;
-  if (!PyArg_ParseTuple(args, "O|O", &py_x, &py_y))
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Oi", kwlist, &py_x, &py_y, &derivative))
     return NULL;
+
+  if (derivative < 0 || derivative > 2) {
+    PyErr_SetString(PyExc_ValueError, "'derivative' keyword argument must be 0, 1 or 2.");
+    return NULL;
+  }
 
   if (!py_y) {
     /* This should a single numpy array r */
@@ -531,20 +550,49 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
       n *= d;
     }
 
-    double *x = (double *) PyArray_DATA(py_xd);
-    double *y = (double *) PyArray_DATA(py_yd);
+    double *x{static_cast<double *>(PyArray_DATA(py_xd))};
+    double *y{static_cast<double *>(PyArray_DATA(py_yd))};
 
-    PyObject *py_v = PyArray_SimpleNew(ndims, dims, NPY_DOUBLE);
-    double *v = (double *) PyArray_DATA(py_v);
+    PyObject *py_v{PyArray_SimpleNew(ndims, dims, NPY_DOUBLE)};
+    double *v{static_cast<double *>(PyArray_DATA(py_v))};
 
-    for (int i = 0; i < n; i++) {
-      self->map_->eval(x[i], y[i], v[i]);
+    PyObject *py_return_value;
+
+    if (derivative > 0) {
+      PyObject *py_dx{PyArray_SimpleNew(ndims, dims, NPY_DOUBLE)};
+      PyObject *py_dy{PyArray_SimpleNew(ndims, dims, NPY_DOUBLE)};
+      double *dx{static_cast<double *>(PyArray_DATA(py_dx))};
+      double *dy{static_cast<double *>(PyArray_DATA(py_dy))};
+      if (derivative > 1) {
+        PyObject *py_d2x{PyArray_SimpleNew(ndims, dims, NPY_DOUBLE)};
+        PyObject *py_d2y{PyArray_SimpleNew(ndims, dims, NPY_DOUBLE)};
+        PyObject *py_d2xy{PyArray_SimpleNew(ndims, dims, NPY_DOUBLE)};
+        double *d2x{static_cast<double *>(PyArray_DATA(py_d2x))};
+        double *d2y{static_cast<double *>(PyArray_DATA(py_d2y))};
+        double *d2xy{static_cast<double *>(PyArray_DATA(py_d2xy))};
+        for (int i = 0; i < n; i++) {
+          self->map_->eval(x[i], y[i], v[i], dx[i], dy[i], d2x[i], d2y[i], d2xy[i]);
+        }
+        py_return_value = PyTuple_Pack(6, py_v, py_dx, py_dy, py_d2x, py_d2y, py_d2xy);
+      }
+      else {
+        for (int i = 0; i < n; i++) {
+          self->map_->eval(x[i], y[i], v[i], dx[i], dy[i]);
+        }
+        py_return_value = PyTuple_Pack(3, py_v, py_dx, py_dy);
+      }
+    }
+    else {
+      for (int i = 0; i < n; i++) {
+        self->map_->eval(x[i], y[i], v[i]);
+      }
+      py_return_value = py_v;
     }
 
     Py_DECREF(py_xd);
     Py_DECREF(py_yd);
 
-    return py_v;
+    return py_return_value;
   }
 }
 
