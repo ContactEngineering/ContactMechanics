@@ -467,7 +467,7 @@ bicubic_init(bicubic_t *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
 {
-  static char *kwlist[] = {"x", "y", "derivative", NULL};
+  static char *kwlist[]{"x", "y", "derivative", NULL};
 
   PyObject *py_x, *py_y;
   int derivative = 0;

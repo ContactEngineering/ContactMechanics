@@ -33,6 +33,7 @@ SOFTWARE.
 #ifndef __BICUBIC_H
 #define __BICUBIC_H
 
+#include <cstddef>
 #include <vector>
 
 #include <Python.h>
