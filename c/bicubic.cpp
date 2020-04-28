@@ -601,12 +601,41 @@ bicubic_call(bicubic_t *self, PyObject *args, PyObject *kwargs)
 
 PyTypeObject bicubic_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "bicubic.Bicubic",
-    .tp_basicsize = sizeof(bicubic_t),
-    .tp_dealloc = (destructor)bicubic_dealloc,
-    .tp_call = (ternaryfunc)bicubic_call,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = "Bicubic interpolation of two-dimensional maps",
-    .tp_init = (initproc)bicubic_init,
-    .tp_new = bicubic_new,
+    "bicubic.Bicubic",                                /*tp_name*/
+    sizeof(bicubic_t),                                /*tp_basicsize*/
+    0,                                                /*tp_itemsize*/
+    (destructor)bicubic_dealloc,                      /*tp_dealloc*/
+    0,                                                /*tp_print*/
+    0,                                                /*tp_getattr*/
+    0,                                                /*tp_setattr*/
+    0,                                                /*tp_compare*/
+    0,                                                /*tp_repr*/
+    0,                                                /*tp_as_number*/
+    0,                                                /*tp_as_sequence*/
+    0,                                                /*tp_as_mapping*/
+    0,                                                /*tp_hash */
+    (ternaryfunc)bicubic_call,                        /*tp_call*/
+    0,                                                /*tp_str*/
+    0,                                                /*tp_getattro*/
+    0,                                                /*tp_setattro*/
+    0,                                                /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,         /*tp_flags*/
+    "Bicubic interpolation of two-dimensional maps",  /* tp_doc */
+    0,                                                /* tp_traverse */
+    0,                                                /* tp_clear */
+    0,                                                /* tp_richcompare */
+    0,                                                /* tp_weaklistoffset */
+    0,                                                /* tp_iter */
+    0,                                                /* tp_iternext */
+    0,                                                /* tp_methods */
+    0,                                                /* tp_members */
+    0,                                                /* tp_getset */
+    0,                                                /* tp_base */
+    0,                                                /* tp_dict */
+    0,                                                /* tp_descr_get */
+    0,                                                /* tp_descr_set */
+    0,                                                /* tp_dictoffset */
+    (initproc)bicubic_init,                           /* tp_init */
+    0,                                                /* tp_alloc */
+    bicubic_new,                                      /* tp_new */
 };
