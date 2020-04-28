@@ -64,20 +64,20 @@ if np is not None:
     for k, v in np.__config__.__dict__.items():
         if re.match('lapack_.*_info', k):
             if v:
-                print("* Using LAPACK information from '%s' dictionary in " \
-                    "numpy.__config__" % k)
+                print("* Using LAPACK information from '{}' dictionary in " \
+                    "numpy.__config__".format(k))
                 try:
-                    print("    library_dirs = '%s'" % v['library_dirs'])
+                    print("    library_dirs = {}".format(v['library_dirs']))
                     lib_dirs += v['library_dirs']
                 except:
                     print("    No 'library_dirs' entry found.")
                 try:
-                    print("    libraries = '%s'" % v['libraries'])
+                    print("    libraries = {}".format(v['libraries']))
                     libs += v['libraries']
                 except:
                     print("    No 'libraries' entry found.")
                 try:
-                    print("    extra_link_args = '%s'" % v['extra_link_args'])
+                    print("    extra_link_args = '{}'".format(v['extra_link_args']))
                     extra_link_args += v['extra_link_args']
                 except:
                     print("    No 'extra_link_args' entry found.")
@@ -102,7 +102,7 @@ scripts = ['commandline/hard_wall.py',
 extensions = [
     Extension(
         name='_PyCo',
-        sources=['c/autocorrelation.c',
+        sources=['c/autocorrelation.cpp',
                  'c/bicubic.cpp',
                  'c/patchfinder.cpp',
                  'c/PyCo_module.cpp'],

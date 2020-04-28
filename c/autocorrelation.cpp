@@ -30,7 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <math.h>
+#include <algorithm>
+#include <cmath>
 
 #include <Python.h>
 #define PY_ARRAY_UNIQUE_SYMBOL PYCO_ARRAY_API
@@ -39,10 +40,15 @@ SOFTWARE.
 
 #include "autocorrelation.h"
 
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#define MAX(a,b) ((a)>(b)?(a):(b))
+#define FAIL \
+  Py_XDECREF(py_acf); \
+  Py_XDECREF(py_double_x); \
+  Py_XDECREF(py_double_h); \
+  Py_XDECREF(py_double_distances); \
+  return py_ret;
 
-PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
+PyObject *
+nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
 {
   PyObject *py_x = NULL, *py_double_x = NULL;
   PyObject *py_h = NULL, *py_double_h = NULL;
@@ -53,16 +59,19 @@ PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
   double physical_size;
 
   py_distances = NULL;
-  if (!PyArg_ParseTuple(args, "OOd|O", &py_x, &py_h, &physical_size, &py_distances))
-    goto fail;
+  if (!PyArg_ParseTuple(args, "OOd|O", &py_x, &py_h, &physical_size, &py_distances)) {
+    FAIL;
+  }
 
   py_double_x = (PyObject*) PyArray_FROMANY((PyObject *) py_x, NPY_DOUBLE, 1, 1, NPY_C_CONTIGUOUS);
-  if (!py_double_x)
-    goto fail;
+  if (!py_double_x) {
+    FAIL;
+  }
 
   py_double_h = (PyObject*) PyArray_FROMANY((PyObject *) py_h, NPY_DOUBLE, 1, 1, NPY_C_CONTIGUOUS);
-  if (!py_double_h)
-    goto fail;
+  if (!py_double_h) {
+    FAIL;
+  }
 
   npy_intp nb_grid_pts = PyArray_DIM(py_double_x, 0);
   if (PyArray_DIM(py_double_h, 0) != nb_grid_pts) {
@@ -75,14 +84,16 @@ PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
   double *distances;
   if (py_distances && py_distances != Py_None) {
     py_double_distances = (PyObject*) PyArray_FROMANY((PyObject *) py_distances, NPY_DOUBLE, 1, 1, NPY_C_CONTIGUOUS);
-    if (!py_double_distances)
-      goto fail;
+    if (!py_double_distances) {
+      FAIL;
+    }
     distances = (double *) PyArray_DATA(py_double_distances);
   }
   else {
     py_double_distances = PyArray_EMPTY(1, &nb_grid_pts, NPY_DOUBLE, 0);
-    if (!py_double_distances)
-      goto fail;
+    if (!py_double_distances) {
+      FAIL;
+    }
     distances = (double *) PyArray_DATA(py_double_distances);
     /* Create distance array */
     for (int i = 0; i < nb_grid_pts; ++i)  distances[i] = i*physical_size/nb_grid_pts;
@@ -103,8 +114,8 @@ PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
       double h2 = h[j];
       double s2 = (h[j+1] - h[j])/(x[j+1] - x[j]);
       for (int k = 0; k < nb_distance_pts; ++k) {
-        double b1 = MAX(x1, x2 - distances[k]);
-        double b2 = MIN(x[i + 1], x[j + 1] - distances[k]);
+        double b1 = std::max(x1, x2 - distances[k]);
+        double b2 = std::min(x[i + 1], x[j + 1] - distances[k]);
         double b = (b1 + b2) / 2;
         double db = (b2 - b1) / 2;
         if (db > 0) {
@@ -123,12 +134,4 @@ PyObject *nonuniform_autocorrelation_1D(PyObject *self, PyObject *args)
   for (int k = 0; k < nb_distance_pts; ++k)  acf[k] /= (physical_size - distances[k]);
 
   py_ret = Py_BuildValue("OO", py_double_distances, py_acf);
-
-  fail:
-  /* Cleanup. Sorry for the goto. */
-  Py_XDECREF(py_acf);
-  Py_XDECREF(py_double_x);
-  Py_XDECREF(py_double_h);
-  Py_XDECREF(py_double_distances);
-  return py_ret;
 }
