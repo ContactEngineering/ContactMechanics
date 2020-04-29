@@ -1120,6 +1120,38 @@ class DerivativeTest(PyCoTestCase):
         self.assertArrayAlmostEqual(d2, -np.sin(x+(x[1]-x[0])), tol=1e-5)
         self.assertArrayAlmostEqual(d3, -np.sin(x[:-2]+(x[1]-x[0])), tol=1e-5)
 
+def test_fourier_derivative(plot=False):
+    nx, ny = [256] * 2
+    sx, sy = [1.] * 2
+
+    lc = 0.5
+    topography = fourier_synthesis((nx, ny), (sx, sy), 0.8, rms_height=1.,
+                                short_cutoff=lc, long_cutoff=lc+1e-9, )
+    topography = topography.scale(1/topography.rms_height())
+
+    # numerical derivatives to double check
+    dx, dy = topography.fourier_derivative()
+    dx_num, dy_num = topography.derivative(1)
+
+    np.testing.assert_allclose(dx, dx_num, atol=topography.rms_slope()*1e-1)
+    np.testing.assert_allclose(dy, dy_num, atol=topography.rms_slope()*1e-1)
+
+    if plot:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        x, y = topography.positions()
+
+        ax.plot(x[:, 0], topography.heights()[:,0])
+        ax.plot(x[:, 0], dx[:,0])
+        ax.plot(x[:, 0], dx_num[:,0])
+        fig.show()
+
+        fig, ax = plt.subplots()
+        x, y = topography.positions()
+        ax.plot(y[-1, :], topography.heights()[-1,:])
+        ax.plot(y[-1, :], dy[-1,:])
+        ax.plot(y[-1, :], dy_num[-1,:])
+        fig.show()
 
 class PickeTest(PyCoTestCase):
     def test_detrended(self):
