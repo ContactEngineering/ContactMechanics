@@ -87,7 +87,7 @@ def test_grid_derivatives(tol=1e-9):
     assert np.allclose(interp_derx, derx)
     assert np.allclose(interp_dery, dery)
 
-def test_bicubic_between(plot=True):
+def test_bicubic_between(plot=False):
     # grid points based on which the interpolation is made
     nx = 32
     ny = 1
@@ -100,34 +100,42 @@ def test_bicubic_between(plot=True):
     dfun_dx = lambda x, y: 2 * np.pi / sx * np.cos(2 * np. pi  *  x / sx) * np.ones_like(y)
     dfun_dy = lambda x, y: np.zeros_like(x) * np.zeros_like(y)
 
-    interp = Bicubic(fun(x, y ), dfun_dx(x, y), dfun_dy(x, y))
+    interp = Bicubic(fun(x, y), dfun_dx(x, y), dfun_dy(x, y))
     interp_field, interp_derx, interp_dery = interp(x * np.ones_like(y), y * np.ones_like(x), derivative=1)
 
     if plot:
         import matplotlib.pyplot as plt
         fig, (ax, axdx, axdy) = plt.subplots(3,1)
-        ax.plot(x,  fun(x, y)[:, 0], "+")
-        ax.plot(x, interp_field[:,0], "o", mfc="none")
-        axdx.plot(x, dfun_dx(x, y)[:, 0], "+")
-        axdx.plot(x, interp_derx[:,0], "o", mfc="none")
-        axdy.plot(y, dfun_dy(x, y)[0,:], "+")
-        axdy.plot(y, interp_dery[0,:], "o", mfc="none")
+        ax.plot(x,  fun(x, y)[:, 0], "k+")
+        ax.plot(x, interp_field[:,0], "ko", mfc="none")
+        axdx.plot(x, dfun_dx(x, y)[:, 0], "r+")
+        axdx.plot(x, interp_derx[:,0], "ro", mfc="none")
+        axdy.plot(y, dfun_dy(x, y)[0,:], "g+")
+        axdy.plot(y, interp_dery[0,:], "go", mfc="none")
 
     # interpolate between the points used for definition
     fac = 8
     x_fine = np.arange(fac * nx).reshape(-1, 1) / fac
     y_fine = np.arange(fac * ny).reshape(1, -1) / fac
 
+    interp_field0 = interp(x_fine * np.ones_like(y_fine), y_fine * np.ones_like(x_fine), derivative=0)
+    interp_field1, interp_derx1, interp_dery1 = interp(x_fine * np.ones_like(y_fine), y_fine * np.ones_like(x_fine),
+                                                       derivative=1)
+    interp_field2, interp_derx2, interp_dery2, interp_derxx2, interp_deryy2, interp_derxy2 = \
+        interp(x_fine * np.ones_like(y_fine), y_fine * np.ones_like(x_fine), derivative=2)
     if plot:
-        interp_field, interp_derx, interp_dery = interp(x_fine * np.ones_like(y_fine), y_fine * np.ones_like(x_fine), derivative=1)
-        ax.plot(x_fine, interp_field[:,0])
-        axdx.plot(x_fine.flat, interp_derx[:,0])
-        axdy.plot(y_fine.flat, interp_dery[0,:])
+        ax.plot(x_fine, interp_field[:,0], 'k-')
+        axdx.plot(x_fine.flat, interp_derx[:,0], 'r-')
+        axdy.plot(y_fine.flat, interp_dery[0,:], 'g-')
         fig.show()
 
-    np.testing.assert_allclose(interp_derx, dfun_dx(x_fine, y_fine), atol = 1e-2)
-    np.testing.assert_allclose(interp_dery, dfun_dy(x_fine, y_fine), atol = 1e-2)
-    np.testing.assert_allclose(interp_field, fun(x_fine, y_fine), atol = 1e-2)
+    np.testing.assert_allclose(interp_field0, fun(x_fine, y_fine), atol = 1e-2)
+    np.testing.assert_allclose(interp_field1, fun(x_fine, y_fine), atol = 1e-2)
+    np.testing.assert_allclose(interp_derx1, dfun_dx(x_fine, y_fine), atol = 1e-2)
+    np.testing.assert_allclose(interp_dery1, dfun_dy(x_fine, y_fine), atol = 1e-2)
+    np.testing.assert_allclose(interp_field2, fun(x_fine, y_fine), atol = 1e-2)
+    np.testing.assert_allclose(interp_derx2, dfun_dx(x_fine, y_fine), atol = 1e-2)
+    np.testing.assert_allclose(interp_dery2, dfun_dy(x_fine, y_fine), atol = 1e-2)
 
 def test_bicubic_vs_fourier():
     # test against fourier interpolation

@@ -316,7 +316,6 @@ Bicubic::eval(double x, double y, double &f, double &dfdx, double &dfdy)
       double      coefij = coeffi[_row_major(i, j, 4, 4)];
                   sf   =   sf*dy +   coefij;
       if (j > 0)  sfdy = sfdy*dy + j*coefij;
-      f += coefij * pow(dx, i) * pow(dy, j);
     }
                 f    = f   *dx +   sf;
     if (i > 0)  dfdx = dfdx*dx + i*sf;
