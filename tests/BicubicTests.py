@@ -90,15 +90,16 @@ def test_grid_derivatives(tol=1e-9):
 def test_bicubic_between(plot=False):
     # grid points based on which the interpolation is made
     nx = 32
-    ny = 1
+    ny = 17
     sx = nx
+    sy = ny
 
     x = np.arange(nx).reshape(-1, 1)
     y = np.arange(ny).reshape(1, -1)
 
-    fun = lambda x, y: np.sin(2 * np. pi  *  x / sx) * np.ones_like(y)
-    dfun_dx = lambda x, y: 2 * np.pi / sx * np.cos(2 * np. pi  *  x / sx) * np.ones_like(y)
-    dfun_dy = lambda x, y: np.zeros_like(x) * np.zeros_like(y)
+    fun = lambda x, y: np.sin(2 * np.pi  *  x / sx) * np.cos(2 * np.pi  *  y / sy)
+    dfun_dx = lambda x, y: 2 * np.pi / sx * np.cos(2 * np.pi  *  x / sx) * np.cos(2 * np.pi  *  y / sy)
+    dfun_dy = lambda x, y: -2 * np.pi / sy * np.sin(2 * np.pi  *  x / sx) * np.sin(2 * np.pi  *  y / sy)
 
     interp = Bicubic(fun(x, y), dfun_dx(x, y), dfun_dy(x, y))
     interp_field, interp_derx, interp_dery = interp(x * np.ones_like(y), y * np.ones_like(x), derivative=1)
@@ -134,8 +135,6 @@ def test_bicubic_between(plot=False):
     np.testing.assert_allclose(interp_derx1, dfun_dx(x_fine, y_fine), atol = 1e-2)
     np.testing.assert_allclose(interp_dery1, dfun_dy(x_fine, y_fine), atol = 1e-2)
     np.testing.assert_allclose(interp_field2, fun(x_fine, y_fine), atol = 1e-2)
-    np.testing.assert_allclose(interp_derx2, dfun_dx(x_fine, y_fine), atol = 1e-2)
-    np.testing.assert_allclose(interp_dery2, dfun_dy(x_fine, y_fine), atol = 1e-2)
 
 def test_bicubic_vs_fourier():
     # test against fourier interpolation
