@@ -31,6 +31,7 @@ import pytest
 import numpy as np
 
 from PyCo.Tools.Interpolation import Bicubic
+from PyCo.Topography.Generation import fourier_synthesis
 
 nx = 17
 ny = 22
@@ -136,6 +137,28 @@ def test_bicubic_between(plot=False):
     np.testing.assert_allclose(interp_dery1, dfun_dy(x_fine, y_fine), atol = 1e-2)
     np.testing.assert_allclose(interp_field2, fun(x_fine, y_fine), atol = 1e-2)
 
-def test_bicubic_vs_fourier():
+@pytest.mark.parametrize("sx, sy", [(5.,6.), (50.,60.)])
+def test_wrapped_bicubic_vs_fourier(sx, sy):
     # test against fourier interpolation
-    pass
+    # sx and sy are varied to ensure the unit conversions of the slopes are correct
+
+    nx, ny = [35, 42]
+
+    hc = 0.2 * sx
+    np.random.seed(0)
+    topography = fourier_synthesis((nx, ny), (sx, sy), 0.8, rms_height=1.,
+                                    short_cutoff=hc, long_cutoff=hc+1e-9, )
+    topography = topography.scale(1/topography.rms_height())
+    interp = topography.interpolate_bicubic()
+
+    fine_topography = topography.interpolate_fourier((4*nx, 4*ny))
+
+    interp_height, interp_slopex, interp_slopey =  interp(*fine_topography.positions(), derivative=1)
+    np.testing.assert_allclose(interp_height, fine_topography.heights(), atol=1e-2)
+    derx, dery = fine_topography.fourier_derivative()
+    rms_slope= topography.rms_slope()
+    np.testing.assert_allclose(interp_slopex, derx , atol=1e-1 * rms_slope)
+    np.testing.assert_allclose(interp_slopey, dery , atol=1e-1 * rms_slope)
+
+
+# TODO: check 2nd order derivatives of the wrapper against some function
