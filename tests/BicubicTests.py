@@ -111,8 +111,8 @@ def test_bicubic_between(plot=False):
         ax.plot(x, interp_field[:,0], "ko", mfc="none")
         axdx.plot(x, dfun_dx(x, y)[:, 0], "r+")
         axdx.plot(x, interp_derx[:,0], "ro", mfc="none")
-        axdy.plot(y, dfun_dy(x, y)[0,:], "g+")
-        axdy.plot(y, interp_dery[0,:], "go", mfc="none")
+        axdy.plot(y.flat, dfun_dy(x, y)[0,:], "g+")
+        axdy.plot(y.flat, interp_dery[0,:], "go", mfc="none")
 
     # interpolate between the points used for definition
     fac = 8
@@ -125,9 +125,9 @@ def test_bicubic_between(plot=False):
     interp_field2, interp_derx2, interp_dery2, interp_derxx2, interp_deryy2, interp_derxy2 = \
         interp(x_fine * np.ones_like(y_fine), y_fine * np.ones_like(x_fine), derivative=2)
     if plot:
-        ax.plot(x_fine, interp_field[:,0], 'k-')
-        axdx.plot(x_fine.flat, interp_derx[:,0], 'r-')
-        axdy.plot(y_fine.flat, interp_dery[0,:], 'g-')
+        ax.plot(x_fine, interp_field1[:,0], 'k-')
+        axdx.plot(x_fine.flat, interp_derx1[:,0], 'r-')
+        axdy.plot(y_fine.flat, interp_dery1[0,:], 'g-')
         fig.show()
 
     np.testing.assert_allclose(interp_field0, fun(x_fine, y_fine), atol = 1e-2)
