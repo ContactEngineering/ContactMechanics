@@ -1163,6 +1163,40 @@ def test_fourier_derivative(plot=False):
         ax.plot(y[-1, :], dy_num[-1,:])
         fig.show()
 
+def test_fourier_interpolate_nyquist(plot=False):
+    # asserts that the interpolation follows the "minimal-osciallation" assumption
+    # for the nyquist frequency
+
+    topography = Topography(np.array([[1],[-1]]), physical_sizes=(1.,1.))
+    interpolated_topography = topography.interpolate_fourier((64,1))
+
+    x, y = interpolated_topography.positions()
+    np.testing.assert_allclose(interpolated_topography.heights(),
+                                np.cos(2 * np.pi * x), atol=1e-14)
+
+    if plot:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+
+        x, y = topography.positions()
+        ax.plot(x.flat, topography.heights().flat, "+")
+
+        x, y = interpolated_topography.positions()
+        ax.plot(x.flat, interpolated_topography.heights().flat, "-")
+        fig.show()
+
+
+@pytest.mark.parametrize("fine_ny", [13,12])
+@pytest.mark.parametrize("fine_nx", [8,9])
+@pytest.mark.parametrize("ny", [6,7])
+@pytest.mark.parametrize("nx", [4,5])
+def test_fourier_interpolate_transpose_symmetry(nx, ny, fine_nx, fine_ny):
+    topography = Topography(np.random.random((nx, ny)), physical_sizes=(1., 1.5))
+    interp = topography.interpolate_fourier((fine_nx, fine_ny))
+    interp_t = topography.transpose().interpolate_fourier((fine_ny, fine_nx)).transpose()
+
+    np.testing.assert_allclose(interp.heights(), interp_t.heights())
+
 class PickeTest(PyCoTestCase):
     def test_detrended(self):
         t1 = read_topography(os.path.join(DATADIR, 'di1.di'))
