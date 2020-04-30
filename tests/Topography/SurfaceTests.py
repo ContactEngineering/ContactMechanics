@@ -1120,6 +1120,16 @@ class DerivativeTest(PyCoTestCase):
         self.assertArrayAlmostEqual(d2, -np.sin(x+(x[1]-x[0])), tol=1e-5)
         self.assertArrayAlmostEqual(d3, -np.sin(x[:-2]+(x[1]-x[0])), tol=1e-5)
 
+@pytest.mark.parametrize("ny", [7,6])
+@pytest.mark.parametrize("nx", [5,4])
+def test_fourier_derivative_realness(nx, ny):
+    # fourier_derivative internally asserts that the imaginary part is within
+    # numerical tolerance. We check here this error isn't raised for any
+    # configuration of odd and even grid points
+    topography = Topography(np.random.random((nx, ny)), physical_sizes=(2.,3.))
+    topography.fourier_derivative()
+
+
 def test_fourier_derivative(plot=False):
     nx, ny = [256] * 2
     sx, sy = [1.] * 2
