@@ -1170,10 +1170,6 @@ def test_fourier_interpolate_nyquist(plot=False):
     topography = Topography(np.array([[1],[-1]]), physical_sizes=(1.,1.))
     interpolated_topography = topography.interpolate_fourier((64,1))
 
-    x, y = interpolated_topography.positions()
-    np.testing.assert_allclose(interpolated_topography.heights(),
-                                np.cos(2 * np.pi * x), atol=1e-14)
-
     if plot:
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots()
@@ -1184,6 +1180,12 @@ def test_fourier_interpolate_nyquist(plot=False):
         x, y = interpolated_topography.positions()
         ax.plot(x.flat, interpolated_topography.heights().flat, "-")
         fig.show()
+
+    x, y = interpolated_topography.positions()
+    np.testing.assert_allclose(interpolated_topography.heights(),
+                                np.cos(2 * np.pi * x), atol=1e-14)
+
+
 
 
 @pytest.mark.parametrize("fine_ny", [13,12])
