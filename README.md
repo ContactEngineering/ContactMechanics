@@ -72,6 +72,25 @@ in the source directory. PyCo can be installed by invoking
 
 in the source directoy. The command line parameter --user is optional and leads to a local installation in the current user's `$HOME/.local` directory.
 
+#### Installation problems with lapack and openblas
+
+`bicubic.cpp` is linked with `lapack`, that is already available as a dependency of `numpy`. 
+
+If during build, `setup.py` fails to link to one of the lapack implementations 
+provided by numpy, as was experienced for mac, try providing following environment variables: 
+
+```bash
+export LDFLAGS="-L/usr/local/opt/openblas/lib $LDFLAGS"
+export CPPFLAGS="-I/usr/local/opt/openblas/include $CPPFLAGS"
+export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+export LDFLAGS="-L/usr/local/opt/lapack/lib $LDFLAGS"
+export CPPFLAGS="-I/usr/local/opt/lapack/include $CPPFLAGS"
+export PKG_CONFIG_PATH="/usr/local/opt/lapack/lib/pkgconfig:$PKG_CONFIG_PATH"
+```    
+where the paths have probably to be adapted to your particular installation method
+(here it was an extra homebrew installation).
+
 Updating PyCo
 ------------- 
 

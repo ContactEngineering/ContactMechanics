@@ -1120,6 +1120,84 @@ class DerivativeTest(PyCoTestCase):
         self.assertArrayAlmostEqual(d2, -np.sin(x+(x[1]-x[0])), tol=1e-5)
         self.assertArrayAlmostEqual(d3, -np.sin(x[:-2]+(x[1]-x[0])), tol=1e-5)
 
+@pytest.mark.parametrize("ny", [7,6])
+@pytest.mark.parametrize("nx", [5,4])
+def test_fourier_derivative_realness(nx, ny):
+    # fourier_derivative internally asserts that the imaginary part is within
+    # numerical tolerance. We check here this error isn't raised for any
+    # configuration of odd and even grid points
+    topography = Topography(np.random.random((nx, ny)), physical_sizes=(2.,3.))
+    topography.fourier_derivative()
+
+
+def test_fourier_derivative(plot=False):
+    nx, ny = [256] * 2
+    sx, sy = [1.] * 2
+
+    lc = 0.5
+    topography = fourier_synthesis((nx, ny), (sx, sy), 0.8, rms_height=1.,
+                                short_cutoff=lc, long_cutoff=lc+1e-9, )
+    topography = topography.scale(1/topography.rms_height())
+
+    # numerical derivatives to double check
+    dx, dy = topography.fourier_derivative()
+    dx_num, dy_num = topography.derivative(1)
+
+    np.testing.assert_allclose(dx, dx_num, atol=topography.rms_slope()*1e-1)
+    np.testing.assert_allclose(dy, dy_num, atol=topography.rms_slope()*1e-1)
+
+    if plot:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        x, y = topography.positions()
+
+        ax.plot(x[:, 0], topography.heights()[:,0])
+        ax.plot(x[:, 0], dx[:,0])
+        ax.plot(x[:, 0], dx_num[:,0])
+        fig.show()
+
+        fig, ax = plt.subplots()
+        x, y = topography.positions()
+        ax.plot(y[-1, :], topography.heights()[-1,:])
+        ax.plot(y[-1, :], dy[-1,:])
+        ax.plot(y[-1, :], dy_num[-1,:])
+        fig.show()
+
+def test_fourier_interpolate_nyquist(plot=False):
+    # asserts that the interpolation follows the "minimal-osciallation" assumption
+    # for the nyquist frequency
+
+    topography = Topography(np.array([[1],[-1]]), physical_sizes=(1.,1.))
+    interpolated_topography = topography.interpolate_fourier((64,1))
+
+    if plot:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+
+        x, y = topography.positions()
+        ax.plot(x.flat, topography.heights().flat, "+")
+
+        x, y = interpolated_topography.positions()
+        ax.plot(x.flat, interpolated_topography.heights().flat, "-")
+        fig.show()
+
+    x, y = interpolated_topography.positions()
+    np.testing.assert_allclose(interpolated_topography.heights(),
+                                np.cos(2 * np.pi * x), atol=1e-14)
+
+
+
+
+@pytest.mark.parametrize("fine_ny", [13,12])
+@pytest.mark.parametrize("fine_nx", [8,9])
+@pytest.mark.parametrize("ny", [6,7])
+@pytest.mark.parametrize("nx", [4,5])
+def test_fourier_interpolate_transpose_symmetry(nx, ny, fine_nx, fine_ny):
+    topography = Topography(np.random.random((nx, ny)), physical_sizes=(1., 1.5))
+    interp = topography.interpolate_fourier((fine_nx, fine_ny))
+    interp_t = topography.transpose().interpolate_fourier((fine_ny, fine_nx)).transpose()
+
+    np.testing.assert_allclose(interp.heights(), interp_t.heights())
 
 class PickeTest(PyCoTestCase):
     def test_detrended(self):
