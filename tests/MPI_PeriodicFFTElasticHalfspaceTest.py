@@ -40,7 +40,6 @@ def basenpoints(comm):
     # Base number of points in order to avoid empty subdomains
     # when using a lot of processors
 
-
 @pytest.mark.parametrize("nx, ny", [(64, 33),
                                     (65,32),
                                     (64,64)])
@@ -120,14 +119,14 @@ def test_sineWave_disp(comm, pnp, fftengine_type, nx, ny, basenpoints):
                                                 fft=fftengine_type, communicator=comm)
 
         kpressure = substrate.evaluate_k_force(disp[substrate.subdomain_slices]) / substrate.area_per_pt / (nx*ny)
-        expected_k_disp = np.zeros((nx, ny//2 + 1), dtype=complex)
+        expected_k_disp = np.zeros((nx//2 + 1, ny), dtype=complex)
         expected_k_disp[k[0], k[1]] += .5 - .5j
 
         # add the symetrics
-        if k[1] == 0:
-            expected_k_disp[-k[0], 0] += .5 + .5j
-        if k[1] == ny//2 and ny%2 == 0 :
-            expected_k_disp[-k[0], k[1]] += .5 + .5j
+        if k[0] == 0:
+            expected_k_disp[0, -k[1]] += .5 + .5j
+        if k[0] == nx//2 and nx%2 == 0 :
+            expected_k_disp[k[0], -k[1]] += .5 + .5j
 
         np.testing.assert_allclose(substrate.fftengine.fft(disp[substrate.subdomain_slices]) / (nx*ny),
                                    expected_k_disp[substrate.fourier_slices], rtol=1e-7, atol=1e-10)
