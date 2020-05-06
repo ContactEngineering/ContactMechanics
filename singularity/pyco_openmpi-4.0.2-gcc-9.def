@@ -1,0 +1,32 @@
+
+Bootstrap: localimage
+From: dep_openmpi-4.0.2-gcc-9.sif
+
+%labels
+    Author antoine.sanner@imtek.uni-freiburg.de
+
+%files
+    ../ PyCo
+
+%post 
+    # note: -y is to automatically accept when apt asks for confirmation. Otherwise the recipe fails
+
+    # Install the rest using 
+    cd PyCo 
+    python3 -m pip install git+file:$PWD
+
+%environment
+    # prevent OMP jobs to use all want he thinks is available                      
+    export OMP_NUM_THREADS=1
+    export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
+    #env for runtime
+    export OMPI_DIR=/opt/ompi
+    export SINGULARITY_OMPI_DIR=$OMPI_DIR
+    export SINGULARITYENV_APPEND_PATH=$OMPI_DIR/bin
+    export SINGULAIRTYENV_APPEND_LD_LIBRARY_PATH=$OMPI_DIR/lib
+
+
+%runscript
+    python3 "$@" 
+    
