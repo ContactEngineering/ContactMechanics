@@ -171,7 +171,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
 
             ## verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, l)
-            fforce = rfftn(force)
+            fforce = rfftn(force.T).T
             fdisp = hs.weights * fforce
             self.assertTrue(
                 Tools.mean_err(fforce, Fforce, rfft=True) < tol, "fforce = \n{},\nFforce = \n{}".format(
@@ -204,7 +204,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         for res in [(16, 16), (16, 15), (15, 16), (15, 9)]:
             disp = np.random.normal(size=res)
             hs = PeriodicFFTElasticHalfSpace(res, self.young,
-                                             self.physical_sizes)
+                                             self.physical_sizes, fft="numpy")
             np.testing.assert_allclose(
                 hs.evaluate(disp, pot=True, forces=True)[0],
                 hs.evaluate(disp, pot=True, forces=False)[0])
@@ -365,7 +365,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         from muFFT import FFT
-        ref = rfftn(force)
+        ref = rfftn(force.T).T
         tested = FFT([2 * r for r in self.res], fft="serial").fft(force)
         np.testing.assert_allclose(ref.real,
                                    tested.real)
@@ -386,18 +386,18 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
         # np.testing.assert_allclose(rfftn(-force), hs.fftengine.fft(-force))
         # hs.fftengine.fft(-force)
-        kdisp_hs = hs.weights * rfftn(-force) / hs.area_per_pt
+        kdisp_hs = hs.weights * rfftn(-force.T).T / hs.area_per_pt
         kdisp = hs.evaluate_k_disp(force)
 
         np.testing.assert_allclose(kdisp_hs, kdisp, rtol=1e-10)
         np.testing.assert_allclose(kdisp_hs.real, kdisp.real)
         np.testing.assert_allclose(kdisp_hs.imag, kdisp.imag)
 
-        kforce = rfftn(force)
+        kforce = rfftn(force.T).T
         np_pts = np.prod(hs.nb_domain_grid_pts)
         area_per_pt = np.prod(self.physical_sizes) / np_pts
         energy = .5 * (np.vdot(-kforce, kdisp) +
-                       np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
+                       np.vdot(-kforce[1:-1, ...], kdisp[1:-1, ...])) / np_pts
         error = abs(energy.imag)
         tol = 1e-10
         self.assertTrue(error < tol,
@@ -416,11 +416,10 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         force[:self.res[0], :self.res[1]] -= force[:self.res[0], :self.res[1]].mean()
         kdisp = hs.evaluate_k_disp(force)
-        kforce = rfftn(force)
+        kforce = rfftn(force.T).T
         np_pts = np.prod(hs.nb_domain_grid_pts)
-        area_per_pt = np.prod(self.physical_sizes) / np_pts
         energy = .5 * (np.vdot(-kforce, kdisp) +
-                       np.vdot(-kforce[..., 1:-1], kdisp[..., 1:-1])) / np_pts
+                       np.vdot(-kforce[1:-1, ...], kdisp[1:-1, ...])) / np_pts
         error = abs(energy.imag)
         tol = 1e-10
         self.assertTrue(error < tol,
@@ -453,7 +452,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
             ## verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, l)
-            fforce = rfftn(force)
+            fforce = rfftn(force.T).T
             fdisp = hs.weights * fforce
             self.assertTrue(
                 Tools.mean_err(fforce, Fforce, rfft=True) < tol, "fforce = \n{},\nFforce = \n{}".format(
@@ -468,9 +467,9 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             disp = hs.evaluate_disp(force)
             e = hs.evaluate_elastic_energy(force, disp)
             kdisp = hs.evaluate_k_disp(force)
-            self.assertTrue(abs(disp - irfftn(kdisp)).sum() < tol,
+            self.assertTrue(abs(disp - irfftn(kdisp.T).T).sum() < tol,
                             ("disp   = {}\n"
-                             "ikdisp = {}").format(disp, irfftn(kdisp)))
+                             "ikdisp = {}").format(disp, irfftn(kdisp.T).T))
             ee = hs.evaluate_elastic_energy_k_space(fforce, kdisp)
             self.assertTrue(
                 abs(e - ee) < tol,

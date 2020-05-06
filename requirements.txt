@@ -9,5 +9,5 @@ h5py
 sphinx>=1.8.2
 NuMPI>=0.1.1
 pytest>=4
-git+https://gitlab.com/muspectre/muspectre.git@merge/19_mpi_for_new_fields#egg=libmufft
+git+https://gitlab.com/muspectre/muspectre.git@merge/19_mpi_for_new_fields#egg=muFFT
 git+https://github.com/pastewka/runtests.git#egg=runtests

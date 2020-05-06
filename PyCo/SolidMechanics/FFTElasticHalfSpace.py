@@ -139,14 +139,14 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.thickness = thickness
 
         if fft == "numpy":
-            class numpyEngine:
+            class NumpyEngine:
                 def __init__(self, nb_domain_grid_pts):
                     self.nb_domain_grid_pts = nb_domain_grid_pts
                     self.nb_subdomain_grid_pts = nb_domain_grid_pts
                     self.subdomain_locations = (0, 0)  # readonly
 
                     self.nb_fourier_grid_pts = (
-                        *nb_domain_grid_pts[:-1], nb_domain_grid_pts[-1] // 2 + 1)
+                        nb_domain_grid_pts[0] // 2 + 1, *nb_domain_grid_pts[1:])
                     self.fourier_locations = (0, 0)
 
                 @property
@@ -163,16 +163,16 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                          zip(self.fourier_locations, self.nb_fourier_grid_pts)))
 
                 def fft(self, arr):
-                    return np.fft.rfftn(arr)
+                    return np.fft.rfftn(arr.T).T
 
                 def ifft(self, arr):
-                    return np.fft.irfftn(arr, self.nb_subdomain_grid_pts)  # * np.prod(self.nb_domain_grid_pts)
+                    return np.fft.irfftn(arr.T, self.nb_subdomain_grid_pts[::-1]).T  # * np.prod(self.nb_domain_grid_pts)
 
                 @property
                 def normalisation(self):
                     return 1.
 
-            self.fftengine = numpyEngine(self.nb_domain_grid_pts)
+            self.fftengine = NumpyEngine(self.nb_domain_grid_pts)
 
         else:
             self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft, communicator=communicator)
@@ -508,21 +508,21 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # FIXME: why this test was done in earlier versions
         # if kdisp.shape[-1] > 0:
         if kdisp.size > 0:
-            if self.fourier_locations[-1] == 0:  # First column of this fourier data is first of global data
+            if self.fourier_locations[0] == 0:  # First column of this fourier data is first of global data
                 # print("First column of this fourier data is first of global data")
                 fact0 = 1
-            elif self.nb_fourier_grid_pts[-1] > 1:
+            elif self.nb_fourier_grid_pts[0] > 1:
                 # local first row is in the
                 fact0 = 2
             else:
                 fact0 = 0
 
-            if self.fourier_locations[-1] == 0 and self.nb_fourier_grid_pts[-1] == 1:
+            if self.fourier_locations[0] == 0 and self.nb_fourier_grid_pts[0] == 1:
                 factend = 0
-            elif (self.nb_domain_grid_pts[-1] % 2 == 1):
+            elif (self.nb_domain_grid_pts[0] % 2 == 1):
                 # odd number of points, last column have always to be symetrized
                 factend = 2
-            elif self.fourier_locations[-1] + self.nb_fourier_grid_pts[-1] - 1 == self.nb_domain_grid_pts[-1] // 2:
+            elif self.fourier_locations[0] + self.nb_fourier_grid_pts[0] - 1 == self.nb_domain_grid_pts[0] // 2:
                 # last column of the global rfftn already contains it's symetric
                 factend = 1
                 # print("last Element of the even data has to be accounted only once")
@@ -532,15 +532,15 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             # print("fact0={}".format(fact0))
             # print("factend={}".format(factend))
 
-            if self.nb_fourier_grid_pts[-1] > 2:
+            if self.nb_fourier_grid_pts[0] > 2:
                 factmiddle = 2
             else:
                 factmiddle = 0
 
             locsum = 0.5 * (
-                    factmiddle * np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
-                    + fact0 * np.vdot(kdisp[..., 0], -kforces[..., 0]).real
-                    + factend * np.vdot(kdisp[..., -1], -kforces[..., -1]).real
+                    factmiddle * np.vdot(kdisp[1:-1, ...], -kforces[1:-1, ...]).real
+                    + fact0 * np.vdot(kdisp[0, ...], -kforces[0, ...]).real
+                    + factend * np.vdot(kdisp[-1, ...], -kforces[-1, ...]).real
             ) / np.prod(self.nb_domain_grid_pts)  # nopep8
             # We divide by the total number of points to get the appropriate normalisation of the Fourier transform
             # (in numpy the division by # happens only at the inverse transform)
