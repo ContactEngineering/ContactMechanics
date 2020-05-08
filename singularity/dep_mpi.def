@@ -76,7 +76,7 @@ curl https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-${HDF5_VERSIO
 # parallel PnetCDF and HDF5 enabled.
 curl https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-${NETCDF4_VERSION}.tar.gz | tar -xzC ${BUILDDIR} &&
   mkdir -p ${BUILDDIR}/netcdf-c-build &&
-  cd ${BUILDDIR}/netcdf-c-build-2 &&
+  cd ${BUILDDIR}/netcdf-c-build &&
   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DUSE_PARALLEL=ON -DENABLE_PARALLEL4=ON -DENABLE_PNETCDF=ON ${BUILDDIR}/netcdf-c-${NETCDF4_VERSION} &&
   make &&
   make install &&
