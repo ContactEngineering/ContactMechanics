@@ -459,8 +459,8 @@ class PotentialTest(unittest.TestCase):
 
     def test_RepulsiveExponential(self):
         ns = np.array([10, 100, 1000, 10000])
-        errordV = np.zeros_like(ns)
-        errorddV = np.zeros_like(ns)
+        errordV = np.zeros_like(ns, dtype=float)
+        errorddV = np.zeros_like(ns, dtype=float)
 
         for i, n in enumerate(ns):
             r = np.linspace(-.1, 10, n + 1)
