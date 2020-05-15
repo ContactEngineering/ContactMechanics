@@ -47,7 +47,7 @@ except ImportError as err:
     sys.exit(-1)
 
 _toplot=False
-def test_wavy(comm, fftengine_type):
+def test_wavy(comm):
 
     n=32
     surf_res = (n,n)
@@ -66,7 +66,7 @@ def test_wavy(comm, fftengine_type):
     # Parallel Topography Patch
 
     substrate = PeriodicFFTElasticHalfSpace(surf_res, young=Es,
-                                            physical_sizes=surf_size, communicator=comm, fft=fftengine_type)
+                                            physical_sizes=surf_size, communicator=comm, fft='mpi')
 
     surface = Topography(
         np.cos(np.arange(0, n) * np.pi * 2. / n) * np.ones((n, 1)),

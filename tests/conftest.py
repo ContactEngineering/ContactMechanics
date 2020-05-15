@@ -66,16 +66,3 @@ maxcomm = MyMPITestFixture([MPI.COMM_WORLD.Get_size()], scope="session")
 @pytest.fixture(scope="session")
 def file_format_examples():
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
-
-
-@pytest.fixture(scope="session")
-def fftengine_type(comm):
-    try:
-        fftname = "serial" if comm.Get_size() == 1 else "mpi"
-        engine = FFT((2 * comm.Get_size(), 3 * comm.Get_size()), fft=fftname, communicator=comm)
-    except:
-        if comm.Get_size() == 1:
-            fftname = "fftw"
-        else:
-            raise ValueError("No appropriate fft library detected")
-    return fftname
