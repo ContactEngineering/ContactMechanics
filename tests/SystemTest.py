@@ -332,7 +332,7 @@ def test_LBFGSB_Hertz():
     interaction = Contact.Exponential(0., 0.0001)
     system = SmoothContactSystem(substrate, interaction,surface)
 
-    gtol=1e-7 # 1e-8 is not reachable for some reason #FIXME
+    gtol=1e-6 # 1e-8 is not reachable for some reason #FIXME
     offset=1.
     res = system.minimize_proxy(offset=offset, lbounds="auto",
                                 options=dict(gtol=gtol, ftol=0))
