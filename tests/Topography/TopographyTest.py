@@ -38,11 +38,11 @@ from PyCo.Topography.UniformLineScanAndTopography import DetrendedUniformTopogra
 from ..PyCoTest import PyCoTestCase
 
 
-def test_positions(comm, fftengine_type):
+def test_positions(comm):
     nx, ny = (12 * comm.Get_size(), 10 * comm.Get_size() + 1)
     sx = 33.
     sy = 54.
-    fftengine = FFT((nx, ny), fft=fftengine_type, communicator=comm)
+    fftengine = FFT((nx, ny), fft='mpi', communicator=comm)
 
     surf = Topography(np.zeros(fftengine.nb_subdomain_grid_pts),
                       physical_sizes=(sx, sy),
