@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 import numpy as np
 import pytest
 
@@ -190,7 +191,7 @@ def test_local_topography_subdomain_slices(comm):
     np.random.seed(0)
     globaldata = np.random.random((nx, ny))
 
-    substrate = FreeFFTElasticHalfSpace((nx, ny), 1., communicator=comm)
+    substrate = FreeFFTElasticHalfSpace((nx, ny), 1., communicator=comm, fft='mpi')
     assert (globaldata[substrate.subdomain_slices]
             [substrate.local_topography_subdomain_slices]
             ==
