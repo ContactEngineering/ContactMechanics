@@ -12,7 +12,7 @@ install:
   - source .print_netcdf_capabilities.sh
   - python setup.py install
 script:
-  - if [ "$WITH_MPI" == "yes" ]; then python run-tests.py --verbose --full-trace -s; else python -m pytest --verbose --full-trace -s; fi
+  - if [ "$WITH_MPI" == "yes" ]; then python run-tests.py --verbose --full-trace; else python -m pytest --verbose --full-trace -s; fi
 notifications:
   email:
     - antoine.sanner@imtek.uni-freiburg.de
