@@ -2,8 +2,17 @@
 Change log for PyCo
 ===================
 
+v0.57.0 (15May20)
+-----------------
+
+- MAINT: Support for new, rewritten muFFT bindings
+- ENH: Bicubic interpolation of two-dimensional topography maps
+- ENH: Fourier derivative of topography
+- BUG: Computation of plastic area is now parallelized (#303)
+- BUG: Info dictionary mutable from user 
+
 v0.56.0 (26Feb20)
---------------------------
+-----------------
 
 - ENH: Change orientation of some readers such that all topographies
        look like the image in Gwyddion when plotted with
