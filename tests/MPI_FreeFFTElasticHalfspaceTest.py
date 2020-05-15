@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 import numpy as np
 import pytest
 
@@ -109,7 +110,7 @@ def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints):
                                                             (x_s - a) * (x_s - a))) /
                                        ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +
                                                             (x_s + a) * (x_s + a)))))
-        weights = np.fft.rfftn(facts)
+        weights = np.fft.rfftn(facts.T).T
         return weights, facts
 
     sx, sy = 100, 200
@@ -121,6 +122,7 @@ def test_weights(comm, pnp, fftengine_type, nx, ny, basenpoints):
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                         fft=fftengine_type, communicator=comm)
     local_weights, local_facts = substrate._compute_fourier_coeffs()
+    #print(local_weights.shape, ref_weights.shape, substrate.fourier_slices)
     np.testing.assert_allclose(local_weights, ref_weights[substrate.fourier_slices], 1e-12)
     np.testing.assert_allclose(local_facts, ref_facts[substrate.subdomain_slices], 1e-12)
 
@@ -189,7 +191,7 @@ def test_local_topography_subdomain_slices(comm):
     np.random.seed(0)
     globaldata = np.random.random((nx, ny))
 
-    substrate = FreeFFTElasticHalfSpace((nx, ny), 1., communicator=comm)
+    substrate = FreeFFTElasticHalfSpace((nx, ny), 1., communicator=comm, fft='mpi')
     assert (globaldata[substrate.subdomain_slices]
             [substrate.local_topography_subdomain_slices]
             ==
