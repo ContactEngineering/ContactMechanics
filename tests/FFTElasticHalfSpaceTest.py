@@ -204,7 +204,7 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
         for res in [(16, 16), (16, 15), (15, 16), (15, 9)]:
             disp = np.random.normal(size=res)
             hs = PeriodicFFTElasticHalfSpace(res, self.young,
-                                             self.physical_sizes, fft="numpy")
+                                             self.physical_sizes)
             np.testing.assert_allclose(
                 hs.evaluate(disp, pot=True, forces=True)[0],
                 hs.evaluate(disp, pot=True, forces=False)[0])
