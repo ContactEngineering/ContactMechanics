@@ -124,7 +124,7 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm, fftengine_type
         Eel_computed_rspace = \
             system.substrate.evaluate(disp, pot=True, forces=True)[0]
 
-        print(Eel_computed_kspace, Eel_computed_rspace, Eel_ref)
+        #print(Eel_computed_kspace, Eel_computed_rspace, Eel_ref)
 
         npt.assert_allclose(Eel_computed_kspace, Eel_ref, rtol=1e-2)
         npt.assert_allclose(Eel_computed_rspace, Eel_ref, rtol=1e-2)
