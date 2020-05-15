@@ -31,7 +31,6 @@ from numpy.random import rand, random
 import numpy as np
 
 from scipy.optimize import minimize
-from scipy.fftpack import fftn, ifftn
 import time
 
 import os
@@ -49,7 +48,7 @@ import pytest
 from NuMPI import MPI
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
-        reason="tests only serial funcionalities, please execute with pytest")
+        reason="tests only serial functionalities, please execute with pytest")
 
 BASEDIR = os.path.dirname(os.path.realpath(__file__))
 
