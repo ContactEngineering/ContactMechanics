@@ -53,7 +53,7 @@ def test_hard_wall_bearing_area(comm, fftengine_type):
     # print(comm.Get_rank())
     assert pnp.sum(np.logical_not(c == cba)) < 25
 
-def test_hardwall_plastic_nonperiodic_disp_control(comm, fftengine_type):
+def test_hardwall_plastic_nonperiodic_disp_control(comm_self):
     # test just that it works without bug, not accuracy
 
     nx, ny = 128, 128
@@ -74,7 +74,7 @@ def test_hardwall_plastic_nonperiodic_disp_control(comm, fftengine_type):
                          surface=PlasticTopography(topography=topography,
                                                    hardness=hardness),
                          young=Es,
-                         communicator=comm
+                         communicator=comm_self
                          )
 
     offsets = [1e-4]
@@ -99,7 +99,7 @@ def test_hardwall_plastic_nonperiodic_disp_control(comm, fftengine_type):
         assert sol.success
 
 
-def test_hardwall_plastic_nonperiodic_load_control(comm, fftengine_type):
+def test_hardwall_plastic_nonperiodic_load_control(comm_self):
     # test just that it works without bug, not accuracy
 
     nx, ny = 128, 128
@@ -120,7 +120,7 @@ def test_hardwall_plastic_nonperiodic_load_control(comm, fftengine_type):
                          surface=PlasticTopography(topography=topography,
                                                    hardness=hardness),
                          young=Es,
-                         communicator=comm
+                         communicator=comm_self
                          )
 
     external_forces = [0.02]
