@@ -1,6 +1,8 @@
 #
-# Copyright 2019 Lars Pastewka
-#           2019 Antoine Sanner
+# Copyright 2019-2020 Antoine Sanner
+#           2019-2020 Michael Röttger
+#           2019 Lars Pastewka
+#           2019 roettger@tf.uni-freiburg.de
 # 
 # ### MIT license
 # 

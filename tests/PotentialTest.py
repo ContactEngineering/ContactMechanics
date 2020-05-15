@@ -1,6 +1,7 @@
 #
-# Copyright 2019 Lintao Fang
-#           2018-2019 Antoine Sanner
+# Copyright 2018, 2020 Antoine Sanner
+#           2019-2020 Lars Pastewka
+#           2019 Lintao Fang
 # 
 # ### MIT license
 # 

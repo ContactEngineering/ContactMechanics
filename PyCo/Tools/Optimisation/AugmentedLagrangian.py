@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2019 Lars Pastewka
+# Copyright 2018, 2020 Lars Pastewka
 #           2019 Antoine Sanner
 #           2016 Till Junge
 # 
