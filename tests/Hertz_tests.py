@@ -56,13 +56,13 @@ def test_elastic_solution(self):
 
 
 @pytest.mark.parametrize("nb_grid_pts", [(512, 512), (512, 511), (511, 512)])
-def test_constrained_conjugate_gradients(self, nb_grid_pts, comm, fftengine_type):
+def test_constrained_conjugate_gradients(self, nb_grid_pts, comm):
     nx, ny = nb_grid_pts
     for disp0, normal_force in [(0.1, None), (0, 15.0)]:
         sx = 5.0
 
-        substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sx),
-                                            fft=fftengine_type, communicator=comm)
+        substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sx), fft='mpi',
+                                            communicator=comm)
 
         interaction = HardWall()
         surface = make_sphere(self.r_s, (nx, ny), (sx, sx),
