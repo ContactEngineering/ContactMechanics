@@ -340,8 +340,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 qy = np.where(qy <= ny // 2, qy / sy, (ny - qy) / sy)
                 q = np.sqrt((qx * qx).reshape(-1, 1) + (qy * qy).reshape(1, -1))
                 if self.fourier_locations == (0, 0):
-                    q[
-                        0, 0] = np.NaN;  # q[0,0] has no Impact on the end result, but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
+                    q[0, 0] = np.NaN;  # q[0,0] has no Impact on the end result,
+                    # but q[0,0] =  0 produces runtime Warnings (because corr[0,0]=inf)
                 facts = np.pi * self.contact_modulus * q
                 if self.thickness is not None:
                     # Compute correction for finite thickness
@@ -508,11 +508,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # FIXME: why this test was done in earlier versions
         # if kdisp.shape[-1] > 0:
         if kdisp.size > 0:
-            if self.fourier_locations[0] == 0:  # First column of this fourier data is first of global data
-                # print("First column of this fourier data is first of global data")
+            if self.fourier_locations[0] == 0:
+                # First row of this fourier data is first of global data
                 fact0 = 1
             elif self.nb_fourier_grid_pts[0] > 1:
-                # local first row is in the
+                # local first row is not the first in the global data
                 fact0 = 2
             else:
                 fact0 = 0
@@ -520,10 +520,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             if self.fourier_locations[0] == 0 and self.nb_fourier_grid_pts[0] == 1:
                 factend = 0
             elif (self.nb_domain_grid_pts[0] % 2 == 1):
-                # odd number of points, last column have always to be symetrized
+                # odd number of points, last row have always to be symmetrized
                 factend = 2
             elif self.fourier_locations[0] + self.nb_fourier_grid_pts[0] - 1 == self.nb_domain_grid_pts[0] // 2:
-                # last column of the global rfftn already contains it's symetric
+                # last row of the global rfftn already contains it's symmetric
                 factend = 1
                 # print("last Element of the even data has to be accounted only once")
             else:
@@ -545,7 +545,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             # We divide by the total number of points to get the appropriate normalisation of the Fourier transform
             # (in numpy the division by # happens only at the inverse transform)
         else:
-            # This handles the case where the processor hods an empty subdomain
+            # This handles the case where the processor holds an empty subdomain
             locsum = np.array([], dtype=kdisp.real.dtype)
         # print(locsum)
         return self.pnp.sum(locsum)
