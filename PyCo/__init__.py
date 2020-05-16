@@ -27,8 +27,12 @@
 Efficient contact mechanics with Python
 """
 
+from importlib.metadata import version, PackageNotFoundError
+
 from . import ContactMechanics, SolidMechanics, System, Topography
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:
+    # package is not installed
+   pass

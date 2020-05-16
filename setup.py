@@ -27,7 +27,6 @@
 import glob
 import re
 
-import versioneer
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
@@ -116,8 +115,7 @@ extensions = [
 
 setup(
     name="PyCo",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(cmdclass={'build_ext': CustomBuildExtCommand}),
+    cmdclass={'build_ext': CustomBuildExtCommand},
     scripts=scripts,
     packages=find_packages(),
     package_data={'': ['ChangeLog.md']},
@@ -131,6 +129,10 @@ setup(
     test_suite='tests',
     # dependencies
     python_requires='>3.5.0',
+    use_scm_version=True,
+    setup_requires=[
+        'setuptools_scm'
+    ],
     install_requires=[
         'numpy>=1.11.0',
         'NuMPI',
