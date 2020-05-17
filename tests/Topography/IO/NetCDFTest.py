@@ -61,6 +61,7 @@ def test_save_and_load(comm):
     t2 = read_topography('parallel_save_test.nc')
 
     assert t.physical_sizes == t2.physical_sizes
+    assert t.info['unit'] == t2.info['unit']
     np.testing.assert_array_almost_equal(t.heights(), t2.heights())
 
     # Attempt to open file in parallel
@@ -71,6 +72,8 @@ def test_save_and_load(comm):
     t3 = r.topography(subdomain_locations=substrate.subdomain_locations,
                       nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts)
 
+    assert t.physical_sizes == t3.physical_sizes
+    assert t.info['unit'] == t3.info['unit']
     np.testing.assert_array_almost_equal(dt.heights(), t3.heights())
 
     assert t3.is_periodic
