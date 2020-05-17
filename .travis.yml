@@ -8,7 +8,7 @@ env:
 before_install:
   - source .travis.before_install.bash
 install:
-  - python -m pip install -r requirements.txt
+  - python -m pip install --upgrade -r requirements.txt --no-binary setuptools_scm
   - source .print_netcdf_capabilities.sh
   - python setup.py install
 script:
