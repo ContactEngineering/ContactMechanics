@@ -77,7 +77,9 @@ def test_save_and_load(comm):
 
     assert t3.is_periodic
 
-    os.remove('parallel_save_test.nc')
+    comm.barrier()
+    if comm.rank == 0:
+        os.remove('parallel_save_test.nc')
 
 def test_save_and_load_no_unit(comm_self):
     nb_grid_pts = (128, 128)
