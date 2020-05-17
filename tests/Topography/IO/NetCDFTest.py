@@ -35,9 +35,6 @@ from PyCo.Topography.IO.NC import NCReader
 from PyCo.Topography.Generation import fourier_synthesis
 
 def test_save_and_load(comm):
-    if comm is None:
-        comm = MPI.COMM_SELF
-
     nb_grid_pts = (128, 128)
     size = (3, 3)
 
@@ -78,6 +75,26 @@ def test_save_and_load(comm):
 
     assert t3.is_periodic
 
+    os.remove('parallel_save_test.nc')
+
+def test_save_and_load_no_unit():
+    nb_grid_pts = (128, 128)
+    size = (3, 3)
+
+    np.random.seed(1)
+    t = fourier_synthesis(nb_grid_pts, size, 0.8, rms_slope=0.1)
+
+    # Save file
+    t.to_netcdf('no_unit.nc')
+
+    # Attempt to open full file on each process
+    t2 = read_topography('no_unit.nc')
+
+    assert t.physical_sizes == t2.physical_sizes
+    assert 'unit' not in t2.info
+    np.testing.assert_array_almost_equal(t.heights(), t2.heights())
+
+    os.remove('no_unit.nc')
 
 if __name__ == '__main__':
     test_save_and_load(MPI.COMM_WORLD)
