@@ -128,10 +128,10 @@ setup(
     license="MIT",
     test_suite='tests',
     # dependencies
-    python_requires='>3.5.0',
+    python_requires='>=3.5.0',
     use_scm_version=True,
     setup_requires=[
-        'setuptools_scm'
+        'setuptools_scm>=3.5.0'
     ],
     install_requires=[
         'numpy>=1.11.0',
