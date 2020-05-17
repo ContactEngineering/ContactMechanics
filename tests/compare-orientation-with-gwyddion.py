@@ -47,7 +47,7 @@ def plot(fn):
     else:
         unit = '?'
     fig = plt.figure(figsize=(10,10))
-    fig.suptitle(f"{fn}, channel {r.default_channel.name}")
+    fig.suptitle("{}, channel {}".format(fn, r.default_channel.name))
 
     ax = fig.add_subplot(2,2,1)
     ax.set_title("pcolormesh(t.heights().T)")
@@ -55,8 +55,8 @@ def plot(fn):
 
     ax = fig.add_subplot(2,2,2)
     ax.set_title("pcolormesh(*t.positions_and_heights())")
-    ax.set_xlabel(f"x [{unit}]")
-    ax.set_ylabel(f"y [{unit}]")
+    ax.set_xlabel("x [{}]".format(unit))
+    ax.set_ylabel("y [{}]".format(unit))
     ax.pcolormesh(*t.positions_and_heights())
 
     ax = fig.add_subplot(2, 2, 3)
@@ -74,7 +74,7 @@ def plot(fn):
 
     h = t.heights()
     for i,j in [(0,0), (0,-1), (-1,0), (-1,-1)]:
-        print(f"h[{i},{j}] == {h[i,j]}")
+        print("h[{},{}] == {}".format(i, j, h[i, j]))
 
     return t
 
