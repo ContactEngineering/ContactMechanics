@@ -154,8 +154,8 @@ class AnisotropicGreensFunction(object):
             M = self.bulkop(qx, qy, _qz)
             _eta = null_space(M, rcond=rcond)
             if _eta.shape[1] != 1:
-                raise RuntimeError(f'Null space for wavevector {qx},{qy},{_qz} spanned by {_eta.shape[1]} vectors, '
-                                   'but should be spanned by a single one.')
+                raise RuntimeError('Null space for wavevector {},{},{} spanned by {} vectors, '
+                                   'but should be spanned by a single one.'.format(qx, qy, _qz, _eta.shape[1]))
             eta += [_eta[:, 0]]
         return eta
 
