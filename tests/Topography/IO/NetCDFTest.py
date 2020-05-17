@@ -43,12 +43,14 @@ def test_save_and_load(comm):
 
     np.random.seed(1)
     t = fourier_synthesis(nb_grid_pts, size, 0.8, rms_slope=0.1)
+    t.info['unit'] = 'μm'
 
     substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, 1,
                                             fft='serial' if comm is None or comm.size == 1 else 'mpi',
                                             communicator=comm)
     dt = t.domain_decompose(substrate.subdomain_locations, substrate.nb_subdomain_grid_pts,
                             communicator=comm)
+    assert t.info['unit'] == 'μm'
     if comm.size > 1:
         assert dt.is_domain_decomposed
 
