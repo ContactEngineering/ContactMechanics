@@ -56,7 +56,7 @@ def test_save_and_load(comm):
     # Save file
     dt.to_netcdf('parallel_save_test.nc')
 
-    # Attempt to open full file on each process
+    # Attempt to open full file on each MPI process
     t2 = read_topography('parallel_save_test.nc')
 
     assert t.physical_sizes == t2.physical_sizes
@@ -91,7 +91,6 @@ def test_save_and_load_no_unit(comm_self):
     # Save file
     t.to_netcdf('no_unit.nc')
 
-    # Attempt to open full file on each process
     t2 = read_topography('no_unit.nc')
 
     assert t.physical_sizes == t2.physical_sizes
