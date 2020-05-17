@@ -122,5 +122,7 @@ def test_load_no_physical_sizes(comm_self):
     assert 'unit' not in t2.info
     np.testing.assert_array_almost_equal(t.heights(), t2.heights())
 
+    os.remove('no_physical_sizes.nc')
+
 if __name__ == '__main__':
     test_save_and_load(MPI.COMM_WORLD)
