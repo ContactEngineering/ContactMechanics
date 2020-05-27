@@ -47,7 +47,7 @@ class GoodiesTest(unittest.TestCase):
         size = (siz, siz)
         hurst = .9
         rms_height = 1
-        res = 101 # FIXME: BUG: now it suddenly doesn't reach the same tolerance for 100 points, I don't understand why
+        res = 150
         nb_grid_pts = (res, res)
         lam_max = .5
         lam_min = 2  / np.min(np.asarray(nb_grid_pts) / np.asarray(size))
@@ -92,7 +92,7 @@ class GoodiesTest(unittest.TestCase):
         size = (siz, siz)
         hurst = .9
         rms_height = 1
-        res = 101 # FIXME: BUG: now it suddenly doesn't reach the same tolerance for 100 points, I don't understand why
+        res = 150
         nb_grid_pts = (res, res)
         lam_max = .5
         lam_min = 2  / np.min(np.asarray(nb_grid_pts) / np.asarray(size))
@@ -123,11 +123,11 @@ class GoodiesTest(unittest.TestCase):
         size = (siz, siz)
         hurst = .9
         rms_height = 1
-        res = 100
+        res = 300
         nb_grid_pts = (res, res)
         lam_max = .5
         lam_min = 2  / np.min(np.asarray(nb_grid_pts) / np.asarray(size))
-        np.random.seed(10)
+        #np.random.seed(10)
         surf = fourier_synthesis(nb_grid_pts, size, hurst, rms_height,
                                      long_cutoff=lam_max,
                                      short_cutoff=lam_min,
