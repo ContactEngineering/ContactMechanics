@@ -1,0 +1,53 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%files 
+    ../requirements.txt requirements.txt
+
+%post
+
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+
+## for apt to be noninteractive
+export DEBIAN_FRONTEND=noninteractive
+export DEBCONF_NONINTERACTIVE_SEEN=true
+
+apt-get -qq update && apt-get -y -qq install \
+clang \
+cmake \
+curl \
+g++ \
+git \
+libboost-test-dev \
+libcurl4-openssl-dev \
+libeigen3-dev \
+libfftw3-dev \
+libgmp-dev \
+libpnetcdf-dev \
+m4 \
+python3-pip \
+python3-breathe \
+python3-dev \
+python3-netcdf4 \
+python3-numpy \
+python3-pytest \
+python3-scipy \
+python3-setuptools \
+&& rm -rf /var/lib/apt/lists/*
+
+python3 -m pip install $(grep numpy requirements.txt)
+python3 -m pip install -r requirements.txt 
+
+rm requirements.txt
+
+%environment
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+export DEBIAN_FRONTEND=noninteractive
+export DEBCONF_NONINTERACTIVE_SEEN=true
+
+%runscript
+    python3 "$@" 
+
+

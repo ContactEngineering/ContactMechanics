@@ -1,0 +1,122 @@
+Bootstrap: localimage
+From: openmpi-4.0.2-gcc-9.sif
+
+%files 
+    ../requirements.txt requirements.txt
+
+%post
+    
+    # env variables from specifoc compiler 
+    export CXX=/usr/bin/g++-9   
+    export CC=/usr/bin/gcc-9
+    export FC=/usr/bin/gfortran-9
+
+
+    ## env variables from openmpi
+
+    #env for runtime
+    export OMPI_DIR=/opt/ompi
+    export SINGULARITY_OMPI_DIR=$OMPI_DIR
+    export SINGULARITYENV_APPEND_PATH=$OMPI_DIR/bin
+    export SINGULAIRTYENV_APPEND_LD_LIBRARY_PATH=$OMPI_DIR/lib
+
+    # Set env variables so we can compile our application
+    export PATH=$OMPI_DIR/bin:$PATH
+    export LD_LIBRARY_PATH=$OMPI_DIR/lib:$LD_LIBRARY_PATH
+    export MANPATH=$OMPI_DIR/share/man:$MANPATH
+
+
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+
+## for apt to be noninteractive
+export DEBIAN_FRONTEND=noninteractive
+export DEBCONF_NONINTERACTIVE_SEEN=true
+export MPI4PY_VERSION=3.0.3 
+export HDF5_VERSION=1.10.6 
+export PNETCDF_VERSION=1.12.1 
+export NETCDF4_VERSION=4.7.3 
+export NETCDF4_PYTHON_VERSION=1.5.3
+
+apt-get -qq update
+apt-cache search libfftw3-mpi-dev
+apt-get -y -qq install \
+cmake \
+curl \
+git \
+libboost-test-dev \
+libcurl4-openssl-dev \
+libeigen3-dev \
+libfftw3-dev \
+libfftw3-mpi-dev \
+libgmp-dev \
+m4 \
+python3-pip \
+python3-breathe \
+python3-dev \
+python3-numpy \
+python3-pytest \
+python3-scipy \
+python3-setuptools \
+&& rm -rf /var/lib/apt/lists/*
+
+python3 -m pip install $(grep numpy requirements.txt)
+
+python3 -m pip install --no-binary mpi4py mpi4py==${MPI4PY_VERSION} 
+BUILDDIR=/tmp 
+PREFIX=/usr/local
+
+# Helper script to install parallel version of the NetCDF library from the
+# sources. This is necessary because parallel compiles (if existing) are
+# broken on most distributions.
+#
+
+curl https://parallel-netcdf.github.io/Release/pnetcdf-${PNETCDF_VERSION}.tar.gz | tar -xzC ${BUILDDIR} &&
+  cd ${BUILDDIR}/pnetcdf-${PNETCDF_VERSION} &&
+  CC=mpicc CXX=mpicxx ./configure --disable-fortran --disable-cxx --enable-shared --prefix=${PREFIX} &&
+  make &&
+  make install &&
+  cd -
+# note TODO: souldn t we disable share d?
+
+curl https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz | tar -xzC ${BUILDDIR} &&
+  cd ${BUILDDIR}/hdf5-${HDF5_VERSION} &&
+  CC=mpicc CXX=mpicxx ./configure --enable-parallel --prefix=${PREFIX} &&
+  make &&
+  make install &&
+  cd -
+
+
+echo $PATH
+# We need to compile NetCDF ourselves because there is no package that has
+# parallel PnetCDF and HDF5 enabled.
+curl https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-${NETCDF4_VERSION}.tar.gz | tar -xzC ${BUILDDIR} &&
+  mkdir -p ${BUILDDIR}/netcdf-c-build &&
+  cd ${BUILDDIR}/netcdf-c-build &&
+  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_C_COMPILER=$OMPI_DIR/bin/mpicc -DCMAKE_CXX_COMPILER=$OMPI_DIR/bin/mpicxx -DUSE_PARALLEL=ON -DENABLE_PARALLEL4=ON -DENABLE_PNETCDF=ON ${BUILDDIR}/netcdf-c-${NETCDF4_VERSION} &&
+  make &&
+  make install &&
+  cd -
+
+# Install netcdf4-python and make sure that it is compiled (no-binary),
+# otherwise it will not have parallel support.
+NETCDF4_DIR=${PREFIX} HDF5_DIR=${PREFIX} CC=mpicc python3 -m pip install --no-binary netCDF4 netCDF4==${NETCDF4_PYTHON_VERSION}
+
+python3 -m pip install -r requirements.txt 
+
+rm requirements.txt
+
+%environment
+    export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
+    #env for runtime
+    export OMPI_DIR=/opt/ompi
+    export SINGULARITY_OMPI_DIR=$OMPI_DIR
+    export SINGULARITYENV_APPEND_PATH=$OMPI_DIR/bin
+    export SINGULAIRTYENV_APPEND_LD_LIBRARY_PATH=$OMPI_DIR/lib
+
+
+%runscript
+    python3 "$@" 
+
+

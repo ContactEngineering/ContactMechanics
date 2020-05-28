@@ -1,0 +1,20 @@
+Bootstrap: localimage
+From: pyco_serial.sif
+
+%labels
+    Author antoine.sanner@imtek.uni-freiburg.de
+
+%post 
+    python3 -m pip install jupyter
+    python3 -m pip install parse
+
+%environment
+    # prevent OMP jobs to use all want he thinks is available                      
+    export OMP_NUM_THREADS=1
+
+%help 
+singularity run customenv.sif --port=1111
+
+%runscript
+
+  jupyter notebook --no-browser "$@"
