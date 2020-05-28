@@ -320,7 +320,7 @@ def test_di_date():
 @pytest.mark.parametrize("lang_filename_infix", ["english", "german"])
 def test_gwyddion_txt_import(lang_filename_infix):
 
-    fname = os.path.join(DATADIR, f'gwyddion-export-{lang_filename_infix}.txt')
+    fname = os.path.join(DATADIR, 'gwyddion-export-{}.txt'.format(lang_filename_infix))
 
     #
     # test channel infos

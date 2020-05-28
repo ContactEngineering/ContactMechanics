@@ -26,7 +26,9 @@
 import os
 
 import numpy as np
+import pytest
 
+from netCDF4 import Dataset
 from NuMPI import MPI
 
 from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
@@ -35,9 +37,6 @@ from PyCo.Topography.IO.NC import NCReader
 from PyCo.Topography.Generation import fourier_synthesis
 
 def test_save_and_load(comm):
-    if comm is None:
-        comm = MPI.COMM_SELF
-
     nb_grid_pts = (128, 128)
     size = (3, 3)
 
@@ -57,7 +56,7 @@ def test_save_and_load(comm):
     # Save file
     dt.to_netcdf('parallel_save_test.nc')
 
-    # Attempt to open full file on each process
+    # Attempt to open full file on each MPI process
     t2 = read_topography('parallel_save_test.nc')
 
     assert t.physical_sizes == t2.physical_sizes
@@ -78,6 +77,53 @@ def test_save_and_load(comm):
 
     assert t3.is_periodic
 
+    comm.barrier()
+    if comm.rank == 0:
+        os.remove('parallel_save_test.nc')
+
+def test_save_and_load_no_unit(comm_self):
+    nb_grid_pts = (128, 128)
+    size = (3, 3)
+
+    np.random.seed(1)
+    t = fourier_synthesis(nb_grid_pts, size, 0.8, rms_slope=0.1)
+
+    # Save file
+    t.to_netcdf('no_unit.nc')
+
+    t2 = read_topography('no_unit.nc')
+
+    assert t.physical_sizes == t2.physical_sizes
+    assert 'unit' not in t2.info
+    np.testing.assert_array_almost_equal(t.heights(), t2.heights())
+
+    os.remove('no_unit.nc')
+
+def test_load_no_physical_sizes(comm_self):
+    nb_grid_pts = (128, 128)
+    size = (3, 3)
+
+    np.random.seed(1)
+    t = fourier_synthesis(nb_grid_pts, size, 0.8, rms_slope=0.1)
+
+    # Topographies always have physical size information, we need to create a NetCDF file without any manually
+    with Dataset('no_physical_sizes.nc', 'w', format='NETCDF3_CLASSIC') as nc:
+        nc.createDimension('x', nb_grid_pts[0])
+        nc.createDimension('y', nb_grid_pts[1])
+        nc.createVariable('heights', 'f8', ('x', 'y'))
+        nc.variables['heights'] = t.heights()
+
+    # Attempt to open full file on each process
+    #with pytest.raises(ValueError):
+    #    # This raises an error because the physical sizes are not present
+    #    t2 = read_topography('no_physical_sizes.nc')
+    t2 = read_topography('no_physical_sizes.nc', physical_sizes=size)
+
+    assert t.physical_sizes == t2.physical_sizes
+    assert 'unit' not in t2.info
+    np.testing.assert_array_almost_equal(t.heights(), t2.heights())
+
+    os.remove('no_physical_sizes.nc')
 
 if __name__ == '__main__':
     test_save_and_load(MPI.COMM_WORLD)
