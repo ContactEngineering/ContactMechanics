@@ -191,6 +191,46 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             return in_array.reshape(self.substrate.nb_subdomain_grid_pts)
         raise IncompatibleResolutionError()
 
+    def _reshape_bounds(self, lbounds=None, ubounds=None, disp_scale=1.):
+        bnds = None
+        if lbounds is not None and ubounds is not None:
+            ubounds = disp_scale * self.shape_minimisation_input(ubounds)
+            lbounds = disp_scale * self.shape_minimisation_input(lbounds)
+            bnds = tuple(zip(lbounds.tolist(), ubounds.tolist()))
+        elif lbounds is not None:
+            lbounds = disp_scale * self.shape_minimisation_input(lbounds)
+            bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
+        elif ubounds is not None:
+            ubounds = disp_scale * self.shape_minimisation_input(ubounds)
+            bnds = tuple(zip([None for i in range(len(ubounds))], ubounds.tolist()))
+        return bnds
+
+    def _lbounds_from_heights(self, offset):
+
+        lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
+        lbounds.mask[self.substrate.topography_subdomain_slices] = False
+        lbounds[self.substrate.topography_subdomain_slices] \
+            = self.surface.heights() + offset
+        lbounds.set_fill_value(-np.inf)
+
+        return lbounds
+
+    def _update_state(self, offset, result, gradient=True, disp_scale=1.):
+        self.offset = offset
+        self.disp = self.shape_minimisation_output(result.x * disp_scale)
+        self.evaluate(self.disp, offset, forces=gradient)
+        result.x = self.shape_minimisation_output(result.x)
+        result.jac = self.shape_minimisation_output(result.jac)
+        self.substrate.check(force=self.interaction.force)
+        # the variable (= imposed by the minimzer) is here the displacement,
+        # in contrast to Polonsky and Keer where it is the pressure.
+        # Grad(objective) = substrate.force + interaction.force
+        # norm(Grad(objective))< numerical tolerance
+        # We can ensure that interaction.force is zero at the boundary by
+        # adapting the geometry and the potential (cutoff)
+        # substrate.force will still be nonzero within the numerical tolerance
+        # given by the convergence criterion.
+
     def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
                        gradient=True, lbounds=None, ubounds=None, callback=None,
                        disp_scale=1., logger=None, **kwargs):
@@ -259,30 +299,17 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         # convenience automatic choose of the lower bound
         if isinstance(lbounds, str):
             if lbounds == "auto":
-                lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
-                lbounds.mask[self.substrate.topography_subdomain_slices] = False
-                lbounds[self.substrate.topography_subdomain_slices] \
-                    = self.surface.heights() + offset
-                lbounds.set_fill_value(-np.inf)
+                lbounds = self._lbounds_from_heights(offset)
             else:
-                raise ValueError()
+                raise ValueError
 
-        bnds = None
-        if lbounds is not None and ubounds is not None:
-            ubounds = disp_scale*self.shape_minimisation_input(ubounds)
-            lbounds = disp_scale*self.shape_minimisation_input(lbounds)
-            bnds = tuple(zip(lbounds.tolist(),ubounds.tolist()))
-        elif lbounds is not None:
-            lbounds = disp_scale*self.shape_minimisation_input(lbounds)
-            bnds = tuple(zip(lbounds.tolist(),[None for i in range(len(lbounds))]))
-        elif ubounds is not None:
-            ubounds = disp_scale*self.shape_minimisation_input(ubounds)
-            bnds = tuple(zip([None for i in range(len(ubounds))],ubounds.tolist()))
+        bnds = self._reshape_bounds(lbounds, ubounds, disp_scale=disp_scale)
+
         # Scipy minimizers that accept bounds
-        bounded_minimizers = {'L-BFGS-B','TNC','SLSQP'}
+        bounded_minimizers = {'L-BFGS-B', 'TNC', 'SLSQP'}
 
         if method in bounded_minimizers:
-            result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
+            result = scipy.optimize.minimize(fun, x0=disp_scale * disp0,
                                              method=method, jac=gradient,
                                              bounds=bnds, callback=callback,
                                              **kwargs)
@@ -290,21 +317,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
                                              method=method, jac=gradient,
                                              callback=callback, **kwargs)
-        self.offset = offset
-        self.disp = self.shape_minimisation_output(result.x*disp_scale)
-        self.evaluate(self.disp, offset, forces=gradient)
-        result.x = self.shape_minimisation_output(result.x)
-        result.jac = self.shape_minimisation_output(result.jac)
-        self.substrate.check(force=self.interaction.force)
-        # the variable (= imposed by the minimzer) is here the displacement,
-        # in contrast to Polonsky and Keer where it is the pressure.
-        # Grad(objective) = substrate.force + interaction.force
-        # norm(Grad(objective))< numerical tolerance
-        # We can ensure that interaction.force is zero at the boundary by
-        # adapting the geometry and the potential (cutoff)
-        # substrate.force will still be nonzero within the numerical tolerance
-        # given by the convergence criterion.
 
+        self._update_state(offset, result, gradient, disp_scale)
         return result
 
     @abc.abstractmethod
@@ -455,7 +469,30 @@ class SmoothContactSystem(SystemBase):
         """
         return self.pnp.sum(self.gap) / np.prod(self.nb_grid_pts)
 
-    def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
+    def logger_input(self):
+        """
+
+        Returns
+        -------
+        headers: list of strings
+        values: list
+        """
+        tot_nb_grid_pts = np.prod(self.nb_grid_pts)
+        rel_rep_area = self.compute_nb_repulsive_pts() / tot_nb_grid_pts
+        rel_att_area = self.compute_nb_attractive_pts() / tot_nb_grid_pts
+
+        return (['energy', 'mean gap', 'frac. rep. area',
+                       'frac. att. area',
+                       'frac. int. area', 'substrate force', 'interaction force'],
+              [self.energy,
+               self.compute_mean_gap(),
+               rel_rep_area,
+               rel_att_area,
+               rel_rep_area + rel_att_area,
+               -self.pnp.sum(self.substrate.force),
+               self.pnp.sum(self.interaction.force)])
+
+    def  evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement
         field
@@ -481,19 +518,7 @@ class SmoothContactSystem(SystemBase):
         else:
             self.force = None
         if logger is not None:
-            tot_nb_grid_pts = np.prod(self.nb_grid_pts)
-            rel_rep_area = self.compute_nb_repulsive_pts()/tot_nb_grid_pts
-            rel_att_area = self.compute_nb_attractive_pts()/tot_nb_grid_pts
-            logger.st(['energy', 'mean gap', 'frac. rep. area',
-                       'frac. att. area',
-                       'frac. int. area', 'substrate force', 'interaction force'],
-              [self.energy,
-               self.compute_mean_gap(),
-               rel_rep_area,
-               rel_att_area,
-               rel_rep_area + rel_att_area,
-               -self.pnp.sum(self.substrate.force),
-               self.pnp.sum(self.interaction.force)])
+            logger.st(*self.logger_input())
         return (self.energy, self.force)
 
     def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
@@ -563,6 +588,90 @@ class SmoothContactSystem(SystemBase):
                     counter, self.energy))
         return fun
 
+class BoundedSmoothContactSystem(SmoothContactSystem):
+    @staticmethod
+    def handles(*args, **kwargs): # FIXME work around, see issue #208
+        return False
+
+    def compute_nb_contact_pts(self):
+        """
+        compute and return the number of contact points.
+        """
+        return self.pnp.sum(np.where(self.gap == 0., 1., 0.))
+
+    def logger_input(self):
+        headers, vals = super().logger_input()
+        headers.append("frac. cont. area")
+        vals.append(self.compute_nb_contact_pts() / np.prod(self.nb_grid_pts))
+        return headers, vals
+
+    def compute_normal_force(self):
+        "computes and returns the sum of all forces"
+
+        # sum of the jacobian in the contact area (Lagrange multiplier)
+        # and the ineraction forces.
+        # can also be computed easily from the substrate forces, what we do here
+        return self.pnp.sum( - self.substrate.force[self.substrate.topography_subdomain_slices])
+
+    def compute_repulsive_force(self):
+        """computes and returns the sum of all repulsive forces
+
+        Assumptions: there
+        """
+        return self.pnp.sum(np.where( - self.substrate.force[self.substrate.topography_subdomain_slices] > 0,
+                 - self.substrate.force[self.substrate.topography_subdomain_slices], 0.))
+
+    def compute_attractive_force(self):
+        "computes and returns the sum of all attractive forces"
+        return self.pnp.sum(np.where( - self.substrate.force[self.substrate.topography_subdomain_slices] < 0,
+                - self.substrate.force[self.substrate.topography_subdomain_slices], 0.))
+
+    def compute_nb_repulsive_pts(self):
+        """
+        compute and return the number of contact points under repulsive
+        pressure.
+
+        """
+        return self.pnp.sum(np.where(np.logical_and(self.gap == 0., - self.substrate.force[self.substrate.topography_subdomain_slices] > 0), 1., 0.))
+
+    def compute_nb_attractive_pts(self):
+        """
+        compute and return the number of contact points under attractive
+        pressure.
+        """
+
+        # Compute points where substrate force is negative or there is no contact
+        pts = np.logical_or( - self.substrate.force[self.substrate.topography_subdomain_slices] < 0,
+                                            self.gap > 0.)
+
+        # exclude points where there is no contact and the interaction force is 0.
+        pts[np.logical_and(self.gap > 0.,
+            self.interaction.force == 0.)] = 0.
+
+        return self.pnp.sum(pts)
+
+    def compute_repulsive_coordinates(self):
+        """
+        returns an array of all coordinates, where contact pressure is
+        repulsive. Useful for evaluating the number of contact islands etc.
+        """
+        return np.argwhere(np.logical_and(self.gap == 0., - self.substrate.force[self.substrate.topography_subdomain_slices] > 0))
+
+    def compute_attractive_coordinates(self):
+        """
+        returns an array of all coordinates, where contact pressure is
+        attractive. Useful for evaluating the number of contact islands etc.
+        """
+
+        # Compute points where substrate force is negative or there is no contact
+        pts = np.logical_or( - self.substrate.force[self.substrate.topography_subdomain_slices] < 0,
+                                            self.gap > 0.)
+
+        # exclude points where there is no contact and the interaction force is 0.
+        pts[np.logical_and(self.gap > 0.,
+            self.interaction.force == 0.)] = 0.
+
+        return np.argwhere(pts)
 
 class NonSmoothContactSystem(SystemBase):
     """

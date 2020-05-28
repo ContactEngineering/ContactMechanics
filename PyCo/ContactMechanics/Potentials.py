@@ -168,7 +168,7 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         ddV = np.zeros_like(r) if curb else self.SliceableNone()
 
         V[inside_slice], dV[inside_slice], ddV[inside_slice] = self.naive_pot(
-            r[inside_slice], pot, forces, curb)
+            r[inside_slice], pot, forces, curb, mask=inside_slice)
         if V[inside_slice] is not None:
             V[inside_slice] -= self.offset
         return (V if pot else None,
@@ -195,8 +195,8 @@ class Potential(SoftWall, metaclass=abc.ABCMeta):
         """
         convenience function returning the value of the maximum stress (at r_infl)
         """
-        Max_tensile=self.evaluate(self.r_infl, forces=True)[1]
-        return Max_tensile.item()
+        max_tensile=self.evaluate(self.r_infl, forces=True)[1]
+        return max_tensile.item() if np.prod(max_tensile.shape) == 1 else max_tensile
 
     @property
     def v_min(self):

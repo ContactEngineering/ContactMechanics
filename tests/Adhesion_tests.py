@@ -125,5 +125,8 @@ class AdhesionTest(unittest.TestCase):
                 fig.tight_layout()
                 plt.show(block=True)
 
+
+
+
 if __name__ == '__main__':
     unittest.main()
