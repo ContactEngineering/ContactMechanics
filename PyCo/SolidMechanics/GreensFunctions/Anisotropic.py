@@ -1,18 +1,19 @@
 #
 # Copyright 2019 Lars Pastewka
-#
+#           2019 wnoehring@simnetpc68.imtek.privat
+# 
 # ### MIT license
-#
+# 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-#
+# 
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-#
+# 
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -69,7 +70,7 @@ class AnisotropicGreensFunction(object):
         self._thickness = thickness
         det_R = np.linalg.det(R)
         if not np.isclose(det_R, 1.0):
-            raise ValueError(f"R is not a proper rotation matrix, det(R)={det_R}")
+            raise ValueError("R is not a proper rotation matrix, det(R)={}".format(det_R))
         self._R = R
         C_tensor = np.zeros((3, 3, 3, 3))
         for i, j, k, l in np.ndindex(3, 3, 3, 3):
@@ -153,8 +154,8 @@ class AnisotropicGreensFunction(object):
             M = self.bulkop(qx, qy, _qz)
             _eta = null_space(M, rcond=rcond)
             if _eta.shape[1] != 1:
-                raise RuntimeError(f'Null space for wavevector {qx},{qy},{_qz} spanned by {_eta.shape[1]} vectors, '
-                                   'but should be spanned by a single one.')
+                raise RuntimeError('Null space for wavevector {},{},{} spanned by {} vectors, '
+                                   'but should be spanned by a single one.'.format(qx, qy, _qz, _eta.shape[1]))
             eta += [_eta[:, 0]]
         return eta
 

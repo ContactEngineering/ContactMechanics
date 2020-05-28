@@ -1,3 +1,26 @@
+#
+# Copyright 2020 Michael Röttger
+# 
+# ### MIT license
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 import PyCo
 import importlib
 importlib.reload(PyCo)
@@ -24,7 +47,7 @@ def plot(fn):
     else:
         unit = '?'
     fig = plt.figure(figsize=(10,10))
-    fig.suptitle(f"{fn}, channel {r.default_channel.name}")
+    fig.suptitle("{}, channel {}".format(fn, r.default_channel.name))
 
     ax = fig.add_subplot(2,2,1)
     ax.set_title("pcolormesh(t.heights().T)")
@@ -32,8 +55,8 @@ def plot(fn):
 
     ax = fig.add_subplot(2,2,2)
     ax.set_title("pcolormesh(*t.positions_and_heights())")
-    ax.set_xlabel(f"x [{unit}]")
-    ax.set_ylabel(f"y [{unit}]")
+    ax.set_xlabel("x [{}]".format(unit))
+    ax.set_ylabel("y [{}]".format(unit))
     ax.pcolormesh(*t.positions_and_heights())
 
     ax = fig.add_subplot(2, 2, 3)
@@ -51,7 +74,7 @@ def plot(fn):
 
     h = t.heights()
     for i,j in [(0,0), (0,-1), (-1,0), (-1,-1)]:
-        print(f"h[{i},{j}] == {h[i,j]}")
+        print("h[{},{}] == {}".format(i, j, h[i, j]))
 
     return t
 

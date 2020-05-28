@@ -35,6 +35,7 @@ SOFTWARE.
 #include <numpy/arrayobject.h>
 
 #include "autocorrelation.h"
+#include "bicubic.h"
 #include "patchfinder.h"
 
 static PyMethodDef PyCo_methods[] = {
@@ -61,17 +62,11 @@ static PyMethodDef PyCo_methods[] = {
  * Module declaration
  */
 
-#if PY_MAJOR_VERSION >= 3
-    #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
-    #define MOD_DEF(ob, name, methods, doc) \
-        static struct PyModuleDef moduledef = { \
-            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
-        ob = PyModule_Create(&moduledef);
-#else
-    #define MOD_INIT(name) PyMODINIT_FUNC init##name(void)
-    #define MOD_DEF(ob, name, methods, doc) \
-        ob = Py_InitModule3(name, methods, doc);
-#endif
+#define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
+#define MOD_DEF(ob, name, methods, doc) \
+    static struct PyModuleDef moduledef = { \
+        PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
+    ob = PyModule_Create(&moduledef);
 
 MOD_INIT(_PyCo)  {
   PyObject *m;
@@ -81,7 +76,12 @@ MOD_INIT(_PyCo)  {
   MOD_DEF(m, "_PyCo", PyCo_methods,
           "C support functions for PyCo.");
 
-#if PY_MAJOR_VERSION >= 3
+  if (PyType_Ready(&bicubic_type) < 0)
+    return NULL;
+
+  Py_INCREF(&bicubic_type);
+  PyModule_AddObject(m, "Bicubic",
+		     (PyObject *) &bicubic_type);
+
     return m;
-#endif
 }

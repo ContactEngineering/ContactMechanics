@@ -1,6 +1,7 @@
 #
-# Copyright 2019 Lintao Fang
-#           2018-2019 Antoine Sanner
+# Copyright 2018, 2020 Antoine Sanner
+#           2019-2020 Lars Pastewka
+#           2019 Lintao Fang
 # 
 # ### MIT license
 # 
@@ -458,9 +459,9 @@ class PotentialTest(unittest.TestCase):
         self.assertLess(abs(ddV[1:-1]-ddV_num).max(), 1e-2)
 
     def test_RepulsiveExponential(self):
-        ns = np.array([10, 1e2, 1e3, 1e4])
-        errordV= np.zeros_like(ns)
-        errorddV= np.zeros_like(ns)
+        ns = np.array([10, 100, 1000, 10000])
+        errordV = np.zeros_like(ns, dtype=float)
+        errorddV = np.zeros_like(ns, dtype=float)
 
         for i, n in enumerate(ns):
             r = np.linspace(-.1, 10, n + 1)

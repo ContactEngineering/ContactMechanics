@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2019 Lars Pastewka
+# Copyright 2018, 2020 Lars Pastewka
 #           2019 Antoine Sanner
 #           2016 Till Junge
 # 
@@ -164,7 +164,7 @@ def augmented_lagrangian(fun, x0, args=(), constraints=None, tol=1e-5,
     update_tol0 = penalty**alpha*update_tol0
     update_tol = update_tol0/penalty**alpha
     current_tol = tol
-    constraints = constraints[0]['fun']
+    constraints = constraints['fun']
 
     mod_objective = construct_augmented_lagrangian(fun, constraints)
     mod_jac = None if jac is None else construct_augm_lag_grad(

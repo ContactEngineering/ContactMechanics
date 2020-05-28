@@ -1,5 +1,9 @@
 #
-# Copyright 2019 Lars Pastewka
+# Copyright 2020 Michael Röttger
+#           2019-2020 Antoine Sanner
+#           2019-2020 Lars Pastewka
+#           2020 Kai Haase
+#           2019 roettger@tf.uni-freiburg.de
 # 
 # ### MIT license
 # 
@@ -316,7 +320,7 @@ def test_di_date():
 @pytest.mark.parametrize("lang_filename_infix", ["english", "german"])
 def test_gwyddion_txt_import(lang_filename_infix):
 
-    fname = os.path.join(DATADIR, f'gwyddion-export-{lang_filename_infix}.txt')
+    fname = os.path.join(DATADIR, 'gwyddion-export-{}.txt'.format(lang_filename_infix))
 
     #
     # test channel infos
