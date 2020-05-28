@@ -736,7 +736,7 @@ class NonSmoothContactSystem(SystemBase):
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
-        return self.pnp.sum(self.force)
+        return self.pnp.sum(self.substrate.force)
 
     def compute_nb_contact_pts(self):
         """
@@ -760,11 +760,11 @@ class NonSmoothContactSystem(SystemBase):
         # attention: the substrate may have a higher nb_grid_pts than the gap
         # and the interaction (e.g. FreeElasticHalfSpace)
         self.gap = self.compute_gap(disp, offset)
-        self.interaction.compute(self.gap, True, forces,
-                             area_scale=self.area_per_pt)
+        self.interaction.compute(self.gap,
+                                 area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
 
-        self.energy = self.substrate.energy + self.interaction.energy if pot else None
+        self.energy = self.substrate.energy if pot else None
         if forces:
             self.force = self.substrate.force
         else:
@@ -842,18 +842,8 @@ class NonSmoothContactSystem(SystemBase):
         if result.success:
             self.offset = result.offset
             self.disp = result.x
-            self.constraint_force = result.jac
+            self.force = self.substrate.force = result.jac
             self.contact_zone = result.jac > 0
-            self.evaluate(self.disp, self.offset, True, True) #computes energies and forces
 
-            # the "best" forces are the contstraint forces combined with
-            # the interaction forces because the substrate forces
-            # (computed from displacement)
-            # are not exactly zero outside the contact area and the interaction
-            # range
-            self.force = np.copy(self.constraint_force)
-            noncontact_zone = np.logical_not(self.contact_zone)
-            self.force[noncontact_zone] = self.interaction.force[noncontact_zone]
-
-            self.substrate.check(self.force) # check should be done on interaction force and constraint forces.
+            self.substrate.check()
         return result
