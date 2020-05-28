@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 sudo apt-get update
-sudo apt-get install libfftw3-dev
+sudo apt-get install libfftw3-dev libopenblas-dev
 if [ "$WITH_MPI" == "yes" ]; then
   sudo apt-get install openmpi-bin libopenmpi-dev libfftw3-mpi-dev
 fi

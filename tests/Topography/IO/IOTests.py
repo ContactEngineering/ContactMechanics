@@ -1,5 +1,9 @@
 #
-# Copyright 2019 Lars Pastewka
+# Copyright 2020 Michael Röttger
+#           2019-2020 Antoine Sanner
+#           2019-2020 Lars Pastewka
+#           2020 Kai Haase
+#           2019 roettger@tf.uni-freiburg.de
 # 
 # ### MIT license
 # 
@@ -28,6 +32,7 @@ import os
 import pickle
 import unittest
 import warnings
+import numpy as np
 
 import pytest
 from numpy.testing import assert_array_equal
@@ -243,6 +248,32 @@ class IOTest(unittest.TestCase):
                 self.assertEqual(t2.physical_sizes, physical_sizes)
             assert_array_equal(t.heights(), t2.heights())
 
+    def test_reader_topography_same(self):
+        """
+        Tests that properties like physical sizes, units and nb_grid_pts are
+        the  same in the ChannelInfo and the loaded topography
+        """
+
+        for fn in self.text_example_file_list + self.binary_example_file_list:
+
+            reader = open_topography(fn)
+
+            for channel in reader.channels:
+
+                topography = channel.topography(
+                    physical_sizes=
+                    (1, 1) if channel.physical_sizes is None
+                    else None)
+                assert channel.nb_grid_pts == topography.nb_grid_pts
+                if "unit" in channel.info.keys() or  "unit" in topography.info.keys():
+                    assert channel.info["unit"] == topography.info["unit"]
+
+                if channel.physical_sizes is not None:
+                    assert channel.physical_sizes == topography.physical_sizes
+
+
+
+
 class UnknownFileFormatGivenTest(unittest.TestCase):
 
     def test_read(self):
@@ -284,3 +315,64 @@ def test_readers_have_name(reader):
 def test_di_date():
     t = read_topography(os.path.join(DATADIR, 'di1.di'))
     assert t.info['acquisition_time'] == datetime.datetime(2016,1, 12, 9, 57, 48)
+
+# yes, the German version still has "Value units"
+@pytest.mark.parametrize("lang_filename_infix", ["english", "german"])
+def test_gwyddion_txt_import(lang_filename_infix):
+
+    fname = os.path.join(DATADIR, 'gwyddion-export-{}.txt'.format(lang_filename_infix))
+
+    #
+    # test channel infos
+    #
+    reader = open_topography(fname)
+
+    assert len(reader.channels) == 1
+    channel = reader.default_channel
+
+    assert channel.name == "My Channel Name"
+    assert channel.info['unit'] == 'm'
+    assert pytest.approx(channel.physical_sizes[0]) == 12.34*1e-6  # was given as µm
+    assert pytest.approx(channel.physical_sizes[1]) == 5678.9*1e-9  # was given as nm
+
+    #
+    # test metadata of topography
+    #
+    topo = reader.topography()
+    assert topo.info['unit'] == 'm'
+    assert pytest.approx(topo.physical_sizes[0]) == 12.34 * 1e-6  # was given as µm
+    assert pytest.approx(topo.physical_sizes[1]) == 5678.9 * 1e-9  # was given as nm
+
+    #
+    # test scaling and order of data
+    #
+    # The order of the lines in the text files mimic the lines as they
+    # are shown in the gwyddion plot.
+    #
+    # In gwyddion's text export:
+    # - first index corresponds to y dimension (rows), second index (columns) to x dimension
+    # - y coordinates grow from top row to bottom row
+    # - x coordinates grow from left column to column of array
+    #
+    # PyCo's heights() has a different order:
+    # - first index corresponds to x dimension, second index to y dimension
+    # - plot from the heights correspond to same image in gwyddion if plotted with "pcolormesh(t.heights.T)",
+    #   but with origin in lower left, i.e. the image looks flipped vertically when compared to gwyddion
+    #
+    # => heights() must be same array as in file, but transposed
+    #
+    heights_in_file = [[ 1, 1.5,  3],
+                       [-2,  -3, -6],
+                       [ 0,   0,  0],
+                       [ 9,   9,  9]]
+
+    expected_heights = np.array(heights_in_file).T
+
+    np.testing.assert_allclose(topo.heights(), expected_heights)
+
+
+
+
+
+
+

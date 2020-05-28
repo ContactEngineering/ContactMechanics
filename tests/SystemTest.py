@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Lars Pastewka
+# Copyright 2019-2020 Lars Pastewka
 #           2018-2019 Antoine Sanner
 # 
 # ### MIT license
@@ -31,7 +31,6 @@ from numpy.random import rand, random
 import numpy as np
 
 from scipy.optimize import minimize
-from scipy.fftpack import fftn, ifftn
 import time
 
 import os
@@ -49,7 +48,7 @@ import pytest
 from NuMPI import MPI
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
-        reason="tests only serial funcionalities, please execute with pytest")
+        reason="tests only serial functionalities, please execute with pytest")
 
 BASEDIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -332,7 +331,7 @@ def test_LBFGSB_Hertz():
     interaction = Contact.Exponential(0., 0.0001)
     system = SmoothContactSystem(substrate, interaction,surface)
 
-    gtol=1e-7 # 1e-8 is not reachable for some reason #FIXME
+    gtol=1e-6
     offset=1.
     res = system.minimize_proxy(offset=offset, lbounds="auto",
                                 options=dict(gtol=gtol, ftol=0))

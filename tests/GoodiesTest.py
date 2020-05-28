@@ -32,7 +32,7 @@ import numpy as np
 import warnings
 
 import PyCo.Goodies as Goodies
-from PyCo.Topography.Generation import RandomSurfaceExact, RandomSurfaceGaussian
+from PyCo.Topography.Generation import fourier_synthesis, self_affine_prefactor
 
 from NuMPI import MPI
 import pytest
@@ -47,11 +47,20 @@ class GoodiesTest(unittest.TestCase):
         size = (siz, siz)
         hurst = .9
         rms_height = 1
-        res = 100
+        res = 150
         nb_grid_pts = (res, res)
         lam_max = .5
-        surf_gen = RandomSurfaceExact(nb_grid_pts, size, hurst, rms_height, lambda_max=lam_max)
-        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
+        lam_min = 2  / np.min(np.asarray(nb_grid_pts) / np.asarray(size))
+        surf = fourier_synthesis(nb_grid_pts, size, hurst, rms_height,
+                                     long_cutoff=lam_max,
+                                     short_cutoff=lam_min,
+                                     rolloff=0,
+                                     amplitude_distribution=lambda n: np.ones(n))
+        prefactor_in = (self_affine_prefactor(nb_grid_pts, size, hurst, rms_height,
+                                             long_cutoff=lam_max, short_cutoff=lam_min)
+                            / np.prod(nb_grid_pts) * np.sqrt(np.prod(size)))**2
+
+
         rms_height_fromC_in = surf.rms_height()
 
         error = abs(1-rms_height_fromC_in/rms_height)
@@ -72,7 +81,7 @@ class GoodiesTest(unittest.TestCase):
         error = abs(1-hurst/hurst_out)
         self.assertTrue(error < reproduction_tol, "Error = {}, reproduction_tol = {}, hurst = {}, hurst_out= {}".format(error, reproduction_tol, hurst, hurst_out))
 
-        prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
+        # (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
         error = abs(1-prefactor_in/prefactor_out)
         self.assertTrue(error < reproduction_tol,
                         "Error = {}, β_in = {}, β_out = {}".format(
@@ -83,13 +92,19 @@ class GoodiesTest(unittest.TestCase):
         size = (siz, siz)
         hurst = .9
         rms_height = 1
-        res = 100
+        res = 150
         nb_grid_pts = (res, res)
         lam_max = .5
-        surf_gen = RandomSurfaceExact(nb_grid_pts, size, hurst, rms_height, lambda_max=lam_max)
-        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
+        lam_min = 2  / np.min(np.asarray(nb_grid_pts) / np.asarray(size))
+        surf = fourier_synthesis(nb_grid_pts, size, hurst, rms_height,
+                                     long_cutoff=lam_max,
+                                     short_cutoff=lam_min,
+                                     rolloff=0,
+                                     amplitude_distribution=lambda n: np.ones(n))
+        prefactor_in = (self_affine_prefactor(nb_grid_pts, size, hurst, rms_height,
+                                             long_cutoff=lam_max, short_cutoff=lam_min)
+                            / np.prod(nb_grid_pts) * np.sqrt(np.prod(size)))**2
         surf_char = Goodies.CharacterisePeriodicSurface(surf)
-        prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
         hurst_out, prefactor_out = surf_char.estimate_hurst(
             lambda_max=lam_max, full_output=True)
         hurst_error = abs(1-hurst_out/hurst)
@@ -108,13 +123,19 @@ class GoodiesTest(unittest.TestCase):
         size = (siz, siz)
         hurst = .9
         rms_height = 1
-        res = 100
+        res = 300
         nb_grid_pts = (res, res)
         lam_max = .5
-        surf_gen = RandomSurfaceGaussian(nb_grid_pts, size, hurst, rms_height, lambda_max=lam_max, seed=10)
-        surf = surf_gen.get_topography(roll_off=0, lambda_max=lam_max)
+        lam_min = 2  / np.min(np.asarray(nb_grid_pts) / np.asarray(size))
+        #np.random.seed(10)
+        surf = fourier_synthesis(nb_grid_pts, size, hurst, rms_height,
+                                     long_cutoff=lam_max,
+                                     short_cutoff=lam_min,
+                                     rolloff=0)
+        prefactor_in = (self_affine_prefactor(nb_grid_pts, size, hurst, rms_height,
+                                             long_cutoff=lam_max, short_cutoff=lam_min)
+                            / np.prod(nb_grid_pts) * np.sqrt(np.prod(size)))**2
         surf_char = Goodies.CharacterisePeriodicSurface(surf)
-        prefactor_in = (surf_gen.compute_prefactor()/np.sqrt(np.prod(size)))**2
         hurst_out, prefactor_out = surf_char.estimate_hurst(
             lambda_max=lam_max, full_output=True)
         hurst_error = abs(1-hurst_out/hurst)

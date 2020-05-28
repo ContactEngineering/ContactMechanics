@@ -1,6 +1,7 @@
 #
-# Copyright 2019 Lintao Fang
-#           2018-2019 Antoine Sanner
+# Copyright 2018, 2020 Antoine Sanner
+#           2019-2020 Lars Pastewka
+#           2019 Lintao Fang
 # 
 # ### MIT license
 # 
@@ -376,6 +377,40 @@ class PotentialTest(unittest.TestCase):
                 ax[2].plot(z,c)
             fig.savefig("test_LinearCorePotential.png")
 
+    def test_LinearCorePotential_hardness(self):
+
+        w = 1
+        z0 = 1
+        hardness = 5.
+
+        refpot = VDW82(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2)
+
+        pot = LinearCorePotential(refpot, hardness=hardness)
+
+        r_ti = pot.r_ti
+
+        assert abs(pot.evaluate(r_ti, True, True)[1] -hardness) < 1e-10
+
+        "".format(LinearCorePotential)
+        if False:
+            import matplotlib.pyplot as plt
+            import subprocess
+            fig, ax = plt.subplots(3)
+
+            z =np.linspace(0.9*r_ti,2*z0)
+            for poti in [refpot, pot]:
+                p,f,c = poti.evaluate(z, True, True, True)
+                ax[0].plot(z,p)
+                ax[1].plot(z,f)
+                ax[2].plot(z,c)
+            for a in ax:
+                a.axvline(r_ti)
+                a.axvline(r_ti)
+                a.grid()
+
+            fig.savefig("test_LinearCorePotential_hardness.png")
+            subprocess.call("open test_LinearCorePotential_hardness.png", shell=True)
+
     def test_LinearCoreSimpleSmoothPotential(self):
         w = 3
         z0 = 0.5
@@ -426,9 +461,9 @@ class PotentialTest(unittest.TestCase):
         self.assertLess(abs(ddV[1:-1]-ddV_num).max(), 1e-2)
 
     def test_RepulsiveExponential(self):
-        ns = np.array([10, 1e2, 1e3, 1e4])
-        errordV= np.zeros_like(ns)
-        errorddV= np.zeros_like(ns)
+        ns = np.array([10, 100, 1000, 10000])
+        errordV = np.zeros_like(ns, dtype=float)
+        errorddV = np.zeros_like(ns, dtype=float)
 
         for i, n in enumerate(ns):
             r = np.linspace(-.1, 10, n + 1)

@@ -1,7 +1,5 @@
 #
-# Copyright 2019 Antoine Sanner
-#           2016, 2019 Lars Pastewka
-#           2016 Till Junge
+# Copyright 2020 Lars Pastewka
 # 
 # ### MIT license
 # 
@@ -25,15 +23,7 @@
 #
 
 """
-Defines all interaction modes used in PyCo
+Interpolation module
 """
 
-from .Interactions import Interaction, HardWall, Dugdale, SoftWall
-from .Potentials import Potential, SmoothPotential
-from .Potentials import LinearCorePotential, ParabolicCutoffPotential
-
-from .Exponential import Exponential, RepulsiveExponential
-from .Harmonic import Harmonic
-from .Lj93 import LJ93, LJ93smooth, LJ93smoothMin, LJ93SimpleSmooth, LJ93SimpleSmoothMin
-from .VdW82 import VDW82, VDW82smooth, VDW82smoothMin, VDW82SimpleSmooth, VDW82SimpleSmoothMin, Lj82
-from .PowerLaw import PowerLaw
+from _PyCo import Bicubic

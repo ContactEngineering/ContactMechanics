@@ -1,7 +1,6 @@
 #
-# Copyright 2019 Antoine Sanner
-#           2016, 2019 Lars Pastewka
-#           2016 Till Junge
+# Copyright 2020 Antoine Sanner
+#           2019 Lintao Fang
 # 
 # ### MIT license
 # 
@@ -24,16 +23,27 @@
 # SOFTWARE.
 #
 
-"""
-Defines all interaction modes used in PyCo
-"""
+# This is a gnuplot script to plot logfiles of contact mechanics simulations
+# (Tools.Logger) with plasticity
+# To `gnuplot -c commandline/plasticplot.plg Logger_output.log`
+# this assumes a particular layout of the logfile (order of the columns),
+# you may need to adjust this script
 
-from .Interactions import Interaction, HardWall, Dugdale, SoftWall
-from .Potentials import Potential, SmoothPotential
-from .Potentials import LinearCorePotential, ParabolicCutoffPotential
+name=ARG1
 
-from .Exponential import Exponential, RepulsiveExponential
-from .Harmonic import Harmonic
-from .Lj93 import LJ93, LJ93smooth, LJ93smoothMin, LJ93SimpleSmooth, LJ93SimpleSmoothMin
-from .VdW82 import VDW82, VDW82smooth, VDW82smoothMin, VDW82SimpleSmooth, VDW82SimpleSmoothMin, Lj82
-from .PowerLaw import PowerLaw
+set size 0.5,0.5
+set multiplot layout 3,1
+set font ",15"
+set tmargin 1
+set tics font ",6"
+
+set ylabel 'Total Force ' font "Times-Roman,8"
+plot name using 2:5 title " Total Force " with linespoints pt 6
+
+set ylabel 'Offset' font "Times-Roman,8"
+plot name  using 2:6 title " Offset " with linespoints pt 8
+
+set xlabel 'Iteration' font "Times-Roman,8"
+set ylabel 'frac.area and frac.plast.area' font "Times-Roman,8"
+plot name  using 2:8 title " Frac.plast.area " with linespoints pt 4, '' using 2:4 title " Frac.area " with linespoints pt 5
+pause -1

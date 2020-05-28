@@ -1,6 +1,6 @@
 #
-# Copyright 2019 Lars Pastewka
-#           2019 Antoine Sanner
+# Copyright 2019-2020 Antoine Sanner
+#           2019 Lars Pastewka
 # 
 # ### MIT license
 # 
@@ -31,11 +31,14 @@ import pytest
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
-
+from NuMPI import MPI
 
 from PyCo.Topography import read_topography, UniformLineScan, NonuniformLineScan, Topography
 from PyCo.Topography.Generation import fourier_synthesis
 from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial functionalities, please execute with pytest")
 
 DATADIR = os.path.join(os.path.dirname(__file__), '../file_format_examples')
 

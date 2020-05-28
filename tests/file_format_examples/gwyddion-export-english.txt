@@ -1,0 +1,8 @@
+# Channel: My Channel Name
+# Width: 12.34 µm
+# Height: 5678.9 nm
+# Value units: m
+1 1.5 3
+-2 -3 -6
+0 0 0
+9 9 9

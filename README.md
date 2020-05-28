@@ -1,7 +1,7 @@
 PyCo
 ====
 
-Contact mechanics with Python. This code implements computation of contact geometry and pressure of a rigid object on a flat elastic half-space. All calculations assume small deformations; in that limit, the contact of any two objects of arbitrary geometry and elastic moduli can be mapped on that of a rigid on an elastic flat.
+*Contact mechanics with Python.* This code implements computation of contact geometry and pressure of a rigid object on a flat elastic half-space. All calculations assume small deformations; in that limit, the contact of any two objects of arbitrary geometry and elastic moduli can be mapped on that of a rigid on an elastic flat.
 
 The methods that are implemented in this code are described in various papers:
 
@@ -18,6 +18,8 @@ The methods that are implemented in this code are described in various papers:
     - [Pastewka, Robbins, PNAS 111, 3298 (2014)](https://doi.org/10.1073/pnas.1320846111)
 - Contact plasticity.
     - [Weber, Suhina, Junge, Pastewka, Brouwer, Bonn, Nature Comm. 9, 888 (2018)](https://doi.org/10.1038/s41467-018-02981-y)
+
+*Analyzing surface topography data with Python.* This code also contains a rich set of import filters for experimental surface topography data. Surface topographies can be easily analyzed using standard (rms height, power spectrum, ...) and some special purpose (autocorrelation function, variable bandwidth analysis, ...) statistical techniques.
 
 Build status
 ------------
@@ -48,6 +50,10 @@ The last command will install other dependencies including
 [muFFT](https://gitlab.com/muspectre/muspectre.git), 
 [NuMPI](https://github.com/IMTEK-Simulation/NuMPI.git) and [a fork of runtests](https://github.com/AntoineSIMTEK/runtests.git)
 
+Note: sometimes [muFFT](https://gitlab.com/muspectre/muspectre.git) will not find the FFTW3 installation you expect.
+You can specify the directory where you installed [FFTW3](http://www.fftw.org/)  
+by setting the environment variable `FFTWDIR` (e.g. to `$USER/.local`) 
+
 #### Installation from source directory 
 
 If you cloned the repository. You can install the dependencies with
@@ -65,6 +71,25 @@ in the source directory. PyCo can be installed by invoking
 ```pip3 install [--user] .```
 
 in the source directoy. The command line parameter --user is optional and leads to a local installation in the current user's `$HOME/.local` directory.
+
+#### Installation problems with lapack and openblas
+
+`bicubic.cpp` is linked with `lapack`, that is already available as a dependency of `numpy`. 
+
+If during build, `setup.py` fails to link to one of the lapack implementations 
+provided by numpy, as was experienced for mac, try providing following environment variables: 
+
+```bash
+export LDFLAGS="-L/usr/local/opt/openblas/lib $LDFLAGS"
+export CPPFLAGS="-I/usr/local/opt/openblas/include $CPPFLAGS"
+export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+export LDFLAGS="-L/usr/local/opt/lapack/lib $LDFLAGS"
+export CPPFLAGS="-I/usr/local/opt/lapack/include $CPPFLAGS"
+export PKG_CONFIG_PATH="/usr/local/opt/lapack/lib/pkgconfig:$PKG_CONFIG_PATH"
+```    
+where the paths have probably to be adapted to your particular installation method
+(here it was an extra homebrew installation).
 
 Updating PyCo
 ------------- 
@@ -87,7 +112,7 @@ Tests that are parallelizable have to run with [runtests](https://github.com/Ant
 python run-tests.py 
 ``` 
 
-You can choose the number of processors with the option `--mpirun="mpirun -np 4"`. For development purposes you can go beyound the number of processorce of your computer wusing `--mpirun="mpirun -np 10 --oversubscribe"`
+You can choose the number of processors with the option `--mpirun="mpirun -np 4"`. For development purposes you can go beyond the number of processors of your computer using `--mpirun="mpirun -np 10 --oversubscribe"`
 
 Other usefull flags:
 - `--xterm`: one window per processor

@@ -1,6 +1,8 @@
 #
-# Copyright 2019 Lars Pastewka
-#           2019 Antoine Sanner
+# Copyright 2019-2020 Antoine Sanner
+#           2019-2020 Michael Röttger
+#           2019 Lars Pastewka
+#           2019 roettger@tf.uni-freiburg.de
 # 
 # ### MIT license
 # 
@@ -893,6 +895,31 @@ class diSurfaceTest(unittest.TestCase):
                     self.assertEqual(unit, 'nm')
                 self.assertTrue(surface.is_uniform)
 
+def test_di_orientation():
+    #
+    # topography.heights() should return an array where
+    # - first index corresponds to x with lowest x in top rows and largest x in bottom rows
+    # - second index corresponds to y with lowest y in left column and largest x in right column
+    #
+    # This is given when reading di.txt, see test elsewhere.
+    #
+    # The heights should be equal to those from txt reader
+    di_fn = os.path.join(DATADIR, "di1.di")
+
+    di_t = read_topography(di_fn)
+
+    assert di_t.info['unit'] == 'nm'
+
+    #
+    # Check values in 4 corners, this should fix orientation
+    #
+    di_heights = di_t.heights()
+    assert pytest.approx(di_heights[ 0,  0], abs=1e-3) == 6.060
+    assert pytest.approx(di_heights[0, -1], abs=1e-3) == 2.843
+    assert pytest.approx(di_heights[-1,  0], abs=1e-3) == -9.740
+    assert pytest.approx(di_heights[-1, -1], abs=1e-3) == -30.306
+
+
 
 class ibwSurfaceTest(unittest.TestCase):
     def setUp(self):
@@ -1095,6 +1122,84 @@ class DerivativeTest(PyCoTestCase):
         self.assertArrayAlmostEqual(d2, -np.sin(x+(x[1]-x[0])), tol=1e-5)
         self.assertArrayAlmostEqual(d3, -np.sin(x[:-2]+(x[1]-x[0])), tol=1e-5)
 
+@pytest.mark.parametrize("ny", [7,6])
+@pytest.mark.parametrize("nx", [5,4])
+def test_fourier_derivative_realness(nx, ny):
+    # fourier_derivative internally asserts that the imaginary part is within
+    # numerical tolerance. We check here this error isn't raised for any
+    # configuration of odd and even grid points
+    topography = Topography(np.random.random((nx, ny)), physical_sizes=(2.,3.))
+    topography.fourier_derivative()
+
+
+def test_fourier_derivative(plot=False):
+    nx, ny = [256] * 2
+    sx, sy = [1.] * 2
+
+    lc = 0.5
+    topography = fourier_synthesis((nx, ny), (sx, sy), 0.8, rms_height=1.,
+                                short_cutoff=lc, long_cutoff=lc+1e-9, )
+    topography = topography.scale(1/topography.rms_height())
+
+    # numerical derivatives to double check
+    dx, dy = topography.fourier_derivative()
+    dx_num, dy_num = topography.derivative(1)
+
+    np.testing.assert_allclose(dx, dx_num, atol=topography.rms_slope()*1e-1)
+    np.testing.assert_allclose(dy, dy_num, atol=topography.rms_slope()*1e-1)
+
+    if plot:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        x, y = topography.positions()
+
+        ax.plot(x[:, 0], topography.heights()[:,0])
+        ax.plot(x[:, 0], dx[:,0])
+        ax.plot(x[:, 0], dx_num[:,0])
+        fig.show()
+
+        fig, ax = plt.subplots()
+        x, y = topography.positions()
+        ax.plot(y[-1, :], topography.heights()[-1,:])
+        ax.plot(y[-1, :], dy[-1,:])
+        ax.plot(y[-1, :], dy_num[-1,:])
+        fig.show()
+
+def test_fourier_interpolate_nyquist(plot=False):
+    # asserts that the interpolation follows the "minimal-osciallation" assumption
+    # for the nyquist frequency
+
+    topography = Topography(np.array([[1],[-1]]), physical_sizes=(1.,1.))
+    interpolated_topography = topography.interpolate_fourier((64,1))
+
+    if plot:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+
+        x, y = topography.positions()
+        ax.plot(x.flat, topography.heights().flat, "+")
+
+        x, y = interpolated_topography.positions()
+        ax.plot(x.flat, interpolated_topography.heights().flat, "-")
+        fig.show()
+
+    x, y = interpolated_topography.positions()
+    np.testing.assert_allclose(interpolated_topography.heights(),
+                                np.cos(2 * np.pi * x), atol=1e-14)
+
+
+
+
+@pytest.mark.parametrize("fine_ny", [13,12])
+@pytest.mark.parametrize("fine_nx", [8,9])
+@pytest.mark.parametrize("ny", [6,7])
+@pytest.mark.parametrize("nx", [4,5])
+def test_fourier_interpolate_transpose_symmetry(nx, ny, fine_nx, fine_ny):
+    topography = Topography(np.random.random((nx, ny)), physical_sizes=(1., 1.5))
+    interp = topography.interpolate_fourier((fine_nx, fine_ny))
+    interp_t = topography.transpose().interpolate_fourier((fine_ny, fine_nx)).transpose()
+
+    np.testing.assert_allclose(interp.heights(), interp_t.heights())
 
 class PickeTest(PyCoTestCase):
     def test_detrended(self):
@@ -1115,8 +1220,26 @@ def test_txt_example():
     assert t.physical_sizes == (1e-6, 0.5e-6)
     assert t.nb_grid_pts == (6, 3)
 
-    assert (t.heights() == np.array([
+    expected_heights = np.array([
         [1.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007],
         [0.5e-007, 0.5e-007, 0.0e-008, 0.0e-008, 0.0e-008, 0.0e-008],
         [0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007, 0.0e-007],
-    ]).T).all()
+    ]).T
+
+    np.testing.assert_allclose(t.heights(), expected_heights)
+
+def test_different_dictionary_instance_UniformLineScan():
+    """
+    see issue #301
+    """
+    a = UniformLineScan(np.array([1,2,3,4]), physical_sizes=2)
+    b = UniformLineScan(np.array([1,8,2,4]), physical_sizes=1)
+
+    assert id(a.info) != id(b.info)
+
+def test_different_dictionary_instance_Topography():
+    a = Topography(np.array([[1,2],[3,4]]), physical_sizes=(2,1))
+    b = Topography(np.array([[1,8],[2,4]]), physical_sizes=(1,3))
+
+    assert id(a.info) != id(b.info)
+

@@ -29,6 +29,9 @@ Efficient contact mechanics with Python
 
 from . import ContactMechanics, SolidMechanics, System, Topography
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+try:
+    from importlib.metadata import version
+    __version__ = version(__name__)
+except ImportError:
+    from pkg_resources import get_distribution
+    __version__ = get_distribution(__name__).version

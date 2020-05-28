@@ -1,17 +1,20 @@
 language: python
 python:
+  - 3.5
   - 3.6
+  - 3.7
+  - 3.8
 env:
   - WITH_MPI=no
   - WITH_MPI=yes MPI4PY_VERSION=3.0.3 HDF5_VERSION=1.10.6 PNETCDF_VERSION=1.12.1 NETCDF4_VERSION=4.7.3 NETCDF4_PYTHON_VERSION=1.5.3
 before_install:
   - source .travis.before_install.bash
 install:
-  - python -m pip install -r requirements.txt
+  - python -m pip install --upgrade -r requirements.txt --no-binary setuptools_scm
   - source .print_netcdf_capabilities.sh
   - python setup.py install
 script:
-  - if [ "$WITH_MPI" == "yes" ]; then python run-tests.py --verbose --full-trace -s; else python -m pytest --verbose --full-trace -s; fi
+  - if [ "$WITH_MPI" == "yes" ]; then python run-tests.py --verbose --full-trace; else python -m pytest --verbose --full-trace -s; fi
 notifications:
   email:
     - antoine.sanner@imtek.uni-freiburg.de

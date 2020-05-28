@@ -1,6 +1,6 @@
 #
-# Copyright 2019 Lars Pastewka
-#           2018-2019 Antoine Sanner
+# Copyright 2018, 2020 Antoine Sanner
+#           2019 Lars Pastewka
 # 
 # ### MIT license
 # 
@@ -74,7 +74,7 @@ def test_smoothsphere(maxcomm, fftengine_type): # TODO problem: difficult to com
     pnp =Reduction(comm=comm)
 
     # the "Min" part of the potential (linear for small z) is needed for the LBFGS without bounds
-    inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w, pnp = pnp)
+    inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w, communicator=comm)
 
     # Parallel Topography Patch
 
@@ -88,13 +88,13 @@ def test_smoothsphere(maxcomm, fftengine_type): # TODO problem: difficult to com
     surface = make_sphere(radius=r_s, nb_grid_pts=(nx, ny), physical_sizes=(sx, sx),
                           subdomain_locations=substrate.topography_subdomain_locations,
                           nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
-                          pnp=pnp,
+                          communicator=comm,
                           standoff=float('inf'))
     ext_surface = make_sphere(r_s, (2 * nx, 2 * ny), (2 * sx, 2 * sx),
                               centre=(sx / 2, sx / 2),
                               subdomain_locations=substrate.subdomain_locations,
                               nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts,
-                              pnp=pnp,
+                              communicator=comm,
                               standoff=float('inf'))
     system = SmoothContactSystem(substrate, inter, surface)
 

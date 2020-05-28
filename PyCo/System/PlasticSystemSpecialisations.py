@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Antoine Sanner
+# Copyright 2019-2020 Antoine Sanner
 #           2017, 2019 Lars Pastewka
 # 
 # ### MIT license
@@ -31,6 +31,7 @@ import numpy as np
 
 from .. import ContactMechanics, SolidMechanics, Topography
 from .Systems import NonSmoothContactSystem
+from .Systems import SmoothContactSystem
 
 class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
     """
@@ -74,5 +75,51 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
             plastic_mask = (self.force == hardness)
             self.surface.plastic_displ += np.where(plastic_mask,
                     self.compute_gap(self.disp, self.offset), 0.)
+
+        return opt
+
+
+class PlasticSmoothContactSystem(SmoothContactSystem):
+    """
+    This system implements a simple penetration hardness model.
+    """
+
+    def __init__(self, substrate, interaction, surface):
+        plastic_interaction = ContactMechanics.LinearCorePotential(interaction,
+                                        hardness=surface.hardness)
+        super().__init__(substrate, plastic_interaction, surface)
+
+    @staticmethod
+    def handles(substrate_type, interaction_type, surface_type, is_domain_decomposed):
+        """
+        determines whether this class can handle the proposed system
+        composition
+        Keyword Arguments:
+        substrate_type   -- instance of ElasticSubstrate subclass
+        interaction_type -- instance of Interaction
+        surface_type     --
+        """
+        is_ok = True
+        # any type of substrate formulation should do
+        is_ok &= issubclass(substrate_type,
+                            SolidMechanics.ElasticSubstrate)
+        # only hard interactions allowed
+        is_ok &= issubclass(interaction_type,
+                            ContactMechanics.SoftWall)
+
+        # any surface should do
+        is_ok &= issubclass(surface_type,
+                            Topography.PlasticTopography)
+        return is_ok
+
+    def minimize_proxy(self, **kwargs):
+        """
+        """
+        opt = super().minimize_proxy(**kwargs)
+        if opt.success:
+            gap = self.compute_gap(self.disp, self.offset)
+            plastic_mask = gap < self.interaction.r_ti
+            self.surface.plastic_displ += np.where(plastic_mask,
+                    gap - self.interaction.r_ti, 0.)
 
         return opt
