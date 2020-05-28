@@ -28,5 +28,4 @@ Helper tools for PyCo
 """
 
 from .SurfaceAnalysis import CharacterisePeriodicSurface, CharacteriseSurface
-from .SurfaceModification import (ModifyExistingPeriodicSurface,
-                                  estimate_short_cutoff)
+
