@@ -1,5 +1,5 @@
 import numpy as np
-from mpi4py import MPI
+from NuMPI import MPI
 
 from PyCo.ContactMechanics import Potential, SoftWall
 
