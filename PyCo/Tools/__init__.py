@@ -29,5 +29,4 @@ Helper tools for PyCo
 """
 
 from .common import compare_containers, compute_wavevectors, evaluate_gradient, get_q_from_lambda, mean_err, fftn, ifftn
-from .DistributedComputation import BaseResultManager, BaseWorker
 from . import Optimisation
