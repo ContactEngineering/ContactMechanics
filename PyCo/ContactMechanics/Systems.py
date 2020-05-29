@@ -35,7 +35,7 @@ import scipy
 
 from PyCo import Adhesion, ContactMechanics, SurfaceTopography
 from PyCo.Tools import compare_containers
-from PyCo.ContactMechanics.Optimisation import constrained_conjugate_gradients
+from PyCo.ContactMechanics.Optimization import constrained_conjugate_gradients
 
 
 class IncompatibleFormulationError(Exception):

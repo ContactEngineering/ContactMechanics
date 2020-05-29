@@ -31,7 +31,7 @@ from PyCo.Adhesion import Dugdale
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
 from PyCo.ContactMechanics import make_system
 from PyCo.ContactMechanics.Tools.Logger import screen
-from PyCo.ContactMechanics.Optimisation import constrained_conjugate_gradients
+from PyCo.ContactMechanics.Optimization import constrained_conjugate_gradients
 from PyCo.SurfaceTopography import Topography, make_sphere
 
 

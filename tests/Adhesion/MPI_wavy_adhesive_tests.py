@@ -30,7 +30,7 @@ from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import make_sphere,Topography
-from PyCo.ContactMechanics.System import make_system
+from PyCo.ContactMechanics import make_system
 #from PyCo.Tools.Logger import screen
 from PyCo.ContactMechanics.ReferenceSolutions.Hertz import (radius_and_pressure,
                                                             surface_displacements,
