@@ -31,13 +31,14 @@ from NuMPI import MPI
 
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import open_topography, PlasticTopography
-from PyCo.ContactMechanics import make_system
+from PyCo.ContactMechanics.PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
+from PyCo.ContactMechanics.Factory import make_plastic_system
 from PyCo.SurfaceTopography import Topography
 
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
-    'file_format_examples')
+    '.')
 
 def test_hard_wall_bearing_area(comm):
     # Test that at very low hardness we converge to (almost) the bearing
@@ -54,7 +55,7 @@ def test_hard_wall_bearing_area(comm):
                          communicator=substrate.communicator)
 
     plastic_surface = PlasticTopography(surface, 1e-12)
-    system = make_system(substrate, plastic_surface)
+    system =  PlasticNonSmoothContactSystem(substrate, plastic_surface)
     offset = -0.002
     if comm.rank == 0:
         def cb(it, p_r, d):
@@ -90,7 +91,7 @@ def test_hardwall_plastic_nonperiodic_disp_control(comm_self):
 
     Es = 230000  # MPa
     hardness = 6000  # MPa
-    system = make_system(substrate="free",
+    system = make_plastic_system(substrate="free",
                          surface=PlasticTopography(topography=topography,
                                                    hardness=hardness),
                          young=Es,
@@ -135,8 +136,7 @@ def test_hardwall_plastic_nonperiodic_load_control(comm_self):
 
     Es = 230000  # MPa
     hardness = 6000  # MPa
-    system = make_system(interaction="hardwall",
-                         substrate="free",
+    system = make_plastic_system(substrate="free",
                          surface=PlasticTopography(topography=topography,
                                                    hardness=hardness),
                          young=Es,

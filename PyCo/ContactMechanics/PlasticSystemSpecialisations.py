@@ -31,7 +31,7 @@ import numpy as np
 
 from PyCo import Adhesion, ContactMechanics, SurfaceTopography
 from PyCo.ContactMechanics.Systems import NonSmoothContactSystem
-from PyCo.ContactMechanics.Systems import SmoothContactSystem
+from PyCo.Adhesion.Systems import SmoothContactSystem
 
 class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
     """

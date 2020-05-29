@@ -29,6 +29,7 @@ Implements a convenient Factory function for Contact System creation
 """
 
 from PyCo.ContactMechanics.Systems import SystemBase, NonSmoothContactSystem
+from PyCo.ContactMechanics.PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
 from PyCo.ContactMechanics.Systems import IncompatibleFormulationError
 
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
@@ -134,7 +135,29 @@ def make_system(*args, **kwargs):
     """
 
     substrate, surface = _make_system_args(*args, **kwargs)
+
     return NonSmoothContactSystem(substrate=substrate, surface=surface)
 
+def make_plastic_system(*args, **kwargs):
+    """
+    Factory function for contact systems. Checks the compatibility between the
+    substrate, interaction method and surface and returns an object of the
+    appropriate type to handle it. The returned object is always of a subtype
+    of SystemBase.
+
+    Parameters:
+    -----------
+    substrate   -- An instance of HalfSpace. Defines the solid mechanics in
+                   the substrate
+    interaction -- An instance of Interaction. Defines the contact formulation
+    surface     -- An instance of SurfaceTopography, defines the profile.
+
+    Returns
+    -------
+    """
+
+    substrate, surface = _make_system_args(*args, **kwargs)
+
+    return PlasticNonSmoothContactSystem(substrate=substrate, surface=surface)
 
 
