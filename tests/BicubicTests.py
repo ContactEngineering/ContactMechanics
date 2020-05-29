@@ -31,7 +31,7 @@ import pytest
 
 import numpy as np
 
-from PyCo.Tools.Interpolation import Bicubic
+from PyCo.ContactMechanics.Tools.Interpolation import Bicubic
 from PyCo.SurfaceTopography.Generation import fourier_synthesis
 
 nx = 17

@@ -21,10 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from PyCo.Tools.Interpolation import Bicubic
+from PyCo.ContactMechanics.Tools.Interpolation import Bicubic
 from PyCo.SurfaceTopography.Generation import fourier_synthesis
-from PyCo.Tools.common import compute_wavevectors
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 #from muFFT import FourierInterpolation # future

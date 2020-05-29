@@ -32,15 +32,15 @@ try:
     from PyCo.SurfaceTopography import make_sphere,Topography
     from PyCo.System import make_system
     #from PyCo.Tools.Logger import screen
-    from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
-                                               surface_displacements,
-                                               surface_stress)
+    from PyCo.ContactMechanics.ReferenceSolutions.Hertz import (radius_and_pressure,
+                                                                surface_displacements,
+                                                                surface_stress)
     from NuMPI.Optimization import LBFGS
     from NuMPI.Tools.Reduction import Reduction
     from NuMPI import MPI
     from PyCo.Adhesion import VDW82smoothMin, VDW82
     from PyCo.System import SmoothContactSystem
-    from PyCo.Tools.NetCDF import NetCDFContainer
+    from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 
 except ImportError as err:
     import sys
@@ -101,7 +101,6 @@ def test_wavy(comm):
     toPlot = comm.Get_rank() == 0 and _toplot
 
     if toPlot:
-        import matplotlib
         #matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         fig, ax  = plt.subplots()

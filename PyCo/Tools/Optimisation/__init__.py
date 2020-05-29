@@ -40,7 +40,5 @@ from .common import construct_augmented_lagrangian
 from .common import construct_augm_lag_grad
 from .common import construct_augm_lag_hess
 from .AugmentedLagrangian import augmented_lagrangian
-from .ConstrainedConjugateGradients import constrained_conjugate_gradients
 from .NewtonLineSearch import newton_linesearch
 from .NewtonConfidenceRegion import newton_confidence_region
-from .SimpleRelaxation import simple_relaxation

@@ -30,7 +30,7 @@ Tests adhesion-free flat punch results
 import unittest
 import numpy as np
 from PyCo.Adhesion import HardWall
-from PyCo.ReferenceSolutions.Westergaard import _pressure
+from PyCo.ContactMechanics.ReferenceSolutions.Westergaard import _pressure
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
 from PyCo.System import make_system

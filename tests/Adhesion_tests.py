@@ -31,9 +31,9 @@ try:
     import numpy as np
     import time
     import math
-    import PyCo.ReferenceSolutions.DMT as DMT
-    import PyCo.ReferenceSolutions.JKR as JKR
-    import PyCo.ReferenceSolutions.MaugisDugdale as MD
+    import PyCo.Adhesion.ReferenceSolutions.DMT as DMT
+    import PyCo.Adhesion.ReferenceSolutions.JKR as JKR
+    import PyCo.Adhesion.ReferenceSolutions.MaugisDugdale as MD
     from scipy.optimize import minimize_scalar
     from PyCo.Adhesion import Exponential
     from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,

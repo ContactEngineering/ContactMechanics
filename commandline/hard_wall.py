@@ -37,8 +37,8 @@ from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
                                    PeriodicFFTElasticHalfSpace)
 from PyCo.SurfaceTopography import read_topography, PlasticTopography
 from PyCo.System import make_system
-from PyCo.Tools.Logger import Logger, quiet, screen
-from PyCo.Tools.NetCDF import NetCDFContainer
+from PyCo.ContactMechanics.Tools.Logger import Logger, quiet, screen
+from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 
 ###
 

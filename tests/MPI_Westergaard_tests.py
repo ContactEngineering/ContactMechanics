@@ -30,8 +30,8 @@ import pytest
 from NuMPI.Tools.Reduction import Reduction
 
 from PyCo.Adhesion import HardWall
-from PyCo.ReferenceSolutions.Westergaard import _pressure
-from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
+from PyCo.ContactMechanics.ReferenceSolutions.Westergaard import _pressure
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
 from PyCo.System import make_system
 

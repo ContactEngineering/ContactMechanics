@@ -35,8 +35,7 @@ from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import read_matrix, TranslatedTopography, CompoundTopography
 from PyCo.System import make_system
 #from PyCo.Tools import compute_rms_height
-from PyCo.Tools.Logger import screen
-from PyCo.Tools.NetCDF import NetCDFContainer
+from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 
 ###
 

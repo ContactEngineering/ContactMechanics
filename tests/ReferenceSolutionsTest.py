@@ -34,9 +34,9 @@ try:
     from scipy.special import ellipk, erf
 
     from .PyCoTest import PyCoTestCase
-    import PyCo.ReferenceSolutions.GreenwoodTripp as GT
-    import PyCo.ReferenceSolutions.MaugisDugdale as MD
-    import PyCo.ReferenceSolutions.Hertz as Hz
+    import PyCo.ContactMechanics.ReferenceSolutions.GreenwoodTripp as GT
+    import PyCo.Adhesion.ReferenceSolutions.MaugisDugdale as MD
+    import PyCo.ContactMechanics.ReferenceSolutions.Hertz as Hz
 
 except ImportError as err:
     import sys

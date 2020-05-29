@@ -26,8 +26,8 @@ import sys
 
 import numpy as np
 
-from PyCo.Tools.NetCDF import NetCDFContainer
-from PyCo.Tools.ContactAreaAnalysis import assign_segment_numbers
+from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
+from PyCo.ContactMechanics.Tools.ContactAreaAnalysis import assign_segment_numbers
 
 ###
 

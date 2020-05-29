@@ -30,7 +30,7 @@ from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import make_sphere
 from PyCo.System import NonSmoothContactSystem
-from PyCo.ReferenceSolutions import Hertz as Hz
+from PyCo.ContactMechanics.ReferenceSolutions import Hertz as Hz
 
 DEBUG = False
 

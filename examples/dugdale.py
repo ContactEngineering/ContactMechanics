@@ -26,13 +26,12 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-import PyCo.ReferenceSolutions.MaugisDugdale as MD
+import PyCo.Adhesion.ReferenceSolutions.MaugisDugdale as MD
 from PyCo.System import make_system
 from PyCo.Adhesion import Dugdale
-from PyCo.ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
-from PyCo.Tools.Logger import screen
-from PyCo.Tools.Optimisation import constrained_conjugate_gradients
-from PyCo.SurfaceTopography import make_sphere, Topography
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
+from PyCo.ContactMechanics.Tools.Logger import screen
+from PyCo.SurfaceTopography import make_sphere
 
 # TODO: this works for exactly these conditions but it sometimes locks for example at (64,64)
 nx, ny = (256, 256)

@@ -357,7 +357,7 @@ def test_LBFGSB_Hertz():
         system.substrate.local_topography_subdomain_slices] == contacting_points).all()
 
     comp_normal_force= np.sum(-substrate.evaluate_force(res.x))
-    from PyCo.ReferenceSolutions import Hertz as Hz
+    from PyCo.ContactMechanics.ReferenceSolutions import Hertz as Hz
     a, p0 = Hz.radius_and_pressure(Hz.normal_load(offset, R, Es), R, Es)
 
     np.testing.assert_allclose(comp_normal_force,

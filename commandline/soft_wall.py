@@ -29,12 +29,12 @@ Tries to guess displacements such that areas are equally spaced on a log scale.
 """
 
 import numpy as np
-from PyCo.Adhesion import Exponential, LJ93smoothMin
+from PyCo.Adhesion import Exponential
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import read_matrix
 from PyCo.System import make_system
-from PyCo.Tools.Logger import Logger, quiet, screen
-from PyCo.Tools.NetCDF import NetCDFContainer
+from PyCo.ContactMechanics.Tools.Logger import screen
+from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 
 ###
 

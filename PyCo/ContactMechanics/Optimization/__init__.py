@@ -1,20 +1,19 @@
 #
-# Copyright 2018-2019 Antoine Sanner
-#           2016, 2019 Lars Pastewka
+# Copyright 2017 Lars Pastewka
 #           2016 Till Junge
-# 
+#
 # ### MIT license
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,9 +24,8 @@
 #
 
 """
-Helper tools for PyCo
+Optimization algorithms
 """
 
-from .common import compare_containers, compute_wavevectors, evaluate_gradient, get_q_from_lambda, mean_err, fftn, ifftn
-from .DistributedComputation import BaseResultManager, BaseWorker
-from . import Optimisation
+from .ConstrainedConjugateGradients import constrained_conjugate_gradients
+from .SimpleRelaxation import simple_relaxation
