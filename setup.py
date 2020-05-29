@@ -92,11 +92,13 @@ if np is not None:
 extra_compile_args = ["-std=c++11"]
 print(extra_objects)
 
-scripts = ['commandline/hard_wall.py',
-           'commandline/soft_wall.py',
-           'commandline/plotacf.py',
-           'commandline/plotpsd.py',
-           'commandline/plotmap.py']
+scripts = [
+   'commandline/ContactMechanics/hard_wall.py',
+   'commandline/Adhesion/soft_wall.py',
+   'commandline/ContactMechanics/plotacf.py',
+   'commandline/ContactMechanics/plotpsd.py',
+   'commandline/ContactMechanics/plotmap.py'
+   ]
 
 extensions = [
     Extension(
