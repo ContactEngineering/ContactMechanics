@@ -33,7 +33,7 @@ try:
     from scipy.integrate import quad
     from scipy.special import ellipk, erf
 
-    from .PyCoTest import PyCoTestCase
+    from tests.PyCoTest import PyCoTestCase
     import PyCo.ContactMechanics.ReferenceSolutions.GreenwoodTripp as GT
     import PyCo.Adhesion.ReferenceSolutions.MaugisDugdale as MD
     import PyCo.ContactMechanics.ReferenceSolutions.Hertz as Hz
