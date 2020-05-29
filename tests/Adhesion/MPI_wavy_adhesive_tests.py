@@ -22,30 +22,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-try:
-    import numpy as np
-    import time
-    import math
-    from PyCo.Adhesion import HardWall
-    from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
-    from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
-    from PyCo.SurfaceTopography import make_sphere,Topography
-    from PyCo.System import make_system
-    #from PyCo.Tools.Logger import screen
-    from PyCo.ContactMechanics.ReferenceSolutions.Hertz import (radius_and_pressure,
-                                                                surface_displacements,
-                                                                surface_stress)
-    from NuMPI.Optimization import LBFGS
-    from NuMPI.Tools.Reduction import Reduction
-    from NuMPI import MPI
-    from PyCo.Adhesion import VDW82smoothMin, VDW82
-    from PyCo.System import SmoothContactSystem
-    from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+import numpy as np
+import time
+import math
+from PyCo.Adhesion import HardWall
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
+from PyCo.SurfaceTopography import make_sphere,Topography
+from PyCo.ContactMechanics.System import make_system
+#from PyCo.Tools.Logger import screen
+from PyCo.ContactMechanics.ReferenceSolutions.Hertz import (radius_and_pressure,
+                                                            surface_displacements,
+                                                            surface_stress)
+from NuMPI.Optimization import LBFGS
+from NuMPI.Tools.Reduction import Reduction
+from NuMPI import MPI
+from PyCo.Adhesion import VDW82smoothMin, VDW82
+from PyCo.System import SmoothContactSystem
+from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 
 _toplot=False
 def test_wavy(comm):

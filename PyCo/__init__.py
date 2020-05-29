@@ -27,7 +27,7 @@
 Efficient contact mechanics with Python
 """
 
-from . import Adhesion, ContactMechanics, System, SurfaceTopography
+from . import Adhesion, ContactMechanics, SurfaceTopography
 
 try:
     from importlib.metadata import version
