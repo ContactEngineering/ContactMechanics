@@ -32,7 +32,7 @@ from NuMPI import MPI
 from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import open_topography, PlasticTopography
-from PyCo.System import make_system
+from PyCo.ContactMechanics import make_system
 from PyCo.SurfaceTopography import Topography
 
 

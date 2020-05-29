@@ -27,7 +27,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import PyCo.Adhesion.ReferenceSolutions.MaugisDugdale as MD
-from PyCo.System import make_system
+from PyCo.ContactMechanics import make_system
 from PyCo.Adhesion import Dugdale
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.ContactMechanics.Tools.Logger import screen

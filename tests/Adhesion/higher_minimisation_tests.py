@@ -25,22 +25,17 @@
 """
 Tests for higher system methods, such as computing pulloff-force
 """
-try:
-    import unittest
-    import numpy as np
-    from scipy.optimize import minimize
-    import time
-    import math
 
-    from PyCo.System import make_system
-    from PyCo.SurfaceTopography import make_sphere
-    from PyCo.Adhesion import LJ93smoothMin as LJ_pot
-    from PyCo.ContactMechanics import FreeFFTElasticHalfSpace as Substrate
+import unittest
+import numpy as np
+from scipy.optimize import minimize
+import time
+import math
 
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+from PyCo.ContactMechanics import make_system
+from PyCo.SurfaceTopography import make_sphere
+from PyCo.Adhesion import LJ93smoothMin as LJ_pot
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace as Substrate
 
 
 class PulloffTest(unittest.TestCase):

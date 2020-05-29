@@ -36,7 +36,7 @@ from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
                                    PeriodicFFTElasticHalfSpace)
 from PyCo.SurfaceTopography import read_topography, PlasticTopography
-from PyCo.System import make_system
+from PyCo.ContactMechanics import make_system
 from PyCo.ContactMechanics.Tools.Logger import Logger, quiet, screen
 from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 

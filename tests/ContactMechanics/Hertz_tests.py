@@ -29,7 +29,7 @@ from NuMPI.Tools.Reduction import Reduction
 from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import make_sphere
-from PyCo.System import NonSmoothContactSystem
+from PyCo.ContactMechanics.Systems import NonSmoothContactSystem
 from PyCo.ContactMechanics.ReferenceSolutions import Hertz as Hz
 
 DEBUG = False

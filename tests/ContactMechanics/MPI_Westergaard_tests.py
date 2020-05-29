@@ -33,7 +33,7 @@ from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics.ReferenceSolutions.Westergaard import _pressure
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
-from PyCo.System import make_system
+from PyCo.ContactMechanics import make_system
 
 
 @pytest.mark.skip

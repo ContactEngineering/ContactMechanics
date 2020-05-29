@@ -36,8 +36,8 @@ import time
 import os
 from netCDF4 import Dataset
 
-from PyCo.System import make_system, IncompatibleFormulationError
-from PyCo.System import IncompatibleResolutionError
+from PyCo.ContactMechanics.Systems import make_system, IncompatibleFormulationError
+from PyCo.ContactMechanics.Systems import IncompatibleResolutionError
 from PyCo.ContactMechanics.Systems import SmoothContactSystem
 import PyCo.ContactMechanics as Solid
 import PyCo.Adhesion as Contact

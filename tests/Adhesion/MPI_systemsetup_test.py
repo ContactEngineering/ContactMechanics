@@ -36,7 +36,7 @@ from PyCo.ContactMechanics.Factory import make_system
 from PyCo.Adhesion import HardWall, VDW82, Exponential
 from PyCo.SurfaceTopography import make_sphere
 from PyCo.SurfaceTopography.IO import NPYReader, open_topography
-from PyCo.System import SmoothContactSystem
+from PyCo.Adhesion.Systems import SmoothContactSystem
 from PyCo.Tools import Logger
 
 import numpy as np
@@ -184,7 +184,7 @@ def test_choose_smoothcontactsystem(comm_self, examplefile):
 
 def test_incompatible_system_prescribed(comm_self, examplefile):
     fn, res, data = examplefile
-    from PyCo.System import IncompatibleFormulationError
+    from PyCo.ContactMechanics.Systems import IncompatibleFormulationError
     with pytest.raises(IncompatibleFormulationError):
         system = make_system(substrate="free",
                              interaction="hardwall",

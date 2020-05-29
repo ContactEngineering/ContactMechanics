@@ -26,24 +26,22 @@
 Tests adhesion-free systems for accuracy and compares performance
 """
 
-try:
-    import unittest
-    import numpy as np
-    import time
-    import math
-    import PyCo.Adhesion.ReferenceSolutions.DMT as DMT
-    import PyCo.Adhesion.ReferenceSolutions.JKR as JKR
-    import PyCo.Adhesion.ReferenceSolutions.MaugisDugdale as MD
-    from scipy.optimize import minimize_scalar
-    from PyCo.Adhesion import Exponential
-    from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
-                                       PeriodicFFTElasticHalfSpace)
-    from PyCo.SurfaceTopography import make_sphere
-    from PyCo.System import make_system, SmoothContactSystem
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+
+import unittest
+import numpy as np
+import time
+import math
+import PyCo.Adhesion.ReferenceSolutions.DMT as DMT
+import PyCo.Adhesion.ReferenceSolutions.JKR as JKR
+import PyCo.Adhesion.ReferenceSolutions.MaugisDugdale as MD
+from scipy.optimize import minimize_scalar
+from PyCo.Adhesion import Exponential
+from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
+                                   PeriodicFFTElasticHalfSpace)
+from PyCo.SurfaceTopography import make_sphere
+from PyCo.ContactMechanics import make_system
+from PyCo.Adhesion.Systems import SmoothContactSystem
+
 
 from NuMPI import MPI
 import pytest

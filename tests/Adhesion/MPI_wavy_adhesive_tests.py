@@ -39,7 +39,7 @@ from NuMPI.Optimization import LBFGS
 from NuMPI.Tools.Reduction import Reduction
 from NuMPI import MPI
 from PyCo.Adhesion import VDW82smoothMin, VDW82
-from PyCo.System import SmoothContactSystem
+from PyCo.Adhesion.Systems import SmoothContactSystem
 from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 
 _toplot=False

@@ -6,7 +6,7 @@ from PyCo.SurfaceTopography import make_sphere
 from PyCo.Adhesion import Exponential, Lj82, LinearCorePotential
 from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
                                    PeriodicFFTElasticHalfSpace)
-from PyCo.System import SmoothContactSystem, BoundedSmoothContactSystem
+from PyCo.Adhesion.Systems import SmoothContactSystem, BoundedSmoothContactSystem
 from NuMPI import MPI
 
 

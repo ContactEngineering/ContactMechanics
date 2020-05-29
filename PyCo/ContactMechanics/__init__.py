@@ -29,3 +29,4 @@ Defines all solid mechanics model used in PyCo
 from .Substrates import Substrate, ElasticSubstrate, PlasticSubstrate
 from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace
 from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace
+from .Factory import make_system

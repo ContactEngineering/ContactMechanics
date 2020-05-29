@@ -32,7 +32,7 @@ import numpy as np
 from PyCo.Adhesion import Exponential
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import read_matrix
-from PyCo.System import make_system
+from PyCo.ContactMechanics import make_system
 from PyCo.ContactMechanics.Tools.Logger import screen
 from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
 

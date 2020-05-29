@@ -33,7 +33,7 @@ import numpy as np
 from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
-from PyCo.System import make_system
+from PyCo.ContactMechanics import make_system
 
 # -----------------------------------------------------------------------------
 class FlatPunchTest(unittest.TestCase):

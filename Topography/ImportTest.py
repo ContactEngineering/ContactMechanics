@@ -53,9 +53,6 @@ class ImportabilityChecks(unittest.TestCase):
     def test_SolidMechanics(self):
         self.assertEqual(self.import_module("PyCo.ContactMechanics"), 0)
 
-    def test_Solver(self):
-        self.assertEqual(self.import_module("PyCo.System"), 0)
-
     def test_Surface(self):
         self.assertEqual(self.import_module("PyCo.SurfaceTopography"), 0)
 

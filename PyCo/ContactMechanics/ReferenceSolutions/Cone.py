@@ -31,7 +31,7 @@ from matplotlib.lines import Line2D
 from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
-from PyCo.System import make_system
+from PyCo.ContactMechanics import make_system
 
 def load_and_mean_pressure(alpha):
     """

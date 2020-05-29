@@ -30,6 +30,8 @@ import numpy as np
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import make_sphere
 
+
+#TODO: update API use
 from FFTEngine import PFFTEngine
 from NuMPI.Optimization import LBFGS
 from NuMPI.Tools.Reduction import Reduction

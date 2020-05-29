@@ -41,7 +41,7 @@ import PyCo.Adhesion as Contact
 import PyCo.Tools as Tools
 from PyCo.ContactMechanics.Systems import SmoothContactSystem, NonSmoothContactSystem
 from PyCo.Adhesion.SmoothSystemSpecialisations import FastSmoothContactSystem
-from PyCo.System import make_system
+from PyCo.ContactMechanics import make_system
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
                                 reason="tests only serial funcionalities, please execute with pytest")
