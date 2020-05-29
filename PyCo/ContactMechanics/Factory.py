@@ -103,11 +103,10 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
             nb_grid_pts,
             physical_sizes=physical_sizes, communicator=communicator, **kwargs)
 
-    if interaction=="hardwall":
-        interaction=HardWall()
-    # make shure the interaction has the correcrt communicator
-    interaction.pnp = Reduction(communicator)
-    interaction.communicator = communicator
+    if not interaction=="hardwall":
+        # make shure the interaction has the correcrt communicator
+        interaction.pnp = Reduction(communicator)
+        interaction.communicator = communicator
 
     # now the topography is ready to load
     if issubclass(surface.__class__, ReaderBase):

@@ -362,7 +362,7 @@ class NonSmoothContactSystem(SystemBase):
     """
     # pylint: disable=abstract-method
 
-    def __init__(self, substrate, interaction, surface):
+    def __init__(self, substrate, interaction, surface): # TODO: refactor the order and introduce a default value for interaction
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
@@ -401,7 +401,7 @@ class NonSmoothContactSystem(SystemBase):
                             ContactMechanics.ElasticSubstrate)
         # only hard interactions allowed
         is_ok &= issubclass(interaction_type,
-                            Adhesion.HardWall)
+                            Adhesion.HardWall) or interaction_type == "hardwall"
 
         # any surface should do
         is_ok &= issubclass(surface_type,
@@ -439,8 +439,6 @@ class NonSmoothContactSystem(SystemBase):
         # attention: the substrate may have a higher nb_grid_pts than the gap
         # and the interaction (e.g. FreeElasticHalfSpace)
         self.gap = self.compute_gap(disp, offset)
-        self.interaction.compute(self.gap,
-                                 area_scale=self.area_per_pt)
         self.substrate.compute(disp, pot, forces)
 
         self.energy = self.substrate.energy if pot else None
