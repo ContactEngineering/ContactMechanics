@@ -26,22 +26,16 @@
 Tests for PyCo ReferenceSolutions
 """
 
-try:
-    import unittest
-    import numpy as np
-    import warnings
-    from scipy.integrate import quad
-    from scipy.special import ellipk, erf
 
-    from tests.Topography.PyCoTest import PyCoTestCase
-    import PyCo.ContactMechanics.ReferenceSolutions.GreenwoodTripp as GT
-    import PyCo.Adhesion.ReferenceSolutions.MaugisDugdale as MD
-    import PyCo.ContactMechanics.ReferenceSolutions.Hertz as Hz
+import unittest
+import numpy as np
+import warnings
+from scipy.integrate import quad
+from scipy.special import ellipk, erf
 
-except ImportError as err:
-    import sys
-    print(err)
-    sys.exit(-1)
+from tests.Topography.PyCoTest import PyCoTestCase
+import PyCo.ContactMechanics.ReferenceSolutions.GreenwoodTripp as GT
+import PyCo.ContactMechanics.ReferenceSolutions.Hertz as Hz
 
 class ReferenceSolutionsTest(PyCoTestCase):
     def test_Fn(self):

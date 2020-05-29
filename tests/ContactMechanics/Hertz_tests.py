@@ -26,7 +26,6 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from NuMPI.Tools.Reduction import Reduction
-from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import make_sphere
 from PyCo.ContactMechanics.Systems import NonSmoothContactSystem
@@ -64,12 +63,11 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm):
         substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sx), fft='mpi',
                                             communicator=comm)
 
-        interaction = HardWall()
         surface = make_sphere(self.r_s, (nx, ny), (sx, sx),
                               nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                               subdomain_locations=substrate.topography_subdomain_locations,
                               communicator=substrate.communicator)
-        system = NonSmoothContactSystem(substrate, interaction, surface)
+        system = NonSmoothContactSystem(substrate, surface)
 
         result = system.minimize_proxy(offset=disp0,
                                        external_force=normal_force)

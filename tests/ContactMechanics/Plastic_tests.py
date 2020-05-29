@@ -29,7 +29,6 @@ from scipy.optimize import bisect
 from NuMPI.Tools.Reduction import Reduction
 from NuMPI import MPI
 
-from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import open_topography, PlasticTopography
 from PyCo.ContactMechanics import make_system
@@ -55,8 +54,7 @@ def test_hard_wall_bearing_area(comm):
                          communicator=substrate.communicator)
 
     plastic_surface = PlasticTopography(surface, 1e-12)
-    system = make_system(substrate,
-                         HardWall(), plastic_surface)
+    system = make_system(substrate, plastic_surface)
     offset = -0.002
     if comm.rank == 0:
         def cb(it, p_r, d):
@@ -92,8 +90,7 @@ def test_hardwall_plastic_nonperiodic_disp_control(comm_self):
 
     Es = 230000  # MPa
     hardness = 6000  # MPa
-    system = make_system(interaction="hardwall",
-                         substrate="free",
+    system = make_system(substrate="free",
                          surface=PlasticTopography(topography=topography,
                                                    hardness=hardness),
                          young=Es,

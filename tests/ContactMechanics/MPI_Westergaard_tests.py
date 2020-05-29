@@ -29,7 +29,6 @@ import pytest
 
 from NuMPI.Tools.Reduction import Reduction
 
-from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics.ReferenceSolutions.Westergaard import _pressure
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
@@ -53,7 +52,6 @@ def test_constrained_conjugate_gradients(comm, fftengine_type):
             substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                                     fft="serial" if comm.Get_size() == 1 else "mpi",
                                                     communicator=comm)
-            interaction = HardWall()
             profile = np.resize(np.cos(2 * np.pi * np.arange(nx) / nx), (ny, nx))
             surface = Topography(profile.T, physical_sizes=(sx, sy),
                                  # nb_grid_pts=substrate.nb_grid_pts,
@@ -61,7 +59,7 @@ def test_constrained_conjugate_gradients(comm, fftengine_type):
                                  subdomain_locations=substrate.topography_subdomain_locations,
                                  nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
                                  communicator=substrate.communicator)
-            system = make_system(substrate, interaction, surface)
+            system = make_system(substrate, surface)
 
             result = system.minimize_proxy(offset=disp0,
                                            external_force=normal_force,

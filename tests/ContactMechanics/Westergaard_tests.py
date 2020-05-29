@@ -29,7 +29,6 @@ Tests adhesion-free flat punch results
 
 import unittest
 import numpy as np
-from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics.ReferenceSolutions.Westergaard import _pressure
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
@@ -51,10 +50,9 @@ class WestergaardTest(PyCoTestCase):
             for disp0, normal_force in [(-0.9, None), (-0.1, None)]:  # (0.1, None),
                 substrate = PeriodicFFTElasticHalfSpace((nx, ny), self.E_s,
                                                         (self.sx, self.sy))
-                interaction = HardWall()
                 profile = np.resize(np.cos(2 * np.pi * np.arange(nx) / nx), (ny, nx))
                 surface = Topography(profile.T, (self.sx, self.sy))
-                system = make_system(substrate, interaction, surface)
+                system = make_system(substrate, surface)
 
                 result = system.minimize_proxy(offset=disp0,
                                                external_force=normal_force,

@@ -30,7 +30,6 @@ import unittest
 
 import numpy as np
 
-from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
 from PyCo.ContactMechanics import make_system
@@ -49,7 +48,6 @@ class FlatPunchTest(unittest.TestCase):
                 sx = sy = 2.5 * self.r_s
                 substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
                                                     (sx, sy))
-                interaction = HardWall()
                 r_sq = (sx / nx * (np.arange(nx) - nx // 2)).reshape(-1, 1) ** 2 + \
                        (sy / ny * (np.arange(ny) - ny // 2)).reshape(1, -1) ** 2
                 surface = Topography(
@@ -57,7 +55,7 @@ class FlatPunchTest(unittest.TestCase):
                                        np.zeros([nx, ny])),
                     (sx, sy)
                 )
-                system = make_system(substrate, interaction, surface)
+                system = make_system(substrate, surface)
                 try:
                     result = system.minimize_proxy(offset=disp0,
                                                    external_force=normal_force,

@@ -33,7 +33,6 @@ import pytest
 from mpi4py import MPI
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from PyCo.ContactMechanics.Factory import make_system
-from PyCo.Adhesion import HardWall, VDW82, Exponential
 from PyCo.SurfaceTopography import make_sphere
 from PyCo.SurfaceTopography.IO import NPYReader, open_topography
 from PyCo.Tools import Logger
@@ -74,7 +73,6 @@ def examplefile(comm):
 def test_LoadTopoFromFile(comm, fftengine_type, HS, loader, examplefile):
     #fn = DATAFILE
     fn, res, data = examplefile
-    interaction = HardWall()
 
     # Read metadata from the file and returns a UniformTopgraphy Object
     fileReader = loader(fn, communicator=comm)
@@ -127,7 +125,7 @@ def test_LoadTopoFromFile(comm, fftengine_type, HS, loader, examplefile):
     assert top.rms_height(kind="Rq") \
            == np.sqrt(np.mean((data - np.mean(data,axis = 0))**2))
 
-    system = make_system(substrate, interaction, top)
+    system = make_system(substrate, top)
 
     # make some tests on the system
 
@@ -144,10 +142,8 @@ def test_make_system_from_file(examplefile, comm):
     fn, res, data = examplefile
 
     substrate =  PeriodicFFTElasticHalfSpace
-    interaction = HardWall()
 
     system = make_system(substrate="periodic",
-                         interaction=interaction,
                          topography=fn,
                          communicator=comm,
                          physical_sizes=(20.,30.),
@@ -171,7 +167,6 @@ def test_make_system_from_file_serial(comm_self):
 def test_hardwall_as_string(comm, examplefile):
     fn, res, data = examplefile
     make_system(substrate="periodic",
-                interaction="hardwall",
                 topography=fn,
                 physical_sizes=(1.,1.),
                 young=1,

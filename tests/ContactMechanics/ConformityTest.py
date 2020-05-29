@@ -34,11 +34,6 @@ import PyCo
 class SystemTest(unittest.TestCase):
     def setUp(self):
         self.modules = list([PyCo,
-                             PyCo.Adhesion,
-                             PyCo.Adhesion.Interactions,
-                             PyCo.Adhesion.Lj93,
-                             PyCo.Adhesion.VdW82,
-                             PyCo.Adhesion.Potentials,
                              PyCo.ContactMechanics,
                              PyCo.ContactMechanics.FFTElasticHalfSpace,
                              PyCo.ContactMechanics.Substrates,
@@ -46,7 +41,7 @@ class SystemTest(unittest.TestCase):
                              PyCo.SurfaceTopography.FromFile,
                              PyCo.SurfaceTopography.HeightContainer,
                              PyCo.System,
-                             PyCo.Adhesion.SmoothSystemSpecialisations,
+
                              PyCo.ContactMechanics.Systems,
                              PyCo.Tools,
                              PyCo.Tools.Optimisation.AugmentedLagrangian,

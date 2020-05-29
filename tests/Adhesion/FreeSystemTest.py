@@ -42,7 +42,7 @@ import PyCo.Tools as Tools
 from PyCo.Adhesion.Systems import SmoothContactSystem
 from PyCo.ContactMechanics.Systems import NonSmoothContactSystem
 from PyCo.Adhesion.SmoothSystemSpecialisations import FastSmoothContactSystem
-from PyCo.ContactMechanics import make_system
+from PyCo.Adhesion import make_system
 from PyCo.SurfaceTopography import make_sphere
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
@@ -246,7 +246,7 @@ class FastSystemTest(unittest.TestCase):
     def test_SystemFactory(self):
         S = make_system(self.substrate,
                         self.interaction,
-                        self.surface)
+                        self.surface, system_class=FastSmoothContactSystem)
         print("Mofo is periodic ?: ", self.substrate.is_periodic())
         print("substrate: ", self.substrate)
         self.assertIsInstance(S, FastSmoothContactSystem)
@@ -417,7 +417,7 @@ class FastSystemTest(unittest.TestCase):
             interaction = Contact.LJ93smoothMin(
                 eps[i], sig[i], gam[i])
             surface = make_sphere(radius[i], res, size[i], standoff=float(sig[i] * 1000))
-            systems.append(make_system(substrate, interaction, surface))
+            systems.append(make_system(substrate, interaction, surface, system_class=SmoothContactSystem))
             offsets.append(.8 * systems[i].interaction.r_c)
 
         gaps = list()
@@ -553,7 +553,7 @@ class FastSystemTest(unittest.TestCase):
                                                   topography.physical_sizes,
                                                   check_boundaries=True)
 
-        for system in [NonSmoothContactSystem(substrate, Contact.HardWall(), topography),
+        for system in [NonSmoothContactSystem(substrate, topography), # TODO: this actually belongs to ContactMechanics
                        SmoothContactSystem(substrate, Contact.LJ93SimpleSmooth(0.01, 0.01, 10), topography)]:
             with self.subTest(system=system):
                 offset = 15
