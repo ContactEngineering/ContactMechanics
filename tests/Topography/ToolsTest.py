@@ -29,12 +29,11 @@ Tests for PyCo helper tools
 import numpy as np
 
 from PyCo.Tools import evaluate_gradient, mean_err
-from PyCo.ContactMechanics.Tools.ContactAreaAnalysis import distance_map
 from PyCo.SurfaceTopography import Topography, UniformLineScan, NonuniformLineScan
 from PyCo.SurfaceTopography.Nonuniform.Detrending import polyfit
 from PyCo.SurfaceTopography.Uniform.Detrending import tilt_from_height, shift_and_tilt
 
-from .PyCoTest import PyCoTestCase
+from tests.PyCoTest import PyCoTestCase
 
 import pytest
 from NuMPI import MPI
@@ -124,18 +123,3 @@ class ToolTest(PyCoTestCase):
         self.assertAlmostEqual(b, 1.2)
         self.assertAlmostEqual(m, 1.8)
         self.assertAlmostEqual(m2, 2.3)
-
-
-    def test_distance_map(self):
-        cmap = np.zeros((10,10),dtype=bool)
-        ind1 = np.random.randint(0,10)
-        ind2 = np.random.randint(0,10)
-        cmap[ind1,ind2] = True
-        dmap = distance_map(cmap)
-        self.assertAlmostEqual(np.max(dmap),10/np.sqrt(2))
-
-        dx = np.abs(dmap-np.roll(dmap,1))
-        dy = np.abs(dmap-np.roll(dmap,1,axis=1))
-
-        self.assertLessEqual(np.max(dx),np.sqrt(2) + 1e-15)
-        self.assertLessEqual(np.max(dy),np.sqrt(2) + 1e-15)
