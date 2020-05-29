@@ -70,16 +70,6 @@ class ReferenceSolutionsTest(PyCoTestCase):
         #plt.plot(rho1, p1, 'r-')
         #plt.yscale('log')
         #plt.show()
-    def test_md_dmt_limit(self):
-        A = np.linspace(0.001, 10, 11)
-        N, d = MD._load_and_displacement(A, 1e-12)
-        self.assertArrayAlmostEqual(N, A**3-2)
-        self.assertArrayAlmostEqual(d, A**2, tol=1e-5)
-    def test_md_jkr_limit(self):
-        A = np.linspace(0.001, 10, 11)
-        N, d = MD._load_and_displacement(A, 1e3)
-        self.assertArrayAlmostEqual(N, A**3-A*np.sqrt(6*A), tol=1e-4)
-        self.assertArrayAlmostEqual(d, A**2-2/3*np.sqrt(6*A), tol=1e-4)
 
     def test_Hertz_selfconsistency(self):
         Es,R,F = np.random.random(3)*100
