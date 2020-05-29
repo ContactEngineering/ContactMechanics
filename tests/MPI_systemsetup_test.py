@@ -32,7 +32,7 @@ import pytest
 
 from mpi4py import MPI
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
-from PyCo.System.Factory import make_system
+from PyCo.ContactMechanics.Factory import make_system
 from PyCo.Adhesion import HardWall, VDW82, Exponential
 from PyCo.SurfaceTopography import make_sphere
 from PyCo.SurfaceTopography.IO import NPYReader, open_topography
@@ -42,7 +42,6 @@ from PyCo.Tools import Logger
 import numpy as np
 
 import os
-from NuMPI.Tools import Reduction
 
 DATADIR = os.path.dirname(os.path.realpath(__file__))
 

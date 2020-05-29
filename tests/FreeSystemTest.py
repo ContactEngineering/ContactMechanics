@@ -38,10 +38,9 @@ from NuMPI import MPI
 
 import PyCo.ContactMechanics as Solid
 import PyCo.Adhesion as Contact
-import PyCo.SurfaceTopography as Topography
 import PyCo.Tools as Tools
-from PyCo.System.Systems import SmoothContactSystem, NonSmoothContactSystem
-from PyCo.System.SmoothSystemSpecialisations import FastSmoothContactSystem
+from PyCo.ContactMechanics.Systems import SmoothContactSystem, NonSmoothContactSystem
+from PyCo.Adhesion.SmoothSystemSpecialisations import FastSmoothContactSystem
 from PyCo.System import make_system
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,

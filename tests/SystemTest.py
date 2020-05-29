@@ -38,10 +38,9 @@ from netCDF4 import Dataset
 
 from PyCo.System import make_system, IncompatibleFormulationError
 from PyCo.System import IncompatibleResolutionError
-from PyCo.System.Systems import SmoothContactSystem
+from PyCo.ContactMechanics.Systems import SmoothContactSystem
 import PyCo.ContactMechanics as Solid
 import PyCo.Adhesion as Contact
-import PyCo.SurfaceTopography as Topography
 import PyCo.Tools as Tools
 
 import pytest

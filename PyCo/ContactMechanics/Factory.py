@@ -28,11 +28,8 @@
 Implements a convenient Factory function for Contact System creation
 """
 
-from .. import Adhesion, ContactMechanics, SurfaceTopography
-from ..Tools import compare_containers
-from .Systems import SystemBase
-from .Systems import IncompatibleFormulationError
-from .Systems import IncompatibleResolutionError
+from PyCo.ContactMechanics.Systems import SystemBase
+from PyCo.ContactMechanics.Systems import IncompatibleFormulationError
 
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace

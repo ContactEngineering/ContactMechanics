@@ -33,9 +33,9 @@ import abc
 import numpy as np
 import scipy
 
-from .. import Adhesion, ContactMechanics, SurfaceTopography
-from ..Tools import compare_containers
-from ..Tools.Optimisation import constrained_conjugate_gradients
+from PyCo import Adhesion, ContactMechanics, SurfaceTopography
+from PyCo.Tools import compare_containers
+from PyCo.Tools.Optimisation import constrained_conjugate_gradients
 
 
 class IncompatibleFormulationError(Exception):
