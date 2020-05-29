@@ -34,22 +34,19 @@ from PyCo.Adhesion import LJ93
 from PyCo.Adhesion import LJ93smooth
 from PyCo.Adhesion import LJ93smoothMin
 from PyCo.Adhesion import LJ93SimpleSmooth
-from PyCo.Adhesion import LJ93SimpleSmoothMin
 
-from PyCo.Adhesion import Lj82
 from PyCo.Adhesion import VDW82
 from PyCo.Adhesion import VDW82smooth
 from PyCo.Adhesion import VDW82smoothMin
 from PyCo.Adhesion import VDW82SimpleSmooth
 from PyCo.Adhesion import LinearCorePotential
 
-from PyCo.Adhesion import PowerLaw
 from PyCo.Adhesion import Exponential
 from PyCo.Adhesion import RepulsiveExponential
 import PyCo.Tools as Tools
 
-from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
-from .lj93smooth_ref_potential import V as LJs_ref_V, dV as LJs_ref_dV, d2V as LJs_ref_ddV
+from tests.Adhesion.lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV
+from tests.Adhesion.lj93smooth_ref_potential import V as LJs_ref_V, dV as LJs_ref_dV, d2V as LJs_ref_ddV
 
 
 import pytest
@@ -636,7 +633,6 @@ import pytest
                         'PowerLaw(sig, eps, 3)'
                          ])
 def test_deepcopy(pot_creation):
-    import copy
     w = 3
     z0 = 0.5
     r_ti = 0.4 * z0

@@ -40,7 +40,7 @@ import numpy as np
 
 from PyCo.ContactMechanics.Tools.ContactAreaAnalysis import (assign_patch_numbers, assign_segment_numbers, distance_map,
                                                              inner_perimeter, outer_perimeter, patch_areas)
-from .PyCoTest import PyCoTestCase
+from tests.PyCoTest import PyCoTestCase
 
 ###
 

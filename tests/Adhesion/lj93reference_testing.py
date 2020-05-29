@@ -23,8 +23,7 @@
 # SOFTWARE.
 #
 
-from . import lj93_ref_potential as lj93
-from . import lj93smooth_ref_potential as lj93s
+from tests.Adhesion import lj93_ref_potential as lj93, lj93smooth_ref_potential as lj93s
 import numpy as np
 
 eps = 1.
