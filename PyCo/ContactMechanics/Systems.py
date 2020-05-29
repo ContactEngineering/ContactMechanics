@@ -362,19 +362,14 @@ class NonSmoothContactSystem(SystemBase):
     """
     # pylint: disable=abstract-method
 
-    def __init__(self, substrate, interaction, surface): # TODO: refactor the order and introduce a default value for interaction
+    def __init__(self, substrate, surface):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                        the substrate
-        interaction -- An instance of Interaction. Defines the contact
-                       formulation. If this computes interaction energies,
-                       forces etc, these are supposed to be expressed per unit
-                       area in whatever units you use. The conversion is
-                       performed by the system
         surface     -- An instance of SurfaceTopography, defines the profile.
         """
-        super().__init__(substrate, interaction, surface)
+        super().__init__(substrate, "hardwall", surface)
         if not compare_containers(surface.nb_grid_pts, substrate.nb_grid_pts):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
@@ -400,8 +395,7 @@ class NonSmoothContactSystem(SystemBase):
         is_ok &= issubclass(substrate_type,
                             ContactMechanics.ElasticSubstrate)
         # only hard interactions allowed
-        is_ok &= issubclass(interaction_type,
-                            Adhesion.HardWall) or interaction_type == "hardwall"
+        is_ok &= interaction_type == "hardwall"
 
         # any surface should do
         is_ok &= issubclass(surface_type,

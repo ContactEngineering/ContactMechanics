@@ -36,12 +36,13 @@ import time
 import os
 from netCDF4 import Dataset
 
-from PyCo.ContactMechanics import make_system
+from PyCo.Adhesion import make_system
 from PyCo.ContactMechanics.Systems import IncompatibleResolutionError, IncompatibleFormulationError
 from PyCo.Adhesion.Systems import SmoothContactSystem
 import PyCo.ContactMechanics as Solid
 import PyCo.Adhesion as Contact
 import PyCo.Tools as Tools
+from PyCo.SurfaceTopography import make_sphere
 
 import pytest
 from NuMPI import MPI
@@ -71,15 +72,6 @@ class SystemTest(unittest.TestCase):
         self.sphere = make_sphere(self.radius, self.res,
                                                     self.physical_sizes)
 
-    def test_RejectInconsistentInputTypes(self):
-        class dummyInteraction:
-            pass
-        with self.assertRaises(IncompatibleFormulationError):
-            make_system(interaction=dummyInteraction(),
-                        surface=self.sphere,
-                        substrate=self.substrate
-                        )
-
     def test_DecoratedTopography(self):
         top= self.sphere.detrend()
         make_system(substrate="periodic",
@@ -93,7 +85,8 @@ class SystemTest(unittest.TestCase):
         incompat_sphere = make_sphere(self.radius, incompat_res,
                                                         self.physical_sizes)
         with self.assertRaises(IncompatibleResolutionError):
-            make_system(self.substrate, self.smooth, incompat_sphere)
+            make_system(self.substrate, self.smooth, incompat_sphere,
+                        system_class=SmoothContactSystem)
 
     def test_SmoothContact(self):
         S = SmoothContactSystem(self.substrate, self.smooth, self.sphere)

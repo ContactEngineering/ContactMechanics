@@ -28,7 +28,7 @@
 Implements a convenient Factory function for Contact System creation
 """
 
-from PyCo.ContactMechanics.Systems import SystemBase
+from PyCo.ContactMechanics.Systems import SystemBase, NonSmoothContactSystem
 from PyCo.ContactMechanics.Systems import IncompatibleFormulationError
 
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
@@ -40,9 +40,8 @@ from PyCo.Adhesion import HardWall
 from NuMPI import MPI
 from NuMPI.Tools import Reduction
 
-def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
-                physical_sizes=None, system_class=None,
-                **kwargs):
+def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
+                physical_sizes=None, **kwargs):
     """
     Factory function for contact systems. Checks the compatibility between the
     substrate, interaction method and surface and returns an object of the
@@ -103,10 +102,7 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
             nb_grid_pts,
             physical_sizes=physical_sizes, communicator=communicator, **kwargs)
 
-    if not interaction=="hardwall":
-        # make shure the interaction has the correcrt communicator
-        interaction.pnp = Reduction(communicator)
-        interaction.communicator = communicator
+
 
     # now the topography is ready to load
     if issubclass(surface.__class__, ReaderBase):
@@ -116,37 +112,29 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
             physical_sizes=physical_sizes)
         # TODO: this may fail for some readers
 
-    args = substrate, interaction, surface
+    return substrate, surface
 
-    def check_subclasses(base_class, container):
-        """
-        accumulates a flattened container containing all subclasses of
-        base_class
-        Parameters:
-        base_class -- self-explanatory
-        container  -- self-explanatory
-        """
-        for cls in base_class.__subclasses__():
-            check_subclasses(cls, container)
-            container.append(cls)
 
-    if system_class is None:
-        check_subclasses(SystemBase, subclasses)
-        for cls in subclasses:
-            if cls.handles(*(type(arg) for arg in args), communicator.size>1):
-                return cls(*args)
-        raise IncompatibleFormulationError(
-            ("There is no class that handles the combination of substrates of type"
-             " '{}', interactions of type '{}' and surfaces of type '{}'").format(
-                 *(arg.__class__.__name__ for arg in args)))
-    else:
-        if not system_class.handles(*(type(arg) for arg in args),
-                                    communicator.size>1):
+def make_system(*args, **kwargs):
+    """
+    Factory function for contact systems. Checks the compatibility between the
+    substrate, interaction method and surface and returns an object of the
+    appropriate type to handle it. The returned object is always of a subtype
+    of SystemBase.
 
-            raise IncompatibleFormulationError(
-            "Specified system class {} cannot"
-            " handle the combination of substrates of type"
-            " '{}', interactions of type '{}' and surfaces of type '{}'".format(
-            system_class, *(arg.__class__.__name__ for arg in args)) )
-        return system_class(*args)
+    Parameters:
+    -----------
+    substrate   -- An instance of HalfSpace. Defines the solid mechanics in
+                   the substrate
+    interaction -- An instance of Interaction. Defines the contact formulation
+    surface     -- An instance of SurfaceTopography, defines the profile.
+
+    Returns
+    -------
+    """
+
+    substrate, surface = _make_system_args(*args, **kwargs)
+    return NonSmoothContactSystem(substrate=substrate, surface=surface)
+
+
 
