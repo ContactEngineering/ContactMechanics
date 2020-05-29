@@ -30,7 +30,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import PyCo.Tools as Tools
-import PyCo.Topography as Surf
+import PyCo.SurfaceTopography as Surf
 
 from SurfAnalysisHelper import test_surf_analysis
 

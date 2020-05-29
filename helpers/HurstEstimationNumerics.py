@@ -31,7 +31,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 import PyCo.Tools as Tools
-import PyCo.Topography as Surf
+import PyCo.SurfaceTopography as Surf
 
 
 def plot_naive(surface, lam_max):

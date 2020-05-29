@@ -1,9 +1,9 @@
-from PyCo.Topography.Generation import fourier_synthesis
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
 import numpy as np
 
 def test_lowcut():
     n = 200 # high number of points required because of binning in the isotropic psd
-    #t = Topography(np.zeros(n,n), (2,3))
+    #t = SurfaceTopography(np.zeros(n,n), (2,3))
     t = fourier_synthesis((n, n), (13,13), 0.9, 1.)
 
     q_l = 2 * np.pi / 13 * n / 4
@@ -24,7 +24,7 @@ def test_lowcut():
 
 def test_highcut():
     n = 100
-    #t = Topography(np.zeros(n,n), (2,3))
+    #t = SurfaceTopography(np.zeros(n,n), (2,3))
     t = fourier_synthesis((n, n), (13,13), 0.9, 1.)
 
     q_s= 2 * np.pi / 13  * 0.4 * n

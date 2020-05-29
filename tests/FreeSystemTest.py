@@ -36,9 +36,9 @@ from scipy.optimize import minimize
 
 from NuMPI import MPI
 
-import PyCo.SolidMechanics as Solid
-import PyCo.ContactMechanics as Contact
-import PyCo.Topography as Topography
+import PyCo.ContactMechanics as Solid
+import PyCo.Adhesion as Contact
+import PyCo.SurfaceTopography as Topography
 import PyCo.Tools as Tools
 from PyCo.System.Systems import SmoothContactSystem, NonSmoothContactSystem
 from PyCo.System.SmoothSystemSpecialisations import FastSmoothContactSystem
@@ -63,10 +63,10 @@ def test_minimization_simplesmoothmin(young, r_c):
     res = (base_res, base_res)
 
     size = (15., 15.)
-    surface = Topography.make_sphere(radius, res, size,
-                                     standoff=float("inf"))
-    ext_surface = Topography.make_sphere(radius, [2 * r for r in res], [2 * s for s in size],
-                                         centre=[s / 2 for s in size], standoff=float('inf'))
+    surface = SurfaceTopography.make_sphere(radius, res, size,
+                                            standoff=float("inf"))
+    ext_surface = SurfaceTopography.make_sphere(radius, [2 * r for r in res], [2 * s for s in size],
+                                                centre=[s / 2 for s in size], standoff=float('inf'))
 
     substrate = Solid.FreeFFTElasticHalfSpace(
         res, young, size, fft="numpy")
@@ -132,10 +132,10 @@ def test_minimization(pot_class, young, base_res):
     res = (base_res, base_res)
 
     size = (15., 15.)
-    surface = Topography.make_sphere(radius, res, size,
-                                     standoff=float("inf"))
-    ext_surface = Topography.make_sphere(radius, [2 * r for r in res], [2 * s for s in size],
-                                         centre=[s / 2 for s in size], standoff=float("inf"))
+    surface = SurfaceTopography.make_sphere(radius, res, size,
+                                            standoff=float("inf"))
+    ext_surface = SurfaceTopography.make_sphere(radius, [2 * r for r in res], [2 * s for s in size],
+                                                centre=[s / 2 for s in size], standoff=float("inf"))
 
     substrate = Solid.FreeFFTElasticHalfSpace(res, young, size, fft="numpy")
 
@@ -215,9 +215,9 @@ class FastSystemTest(unittest.TestCase):
         # self.interaction =Contact.Exponential(self.gam, 0.05, self.rcut)
         # self.min_pot = Contact.Exponential(self.gam, 0.05, self.rcut)
 
-        self.surface = Topography.make_sphere(self.radius, self.res,
-                                              self.physical_sizes,
-                                              standoff=float('inf'))
+        self.surface = SurfaceTopography.make_sphere(self.radius, self.res,
+                                                     self.physical_sizes,
+                                                     standoff=float('inf'))
 
         if False:
             import matplotlib.pyplot as plt
@@ -415,7 +415,7 @@ class FastSystemTest(unittest.TestCase):
                                                           size[i])
             interaction = Contact.LJ93smoothMin(
                 eps[i], sig[i], gam[i])
-            surface = Topography.make_sphere(radius[i], res, size[i], standoff=float(sig[i] * 1000))
+            surface = SurfaceTopography.make_sphere(radius[i], res, size[i], standoff=float(sig[i] * 1000))
             systems.append(make_system(substrate, interaction, surface))
             offsets.append(.8 * systems[i].interaction.r_c)
 
@@ -500,8 +500,8 @@ class FastSystemTest(unittest.TestCase):
             young = 1
             gam = 0.05
 
-            surface = Topography.make_sphere(radius, res, size)
-            ext_surface = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=(s / 2, s / 2))
+            surface = SurfaceTopography.make_sphere(radius, res, size)
+            ext_surface = SurfaceTopography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=(s / 2, s / 2))
 
             interaction = Contact.LJ93smoothMin(young / 18 * np.sqrt(2 / 5), 2.5 ** (1 / 6), gamma=gam)
 
@@ -545,8 +545,8 @@ class FastSystemTest(unittest.TestCase):
 
         centre = (0.75 * s, 0.5 * s)
 
-        topography = Topography.make_sphere(radius, res, size, centre=centre)
-        ext_topography = Topography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=centre)
+        topography = SurfaceTopography.make_sphere(radius, res, size, centre=centre)
+        ext_topography = SurfaceTopography.make_sphere(radius, (2 * n, 2 * n), (2 * s, 2 * s), centre=centre)
 
         substrate = Solid.FreeFFTElasticHalfSpace(topography.nb_grid_pts, young,
                                                   topography.physical_sizes,

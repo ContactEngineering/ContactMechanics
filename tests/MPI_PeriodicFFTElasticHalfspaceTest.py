@@ -28,7 +28,7 @@ import pytest
 
 from NuMPI import MPI
 
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 
 from NuMPI.Tools import Reduction
 

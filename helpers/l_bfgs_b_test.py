@@ -30,7 +30,7 @@ import numpy as np
 import scipy
 import scipy.optimize
 import matplotlib.pyplot as plt
-from PyCo.ContactMechanics import LJ93smoothMin as lj
+from PyCo.Adhesion import LJ93smoothMin as lj
 
 
 pot = lj(epsilon=1., sigma = 5, gamma = 10)

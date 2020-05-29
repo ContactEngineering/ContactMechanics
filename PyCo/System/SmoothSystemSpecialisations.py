@@ -36,8 +36,8 @@ import scipy
 
 from .Systems import SmoothContactSystem
 from .Systems import IncompatibleResolutionError
-from ..Topography import Topography
-from .. import ContactMechanics, SolidMechanics
+from ..SurfaceTopography import Topography
+from .. import Adhesion, ContactMechanics
 
 
 # convenient container for storing correspondences betwees small and large
@@ -87,7 +87,7 @@ class FastSmoothContactSystem(SmoothContactSystem):
                        forces etc, these are supposed to be expressed per unit
                        area in whatever units you use. The conversion is
                        performed by the system
-        surface     -- An instance of Topography, defines the profile.
+        surface     -- An instance of SurfaceTopography, defines the profile.
         margin      -- (default 4) safety margin (in pixels) around the initial
                        contact area bounding box
         """
@@ -178,12 +178,12 @@ class FastSmoothContactSystem(SmoothContactSystem):
         is_ok = True
         # any periodic type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
-                            SolidMechanics.Substrate)
+                            ContactMechanics.Substrate)
         if is_ok:
             is_ok &= ~substrate_type.is_periodic()
         # only soft interactions allowed
         is_ok &= issubclass(interaction_type,
-                            ContactMechanics.SoftWall)
+                            Adhesion.SoftWall)
 
         # any surface should do
         is_ok &= issubclass(surface_type,

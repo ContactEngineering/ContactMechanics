@@ -35,7 +35,7 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.Topography import Topography
+from PyCo.SurfaceTopography import Topography
 
 ###
 
@@ -57,7 +57,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     ----------
     substrate : elastic manifold
         Elastic manifold.
-    topography: Topography object describing the height profile of the rigid counterbody
+    topography: SurfaceTopography object describing the height profile of the rigid counterbody
     hardness : array_like
         Hardness of the substrate. Pressure cannot exceed this value. Can be
         scalar or array (i.e. per pixel) value.

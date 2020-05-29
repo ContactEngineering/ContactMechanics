@@ -31,9 +31,9 @@ to profile and accelerate PyCo
 
 import numpy as np
 
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-from PyCo.ContactMechanics import HardWall
-from PyCo.Topography import make_sphere
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
+from PyCo.Adhesion import HardWall
+from PyCo.SurfaceTopography import make_sphere
 from PyCo.System import make_system
 import sys
 

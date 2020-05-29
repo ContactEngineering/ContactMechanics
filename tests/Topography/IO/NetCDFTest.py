@@ -31,10 +31,10 @@ import pytest
 from netCDF4 import Dataset
 from NuMPI import MPI
 
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Topography.IO import read_topography
-from PyCo.Topography.IO.NC import NCReader
-from PyCo.Topography.Generation import fourier_synthesis
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SurfaceTopography.IO import read_topography
+from PyCo.SurfaceTopography.IO.NC import NCReader
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
 
 def test_save_and_load(comm):
     nb_grid_pts = (128, 128)

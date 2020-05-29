@@ -27,15 +27,15 @@ Uses cProfile and Snakeviz to show in which function the most time is spent
 
 
 import numpy as np
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-from PyCo.Topography import make_sphere
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
+from PyCo.SurfaceTopography import make_sphere
 
 from FFTEngine import PFFTEngine
 from NuMPI.Optimization import LBFGS
 from NuMPI.Tools.Reduction import Reduction
 
 
-from PyCo.ContactMechanics import VDW82smoothMin
+from PyCo.Adhesion import VDW82smoothMin
 from PyCo.System import SmoothContactSystem
 
 
@@ -94,7 +94,7 @@ pnp =Reduction(comm=comm)
 # the "Min" part of the potential (linear for small z) is needed for the LBFGS without bounds
 inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w, pnp = pnp)
 
-# Parallel Topography Patch
+# Parallel SurfaceTopography Patch
 
 substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx), fft=fftengine, pnp=pnp)
 print(substrate._comp_nb_grid_pts)

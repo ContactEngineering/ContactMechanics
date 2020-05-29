@@ -27,7 +27,7 @@
 import unittest
 import os
 
-from PyCo.Topography.IO.MI import MIReader
+from PyCo.SurfaceTopography.IO.MI import MIReader
 import pytest
 from NuMPI import MPI
 
@@ -53,7 +53,7 @@ class MISurfaceTest(unittest.TestCase):
 
         # Like in Gwyddion, there should be 4 channels in total
         assert len(loader.channels) == 4
-        assert [ ch.name for ch in loader.channels ] == [ 'Topography', 'Deflection', 'Friction', 'Friction' ]
+        assert [ ch.name for ch in loader.channels ] == [ 'SurfaceTopography', 'Deflection', 'Friction', 'Friction' ]
 
         # Check if metadata has been read in correctly
         self.assertEqual(loader.channels[0].dim, 2)
@@ -63,12 +63,12 @@ class MISurfaceTest(unittest.TestCase):
                          {'DisplayOffset': '8.8577270507812517e-004',
                           'DisplayRange': '1.3109436035156252e-002',
                           'acqMode': 'Main',
-                          'label': 'Topography',
+                          'label': 'SurfaceTopography',
                           'range': '2.9025000000000003e+000',
                           'unit': 'µm',
                           'direction': 'Trace',
                           'filter': '3rd_order',
-                          'name': 'Topography',
+                          'name': 'SurfaceTopography',
                           'trace': 'Trace'})
 
         self.assertEqual(loader.default_channel.index, 0)

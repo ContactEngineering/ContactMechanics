@@ -30,9 +30,9 @@ import numpy as np
 
 from PyCo.Tools import evaluate_gradient, mean_err
 from PyCo.Tools.ContactAreaAnalysis import distance_map
-from PyCo.Topography import Topography, UniformLineScan, NonuniformLineScan
-from PyCo.Topography.Nonuniform.Detrending import polyfit
-from PyCo.Topography.Uniform.Detrending import tilt_from_height, shift_and_tilt
+from PyCo.SurfaceTopography import Topography, UniformLineScan, NonuniformLineScan
+from PyCo.SurfaceTopography.Nonuniform.Detrending import polyfit
+from PyCo.SurfaceTopography.Uniform.Detrending import tilt_from_height, shift_and_tilt
 
 from .PyCoTest import PyCoTestCase
 

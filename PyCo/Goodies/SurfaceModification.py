@@ -31,7 +31,7 @@ import numpy as np
 from scipy.optimize import brentq
 
 from .SurfaceAnalysis import CharacterisePeriodicSurface
-from PyCo.Topography.Generation import RandomSurfaceExact
+from PyCo.SurfaceTopography.Generation import RandomSurfaceExact
 from ..Tools.common import fftn
 
 
@@ -41,7 +41,7 @@ class ModifyExistingPeriodicSurface(RandomSurfaceExact):
         """
         Generates a surface with an Gaussian amplitude distribution
         Keyword Arguments:
-        surface -- Topography to be modified.
+        surface -- SurfaceTopography to be modified.
         """
         self.surface = surface
         surf_char = CharacterisePeriodicSurface(self.surface)

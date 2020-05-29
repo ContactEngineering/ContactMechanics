@@ -31,9 +31,9 @@ from numpy.testing import assert_array_equal
 from muFFT import FFT
 from NuMPI.Tools import Reduction
 
-from PyCo.Topography import Topography
-from PyCo.Topography.Generation import fourier_synthesis
-from PyCo.Topography.UniformLineScanAndTopography import DetrendedUniformTopography
+from PyCo.SurfaceTopography import Topography
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
+from PyCo.SurfaceTopography.UniformLineScanAndTopography import DetrendedUniformTopography
 
 from ..PyCoTest import PyCoTestCase
 
@@ -249,6 +249,6 @@ def test_uniform_detrended_periodicity():
 
 
 def test_passing_of_docstring():
-    from PyCo.Topography.Uniform.PowerSpectrum import power_spectrum_1D
+    from PyCo.SurfaceTopography.Uniform.PowerSpectrum import power_spectrum_1D
     topography = Topography(np.array([[0, 1, 0], [0, 0, 0]]), physical_sizes=(4., 3.), periodic=True)
     assert topography.power_spectrum_1D.__doc__ == power_spectrum_1D.__doc__

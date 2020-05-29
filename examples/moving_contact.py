@@ -30,9 +30,9 @@ x-direction at constant height.
 
 import numpy as np
 
-from PyCo.ContactMechanics import HardWall
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Topography import read_matrix, TranslatedTopography, CompoundTopography
+from PyCo.Adhesion import HardWall
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SurfaceTopography import read_matrix, TranslatedTopography, CompoundTopography
 from PyCo.System import make_system
 #from PyCo.Tools import compute_rms_height
 from PyCo.Tools.Logger import screen

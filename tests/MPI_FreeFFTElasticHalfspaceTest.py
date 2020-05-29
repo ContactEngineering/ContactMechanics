@@ -34,7 +34,7 @@ except ImportError:
     _withMPI = False
 
 
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from NuMPI.Tools import Reduction
 
 

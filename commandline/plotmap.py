@@ -33,7 +33,7 @@ import numpy as np
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 
-from PyCo.Topography.IO import read_topography
+from PyCo.SurfaceTopography.IO import read_topography
 
 ###
 

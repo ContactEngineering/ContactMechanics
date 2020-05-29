@@ -30,22 +30,22 @@ Tests the potential classes
 import unittest
 import numpy as np
 
-from PyCo.ContactMechanics import LJ93
-from PyCo.ContactMechanics import LJ93smooth
-from PyCo.ContactMechanics import LJ93smoothMin
-from PyCo.ContactMechanics import LJ93SimpleSmooth
-from PyCo.ContactMechanics import LJ93SimpleSmoothMin
+from PyCo.Adhesion import LJ93
+from PyCo.Adhesion import LJ93smooth
+from PyCo.Adhesion import LJ93smoothMin
+from PyCo.Adhesion import LJ93SimpleSmooth
+from PyCo.Adhesion import LJ93SimpleSmoothMin
 
-from PyCo.ContactMechanics import Lj82
-from PyCo.ContactMechanics import VDW82
-from PyCo.ContactMechanics import VDW82smooth
-from PyCo.ContactMechanics import VDW82smoothMin
-from PyCo.ContactMechanics import VDW82SimpleSmooth
-from PyCo.ContactMechanics import LinearCorePotential
+from PyCo.Adhesion import Lj82
+from PyCo.Adhesion import VDW82
+from PyCo.Adhesion import VDW82smooth
+from PyCo.Adhesion import VDW82smoothMin
+from PyCo.Adhesion import VDW82SimpleSmooth
+from PyCo.Adhesion import LinearCorePotential
 
-from PyCo.ContactMechanics import PowerLaw
-from PyCo.ContactMechanics import Exponential
-from PyCo.ContactMechanics import RepulsiveExponential
+from PyCo.Adhesion import PowerLaw
+from PyCo.Adhesion import Exponential
+from PyCo.Adhesion import RepulsiveExponential
 import PyCo.Tools as Tools
 
 from .lj93_ref_potential import V as LJ_ref_V, dV as LJ_ref_dV, d2V as LJ_ref_ddV

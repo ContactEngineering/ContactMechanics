@@ -2,6 +2,12 @@
 Change log for PyCo
 ===================
 
+v0.90.0 (???)
+-------------
+
+- Refactored PyCo code into three separate Python modules:
+  SurfaceTopography, ContactMechanics and Adhesion
+
 v0.57.0 (15May20)
 -----------------
 

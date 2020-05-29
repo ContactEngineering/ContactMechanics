@@ -27,12 +27,12 @@ import numpy as np
 import pytest
 
 import PyCo.ReferenceSolutions.MaugisDugdale as MD
-from PyCo.ContactMechanics import Dugdale
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
+from PyCo.Adhesion import Dugdale
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
 from PyCo.System import make_system
 from PyCo.Tools.Logger import screen
 from PyCo.Tools.Optimisation import constrained_conjugate_gradients
-from PyCo.Topography import Topography, make_sphere
+from PyCo.SurfaceTopography import Topography, make_sphere
 
 
 @pytest.mark.skip

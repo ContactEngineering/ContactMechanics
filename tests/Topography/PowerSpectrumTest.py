@@ -33,9 +33,9 @@ import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from NuMPI import MPI
 
-from PyCo.Topography import read_topography, UniformLineScan, NonuniformLineScan, Topography
-from PyCo.Topography.Generation import fourier_synthesis
-from PyCo.Topography.Nonuniform.PowerSpectrum import sinc, dsinc
+from PyCo.SurfaceTopography import read_topography, UniformLineScan, NonuniformLineScan, Topography
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
+from PyCo.SurfaceTopography.Nonuniform.PowerSpectrum import sinc, dsinc
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
         reason="tests only serial functionalities, please execute with pytest")

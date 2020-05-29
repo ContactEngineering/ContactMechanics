@@ -26,10 +26,10 @@ try:
     import numpy as np
     import time
     import math
-    from PyCo.ContactMechanics import HardWall
-    from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-    from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-    from PyCo.Topography import make_sphere,Topography
+    from PyCo.Adhesion import HardWall
+    from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+    from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
+    from PyCo.SurfaceTopography import make_sphere,Topography
     from PyCo.System import make_system
     #from PyCo.Tools.Logger import screen
     from PyCo.ReferenceSolutions.Hertz import (radius_and_pressure,
@@ -38,7 +38,7 @@ try:
     from NuMPI.Optimization import LBFGS
     from NuMPI.Tools.Reduction import Reduction
     from NuMPI import MPI
-    from PyCo.ContactMechanics import VDW82smoothMin, VDW82
+    from PyCo.Adhesion import VDW82smoothMin, VDW82
     from PyCo.System import SmoothContactSystem
     from PyCo.Tools.NetCDF import NetCDFContainer
 
@@ -64,7 +64,7 @@ def test_wavy(comm):
 
     inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w,communicator=comm)
 
-    # Parallel Topography Patch
+    # Parallel SurfaceTopography Patch
 
     substrate = PeriodicFFTElasticHalfSpace(surf_res, young=Es,
                                             physical_sizes=surf_size, communicator=comm, fft='mpi')

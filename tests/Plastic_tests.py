@@ -29,11 +29,11 @@ from scipy.optimize import bisect
 from NuMPI.Tools.Reduction import Reduction
 from NuMPI import MPI
 
-from PyCo.ContactMechanics import HardWall
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Topography import open_topography, PlasticTopography
+from PyCo.Adhesion import HardWall
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SurfaceTopography import open_topography, PlasticTopography
 from PyCo.System import make_system
-from PyCo.Topography import Topography
+from PyCo.SurfaceTopography import Topography
 
 
 FIXTURE_DIR = os.path.join(

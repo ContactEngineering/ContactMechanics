@@ -28,9 +28,9 @@ import random
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.lines import Line2D
 
-from PyCo.ContactMechanics import HardWall
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
-from PyCo.Topography import Topography
+from PyCo.Adhesion import HardWall
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
+from PyCo.SurfaceTopography import Topography
 from PyCo.System import make_system
 
 def load_and_mean_pressure(alpha):

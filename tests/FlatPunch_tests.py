@@ -30,9 +30,9 @@ import unittest
 
 import numpy as np
 
-from PyCo.ContactMechanics import HardWall
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-from PyCo.Topography import Topography
+from PyCo.Adhesion import HardWall
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
+from PyCo.SurfaceTopography import Topography
 from PyCo.System import make_system
 
 # -----------------------------------------------------------------------------

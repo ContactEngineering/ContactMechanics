@@ -31,12 +31,12 @@ import os
 import numpy.testing as npt
 import numpy as np
 
-from PyCo.Topography.IO.OPDx import read_with_check, read_float, read_double, \
+from PyCo.SurfaceTopography.IO.OPDx import read_with_check, read_float, read_double, \
     read_int16, read_int32, read_int64, read_varlen, read_structured, \
     read_name, DektakQuantUnit, read_dimension2d_content, \
     read_quantunit_content, read_named_struct, read_item, OPDxReader
 
-from PyCo.Topography import read_topography
+from PyCo.SurfaceTopography import read_topography
 
 import pytest
 from NuMPI import MPI

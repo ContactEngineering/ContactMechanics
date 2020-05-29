@@ -32,9 +32,9 @@ from NuMPI.Optimization import LBFGS
 from NuMPI.Tools.Reduction import Reduction
 
 import PyCo.ReferenceSolutions.MaugisDugdale as MD
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-from PyCo.Topography import make_sphere
-from PyCo.ContactMechanics import VDW82smoothMin, VDW82
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
+from PyCo.SurfaceTopography import make_sphere
+from PyCo.Adhesion import VDW82smoothMin, VDW82
 from PyCo.System import SmoothContactSystem
 
 _toplot = True
@@ -76,7 +76,7 @@ def test_smoothsphere(maxcomm, fftengine_type): # TODO problem: difficult to com
     # the "Min" part of the potential (linear for small z) is needed for the LBFGS without bounds
     inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2, gamma=w, communicator=comm)
 
-    # Parallel Topography Patch
+    # Parallel SurfaceTopography Patch
 
     substrate = FreeFFTElasticHalfSpace((nx,ny), young=E_s, physical_sizes=(sx, sx),
                                         fft=fftengine_type,

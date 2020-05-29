@@ -29,10 +29,10 @@ Tests adhesion-free flat punch results
 
 import unittest
 import numpy as np
-from PyCo.ContactMechanics import HardWall
+from PyCo.Adhesion import HardWall
 from PyCo.ReferenceSolutions.Westergaard import _pressure
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Topography import Topography
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SurfaceTopography import Topography
 from PyCo.System import make_system
 from .PyCoTest import PyCoTestCase
 

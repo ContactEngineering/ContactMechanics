@@ -39,9 +39,9 @@ from netCDF4 import Dataset
 from PyCo.System import make_system, IncompatibleFormulationError
 from PyCo.System import IncompatibleResolutionError
 from PyCo.System.Systems import SmoothContactSystem
-import PyCo.SolidMechanics as Solid
-import PyCo.ContactMechanics as Contact
-import PyCo.Topography as Topography
+import PyCo.ContactMechanics as Solid
+import PyCo.Adhesion as Contact
+import PyCo.SurfaceTopography as Topography
 import PyCo.Tools as Tools
 
 import pytest
@@ -69,8 +69,8 @@ class SystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smoothMin(self.eps, self.sig, self.gam)
 
-        self.sphere = Topography.make_sphere(self.radius, self.res,
-                                             self.physical_sizes)
+        self.sphere = SurfaceTopography.make_sphere(self.radius, self.res,
+                                                    self.physical_sizes)
 
     def test_RejectInconsistentInputTypes(self):
         class dummyInteraction:
@@ -91,8 +91,8 @@ class SystemTest(unittest.TestCase):
 
     def test_RejectInconsistentSizes(self):
         incompat_res = tuple((2*r for r in self.res))
-        incompat_sphere = Topography.make_sphere(self.radius, incompat_res,
-                                                 self.physical_sizes)
+        incompat_sphere = SurfaceTopography.make_sphere(self.radius, incompat_res,
+                                                        self.physical_sizes)
         with self.assertRaises(IncompatibleResolutionError):
             make_system(self.substrate, self.smooth, incompat_sphere)
 
@@ -107,7 +107,7 @@ class SystemTest(unittest.TestCase):
         size = [r*1.28 for r in self.res]##[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
                                                       size)
-        sphere = Topography.make_sphere(self.radius, res, size)
+        sphere = SurfaceTopography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         disp = random(res)*self.sig/10
         disp -= disp.mean()
@@ -211,7 +211,7 @@ class SystemTest(unittest.TestCase):
         size = self.physical_sizes[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
                                                       self.physical_sizes[0])
-        sphere = Topography.make_sphere(self.radius, res, size)
+        sphere = SurfaceTopography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
         disp = np.zeros(res)
@@ -250,7 +250,7 @@ class SystemTest(unittest.TestCase):
         size = self.physical_sizes
         substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
                                                       self.physical_sizes[0])
-        sphere = Topography.make_sphere(self.radius, res, size)
+        sphere = SurfaceTopography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
         nb_scales = 5
@@ -271,7 +271,7 @@ class SystemTest(unittest.TestCase):
         size = self.physical_sizes
         substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
                                                       self.physical_sizes[0])
-        sphere = Topography.make_sphere(self.radius, res, size)
+        sphere = SurfaceTopography.make_sphere(self.radius, res, size)
         S = SmoothContactSystem(substrate, self.smooth, sphere)
         offset = self.sig
 
@@ -321,7 +321,7 @@ def test_LBFGSB_Hertz():
     sx, sy = 20., 20.
     R = 11.
 
-    surface =Topography.make_sphere(R, (nx,ny), (sx,sy), kind="paraboloid")
+    surface =SurfaceTopography.make_sphere(R, (nx, ny), (sx, sy), kind="paraboloid")
     Es=50.
     substrate = Solid.FreeFFTElasticHalfSpace((nx,ny), young=Es,
                                               physical_sizes=(sx, sy),
@@ -395,7 +395,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         self.rcut = 2.5*self.sig+np.random.rand()
         self.smooth = Contact.LJ93smooth(self.eps, self.sig, self.gam)
 
-        self.sphere = Topography.make_sphere(self.radius, self.res, self.physical_sizes)
+        self.sphere = SurfaceTopography.make_sphere(self.radius, self.res, self.physical_sizes)
 
     def test_unconfirmed_minimization(self):
         ## this merely makes sure that the code doesn't throw exceptions
@@ -404,7 +404,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         size = self.physical_sizes[0]
         substrate = Solid.PeriodicFFTElasticHalfSpace(res, 25 * self.young,
                                                       self.physical_sizes[0])
-        sphere = Topography.make_sphere(self.radius, res, size)
+        sphere = SurfaceTopography.make_sphere(self.radius, res, size)
         # here, i deliberately avoid using the make_system, because I want to
         # explicitly test the dumb (yet safer) way of computing problems with a
         # free, non-periodic  boundary. A user who invokes a system constructor
@@ -474,10 +474,10 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
         ## 3. replicate surface
         radius = ref_data.Hertz
         centre = (15.5, 15.5)
-        surface = Topography.make_sphere(radius, res, size, centre=centre)
+        surface = SurfaceTopography.make_sphere(radius, res, size, centre=centre)
         ## ref_h = -np.array(ref_data.variables['h'])
         ## ref_h -= ref_h.max()
-        ## surface = Topography.NumpySurface(ref_h)
+        ## surface = SurfaceTopography.NumpySurface(ref_h)
         ## 4. Set up system:
         S = SmoothContactSystem(substrate, potential, surface)
 
@@ -597,7 +597,7 @@ class FreeElasticHalfSpaceSystemTest(unittest.TestCase):
 
             ## 3. replicate surface
             radius = ref_data.Hertz
-            surface = Topography.make_sphere(radius, res, size)
+            surface = SurfaceTopography.make_sphere(radius, res, size)
 
             ## 4. Set up system:
             S = SmoothContactSystem(substrate, potential, surface)

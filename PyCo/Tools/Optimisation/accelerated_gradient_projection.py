@@ -23,7 +23,7 @@
 #
 import numpy as np
 
-from PyCo.Topography import make_sphere
+from PyCo.SurfaceTopography import make_sphere
 
 ##########
 # substrate
@@ -51,7 +51,7 @@ def fro_fourier():
 def iweights_frobenius_norm():
     "compare with the calculation in the real space"
 
-    from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+    from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 
     nx, ny = 16,16
     sx, sy = 16,16
@@ -118,8 +118,8 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     from make_rough import Fourier_synthesis
-    from PyCo.Topography import Topography
-    from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+    from PyCo.SurfaceTopography import Topography
+    from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 
     nx, ny = 64, 64
     sx = float(nx)

@@ -31,9 +31,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from PyCo.System import make_system
-from PyCo.Topography import make_sphere
-from PyCo.ContactMechanics import VDW82smoothMin as VdwPot
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
+from PyCo.SurfaceTopography import make_sphere
+from PyCo.Adhesion import VDW82smoothMin as VdwPot
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace as Substrate
 
 
 plt.ion()

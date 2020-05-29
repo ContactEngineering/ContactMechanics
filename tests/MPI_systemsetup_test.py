@@ -31,11 +31,11 @@ represents the UseCase of creating System with MPI parallelization
 import pytest
 
 from mpi4py import MPI
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from PyCo.System.Factory import make_system
-from PyCo.ContactMechanics import HardWall, VDW82, Exponential
-from PyCo.Topography import make_sphere
-from PyCo.Topography.IO import NPYReader, open_topography
+from PyCo.Adhesion import HardWall, VDW82, Exponential
+from PyCo.SurfaceTopography import make_sphere
+from PyCo.SurfaceTopography.IO import NPYReader, open_topography
 from PyCo.System import SmoothContactSystem
 from PyCo.Tools import Logger
 

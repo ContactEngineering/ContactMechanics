@@ -32,7 +32,7 @@ import pytest
 import numpy as np
 
 from PyCo.Tools.Interpolation import Bicubic
-from PyCo.Topography.Generation import fourier_synthesis
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
 
 nx = 17
 ny = 22

@@ -29,7 +29,7 @@ implements plastic mapping algorithms for contact systems
 
 import numpy as np
 
-from .. import ContactMechanics, SolidMechanics, Topography
+from .. import Adhesion, ContactMechanics, SurfaceTopography
 from .Systems import NonSmoothContactSystem
 from .Systems import SmoothContactSystem
 
@@ -51,14 +51,14 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
         is_ok = True
         # any type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
-                            SolidMechanics.ElasticSubstrate)
+                            ContactMechanics.ElasticSubstrate)
         # only hard interactions allowed
         is_ok &= issubclass(interaction_type,
-                            ContactMechanics.HardWall)
+                            Adhesion.HardWall)
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Topography.PlasticTopography)
+                            SurfaceTopography.PlasticTopography)
         return is_ok
 
     def minimize_proxy(self, **kwargs):
@@ -85,8 +85,8 @@ class PlasticSmoothContactSystem(SmoothContactSystem):
     """
 
     def __init__(self, substrate, interaction, surface):
-        plastic_interaction = ContactMechanics.LinearCorePotential(interaction,
-                                        hardness=surface.hardness)
+        plastic_interaction = Adhesion.LinearCorePotential(interaction,
+                                                           hardness=surface.hardness)
         super().__init__(substrate, plastic_interaction, surface)
 
     @staticmethod
@@ -102,14 +102,14 @@ class PlasticSmoothContactSystem(SmoothContactSystem):
         is_ok = True
         # any type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
-                            SolidMechanics.ElasticSubstrate)
+                            ContactMechanics.ElasticSubstrate)
         # only hard interactions allowed
         is_ok &= issubclass(interaction_type,
-                            ContactMechanics.SoftWall)
+                            Adhesion.SoftWall)
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Topography.PlasticTopography)
+                            SurfaceTopography.PlasticTopography)
         return is_ok
 
     def minimize_proxy(self, **kwargs):

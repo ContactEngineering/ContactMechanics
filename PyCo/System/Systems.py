@@ -33,7 +33,7 @@ import abc
 import numpy as np
 import scipy
 
-from .. import ContactMechanics, SolidMechanics, Topography
+from .. import Adhesion, ContactMechanics, SurfaceTopography
 from ..Tools import compare_containers
 from ..Tools.Optimisation import constrained_conjugate_gradients
 
@@ -60,7 +60,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                        forces etc, these are supposed to be expressed per unit
                        area in whatever units you use. The conversion is
                        performed by the system
-        surface     -- An instance of Topography, defines the profile.
+        surface     -- An instance of SurfaceTopography, defines the profile.
         """
         self.substrate = substrate
         self.area_per_pt = self.substrate.area_per_pt
@@ -368,7 +368,7 @@ class SmoothContactSystem(SystemBase):
                        forces etc, these are supposed to be expressed per unit
                        area in whatever units you use. The conversion is
                        performed by the system
-        surface     -- An instance of Topography, defines the profile.
+        surface     -- An instance of SurfaceTopography, defines the profile.
         """
         super().__init__(substrate, interaction, surface)
         if not compare_containers(surface.nb_grid_pts, substrate.nb_grid_pts):
@@ -390,15 +390,15 @@ class SmoothContactSystem(SystemBase):
         is_ok = True
         # any periodic type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
-                            SolidMechanics.Substrate)
+                            ContactMechanics.Substrate)
 
         # only soft interactions allowed
         is_ok &= issubclass(interaction_type,
-                            ContactMechanics.SoftWall)
+                            Adhesion.SoftWall)
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Topography.UniformTopographyInterface)
+                            SurfaceTopography.UniformTopographyInterface)
         return is_ok
 
     def compute_repulsive_force(self):
@@ -693,7 +693,7 @@ class NonSmoothContactSystem(SystemBase):
                        forces etc, these are supposed to be expressed per unit
                        area in whatever units you use. The conversion is
                        performed by the system
-        surface     -- An instance of Topography, defines the profile.
+        surface     -- An instance of SurfaceTopography, defines the profile.
         """
         super().__init__(substrate, interaction, surface)
         if not compare_containers(surface.nb_grid_pts, substrate.nb_grid_pts):
@@ -719,14 +719,14 @@ class NonSmoothContactSystem(SystemBase):
         is_ok = True
         # any type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
-                            SolidMechanics.ElasticSubstrate)
+                            ContactMechanics.ElasticSubstrate)
         # only hard interactions allowed
         is_ok &= issubclass(interaction_type,
-                            ContactMechanics.HardWall)
+                            Adhesion.HardWall)
 
         # any surface should do
         is_ok &= issubclass(surface_type,
-                            Topography.UniformTopographyInterface)
+                            SurfaceTopography.UniformTopographyInterface)
         return is_ok
 
     @property

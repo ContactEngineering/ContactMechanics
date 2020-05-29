@@ -28,17 +28,17 @@
 Implements a convenient Factory function for Contact System creation
 """
 
-from .. import ContactMechanics, SolidMechanics, Topography
+from .. import Adhesion, ContactMechanics, SurfaceTopography
 from ..Tools import compare_containers
 from .Systems import SystemBase
 from .Systems import IncompatibleFormulationError
 from .Systems import IncompatibleResolutionError
 
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
-from PyCo.Topography import open_topography
-from PyCo.Topography.IO import ReaderBase
-from PyCo.ContactMechanics import HardWall
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
+from PyCo.SurfaceTopography import open_topography
+from PyCo.SurfaceTopography.IO import ReaderBase
+from PyCo.Adhesion import HardWall
 
 from NuMPI import MPI
 from NuMPI.Tools import Reduction
@@ -57,7 +57,7 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
     substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                    the substrate
     interaction -- An instance of Interaction. Defines the contact formulation
-    surface     -- An instance of Topography, defines the profile.
+    surface     -- An instance of SurfaceTopography, defines the profile.
 
     Returns
     -------
@@ -77,7 +77,7 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
         else: openkwargs={}
         surface = open_topography(surface, **openkwargs)
 
-    if hasattr(surface, "nb_grid_pts"): # it is a Topography instance
+    if hasattr(surface, "nb_grid_pts"): # it is a SurfaceTopography instance
         nb_grid_pts = surface.nb_grid_pts
     else: # assume it is a reader instance
         nb_grid_pts = surface.channels[surface.default_channel]['nb_grid_pts']
@@ -85,7 +85,7 @@ def make_system(substrate, interaction, surface, communicator=MPI.COMM_WORLD,
     if physical_sizes is None:
         # if physical_sizes is not given in input arguments,
         # try to extract physical sizes from the input topography or reader
-        if hasattr(surface, "physical_sizes"):  # it is a Topography instance
+        if hasattr(surface, "physical_sizes"):  # it is a SurfaceTopography instance
             surface_physical_sizes = surface.physical_sizes
         else:  # we assume it is a reader instance
             surface_physical_sizes = surface.channels[surface.default_channel][

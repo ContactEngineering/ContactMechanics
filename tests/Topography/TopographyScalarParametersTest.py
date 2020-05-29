@@ -28,7 +28,7 @@ import unittest
 import numpy as np
 
 
-from PyCo.Topography import Topography, NonuniformLineScan, UniformLineScan
+from PyCo.SurfaceTopography import Topography, NonuniformLineScan, UniformLineScan
 
 from NuMPI import MPI
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,

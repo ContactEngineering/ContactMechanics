@@ -26,7 +26,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from PyCo.SolidMechanics.GreensFunctions import AnisotropicGreensFunction, IsotropicGreensFunction
+from PyCo.ContactMechanics.GreensFunctions import AnisotropicGreensFunction, IsotropicGreensFunction
 
 ###
 

@@ -32,7 +32,7 @@ import numpy as np
 import warnings
 
 import PyCo.Goodies as Goodies
-from PyCo.Topography.Generation import fourier_synthesis, self_affine_prefactor
+from PyCo.SurfaceTopography.Generation import fourier_synthesis, self_affine_prefactor
 
 from NuMPI import MPI
 import pytest

@@ -42,15 +42,15 @@ from NuMPI import MPI
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
                                 reason="tests only serial functionalities, please execute with pytest")
 
-from PyCo.Topography import open_topography, read_topography
+from PyCo.SurfaceTopography import open_topography, read_topography
 
-from PyCo.Topography.IO.FromFile import read_xyz
+from PyCo.SurfaceTopography.IO.FromFile import read_xyz
 
-from PyCo.Topography.IO.FromFile import is_binary_stream
-from PyCo.Topography.IO import detect_format
+from PyCo.SurfaceTopography.IO.FromFile import is_binary_stream
+from PyCo.SurfaceTopography.IO import detect_format
 
-import PyCo.Topography.IO
-from PyCo.Topography.IO import readers
+import PyCo.SurfaceTopography.IO
+from PyCo.SurfaceTopography.IO import readers
 
 ###
 
@@ -277,20 +277,20 @@ class IOTest(unittest.TestCase):
 class UnknownFileFormatGivenTest(unittest.TestCase):
 
     def test_read(self):
-        with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"),
-                                               format='Nonexistentfileformat')
+        with self.assertRaises(PyCo.SurfaceTopography.IO.UnknownFileFormatGiven):
+            PyCo.SurfaceTopography.IO.open_topography(os.path.join(DATADIR, "surface.2048x2048.h5"),
+                                                      format='Nonexistentfileformat')
 
     def test_detect_format(self):
-        with self.assertRaises(PyCo.Topography.IO.UnknownFileFormatGiven):
-            PyCo.Topography.IO.open_topography(
+        with self.assertRaises(PyCo.SurfaceTopography.IO.UnknownFileFormatGiven):
+            PyCo.SurfaceTopography.IO.open_topography(
                 os.path.join(DATADIR, "surface.2048x2048.h5"),
                 format='Nonexistentfileformat')
 
 
 def test_file_format_mismatch():
-    with pytest.raises(PyCo.Topography.IO.FileFormatMismatch):
-        PyCo.Topography.IO.open_topography(
+    with pytest.raises(PyCo.SurfaceTopography.IO.FileFormatMismatch):
+        PyCo.SurfaceTopography.IO.open_topography(
             os.path.join(DATADIR, 'surface.2048x2048.h5'), format="npy")
 
 

@@ -3,16 +3,16 @@
 import scipy.optimize
 import matplotlib.pyplot as plt
 import numpy as np
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 
-from PyCo.ContactMechanics import Exponential
+from PyCo.Adhesion import Exponential
 from muFFT import NCStructuredGrid
 
 from PyCo.Tools import Logger
 from PyCo.System import BoundedSmoothContactSystem
 import time
 import datetime
-from PyCo.Topography import make_sphere
+from PyCo.SurfaceTopography import make_sphere
 
 # These Parameters are one because of nondimensionalisation, this way the typical displacements, forces and contact areas are of order 1
 

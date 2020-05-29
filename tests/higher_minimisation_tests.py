@@ -33,9 +33,9 @@ try:
     import math
 
     from PyCo.System import make_system
-    from PyCo.Topography import make_sphere
-    from PyCo.ContactMechanics import LJ93smoothMin as LJ_pot
-    from PyCo.SolidMechanics import FreeFFTElasticHalfSpace as Substrate
+    from PyCo.SurfaceTopography import make_sphere
+    from PyCo.Adhesion import LJ93smoothMin as LJ_pot
+    from PyCo.ContactMechanics import FreeFFTElasticHalfSpace as Substrate
 
 except ImportError as err:
     import sys

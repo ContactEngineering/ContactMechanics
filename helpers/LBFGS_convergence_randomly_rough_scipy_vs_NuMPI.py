@@ -32,13 +32,13 @@ import os
 import scipy.optimize
 import numpy as np
 
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Topography.Generation import fourier_synthesis
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
 
 from FFTEngine import PFFTEngine
 from NuMPI.Optimization import LBFGS
 from NuMPI.Tools.Reduction import Reduction
-from PyCo.ContactMechanics import VDW82smoothMin
+from PyCo.Adhesion import VDW82smoothMin
 from PyCo.System import SmoothContactSystem
 
 
@@ -121,7 +121,7 @@ for method, name in zip(["L-BFGS-B", LBFGS],
     inter = VDW82smoothMin(w * z0 ** 8 / 3, 16 * np.pi * w * z0 ** 2,
                            gamma=w, pnp=pnp)
 
-    # Parallel Topography Patch
+    # Parallel SurfaceTopography Patch
 
     substrate = PeriodicFFTElasticHalfSpace((nx, ny), young=E_s,
                                             physical_sizes=(sx, sx), pnp=pnp)

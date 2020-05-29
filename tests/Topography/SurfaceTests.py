@@ -46,19 +46,19 @@ import os
 import io
 import pickle
 
-from PyCo.Topography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, open_topography,
-                             read_topography)
-from PyCo.Topography.UniformLineScanAndTopography import ScaledUniformTopography
+from PyCo.SurfaceTopography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, open_topography,
+                                    read_topography)
+from PyCo.SurfaceTopography.UniformLineScanAndTopography import ScaledUniformTopography
 
-from PyCo.Topography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz, AscReader
+from PyCo.SurfaceTopography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz, AscReader
 
-from PyCo.Topography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
-from PyCo.Topography.IO import detect_format, CannotDetectFileFormat
+from PyCo.SurfaceTopography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
+from PyCo.SurfaceTopography.IO import detect_format, CannotDetectFileFormat
 
-import PyCo.Topography.IO
-from PyCo.Topography.IO import readers
-from PyCo.Topography.IO import NPYReader, H5Reader, IBWReader
-from PyCo.Topography.Generation import fourier_synthesis
+import PyCo.SurfaceTopography.IO
+from PyCo.SurfaceTopography.IO import readers
+from PyCo.SurfaceTopography.IO import NPYReader, H5Reader, IBWReader
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
 
 from ..PyCoTest import PyCoTestCase
 
@@ -768,7 +768,7 @@ class matSurfaceTest(unittest.TestCase):
         pass
 
     def test_read(self):
-        from PyCo.Topography.IO import MatReader
+        from PyCo.SurfaceTopography.IO import MatReader
         surface = MatReader(os.path.join(DATADIR,  'example1.mat')).topography(physical_sizes=[1.,1.])
         nx, ny = surface.nb_grid_pts
         self.assertEqual(nx, 2048)
@@ -965,7 +965,7 @@ class h5SurfaceTest(unittest.TestCase):
 
     def test_detect_format(self):
 
-        self.assertEqual(PyCo.Topography.IO.detect_format( # TODO: this will be the standart detect format method in the future
+        self.assertEqual(PyCo.SurfaceTopography.IO.detect_format( # TODO: this will be the standart detect format method in the future
             os.path.join(DATADIR,  'surface.2048x2048.h5')), 'h5')
 
     def test_read(self):

@@ -35,10 +35,10 @@ try:
     import PyCo.ReferenceSolutions.JKR as JKR
     import PyCo.ReferenceSolutions.MaugisDugdale as MD
     from scipy.optimize import minimize_scalar
-    from PyCo.ContactMechanics import Exponential
-    from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
-                                     PeriodicFFTElasticHalfSpace)
-    from PyCo.Topography import make_sphere
+    from PyCo.Adhesion import Exponential
+    from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
+                                       PeriodicFFTElasticHalfSpace)
+    from PyCo.SurfaceTopography import make_sphere
     from PyCo.System import make_system, SmoothContactSystem
 except ImportError as err:
     import sys

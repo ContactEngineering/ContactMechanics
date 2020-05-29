@@ -29,8 +29,8 @@ import unittest
 
 import numpy as np
 
-from PyCo.Topography import Topography, UniformLineScan
-from PyCo.Topography.Generation import fourier_synthesis
+from PyCo.SurfaceTopography import Topography, UniformLineScan
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
 from ..PyCoTest import PyCoTestCase
 import pytest
 from NuMPI import MPI

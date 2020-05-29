@@ -29,9 +29,9 @@ Tries to guess displacements such that areas are equally spaced on a log scale.
 """
 
 import numpy as np
-from PyCo.ContactMechanics import Exponential, LJ93smoothMin
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.Topography import read_matrix
+from PyCo.Adhesion import Exponential, LJ93smoothMin
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.SurfaceTopography import read_matrix
 from PyCo.System import make_system
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -51,7 +51,7 @@ rho = 1.0
 
 ###
 
-# Read a surface topography from a text file. Returns a PyCo.Topography.Topography
+# Read a surface topography from a text file. Returns a PyCo.SurfaceTopography.SurfaceTopography
 # object.
 surface = read_matrix('surface1.out')
 # Set the *physical* physical_sizes of the surface. We here set it to equal the shape,

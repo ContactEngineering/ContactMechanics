@@ -34,7 +34,7 @@ import numpy as np
 import scipy
 
 from ..Tools.common import compute_wavevectors, fftn, get_q_from_lambda
-from ..Topography import Topography
+from ..SurfaceTopography import Topography
 
 
 class CharacterisePeriodicSurface(object):
@@ -46,7 +46,7 @@ class CharacterisePeriodicSurface(object):
     def __init__(self, surface, one_dimensional=False):
         """
         Keyword Arguments:
-        surface -- Instance of PyCo.Topography or subclass with specified
+        surface -- Instance of PyCo.SurfaceTopography or subclass with specified
                    physical_sizes
         one_dimensional -- (default False). if True, evaluation of 1D (line-
                            scan) power spectrum is emulated
@@ -54,7 +54,7 @@ class CharacterisePeriodicSurface(object):
         # pylint: disable=invalid-name
         self.surface = surface
         if self.surface.physical_sizes is None:
-            raise Exception("Topography physical_sizes has to be known (and specified)!")
+            raise Exception("SurfaceTopography physical_sizes has to be known (and specified)!")
         if self.surface.dim != 2:
             raise Exception("Only 2D surfaces, for the time being")
         if self.surface.physical_sizes[0] != self.surface.physical_sizes[1]:
@@ -73,7 +73,7 @@ class CharacterisePeriodicSurface(object):
     def eval(self):
         """
         Generates the phases and amplitudes, readies the metasurface to
-        generate Topography objects
+        generate SurfaceTopography objects
         """
         res, size = self.surface.nb_grid_pts, self.surface.physical_sizes
         # equivalent lattice constant**2
@@ -90,7 +90,7 @@ class CharacterisePeriodicSurface(object):
     def eval_1D(self):  # pylint: disable=invalid-name
         """
         Generates the phases and amplitudes, readies the metasurface to
-        generate Topography objects
+        generate SurfaceTopography objects
         """
         res, size = self.surface.nb_grid_pts, self.surface.physical_sizes
         # equivalent lattice constant**2
@@ -406,7 +406,7 @@ class CharacteriseSurface(CharacterisePeriodicSurface):
     def __init__(self, surface, window_type='hanning', window_params=None):
         """
         Keyword Arguments:
-        surface       -- Instance of PyCo.Topography or subclass with
+        surface       -- Instance of PyCo.SurfaceTopography or subclass with
                          specified physical_sizes
         window_type   -- (default 'hanning') numpy windowing function name
         window_params -- (default dict())

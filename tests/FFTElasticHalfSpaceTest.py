@@ -38,8 +38,8 @@ from numpy.fft import rfftn, irfftn
 
 from NuMPI import MPI
 
-from PyCo.SolidMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.SolidMechanics import FreeFFTElasticHalfSpace
+from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 import PyCo.Tools as Tools
 from .PyCoTest import PyCoTestCase
 

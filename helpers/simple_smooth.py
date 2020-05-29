@@ -26,7 +26,7 @@ simplified smoothing for potentials
 """
 
 import numpy as np
-from PyCo.ContactMechanics import VDW82
+from PyCo.Adhesion import VDW82
 
 
 import matplotlib.pyplot as plt

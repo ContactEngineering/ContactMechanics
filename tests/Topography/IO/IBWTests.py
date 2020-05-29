@@ -28,9 +28,9 @@ import unittest
 import pytest
 import os
 
-from PyCo.Topography.IO.IBW import IBWReader
-from PyCo.Topography import read_topography
-from PyCo.Topography import open_topography
+from PyCo.SurfaceTopography.IO.IBW import IBWReader
+from PyCo.SurfaceTopography import read_topography
+from PyCo.SurfaceTopography import open_topography
 
 import pytest
 from NuMPI import MPI

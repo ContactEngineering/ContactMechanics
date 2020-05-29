@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from PyCo.Topography.Generation import fourier_synthesis
+from PyCo.SurfaceTopography.Generation import fourier_synthesis
 import pytest
 import numpy as np
 from NuMPI import MPI

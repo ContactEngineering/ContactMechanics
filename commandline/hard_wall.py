@@ -32,10 +32,10 @@ from argparse import ArgumentParser, ArgumentTypeError
 
 import numpy as np
 import PyCo
-from PyCo.ContactMechanics import HardWall
-from PyCo.SolidMechanics import (FreeFFTElasticHalfSpace,
-                                 PeriodicFFTElasticHalfSpace)
-from PyCo.Topography import read_topography, PlasticTopography
+from PyCo.Adhesion import HardWall
+from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
+                                   PeriodicFFTElasticHalfSpace)
+from PyCo.SurfaceTopography import read_topography, PlasticTopography
 from PyCo.System import make_system
 from PyCo.Tools.Logger import Logger, quiet, screen
 from PyCo.Tools.NetCDF import NetCDFContainer
@@ -66,7 +66,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     ----------
     system : PyCo.System.SystemBase object
         The contact mechanical system.
-    surface : PyCo.Topography.Topography object
+    surface : PyCo.SurfaceTopography.SurfaceTopography object
         The rigid rough surface.
     history : tuple
         History returned by past calls to next_step
@@ -331,7 +331,7 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 
 ###
 
-# Read a surface topography from a text file. Returns a PyCo.Topography.Topography
+# Read a surface topography from a text file. Returns a PyCo.SurfaceTopography.SurfaceTopography
 # object.
 surface = read_topography(arguments.filename, physical_sizes=arguments.physical_sizes)
 # Set the *physical* physical_sizes of the surface. We here set it to equal the shape,
@@ -348,7 +348,7 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
     logger.pr('Rescaling surface heights by {}.'.format(fac))
     surface = surface.scale(fac)
 
-logger.pr('Topography has dimension of {} and physical_sizes of {} {}.'.format(surface.nb_grid_pts,
+logger.pr('SurfaceTopography has dimension of {} and physical_sizes of {} {}.'.format(surface.nb_grid_pts,
                                                                                surface.physical_sizes,
                                                                                surface.info['unit']))
 logger.pr('RMS height = {}, RMS slope = {}'.format(surface.rms_height(),

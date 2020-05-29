@@ -28,9 +28,9 @@ import os
 
 from NuMPI import MPI
 
-from PyCo.Topography.IO.NPY import NPYReader
-from PyCo.Topography.IO.NPY import save_npy
-from PyCo.Topography import open_topography
+from PyCo.SurfaceTopography.IO.NPY import NPYReader
+from PyCo.SurfaceTopography.IO.NPY import save_npy
+from PyCo.SurfaceTopography import open_topography
 
 import pytest
 from NuMPI import MPI
