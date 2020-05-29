@@ -36,31 +36,27 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
 
 import unittest
 import numpy as np
-import warnings
 
 from numpy.random import rand
 from numpy.testing import assert_array_equal
 
 from tempfile import TemporaryDirectory as tmp_dir
 import os
-import io
 import pickle
 
 from PyCo.SurfaceTopography import (Topography, UniformLineScan, NonuniformLineScan, make_sphere, open_topography,
                                     read_topography)
-from PyCo.SurfaceTopography.UniformLineScanAndTopography import ScaledUniformTopography
 
 from PyCo.SurfaceTopography.IO.FromFile import  read_asc, read_hgt, read_opd, read_x3p, read_xyz, AscReader
 
-from PyCo.SurfaceTopography.IO.FromFile import get_unit_conversion_factor, is_binary_stream
-from PyCo.SurfaceTopography.IO import detect_format, CannotDetectFileFormat
+from PyCo.SurfaceTopography.IO.FromFile import get_unit_conversion_factor
+from PyCo.SurfaceTopography.IO import detect_format
 
 import PyCo.SurfaceTopography.IO
-from PyCo.SurfaceTopography.IO import readers
 from PyCo.SurfaceTopography.IO import NPYReader, H5Reader, IBWReader
 from PyCo.SurfaceTopography.Generation import fourier_synthesis
 
-from ..PyCoTest import PyCoTestCase
+from tests.Topography.PyCoTest import PyCoTestCase
 
 DATADIR = os.path.join(
     os.path.dirname(

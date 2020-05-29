@@ -31,7 +31,7 @@ import numpy as np
 
 from PyCo.SurfaceTopography import Topography, UniformLineScan
 from PyCo.SurfaceTopography.Generation import fourier_synthesis
-from ..PyCoTest import PyCoTestCase
+from tests.Topography.PyCoTest import PyCoTestCase
 import pytest
 from NuMPI import MPI
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,

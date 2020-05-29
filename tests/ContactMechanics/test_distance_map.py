@@ -28,13 +28,9 @@ Tests for PyCo helper tools
 
 import numpy as np
 
-from PyCo.Tools import evaluate_gradient, mean_err
 from PyCo.ContactMechanics.Tools.ContactAreaAnalysis import distance_map
-from PyCo.SurfaceTopography import Topography, UniformLineScan, NonuniformLineScan
-from PyCo.SurfaceTopography.Nonuniform.Detrending import polyfit
-from PyCo.SurfaceTopography.Uniform.Detrending import tilt_from_height, shift_and_tilt
 
-from tests.PyCoTest import PyCoTestCase
+from tests.Topography.PyCoTest import PyCoTestCase
 
 import pytest
 from NuMPI import MPI
