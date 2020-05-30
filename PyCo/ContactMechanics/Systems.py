@@ -34,7 +34,6 @@ import numpy as np
 import scipy
 
 from PyCo import Adhesion, ContactMechanics, SurfaceTopography
-from PyCo.Tools import compare_containers
 from PyCo.ContactMechanics.Optimization import constrained_conjugate_gradients
 
 
@@ -46,6 +45,28 @@ class IncompatibleFormulationError(Exception):
 class IncompatibleResolutionError(Exception):
     # pylint: disable=missing-docstring
     pass
+
+
+def compare_containers(cont_a, cont_b):
+    """
+    compares whether two containers have the same content regardless of their
+    type. eg, compares [1, 2, 3] and (1, 2., 3.) as True
+    Keyword Arguments:
+    cont_a -- one container
+    cont_b -- other container
+    """
+    if cont_a != cont_b:
+        # pylint: disable=broad-except
+        # pylint: disable=multiple-statements
+        try:
+            if not len(cont_a) == len(cont_b):
+                return False
+            for a_item, b_item in zip(cont_a, cont_b):
+                if not a_item == b_item:
+                    return False
+        except Exception:
+            return False
+    return True
 
 
 class SystemBase(object, metaclass=abc.ABCMeta):

@@ -40,7 +40,7 @@ from NuMPI import MPI
 
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
-import PyCo.Tools as Tools
+import PyCo.ContactMechanics.Tools as Tools
 from tests.Topography.PyCoTest import PyCoTestCase
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
