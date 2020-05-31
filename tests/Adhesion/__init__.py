@@ -1,3 +1,0 @@
-"""
-Testing Module for Adhesion
-"""
