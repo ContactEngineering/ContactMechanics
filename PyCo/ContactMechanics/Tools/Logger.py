@@ -35,7 +35,6 @@ import sys
 import inspect
 
 from functools import reduce
-from math import isnan, isinf
 from numbers import Real
 
 ###

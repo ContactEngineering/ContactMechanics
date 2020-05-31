@@ -30,7 +30,7 @@ import numpy as np
 
 from PyCo.ContactMechanics.Tools.ContactAreaAnalysis import distance_map
 
-from tests.Topography.PyCoTest import PyCoTestCase
+from tests.SurfaceTopography.PyCoTest import PyCoTestCase
 
 import pytest
 from NuMPI import MPI

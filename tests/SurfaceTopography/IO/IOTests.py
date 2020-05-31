@@ -54,7 +54,7 @@ from PyCo.SurfaceTopography.IO import readers
 
 ###
 
-DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../file_format_examples')
+DATADIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../file_format_examples')
 
 
 @pytest.mark.parametrize("reader", readers)

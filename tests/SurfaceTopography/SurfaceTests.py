@@ -56,11 +56,10 @@ import PyCo.SurfaceTopography.IO
 from PyCo.SurfaceTopography.IO import NPYReader, H5Reader, IBWReader
 from PyCo.SurfaceTopography.Generation import fourier_synthesis
 
-from tests.Topography.PyCoTest import PyCoTestCase
+from tests.SurfaceTopography.PyCoTest import PyCoTestCase
 
 DATADIR = os.path.join(
-    os.path.dirname(
-    os.path.dirname(os.path.realpath(__file__))), 'file_format_examples')
+    os.path.dirname(os.path.realpath(__file__)), 'file_format_examples')
 
 class UniformLineScanTest(PyCoTestCase):
 

@@ -37,8 +37,7 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
 DATADIR = os.path.join(
     os.path.dirname(
     os.path.dirname(
-    os.path.dirname(
-    os.path.realpath(__file__)))),
+    os.path.realpath(__file__))),
     'file_format_examples')
 
 
@@ -53,7 +52,7 @@ class MISurfaceTest(unittest.TestCase):
 
         # Like in Gwyddion, there should be 4 channels in total
         assert len(loader.channels) == 4
-        assert [ ch.name for ch in loader.channels ] == [ 'SurfaceTopography', 'Deflection', 'Friction', 'Friction' ]
+        assert [ ch.name for ch in loader.channels ] == [ 'Topography', 'Deflection', 'Friction', 'Friction' ]
 
         # Check if metadata has been read in correctly
         self.assertEqual(loader.channels[0].dim, 2)
@@ -63,12 +62,12 @@ class MISurfaceTest(unittest.TestCase):
                          {'DisplayOffset': '8.8577270507812517e-004',
                           'DisplayRange': '1.3109436035156252e-002',
                           'acqMode': 'Main',
-                          'label': 'SurfaceTopography',
+                          'label': 'Topography',
                           'range': '2.9025000000000003e+000',
                           'unit': 'µm',
                           'direction': 'Trace',
                           'filter': '3rd_order',
-                          'name': 'SurfaceTopography',
+                          'name': 'Topography',
                           'trace': 'Trace'})
 
         self.assertEqual(loader.default_channel.index, 0)

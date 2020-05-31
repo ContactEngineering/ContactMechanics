@@ -39,8 +39,7 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
 
 DATADIR = os.path.join(
     os.path.dirname(
-    os.path.dirname(
-    os.path.dirname(os.path.realpath(__file__)))),
+    os.path.dirname(os.path.realpath(__file__))),
     'file_format_examples')
 
 class IBWSurfaceTest(unittest.TestCase):

@@ -41,7 +41,7 @@ from NuMPI import MPI
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 import PyCo.ContactMechanics.Tools as Tools
-from tests.Topography.PyCoTest import PyCoTestCase
+from tests.SurfaceTopography.PyCoTest import PyCoTestCase
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
                                 reason="tests only serial funcionalities, please execute with pytest")

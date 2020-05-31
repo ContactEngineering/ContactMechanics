@@ -35,7 +35,7 @@ from PyCo.SurfaceTopography import read_topography, Topography, UniformLineScan,
 from PyCo.SurfaceTopography.Generation import fourier_synthesis
 from PyCo.SurfaceTopography.Nonuniform.Autocorrelation import height_height_autocorrelation_1D
 
-DATADIR = os.path.join(os.path.dirname(__file__), '../file_format_examples')
+DATADIR = os.path.join(os.path.dirname(__file__), 'file_format_examples')
 
 
 ###

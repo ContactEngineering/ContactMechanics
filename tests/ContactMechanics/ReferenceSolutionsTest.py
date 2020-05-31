@@ -33,7 +33,7 @@ import warnings
 from scipy.integrate import quad
 from scipy.special import ellipk, erf
 
-from tests.Topography.PyCoTest import PyCoTestCase
+from tests.SurfaceTopography.PyCoTest import PyCoTestCase
 import PyCo.ContactMechanics.ReferenceSolutions.GreenwoodTripp as GT
 import PyCo.ContactMechanics.ReferenceSolutions.Hertz as Hz
 

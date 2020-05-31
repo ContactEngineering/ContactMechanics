@@ -56,9 +56,6 @@ class ImportabilityChecks(unittest.TestCase):
     def test_Surface(self):
         self.assertEqual(self.import_module("PyCo.SurfaceTopography"), 0)
 
-    def test_Tools(self):
-        self.assertEqual(self.import_module("PyCo.Tools"), 0)
-
     def test_PyCo_C_extension(self):
         self.assertEqual(self.import_module("_PyCo"), 0)
 

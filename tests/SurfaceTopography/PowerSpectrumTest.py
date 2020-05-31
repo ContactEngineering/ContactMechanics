@@ -40,7 +40,7 @@ from PyCo.SurfaceTopography.Nonuniform.PowerSpectrum import sinc, dsinc
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
         reason="tests only serial functionalities, please execute with pytest")
 
-DATADIR = os.path.join(os.path.dirname(__file__), '../file_format_examples')
+DATADIR = os.path.join(os.path.dirname(__file__), 'file_format_examples')
 
 
 ###

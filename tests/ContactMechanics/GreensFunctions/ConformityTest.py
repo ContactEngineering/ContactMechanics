@@ -25,6 +25,7 @@
 """
 Tests the pylint (and possibly pep8) conformity of the code
 """
+
 import unittest
 from pylint import epylint
 import pep8

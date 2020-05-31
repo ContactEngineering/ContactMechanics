@@ -35,7 +35,7 @@ from PyCo.SurfaceTopography import Topography
 from PyCo.SurfaceTopography.Generation import fourier_synthesis
 from PyCo.SurfaceTopography.UniformLineScanAndTopography import DetrendedUniformTopography
 
-from tests.Topography.PyCoTest import PyCoTestCase
+from tests.SurfaceTopography.PyCoTest import PyCoTestCase
 
 
 def test_positions(comm):

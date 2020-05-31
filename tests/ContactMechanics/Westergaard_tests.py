@@ -33,7 +33,7 @@ from PyCo.ContactMechanics.ReferenceSolutions.Westergaard import _pressure
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
 from PyCo.ContactMechanics import make_system
-from tests.Topography.PyCoTest import PyCoTestCase
+from tests.SurfaceTopography.PyCoTest import PyCoTestCase
 
 
 # -----------------------------------------------------------------------------
