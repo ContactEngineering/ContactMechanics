@@ -26,10 +26,8 @@ Trying to figure out under what conditions we can use the 4th order
 spline to smoothen out a vdW potential
 """
 
-from PyCo.Adhesion import LJ93smooth
 from sympy import Symbol, pprint
 import sympy
-from copy import deepcopy
 
 r = Symbol('r', positive=True)
 dr = Symbol('Δr', real=True)

@@ -24,23 +24,13 @@
 #
 
 import numpy as np
-import time
-import math
-from PyCo.Adhesion import HardWall
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
-from PyCo.SurfaceTopography import make_sphere,Topography
-from PyCo.ContactMechanics import make_system
+from PyCo.SurfaceTopography import Topography
 #from PyCo.Tools.Logger import screen
-from PyCo.ContactMechanics.ReferenceSolutions.Hertz import (radius_and_pressure,
-                                                            surface_displacements,
-                                                            surface_stress)
 from NuMPI.Optimization import LBFGS
 from NuMPI.Tools.Reduction import Reduction
-from NuMPI import MPI
-from PyCo.Adhesion import VDW82smoothMin, VDW82
-from PyCo.Adhesion.Systems import SmoothContactSystem
-from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
+from PyCo.Adhesion import VDW82smoothMin
+from PyCo.Adhesion import SmoothContactSystem
 
 _toplot=False
 def test_wavy(comm):

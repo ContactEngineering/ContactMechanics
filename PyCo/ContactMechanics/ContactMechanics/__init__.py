@@ -1,6 +1,5 @@
 #
-# Copyright 2016, 2018 Lars Pastewka
-#           2016 Till Junge
+# Copyright 2016 Till Junge
 # 
 # ### MIT license
 # 
@@ -24,10 +23,13 @@
 #
 
 """
-Efficient contact mechanics with Python
+Defines all solid mechanics model used in PyCo
 """
 
-from . import Adhesion, ContactMechanics, SurfaceTopography
+from .Substrates import Substrate, ElasticSubstrate, PlasticSubstrate
+from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace
+from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace
+from .Factory import make_system
 
 try:
     from importlib.metadata import version

@@ -24,12 +24,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import random
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.lines import Line2D
 
 from PyCo.Adhesion import HardWall
-from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
+from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import Topography
 from PyCo.ContactMechanics import make_system
 

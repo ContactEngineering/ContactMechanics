@@ -37,7 +37,7 @@ class SystemTest(unittest.TestCase):
                              PyCo.Adhesion,
                              PyCo.Adhesion.Interactions,
                              PyCo.Adhesion.Lj93,
-                             PyCo.Adhesion.VdW82,
+                             PyCo.Adhesion.Adhesion.VdW82,
                              PyCo.Adhesion.Potentials,
                              PyCo.ContactMechanics,
                              PyCo.ContactMechanics.FFTElasticHalfSpace,

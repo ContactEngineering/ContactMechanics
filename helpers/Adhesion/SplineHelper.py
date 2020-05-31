@@ -25,8 +25,7 @@
 symbolic calculations for splines
 """
 
-from PyCo.Adhesion import LJ93smooth
-from sympy import Symbol, pprint, solve_poly_system, Matrix, zeros
+from sympy import Symbol, pprint
 import sympy
 from copy import deepcopy
 

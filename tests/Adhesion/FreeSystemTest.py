@@ -39,9 +39,9 @@ from NuMPI import MPI
 import PyCo.ContactMechanics as Solid
 import PyCo.Adhesion as Contact
 import PyCo.Tools as Tools
-from PyCo.Adhesion.Systems import SmoothContactSystem
+from PyCo.Adhesion import SmoothContactSystem
 from PyCo.ContactMechanics.Systems import NonSmoothContactSystem
-from PyCo.Adhesion.SmoothSystemSpecialisations import FastSmoothContactSystem
+from PyCo.Adhesion import FastSmoothContactSystem
 from PyCo.Adhesion import make_system
 from PyCo.SurfaceTopography import make_sphere
 

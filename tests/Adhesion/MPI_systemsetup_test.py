@@ -35,8 +35,8 @@ from PyCo.ContactMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalf
 from PyCo.ContactMechanics.Factory import make_system
 from PyCo.Adhesion import HardWall, VDW82, Exponential
 from PyCo.SurfaceTopography import make_sphere
-from PyCo.SurfaceTopography.IO import NPYReader, open_topography
-from PyCo.Adhesion.Systems import SmoothContactSystem
+from PyCo.SurfaceTopography.IO import NPYReader
+from PyCo.Adhesion import SmoothContactSystem
 from PyCo.Tools import Logger
 
 import numpy as np

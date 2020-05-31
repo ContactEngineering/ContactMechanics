@@ -41,11 +41,7 @@ from NuMPI.Tools.Reduction import Reduction
 from PyCo.Adhesion import VDW82smoothMin
 from PyCo.ContactMechanics.System import SmoothContactSystem
 
-
-from NuMPI.IO import save_npy
 from NuMPI import MPI
-
-import sys
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()

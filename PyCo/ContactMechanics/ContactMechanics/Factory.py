@@ -28,18 +28,16 @@
 Implements a convenient Factory function for Contact System creation
 """
 
-from PyCo.ContactMechanics.Systems import SystemBase, NonSmoothContactSystem
+from PyCo.ContactMechanics.Systems import NonSmoothContactSystem
 from PyCo.ContactMechanics.PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
-from PyCo.ContactMechanics.Systems import IncompatibleFormulationError
 
 from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
 from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
 from PyCo.SurfaceTopography import open_topography
 from PyCo.SurfaceTopography.IO import ReaderBase
-from PyCo.Adhesion import HardWall
 
 from NuMPI import MPI
-from NuMPI.Tools import Reduction
+
 
 def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
                 physical_sizes=None, **kwargs):

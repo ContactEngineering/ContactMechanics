@@ -4,9 +4,8 @@ import pytest
 
 from PyCo.SurfaceTopography import make_sphere
 from PyCo.Adhesion import Exponential, Lj82, LinearCorePotential
-from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
-                                   PeriodicFFTElasticHalfSpace)
-from PyCo.Adhesion.Systems import SmoothContactSystem, BoundedSmoothContactSystem
+from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace)
+from PyCo.Adhesion import SmoothContactSystem, BoundedSmoothContactSystem
 from NuMPI import MPI
 
 

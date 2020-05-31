@@ -9,7 +9,7 @@ from PyCo.Adhesion import Exponential
 from muFFT import NCStructuredGrid
 
 from PyCo.Tools import Logger
-from PyCo.Adhesion.Systems import BoundedSmoothContactSystem
+from PyCo.Adhesion import BoundedSmoothContactSystem
 import time
 import datetime
 from PyCo.SurfaceTopography import make_sphere
