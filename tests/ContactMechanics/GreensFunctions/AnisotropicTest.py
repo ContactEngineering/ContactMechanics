@@ -26,8 +26,6 @@ import numpy as np
 
 from PyCo.ContactMechanics.GreensFunctions import AnisotropicGreensFunction
 
-import matplotlib.pyplot as plt
-
 
 def test_find_qz_isotropic(tol=1e-5):
     """Test that for an isotropic solid qx^2 + qy^2 = (iqz)^2"""
