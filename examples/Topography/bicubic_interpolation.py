@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from PyCo.ContactMechanics.Tools.Interpolation import Bicubic
+from PyCo.SurfaceTopography.Interpolation import Bicubic
 from PyCo.SurfaceTopography.Generation import fourier_synthesis
 import matplotlib.pyplot as plt
 import numpy as np

@@ -44,15 +44,6 @@ class ImportabilityChecks(unittest.TestCase):
         except ImportError: pass
         return return_code
 
-    def test_PyCo(self):
-        self.assertEqual(self.import_module("PyCo"), 0)
-
-    def test_ContactMechanics(self):
-        self.assertEqual(self.import_module("PyCo.Adhesion"), 0)
-
-    def test_SolidMechanics(self):
-        self.assertEqual(self.import_module("PyCo.ContactMechanics"), 0)
-
     def test_Surface(self):
         self.assertEqual(self.import_module("PyCo.SurfaceTopography"), 0)
 

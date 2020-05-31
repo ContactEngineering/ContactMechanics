@@ -25,6 +25,7 @@
 """
 Tests the pylint (and possibly pep8) conformity of the code
 """
+
 import unittest
 from pylint import epylint
 import pep8
@@ -34,37 +35,20 @@ import PyCo
 class SystemTest(unittest.TestCase):
     def setUp(self):
         self.modules = list([PyCo,
-                             PyCo.Adhesion,
-                             PyCo.Adhesion.Interactions,
-                             PyCo.Adhesion.Lj93,
-                             PyCo.Adhesion.VdW82,
-                             PyCo.Adhesion.Potentials,
-                             PyCo.ContactMechanics,
-                             PyCo.ContactMechanics.FFTElasticHalfSpace,
-                             PyCo.ContactMechanics.Substrates,
                              PyCo.SurfaceTopography,
-                             PyCo.SurfaceTopography.FromFile,
-                             PyCo.SurfaceTopography.HeightContainer,
-                             PyCo.System,
-                             PyCo.Adhesion.SmoothSystemSpecialisations,
-                             PyCo.ContactMechanics.Systems,
-                             PyCo.Tools,
-                             PyCo.Tools.Optimisation.AugmentedLagrangian,
-                             PyCo.Tools.Optimisation.NewtonConfidenceRegion,
-                             PyCo.Tools.Optimisation.NewtonLineSearch,
-                             PyCo.Tools.Optimisation.common,
-                             PyCo.Tools.common,
-                             PyCo.Goodies,
-                             PyCo.Goodies.SurfaceAnalysis,
-                             PyCo.Goodies.SurfaceGeneration])
+                             PyCo.SurfaceTopography.IO,
+                             PyCo.SurfaceTopography.Nonuniform,
+                             PyCo.SurfaceTopography.Uniform])
 
-    def te_st_pylint_bitchiness(self):
+    @unittest.skip
+    def test_pylint_bitchiness(self):
         print()
         options = ' --rcfile=tests/pylint.rc --disable=locally-disabled'
         for module in self.modules:
             epylint.py_run(module.__file__ + options)
 
-    def te_st_pep8_conformity(self):
+    @unittest.skip
+    def test_pep8_conformity(self):
         print()
         pep8style = pep8.StyleGuide()
         pep8style.check_files((mod.__file__ for mod in self.modules))
