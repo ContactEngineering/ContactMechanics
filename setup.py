@@ -53,7 +53,7 @@ setup(
     # dependencies
     python_requires='>=3.5.0',
     use_scm_version=True,
-    zip_safe=True,False
+    zip_safe=True,
     setup_requires=[
         'setuptools_scm>=3.5.0'
     ],
