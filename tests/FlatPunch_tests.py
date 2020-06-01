@@ -30,9 +30,9 @@ import unittest
 
 import numpy as np
 
-from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
-from PyCo.SurfaceTopography import Topography
-from PyCo.ContactMechanics import make_system
+from ContactMechanics import FreeFFTElasticHalfSpace
+from SurfaceTopography import Topography
+from ContactMechanics import make_system
 
 # -----------------------------------------------------------------------------
 class FlatPunchTest(unittest.TestCase):

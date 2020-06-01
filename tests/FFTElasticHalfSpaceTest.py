@@ -38,16 +38,15 @@ from numpy.fft import rfftn, irfftn
 
 from NuMPI import MPI
 
-from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
-import PyCo.ContactMechanics.Tools as Tools
-from tests.SurfaceTopography import PyCoTestCase
+from ContactMechanics import PeriodicFFTElasticHalfSpace
+from ContactMechanics import FreeFFTElasticHalfSpace
+import ContactMechanics.Tools as Tools
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
                                 reason="tests only serial funcionalities, please execute with pytest")
 
 
-class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
+class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
     def setUp(self):
         self.physical_sizes = (7.5 + 5 * rand(), 7.5 + 5 * rand())
         base_res = 16
@@ -304,8 +303,8 @@ class PeriodicFFTElasticHalfSpaceTest(PyCoTestCase):
                                           self.physical_sizes, thickness=20,
                                           poisson=self.poisson)
         diff = hs.weights - hsf.weights
-        self.assertArrayAlmostEqual(hs.weights.ravel()[1:],
-                                    hsf.weights.ravel()[1:], tol=1e-6)
+        np.testing.assert_allclose(hs.weights.ravel()[1:],
+                                   hsf.weights.ravel()[1:], atol=1e-6)
 
     def test_no_nans(self):
         hs = PeriodicFFTElasticHalfSpace(self.res, self.young,

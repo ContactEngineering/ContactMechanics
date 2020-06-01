@@ -28,7 +28,7 @@ Tests for PyCo helper tools
 
 import numpy as np
 
-from PyCo.ContactMechanics.Tools.ContactAreaAnalysis import distance_map
+from ContactMechanics.Tools.ContactAreaAnalysis import distance_map
 
 from tests.SurfaceTopography import PyCoTestCase
 

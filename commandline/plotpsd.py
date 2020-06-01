@@ -32,7 +32,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 
 import matplotlib.pyplot as plt
 
-from PyCo.SurfaceTopography import open_topography, DetrendedTopography
+from SurfaceTopography import open_topography, DetrendedTopography
 from PyCo.Tools import power_spectrum_2D
 
 ###

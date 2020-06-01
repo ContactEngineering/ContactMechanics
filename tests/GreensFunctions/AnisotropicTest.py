@@ -24,7 +24,7 @@
 
 import numpy as np
 
-from PyCo.ContactMechanics.GreensFunctions import AnisotropicGreensFunction
+from ContactMechanics.GreensFunctions import AnisotropicGreensFunction
 
 
 def test_find_qz_isotropic(tol=1e-5):

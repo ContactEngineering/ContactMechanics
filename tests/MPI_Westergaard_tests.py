@@ -29,10 +29,10 @@ import pytest
 
 from NuMPI.Tools.Reduction import Reduction
 
-from PyCo.ContactMechanics.ReferenceSolutions.Westergaard import _pressure
-from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.SurfaceTopography import Topography
-from PyCo.ContactMechanics import make_system
+from ContactMechanics.ReferenceSolutions.Westergaard import _pressure
+from ContactMechanics import PeriodicFFTElasticHalfSpace
+from SurfaceTopography import Topography
+from ContactMechanics import make_system
 
 
 @pytest.mark.skip

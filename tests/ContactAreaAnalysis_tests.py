@@ -26,80 +26,80 @@
 Tests tools for analysis of contact geometries.
 """
 
-from NuMPI import MPI
-import pytest
-
-pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
-        reason="tests only serial functionalities, please execute with pytest")
-
-from math import sqrt
 import os
 import unittest
+from math import sqrt
 
 import numpy as np
+import pytest
 
-from PyCo.ContactMechanics.Tools.ContactAreaAnalysis import (assign_patch_numbers, assign_segment_numbers, distance_map,
-                                                             inner_perimeter, outer_perimeter, patch_areas)
-from tests.SurfaceTopography import PyCoTestCase
+from NuMPI import MPI
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
+                                reason="tests only serial functionalities, please execute with pytest")
+
+from ContactMechanics.Tools.ContactAreaAnalysis import (assign_patch_numbers, assign_segment_numbers, distance_map,
+                                                        inner_perimeter, outer_perimeter, patch_areas)
+
 
 ###
 
-class TestAnalysis(PyCoTestCase):
+class TestAnalysis(unittest.TestCase):
 
     def test_assign_patch_numbers(self):
-        m_xy = np.zeros([3,3], dtype=bool)
-        m_xy[1,1] = True
+        m_xy = np.zeros([3, 3], dtype=bool)
+        m_xy[1, 1] = True
 
         nump, p_xy = assign_patch_numbers(m_xy)
 
         self.assertEqual(nump, 1)
-        self.assertArrayAlmostEqual(p_xy, np.array([[0,0,0],
-                                                    [0,1,0],
-                                                    [0,0,0]]))
+        np.testing.assert_allclose(p_xy, np.array([[0, 0, 0],
+                                                   [0, 1, 0],
+                                                   [0, 0, 0]]))
 
-        m_xy = np.zeros([5,3], dtype=bool)
-        m_xy[1,1] = True
-        m_xy[3,1] = True
-
-        nump, p_xy = assign_patch_numbers(m_xy)
-
-        self.assertEqual(nump, 2)
-        self.assertArrayAlmostEqual(p_xy, np.array([[0,0,0],
-                                                    [0,1,0],
-                                                    [0,0,0],
-                                                    [0,2,0],
-                                                    [0,0,0]]))
-
-        m_xy = np.zeros([6,3], dtype=bool)
-        m_xy[1,1] = True
-        m_xy[3,1] = True
-        m_xy[3,2] = True
+        m_xy = np.zeros([5, 3], dtype=bool)
+        m_xy[1, 1] = True
+        m_xy[3, 1] = True
 
         nump, p_xy = assign_patch_numbers(m_xy)
 
         self.assertEqual(nump, 2)
-        self.assertArrayAlmostEqual(p_xy, np.array([[0,0,0],
-                                                    [0,1,0],
-                                                    [0,0,0],
-                                                    [0,2,2],
-                                                    [0,0,0],
-                                                    [0,0,0]]))
+        np.testing.assert_allclose(p_xy, np.array([[0, 0, 0],
+                                                   [0, 1, 0],
+                                                   [0, 0, 0],
+                                                   [0, 2, 0],
+                                                   [0, 0, 0]]))
 
-        m_xy = np.zeros([6,3], dtype=bool)
-        m_xy[1,1] = True
-        m_xy[2,1] = True
-        m_xy[3,1] = True
-        m_xy[3,2] = True
+        m_xy = np.zeros([6, 3], dtype=bool)
+        m_xy[1, 1] = True
+        m_xy[3, 1] = True
+        m_xy[3, 2] = True
+
+        nump, p_xy = assign_patch_numbers(m_xy)
+
+        self.assertEqual(nump, 2)
+        np.testing.assert_allclose(p_xy, np.array([[0, 0, 0],
+                                                   [0, 1, 0],
+                                                   [0, 0, 0],
+                                                   [0, 2, 2],
+                                                   [0, 0, 0],
+                                                   [0, 0, 0]]))
+
+        m_xy = np.zeros([6, 3], dtype=bool)
+        m_xy[1, 1] = True
+        m_xy[2, 1] = True
+        m_xy[3, 1] = True
+        m_xy[3, 2] = True
 
         nump, p_xy = assign_patch_numbers(m_xy)
 
         self.assertEqual(nump, 1)
-        self.assertArrayAlmostEqual(p_xy, np.array([[0,0,0],
-                                                    [0,1,0],
-                                                    [0,1,0],
-                                                    [0,1,1],
-                                                    [0,0,0],
-                                                    [0,0,0]]))
+        np.testing.assert_allclose(p_xy, np.array([[0, 0, 0],
+                                                   [0, 1, 0],
+                                                   [0, 1, 0],
+                                                   [0, 1, 1],
+                                                   [0, 0, 0],
+                                                   [0, 0, 0]]))
 
         m_xy = np.loadtxt('{}/contact_map.txt.gz'.format(os.path.dirname(os.path.realpath(__file__))), dtype=bool)
 
@@ -112,117 +112,115 @@ class TestAnalysis(PyCoTestCase):
 
         nump, p_xy = assign_patch_numbers(m_xy)
         self.assertEqual(nump, 123)
-        self.assertArrayAlmostEqual(patch_areas(p_xy), ref_patch_areas)
-
+        np.testing.assert_allclose(patch_areas(p_xy), ref_patch_areas)
 
     def test_assign_segment_numbers(self):
-        m_xy = np.zeros([3,3], dtype=bool)
-        m_xy[1,1] = True
+        m_xy = np.zeros([3, 3], dtype=bool)
+        m_xy[1, 1] = True
 
         nump, p_xy = assign_segment_numbers(m_xy)
 
         self.assertEqual(nump, 1)
-        self.assertArrayAlmostEqual(p_xy, np.array([[0,0,0],
-                                              [0,1,0],
-                                              [0,0,0]]))
+        np.testing.assert_allclose(p_xy, np.array([[0, 0, 0],
+                                                   [0, 1, 0],
+                                                   [0, 0, 0]]))
 
-        m_xy = np.zeros([5,3], dtype=bool)
-        m_xy[1,1] = True
-        m_xy[3,1] = True
+        m_xy = np.zeros([5, 3], dtype=bool)
+        m_xy[1, 1] = True
+        m_xy[3, 1] = True
 
         nump, p_xy = assign_segment_numbers(m_xy)
 
         self.assertEqual(nump, 2)
-        self.assertArrayAlmostEqual(p_xy, np.array([[0,0,0],
-                                              [0,1,0],
-                                              [0,0,0],
-                                              [0,2,0],
-                                              [0,0,0]]))
+        np.testing.assert_allclose(p_xy, np.array([[0, 0, 0],
+                                                   [0, 1, 0],
+                                                   [0, 0, 0],
+                                                   [0, 2, 0],
+                                                   [0, 0, 0]]))
 
-        m_xy = np.zeros([6,3], dtype=bool)
-        m_xy[1,1] = True
-        m_xy[2,1] = True
-        m_xy[3,1] = True
-        m_xy[3,2] = True
+        m_xy = np.zeros([6, 3], dtype=bool)
+        m_xy[1, 1] = True
+        m_xy[2, 1] = True
+        m_xy[3, 1] = True
+        m_xy[3, 2] = True
 
         nump, p_xy = assign_segment_numbers(m_xy)
 
         self.assertEqual(nump, 3)
-        self.assertArrayAlmostEqual(p_xy, np.array([[0,0,0],
-                                                    [0,1,0],
-                                                    [0,2,0],
-                                                    [0,3,3],
-                                                    [0,0,0],
-                                                    [0,0,0]]))
-
+        np.testing.assert_allclose(p_xy, np.array([[0, 0, 0],
+                                                   [0, 1, 0],
+                                                   [0, 2, 0],
+                                                   [0, 3, 3],
+                                                   [0, 0, 0],
+                                                   [0, 0, 0]]))
 
     def test_distance_map(self):
-        m_xy = np.zeros([3,3], dtype=bool)
-        m_xy[1,1] = True
+        m_xy = np.zeros([3, 3], dtype=bool)
+        m_xy[1, 1] = True
 
         d_xy = distance_map(m_xy)
 
         sqrt_2 = sqrt(2.0)
-        self.assertArrayAlmostEqual(d_xy, np.array([[sqrt_2,1.0,sqrt_2],
-                                                    [1.0,0.0,1.0],
-                                                    [sqrt_2,1.0,sqrt_2]]))
+        np.testing.assert_allclose(d_xy, np.array([[sqrt_2, 1.0, sqrt_2],
+                                                   [1.0, 0.0, 1.0],
+                                                   [sqrt_2, 1.0, sqrt_2]]))
 
-        m_xy = np.zeros([5,3], dtype=bool)
-        m_xy[1,1] = True
-        m_xy[3,1] = True
+        m_xy = np.zeros([5, 3], dtype=bool)
+        m_xy[1, 1] = True
+        m_xy[3, 1] = True
 
         d_xy = distance_map(m_xy)
 
-        self.assertArrayAlmostEqual(d_xy, np.array([[sqrt_2,1.0,sqrt_2],
-                                                    [1.0,0.0,1.0],
-                                                    [sqrt_2,1.0,sqrt_2],
-                                                    [1.0,0.0,1.0],
-                                                    [sqrt_2,1.0,sqrt_2]]))
+        np.testing.assert_allclose(d_xy, np.array([[sqrt_2, 1.0, sqrt_2],
+                                                   [1.0, 0.0, 1.0],
+                                                   [sqrt_2, 1.0, sqrt_2],
+                                                   [1.0, 0.0, 1.0],
+                                                   [sqrt_2, 1.0, sqrt_2]]))
 
-        m_xy = np.zeros([6,3], dtype=bool)
-        m_xy[1,1] = True
-        m_xy[3,1] = True
+        m_xy = np.zeros([6, 3], dtype=bool)
+        m_xy[1, 1] = True
+        m_xy[3, 1] = True
 
         d_xy = distance_map(m_xy)
 
         sqrt_5 = sqrt(5.0)
-        self.assertArrayAlmostEqual(d_xy, np.array([[sqrt_2,1.0,sqrt_2],
-                                                    [1.0,0.0,1.0],
-                                                    [sqrt_2,1.0,sqrt_2],
-                                                    [1.0,0.0,1.0],
-                                                    [sqrt_2,1.0,sqrt_2],
-                                                    [sqrt_5,2.0,sqrt_5]]))
-
+        np.testing.assert_allclose(d_xy, np.array([[sqrt_2, 1.0, sqrt_2],
+                                                   [1.0, 0.0, 1.0],
+                                                   [sqrt_2, 1.0, sqrt_2],
+                                                   [1.0, 0.0, 1.0],
+                                                   [sqrt_2, 1.0, sqrt_2],
+                                                   [sqrt_5, 2.0, sqrt_5]]))
 
     def test_perimeter(self):
-        m_xy = np.zeros([3,3], dtype=bool)
-        m_xy[1,1] = True
+        m_xy = np.zeros([3, 3], dtype=bool)
+        m_xy[1, 1] = True
 
         i_xy = inner_perimeter(m_xy)
         o_xy = outer_perimeter(m_xy)
 
         self.assertTrue(np.array_equal(i_xy, m_xy))
-        self.assertTrue(np.array_equal(o_xy, np.array([[False,True, False],
-                                                       [True, False,True ],
-                                                       [False,True, False]])))
+        self.assertTrue(np.array_equal(o_xy, np.array([[False, True, False],
+                                                       [True, False, True],
+                                                       [False, True, False]])))
 
-        m_xy = np.zeros([5,3], dtype=bool)
-        m_xy[1,1] = True
-        m_xy[3,1] = True
+        m_xy = np.zeros([5, 3], dtype=bool)
+        m_xy[1, 1] = True
+        m_xy[3, 1] = True
 
         i_xy = inner_perimeter(m_xy)
         o_xy = outer_perimeter(m_xy)
 
-        self.assertTrue(np.array_equal(i_xy, np.array([[False,False,False],
-                                                       [False,True, False],
-                                                       [False,False,False],
-                                                       [False,True, False],
-                                                       [False,False,False]])))
-        self.assertTrue(np.array_equal(o_xy, np.array([[False,True, False],
-                                                       [True, False,True ],
-                                                       [False,True, False],
-                                                       [True, False,True ],
-                                                       [False,True, False]])))
+        self.assertTrue(np.array_equal(i_xy, np.array([[False, False, False],
+                                                       [False, True, False],
+                                                       [False, False, False],
+                                                       [False, True, False],
+                                                       [False, False, False]])))
+        self.assertTrue(np.array_equal(o_xy, np.array([[False, True, False],
+                                                       [True, False, True],
+                                                       [False, True, False],
+                                                       [True, False, True],
+                                                       [False, True, False]])))
+
 
 ###
 

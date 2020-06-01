@@ -35,7 +35,7 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.SurfaceTopography import Topography
+from SurfaceTopography import Topography
 
 ###
 

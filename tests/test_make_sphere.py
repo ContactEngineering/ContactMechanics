@@ -24,8 +24,8 @@
 
 import numpy as np
 
-from PyCo.SurfaceTopography import make_sphere
-from PyCo.ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
+from SurfaceTopography import make_sphere
+from ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
 
 def test_sphere(comm, fftengine_type):
     nx = 8

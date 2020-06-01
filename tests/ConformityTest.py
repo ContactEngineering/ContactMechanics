@@ -29,29 +29,17 @@ import unittest
 from pylint import epylint
 import pep8
 
-import PyCo
+import ContactMechanics
 
 class SystemTest(unittest.TestCase):
     def setUp(self):
-        self.modules = list([PyCo,
-                             PyCo.ContactMechanics,
-                             PyCo.ContactMechanics.FFTElasticHalfSpace,
-                             PyCo.ContactMechanics.Substrates,
-                             PyCo.SurfaceTopography,
-                             PyCo.SurfaceTopography.FromFile,
-                             PyCo.SurfaceTopography.HeightContainer,
-                             PyCo.System,
-
-                             PyCo.ContactMechanics.Systems,
-                             PyCo.Tools,
-                             PyCo.Tools.Optimisation.AugmentedLagrangian,
-                             PyCo.Tools.Optimisation.NewtonConfidenceRegion,
-                             PyCo.Tools.Optimisation.NewtonLineSearch,
-                             PyCo.Tools.Optimisation.common,
-                             PyCo.Tools.common,
-                             PyCo.Goodies,
-                             PyCo.Goodies.SurfaceAnalysis,
-                             PyCo.Goodies.SurfaceGeneration])
+        self.modules = list([ContactMechanics,
+                             ContactMechanics.FFTElasticHalfSpace,
+                             ContactMechanics.Substrates,
+                             SurfaceTopography,
+                             SurfaceTopography.FromFile,
+                             SurfaceTopography.HeightContainer,
+                             ContactMechanics.Systems])
 
     def te_st_pylint_bitchiness(self):
         print()

@@ -29,15 +29,15 @@ Tests adhesion-free flat punch results
 
 import unittest
 import numpy as np
-from PyCo.ContactMechanics.ReferenceSolutions.Westergaard import _pressure
-from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.SurfaceTopography import Topography
-from PyCo.ContactMechanics import make_system
-from tests.SurfaceTopography import PyCoTestCase
+
+from ContactMechanics.ReferenceSolutions.Westergaard import _pressure
+from ContactMechanics import PeriodicFFTElasticHalfSpace
+from SurfaceTopography import Topography
+from ContactMechanics import make_system
 
 
 # -----------------------------------------------------------------------------
-class WestergaardTest(PyCoTestCase):
+class WestergaardTest(unittest.TestCase):
     def setUp(self):
         # system physical_sizes
         self.sx = 30.0

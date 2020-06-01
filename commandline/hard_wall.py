@@ -33,12 +33,12 @@ from argparse import ArgumentParser, ArgumentTypeError
 import numpy as np
 import PyCo
 from PyCo.Adhesion import HardWall
-from PyCo.ContactMechanics import (FreeFFTElasticHalfSpace,
+from ContactMechanics import (FreeFFTElasticHalfSpace,
                                    PeriodicFFTElasticHalfSpace)
-from PyCo.SurfaceTopography import read_topography, PlasticTopography
-from PyCo.ContactMechanics import make_system
-from PyCo.ContactMechanics.Tools.Logger import Logger, quiet, screen
-from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
+from SurfaceTopography import read_topography, PlasticTopography
+from ContactMechanics import make_system
+from ContactMechanics.Tools.Logger import Logger, quiet, screen
+from ContactMechanics.IO.NetCDF import NetCDFContainer
 
 ###
 
@@ -66,7 +66,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     ----------
     system : PyCo.System.SystemBase object
         The contact mechanical system.
-    surface : PyCo.SurfaceTopography.SurfaceTopography object
+    surface : SurfaceTopography.SurfaceTopography object
         The rigid rough surface.
     history : tuple
         History returned by past calls to next_step
@@ -331,7 +331,7 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 
 ###
 
-# Read a surface topography from a text file. Returns a PyCo.SurfaceTopography.SurfaceTopography
+# Read a surface topography from a text file. Returns a SurfaceTopography.SurfaceTopography
 # object.
 surface = read_topography(arguments.filename, physical_sizes=arguments.physical_sizes)
 # Set the *physical* physical_sizes of the surface. We here set it to equal the shape,

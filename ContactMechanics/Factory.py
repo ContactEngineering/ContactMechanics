@@ -28,13 +28,13 @@
 Implements a convenient Factory function for Contact System creation
 """
 
-from PyCo.ContactMechanics.Systems import NonSmoothContactSystem
-from PyCo.ContactMechanics.PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
+from ContactMechanics.Systems import NonSmoothContactSystem
+from ContactMechanics.PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
 
-from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
-from PyCo.SurfaceTopography import open_topography
-from PyCo.SurfaceTopography.IO import ReaderBase
+from ContactMechanics import PeriodicFFTElasticHalfSpace
+from ContactMechanics import FreeFFTElasticHalfSpace
+from SurfaceTopography import open_topography
+from SurfaceTopography.IO import ReaderBase
 
 from NuMPI import MPI
 

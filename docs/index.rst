@@ -25,7 +25,7 @@ Contact mechanics with Python. This code implements computation of contact geome
    :caption: Package Reference
 
 
-   source/PyCo.ContactMechanics
+   source/ContactMechanics
    source/PyCo.Goodies
    source/PyCo.ReferenceSolutions
    source/PyCo.SolidMechanics

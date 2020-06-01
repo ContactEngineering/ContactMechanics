@@ -32,9 +32,9 @@ import numpy as np
 
 import scipy.optimize as optim
 
-from PyCo.ContactMechanics.Tools.Logger import screen
-from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.SurfaceTopography import read_matrix
+from ContactMechanics.Tools.Logger import screen
+from ContactMechanics import PeriodicFFTElasticHalfSpace
+from SurfaceTopography import read_matrix
 
 ###
 

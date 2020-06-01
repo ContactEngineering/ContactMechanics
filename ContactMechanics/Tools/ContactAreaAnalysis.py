@@ -29,7 +29,7 @@ Tool for analysis contact geometry
 
 import numpy as np
 
-from _PyCo import assign_patch_numbers, assign_segment_numbers, distance_map, closest_patch_map
+from _SurfaceTopography import assign_patch_numbers, assign_segment_numbers, distance_map, closest_patch_map
 
 ###
 

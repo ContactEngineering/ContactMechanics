@@ -26,10 +26,10 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from NuMPI.Tools.Reduction import Reduction
-from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
-from PyCo.SurfaceTopography import make_sphere
-from PyCo.ContactMechanics.Systems import NonSmoothContactSystem
-from PyCo.ContactMechanics.ReferenceSolutions import Hertz as Hz
+from ContactMechanics import FreeFFTElasticHalfSpace
+from SurfaceTopography import make_sphere
+from ContactMechanics.Systems import NonSmoothContactSystem
+from ContactMechanics.ReferenceSolutions import Hertz as Hz
 
 DEBUG = False
 

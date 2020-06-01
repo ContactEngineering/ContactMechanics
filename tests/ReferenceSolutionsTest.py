@@ -22,28 +22,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 """
 Tests for PyCo ReferenceSolutions
 """
 
+import unittest
+
 import numpy as np
+
 from scipy.integrate import quad
 from scipy.special import ellipk, erf
 
-from tests.SurfaceTopography import PyCoTestCase
-import PyCo.ContactMechanics.ReferenceSolutions.GreenwoodTripp as GT
-import PyCo.ContactMechanics.ReferenceSolutions.Hertz as Hz
+import ContactMechanics.ReferenceSolutions.GreenwoodTripp as GT
+import ContactMechanics.ReferenceSolutions.Hertz as Hz
 
-class ReferenceSolutionsTest(PyCoTestCase):
+class ReferenceSolutionsTest(unittest.TestCase):
     def test_Fn(self):
         x = np.linspace(-3, 3, 101)
         f = GT.Fn(x, 0)
-        self.assertArrayAlmostEqual(GT.Fn(x, 0), (1-erf(x/np.sqrt(2)))/2)
+        np.testing.assert_allclose(GT.Fn(x, 0), (1-erf(x/np.sqrt(2)))/2)
     def test_s(self):
         L = lambda x: np.where(x<=1, 2/np.pi*x*ellipk(x**2), 2/np.pi*ellipk(1/x**2))
         snum = lambda ξ: np.array([quad(L, 0, _ξ)[0] for _ξ in ξ])
         x = np.linspace(0.01, 5, 101)
-        self.assertArrayAlmostEqual(GT.s(x), snum(x))
+        np.testing.assert_allclose(GT.s(x), snum(x))
     def test_no_oscillating_solution(self):
         μ = 24.0425586841
         w1, p1, rho1 = GT.GreenwoodTripp(0.5, μ)

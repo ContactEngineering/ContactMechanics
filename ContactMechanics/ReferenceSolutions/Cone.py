@@ -26,9 +26,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from PyCo.Adhesion import HardWall
-from PyCo.ContactMechanics import FreeFFTElasticHalfSpace
-from PyCo.SurfaceTopography import Topography
-from PyCo.ContactMechanics import make_system
+from ContactMechanics import FreeFFTElasticHalfSpace
+from SurfaceTopography import Topography
+from ContactMechanics import make_system
 
 def load_and_mean_pressure(alpha):
     """

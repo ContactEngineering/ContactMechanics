@@ -31,11 +31,11 @@ x-direction at constant height.
 import numpy as np
 
 from PyCo.Adhesion import HardWall
-from PyCo.ContactMechanics import PeriodicFFTElasticHalfSpace
-from PyCo.SurfaceTopography import read_matrix, TranslatedTopography, CompoundTopography
-from PyCo.ContactMechanics import make_system
+from ContactMechanics import PeriodicFFTElasticHalfSpace
+from SurfaceTopography import read_matrix, TranslatedTopography, CompoundTopography
+from ContactMechanics import make_system
 #from PyCo.Tools import compute_rms_height
-from PyCo.ContactMechanics.IO.NetCDF import NetCDFContainer
+from ContactMechanics.IO.NetCDF import NetCDFContainer
 
 ###
 
