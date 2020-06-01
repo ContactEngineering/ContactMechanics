@@ -35,7 +35,6 @@ You need Python 3 and [FFTW3](http://www.fftw.org/) to run ContactMechanics. All
 # dependencies not installable with requirements.txt
 pip install [--user] numpy
 pip install [--user] pylint
-pip install [--user] cython
 pip install [--user] mpi4py #optional
 
 # install ContactMechanics
@@ -57,7 +56,6 @@ If you cloned the repository. You can install the dependencies with
 ```
 pip install [--user] numpy
 pip install [--user] pylint
-pip install [--user] cython
 pip install [--user] mpi4py #optional
 pip3 install [--user] -r requirements.txt
 ```
@@ -121,11 +119,7 @@ To use the code without installing it, e.g. for development purposes, use the `e
 
 ```source /path/to/ContactMechanics/env.sh [python3]```
 
-Note that the parameter to `env.sh` specifies the Python interpreter for which the environment is set up. ContactMechanics contains portions that need to be compiled, make sure to run
-
-```python setup.py build```
-
-whenever any of the Cython (.pyx) sources are modified.
+Note that the parameter to `env.sh` specifies the Python interpreter for which the environment is set up.
 
 Please read [CONTRIBUTING](CONTRIBUTING.md) if you plan to contribute to this code.
 
