@@ -26,18 +26,18 @@
 Tests for PyCo helper tools
 """
 
+import unittest
+
 import numpy as np
 
 from ContactMechanics.Tools.ContactAreaAnalysis import distance_map
-
-from tests.SurfaceTopography import PyCoTestCase
 
 import pytest
 from NuMPI import MPI
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
         reason="tests only serial funcionalities, please execute with pytest")
 
-class ToolTest(PyCoTestCase):
+class ToolTest(unittest.TestCase):
     def test_distance_map(self):
         cmap = np.zeros((10,10),dtype=bool)
         ind1 = np.random.randint(0,10)

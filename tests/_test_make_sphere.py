@@ -27,7 +27,7 @@ import numpy as np
 from SurfaceTopography import make_sphere
 from ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
 
-def test_sphere(comm, fftengine_type):
+def test_sphere(comm):
     nx = 8
     ny = 5
     sx = 6.
@@ -35,9 +35,7 @@ def test_sphere(comm, fftengine_type):
     R = 20.
     center = (3.,3.)
     substrate = FreeFFTElasticHalfSpace(nb_grid_pts=(nx, ny), young=1.,
-                                        physical_sizes=(sx, sy),
-                                        fft=fftengine_type((2 * nx, 2 * ny),
-                                                           comm=comm))
+                                        physical_sizes=(sx, sy), comm=comm)
     extended_topography = make_sphere(R, (2*nx, 2*ny), (sx, sy), centre=center,
                                       nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts,
                                       subdomain_locations=substrate.subdomain_locations,
@@ -47,7 +45,7 @@ def test_sphere(comm, fftengine_type):
     np.testing.assert_allclose((X-center[0])**2 + (Y-center[1])**2 + (R+Z)**2,  R**2)
 
 
-def test_sphere_periodic(comm, fftengine_type):
+def test_sphere_periodic(comm):
     nx = 8
     ny = 5
     sx = 6.
@@ -70,7 +68,7 @@ def test_sphere_periodic(comm, fftengine_type):
                 + (Y - np.where(Y < center[1] + sy/2 , center[1], center[1] + sy) ) ** 2
                   + (R + Z) ** 2, R**2)
 
-def test_sphere_standoff(comm, fftengine_type):
+def test_sphere_standoff(comm):
     nx = 8
     ny = 5
     sx = 6.
@@ -81,10 +79,7 @@ def test_sphere_standoff(comm, fftengine_type):
     standoff = 10.
 
     substrate = FreeFFTElasticHalfSpace(nb_grid_pts=(nx, ny), young=1.,
-                                        physical_sizes=(sx, sy),
-                                        fft=fftengine_type(
-                                            (2 * nx, 2 * ny),
-                                            comm=comm))
+                                        physical_sizes=(sx, sy), communicator=comm)
     extended_topography = make_sphere(R, (2 * nx, 2 * ny), (sx, sy),
                                       centre=center,
                                       nb_subdomain_grid_pts=substrate.nb_subdomain_grid_pts,
