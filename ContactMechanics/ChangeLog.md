@@ -1,6 +1,6 @@
 
-Change log for PyCo
-===================
+Change log for ContactMechanics
+===========================
 
 v0.90.0 (not yet released)
 --------------------------
