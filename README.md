@@ -1,5 +1,5 @@
-PyCo
-====
+ContactMechanics
+==============
 
 *Contact mechanics with Python.* This code implements computation of contact geometry and pressure of a rigid object on a flat elastic half-space. All calculations assume small deformations; in that limit, the contact of any two objects of arbitrary geometry and elastic moduli can be mapped on that of a rigid on an elastic flat.
 
@@ -14,24 +14,20 @@ The methods that are implemented in this code are described in various papers:
     - [Pastewka, Robbins, Appl. Phys. Lett. 108, 221601 (2016)](https://doi.org/10.1063/1.4950802)
 - Fast solution of nonadhesive, hard-wall interactions.
     - [Polonsky, Keer, Wear 231, 206 (1999)](https://doi.org/10.1016/S0043-1648(99)00113-1)
-- Adhesive interactions.
-    - [Pastewka, Robbins, PNAS 111, 3298 (2014)](https://doi.org/10.1073/pnas.1320846111)
 - Contact plasticity.
     - [Weber, Suhina, Junge, Pastewka, Brouwer, Bonn, Nature Comm. 9, 888 (2018)](https://doi.org/10.1038/s41467-018-02981-y)
-
-*Analyzing surface topography data with Python.* This code also contains a rich set of import filters for experimental surface topography data. Surface topographies can be easily analyzed using standard (rms height, power spectrum, ...) and some special purpose (autocorrelation function, variable bandwidth analysis, ...) statistical techniques.
 
 Build status
 ------------
 
 The following badge should say _build passing_. This means that all automated tests completed successfully for the master branch.
 
-[![Build Status](https://travis-ci.com/pastewka/PyCo.svg?token=NoUEfXFkhDQgj5AmLB27&branch=master)](https://travis-ci.com/pastewka/PyCo)
+[![Build Status](https://travis-ci.org/ComputationalMechanics/ContactMechanics.svg?branch=master)](https://travis-ci.org/github/ComputationalMechanics/ContactMechanics)
 
 Installation
 ------------
 
-You need Python 3 and [FFTW3](http://www.fftw.org/) to run PyCo. All Python dependencies can be installed automatically by invoking
+You need Python 3 and [FFTW3](http://www.fftw.org/) to run ContactMechanics. All Python dependencies can be installed automatically by invoking
 
 #### Installation directly with pip
 
@@ -42,8 +38,8 @@ pip install [--user] pylint
 pip install [--user] cython
 pip install [--user] mpi4py #optional
 
-# install pyco
-pip  install [--user]  git+https://github.com/pastewka/PyCo.git#egg=PyCo
+# install ContactMechanics
+pip  install [--user]  git+https://github.com/ComputationalMechanics/ContactMechanics.git
 ```
 
 The last command will install other dependencies including 
@@ -66,7 +62,7 @@ pip install [--user] mpi4py #optional
 pip3 install [--user] -r requirements.txt
 ```
 
-in the source directory. PyCo can be installed by invoking
+in the source directory. ContactMechanics can be installed by invoking
 
 ```pip3 install [--user] .```
 
@@ -91,10 +87,10 @@ export PKG_CONFIG_PATH="/usr/local/opt/lapack/lib/pkgconfig:$PKG_CONFIG_PATH"
 where the paths have probably to be adapted to your particular installation method
 (here it was an extra homebrew installation).
 
-Updating PyCo
-------------- 
+Updating ContactMechanics
+--------------------------
 
-If you update PyCo (whether with pip or `git pull` if you cloned the repository), 
+If you update ContactMechanics (whether with pip or `git pull` if you cloned the repository), 
 you may need to uninstall `NuMPI`, `muSpectre` and or `runtests`, so that the 
 newest version of them will be installed.
 
@@ -123,9 +119,9 @@ Development
 
 To use the code without installing it, e.g. for development purposes, use the `env.sh` script to set the environment:
 
-```source /path/to/PyCo/env.sh [python3]```
+```source /path/to/ContactMechanics/env.sh [python3]```
 
-Note that the parameter to `env.sh` specifies the Python interpreter for which the environment is set up. PyCo contains portions that need to be compiled, make sure to run
+Note that the parameter to `env.sh` specifies the Python interpreter for which the environment is set up. ContactMechanics contains portions that need to be compiled, make sure to run
 
 ```python setup.py build```
 
@@ -139,14 +135,13 @@ Usage
 The code is documented via Python's documentation strings that can be accesses via the `help` command or by appending a questions mark `?` in ipython/jupyter. There are two command line tools available that may be a good starting point. They are in the `commandline` subdirectory:
 
 - `hard_wall.py`: Command line front end for calculations with hard, impenetrable walls between rigid and elastic flat. This front end exclusively uses Polonsky & Keer's constrained conjugate gradient solver to find the deformation of the substrate under the additional contact constraints. Run `hard_wall.py --help` to get a list of command line options.
-- `soft_wall.py`: Command line front end for calculations with soft (possibly adhesive) interactions between rigid and elastic flat. This is a stub rather than a fully featured command line tool that can be used as a starting point for modified script. The present implementation is set up for a solution of Martin Müser's contact mechanics challenge.
 
 Compiling the documentation
 ---------------------------
 
-- After changes to the PyCo source, you have to build again: ```python setup.py build```
+- After changes to the ContactMechanics source, you have to build again: ```python setup.py build```
 - Navigate into the docs folder: ```cd docs/``` 
-- Automatically generate reStructuredText files from the source: ```sphinx-apidoc -o source/ ../PyCo``` 
+- Automatically generate reStructuredText files from the source: ```sphinx-apidoc -o source/ ../ContactMechanics``` 
 Do just once, or if you have added/removed classes or methods. In case of the latter, be sure to remove the previous source before: ```rm -rf source/```
 - Build html files: ```make html```
-- The resulting html files can be found in the ```PyCo/docs/_build/html/``` folder. Root is ```PyCo/docs/_build/html/index.html```.
+- The resulting html files can be found in the ```ContactMechanics/docs/_build/html/``` folder. Root is ```ContactMechanics/docs/_build/html/index.html```.

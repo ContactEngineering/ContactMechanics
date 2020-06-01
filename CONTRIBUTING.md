@@ -1,5 +1,5 @@
-Contributing to PyCo
-====================
+Contributing to ContactMechanics
+============================
 
 Code style
 ----------
