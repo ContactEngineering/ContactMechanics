@@ -67,68 +67,6 @@ def examplefile(comm):
 #    comm.barrier() # all processors wait on the file to be created
 #    return data
 
-@pytest.mark.parametrize("HS", [PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace])
-@pytest.mark.parametrize("loader", [open_topography, NPYReader])
-def test_LoadTopoFromFile(comm, HS, loader, examplefile):
-    #fn = DATAFILE
-    fn, res, data = examplefile
-
-    # Read metadata from the file and returns a UniformTopgraphy Object
-    fileReader = loader(fn, communicator=comm)
-    fileReader.nb_grid_pts = fileReader.channels[0].nb_grid_pts
-
-    assert fileReader.nb_grid_pts == res
-
-    Es = 1
-    substrate = HS(nb_grid_pts=fileReader.nb_grid_pts,
-                   physical_sizes=fileReader.nb_grid_pts,
-                   young = Es, fft="fftwmpi",
-                   communicator=comm )
-
-    top = fileReader.topography(
-        subdomain_locations=substrate.topography_subdomain_locations,
-        nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
-        physical_sizes=substrate.physical_sizes)
-
-    assert top.nb_grid_pts == substrate.nb_grid_pts
-    assert top.nb_subdomain_grid_pts \
-           == substrate.topography_nb_subdomain_grid_pts
-          # or top.nb_subdomain_grid_pts == (0,0) # for FreeFFTElHS
-    assert top.subdomain_locations == substrate.topography_subdomain_locations
-
-    np.testing.assert_array_equal(top.heights(),data[top.subdomain_slices])
-
-    # test that the slicing is what is expected
-
-    fulldomain_field = np.arange(np.prod(substrate.nb_domain_grid_pts)
-                                 ).reshape(substrate.nb_domain_grid_pts)
-
-    np.testing.assert_array_equal(
-        fulldomain_field[top.subdomain_slices],
-        fulldomain_field[tuple([
-            slice(substrate.subdomain_locations[i],
-            substrate.subdomain_locations[i]
-                  + max(0,min(substrate.nb_grid_pts[i]
-                  - substrate.subdomain_locations[i],
-            substrate.nb_subdomain_grid_pts[i])))
-            for i in range(substrate.dim)])])
-
-    # Test Computation of the rms_height
-
-
-    ############## BEGINDEBUG
-    assert top.rms_height(kind="Sq") \
-           == np.sqrt(np.mean((data - np.mean(data))**2))
-
-    #Rq skip this, we know it fails, see issue ComputationalMechanics/SurfaceTopography/#1
-    #assert top.rms_height(kind="Rq") \
-    #       == np.sqrt(np.mean((data - np.mean(data, axis=0))**2)),  "{}, {}".format(np.sqrt(np.mean((data - np.mean(data, axis=0))**2)), Topography(data, top.physical_sizes, communicator=MPI.COMM_SELF).rms_height(kind="Rq"))
-
-    system = make_system(substrate, top)
-
-    # make some tests on the system
-
-
 def test_make_system_from_file(examplefile, comm):
     """
     longtermgoal for confortable and secure use
@@ -139,8 +77,6 @@ def test_make_system_from_file(examplefile, comm):
     # TODO: test this on npy and nc file
     # Maybe it will be another Function or class
     fn, res, data = examplefile
-
-    substrate =  PeriodicFFTElasticHalfSpace
 
     system = make_system(substrate="periodic",
                          surface=fn,
@@ -170,15 +106,3 @@ def test_hardwall_as_string(comm, examplefile):
                 physical_sizes=(1.,1.),
                 young=1,
                 communicator=comm)
-
-if __name__ == "__main__":
-    comm = MPI.COMM_WORLD
-    fn = "worflowtest.npy"
-    res = (128, 64)
-    np.random.seed(1)
-    data = np.random.random(res)
-    data -= np.mean(data)
-
-    np.save(fn, data)
-    test_LoadTopoFromFile(comm, (fn, res, data), HS=PeriodicFFTElasticHalfSpace,
-                              loader=NPYReader)
