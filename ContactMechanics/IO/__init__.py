@@ -1,7 +1,6 @@
 #
-# Copyright 2018-2019 Antoine Sanner
-#           2016, 2019 Lars Pastewka
-#           2016 Till Junge
+# Copyright 2016, 2020 Lars Pastewka
+#           2015-2016 Till Junge
 #
 # ### MIT license
 #
@@ -23,3 +22,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
+from .NetCDF import NetCDFContainer
