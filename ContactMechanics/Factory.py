@@ -40,7 +40,7 @@ from NuMPI import MPI
 
 
 def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
-                physical_sizes=None, **kwargs):
+                physical_sizes=None, fft="mpi", **kwargs):
     """
     Factory function for contact systems. Checks the compatibility between the
     substrate, interaction method and surface and returns an object of the
@@ -75,7 +75,7 @@ def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
     if hasattr(surface, "nb_grid_pts"): # it is a SurfaceTopography instance
         nb_grid_pts = surface.nb_grid_pts
     else: # assume it is a reader instance
-        nb_grid_pts = surface.channels[surface.default_channel]['nb_grid_pts']
+        nb_grid_pts = surface.default_channel.nb_grid_pts
 
     if physical_sizes is None:
         # if physical_sizes is not given in input arguments,
@@ -83,8 +83,7 @@ def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
         if hasattr(surface, "physical_sizes"):  # it is a SurfaceTopography instance
             surface_physical_sizes = surface.physical_sizes
         else:  # we assume it is a reader instance
-            surface_physical_sizes = surface.channels[surface.default_channel][
-                'physical_sizes']
+            surface_physical_sizes = surface.default_channel.physical_sizes
         if surface_physical_sizes is None:
             raise ValueError("physical sizes neither provided in input or in file")
         else:
@@ -95,11 +94,11 @@ def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
     if substrate=="periodic":
         substrate = PeriodicFFTElasticHalfSpace(
             nb_grid_pts,
-            physical_sizes=physical_sizes, communicator=communicator, **kwargs)
+            physical_sizes=physical_sizes, communicator=communicator, fft=fft, **kwargs)
     elif substrate=="free":
         substrate = FreeFFTElasticHalfSpace(
             nb_grid_pts,
-            physical_sizes=physical_sizes, communicator=communicator, **kwargs)
+            physical_sizes=physical_sizes, communicator=communicator, fft=fft, **kwargs)
 
 
 
