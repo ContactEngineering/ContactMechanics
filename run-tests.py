@@ -5,6 +5,6 @@ import sys; #sys.path.pop(0)
 from runtests.mpi import Tester
 import os
 
-tester = Tester(os.path.join(os.path.abspath(__file__)), "PyCo")
+tester = Tester(os.path.join(os.path.abspath(__file__)), "ContactMechanics")
 
 tester.main(sys.argv[1:])
