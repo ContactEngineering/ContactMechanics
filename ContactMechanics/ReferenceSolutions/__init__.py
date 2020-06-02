@@ -1,5 +1,6 @@
 #
-# Copyright 2016 Lars Pastewka
+# Copyright 2016, 2020 Lars Pastewka
+#           2015-2016 Till Junge
 #
 # ### MIT license
 #
