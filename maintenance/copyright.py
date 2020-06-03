@@ -10,8 +10,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -33,20 +33,23 @@ root = os.path.dirname(sys.argv[0])
 
 
 def read_authors(fn):
-    return {email.strip('<>'): name for name, email in [line.rsplit(maxsplit=1) for line in open(fn, 'r')]}
+    return {email.strip('<>'): name for name, email in
+            [line.rsplit(maxsplit=1) for line in open(fn, 'r')]}
 
 
 def parse_git_log(log, authors):
     committers = defaultdict(set)
+    author = None
     date = None
     for line in log.decode('utf-8').split('\n'):
         if line.startswith('commit'):
-            if date is not None:
+            if date is not None and author is not None:
                 committers[author].add(date.year)
         elif line.startswith('Author:'):
             email = line.rsplit('<', maxsplit=1)[1][:-1]
         elif line.startswith('Date:'):
-            date = datetime.strptime(line[5:].rsplit(maxsplit=1)[0].strip(), '%a %b %d %H:%M:%S %Y')
+            date = datetime.strptime(line[5:].rsplit(maxsplit=1)[0].strip(),
+                                     '%a %b %d %H:%M:%S %Y')
             try:
                 author = authors[email]
             except KeyError:
@@ -82,7 +85,8 @@ def pretty_years(years):
 
 authors = read_authors('{}/../AUTHORS'.format(root))
 
-process = Popen(['git', 'log', '--follow', sys.argv[1]], stdout=PIPE, stderr=PIPE)
+process = Popen(['git', 'log', '--follow', sys.argv[1]], stdout=PIPE,
+                stderr=PIPE)
 stdout, stderr = process.communicate()
 committers = parse_git_log(stdout, authors)
 

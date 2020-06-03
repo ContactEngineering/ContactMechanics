@@ -9,6 +9,7 @@ h5py
 sphinx>=1.8.2
 NuMPI>=0.1.1
 pytest>=4
+pytest-flake8
 setuptools_scm>=3.5.0
 git+https://gitlab.com/muspectre/muspectre.git@merge/20_stencil_database#egg=muFFT
 git+https://github.com/AntoineSIMTEK/runtests.git#egg=runtests
