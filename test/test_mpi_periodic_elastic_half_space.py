@@ -160,7 +160,7 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
                                     (3,128)])
 def test_sineWave_disp_rotation_invariance(comm, pnp, nx, ny, basenpoints):
     """
-    for a sinusoidal displacement, tests if the energy depends on if the wave is
+    for a sinusoidal displacement, test if the energy depends on if the wave is
     oriented in x or y direction
 
     Parameters

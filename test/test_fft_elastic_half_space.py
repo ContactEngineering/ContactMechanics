@@ -46,7 +46,7 @@ from ContactMechanics import FreeFFTElasticHalfSpace
 import ContactMechanics.Tools as Tools
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
-                                reason="tests only serial funcionalities, please execute with pytest")
+                                reason="test only serial funcionalities, please execute with pytest")
 
 
 class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
@@ -74,7 +74,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         self.assertTrue(error < tol, "error = {}".format(error))
 
     def test_parabolic_shape_force(self):
-        """ tests whether the Elastic energy is a quadratic function of the
+        """ test whether the Elastic energy is a quadratic function of the
             applied force"""
         hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
                                          self.physical_sizes)
@@ -90,7 +90,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         self.assertTrue(error < tol)
 
     def test_parabolic_shape_disp(self):
-        """ tests whether the Elastic energy is a quadratic function of the
+        """ test whether the Elastic energy is a quadratic function of the
             applied displacement"""
         hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
                                          self.physical_sizes)
@@ -281,7 +281,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
                         "error = {} ≥ tol = {}".format(error, tol))
 
     def test_uniform_displacement(self):
-        """ tests whether uniform displacement returns stiffness_q0"""
+        """ test whether uniform displacement returns stiffness_q0"""
         sq0 = 1.43
         hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
                                          self.physical_sizes, stiffness_q0=sq0)
@@ -289,7 +289,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
         self.assertAlmostEqual(force.sum() / np.prod(self.physical_sizes), sq0)
 
     def test_uniform_displacement_finite_height(self):
-        """ tests whether uniform displacement returns stiffness_q0"""
+        """ test whether uniform displacement returns stiffness_q0"""
         h0 = 3.45
         hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
                                          self.physical_sizes, thickness=h0,

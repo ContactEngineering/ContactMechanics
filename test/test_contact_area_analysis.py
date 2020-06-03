@@ -36,7 +36,7 @@ import pytest
 from NuMPI import MPI
 
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
-                                reason="tests only serial functionalities, please execute with pytest")
+                                reason="test only serial functionalities, please execute with pytest")
 
 from ContactMechanics.Tools.ContactAreaAnalysis import (assign_patch_numbers, assign_segment_numbers, distance_map,
                                                         inner_perimeter, outer_perimeter, patch_areas)

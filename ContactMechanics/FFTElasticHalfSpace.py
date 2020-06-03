@@ -37,7 +37,7 @@ from NuMPI import MPI
 
 from .Substrates import ElasticSubstrate
 
-# I will never take the parallel as default because most of the tests will fail because of this
+# I will never take the parallel as default because most of the test will fail because of this
 
 from muFFT import FFT
 from NuMPI.Tools import Reduction

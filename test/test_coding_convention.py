@@ -46,7 +46,7 @@ class SystemTest(unittest.TestCase):
 
     def te_st_pylint_bitchiness(self):
         print()
-        options = ' --rcfile=tests/pylint.rc --disable=locally-disabled'
+        options = ' --rcfile=test/pylint.rc --disable=locally-disabled'
         for module in self.modules:
             epylint.py_run(module.__file__ + options)
 

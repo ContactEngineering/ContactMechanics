@@ -52,7 +52,7 @@ If a whole test file should only be run in serial
 and/or is incompatible with `runtests` (`unittest`), include following line:
 ```python
 pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
-        reason="tests only serial funcionalities, please execute with pytest")
+        reason="test only serial funcionalities, please execute with pytest")
 ```
 The file will executed in a run with `pytest` and not with a (parallel) run with
 `python3 run-tests.py`
