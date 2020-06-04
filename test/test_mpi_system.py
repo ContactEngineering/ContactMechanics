@@ -11,8 +11,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,19 +22,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 """
-
 represents the UseCase of creating System with MPI parallelization
-
 """
 
 import pytest
 
-from NuMPI import MPI
-from ContactMechanics import FreeFFTElasticHalfSpace,PeriodicFFTElasticHalfSpace
 from ContactMechanics.Factory import make_system
-from SurfaceTopography.IO import NPYReader, open_topography
-from SurfaceTopography import Topography
 
 import numpy as np
 
@@ -42,12 +37,13 @@ import os
 
 DATADIR = os.path.dirname(os.path.realpath(__file__))
 
+
 @pytest.fixture
 def examplefile(comm):
     fn = DATADIR + "/worflowtest.npy"
-    res = (128,64)
+    res = (128, 64)
     np.random.seed(1)
-    data  = np.random.random(res )
+    data = np.random.random(res)
     data -= np.mean(data)
     if comm.rank == 0:
         np.save(fn, data)
@@ -55,9 +51,10 @@ def examplefile(comm):
     comm.barrier()
     return (fn, res, data)
 
-#DATAFILE = DATADIR + "/worflowtest.npy"
-#@pytest.fixture
-#def data(comm):
+
+# DATAFILE = DATADIR + "/worflowtest.npy"
+# @pytest.fixture
+# def data(comm):
 #    res = (256,256)#(128, 64)
 #    np.random.seed(1)
 #    data = np.random.random(res)
@@ -81,10 +78,11 @@ def test_make_system_from_file(examplefile, comm):
     system = make_system(substrate="periodic",
                          surface=fn,
                          communicator=comm,
-                         physical_sizes=(20.,30.),
+                         physical_sizes=(20., 30.),
                          young=1)
 
-    print( system.__class__)
+    print(system.__class__)
+
 
 def test_make_system_from_file_serial(comm_self):
     """
@@ -96,13 +94,14 @@ def test_make_system_from_file_serial(comm_self):
     """
     pass
 
-#def test_automake_substrate(comm):
+
+# def test_automake_substrate(comm):
 #    surface = make_sphere(2, (4,4), (1., 1.), )
 
 def test_hardwall_as_string(comm, examplefile):
     fn, res, data = examplefile
     make_system(substrate="periodic",
                 surface=fn,
-                physical_sizes=(1.,1.),
+                physical_sizes=(1., 1.),
                 young=1,
                 communicator=comm)

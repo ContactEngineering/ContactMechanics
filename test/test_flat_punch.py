@@ -11,8 +11,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -34,7 +34,7 @@ from ContactMechanics import FreeFFTElasticHalfSpace
 from SurfaceTopography import Topography
 from ContactMechanics import make_system
 
-# -----------------------------------------------------------------------------
+
 class FlatPunchTest(unittest.TestCase):
     def setUp(self):
         # punch radius:
@@ -48,8 +48,10 @@ class FlatPunchTest(unittest.TestCase):
                 sx = sy = 2.5 * self.r_s
                 substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
                                                     (sx, sy))
-                r_sq = (sx / nx * (np.arange(nx) - nx // 2)).reshape(-1, 1) ** 2 + \
-                       (sy / ny * (np.arange(ny) - ny // 2)).reshape(1, -1) ** 2
+                r_sq = (sx / nx * (np.arange(nx) -
+                                   nx // 2)).reshape(-1, 1) ** 2 + \
+                       (sy / ny * (np.arange(ny) -
+                                   ny // 2)).reshape(1, -1) ** 2
                 surface = Topography(
                     np.ma.masked_where(r_sq > self.r_s ** 2,
                                        np.zeros([nx, ny])),
@@ -65,7 +67,8 @@ class FlatPunchTest(unittest.TestCase):
                         import matplotlib.pyplot as plt
                         fig, ax = plt.subplots()
 
-                        # ax.pcolormesh(substrate.force / surface.area_per_pt,rasterized=True)
+                        # ax.pcolormesh(substrate.force /
+                        # surface.area_per_pt,rasterized=True)
                         plt.colorbar(ax.pcolormesh(surface.heights(),
                                                    rasterized=True))
                         ax.set_xlabel("")
@@ -91,6 +94,6 @@ class FlatPunchTest(unittest.TestCase):
                     self.assertAlmostEqual(-forces.sum(), normal_force)
 
                 # Check contact stiffness
-                self.assertAlmostEqual(-forces.sum() / offset / (2 * self.r_s * self.E_s),
-                                       1.0, places=2)
-
+                self.assertAlmostEqual(
+                    -forces.sum() / offset / (2 * self.r_s * self.E_s),
+                    1.0, places=2)

@@ -11,8 +11,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,14 +26,6 @@
 import numpy as np
 import pytest
 
-try:
-    from mpi4py import MPI
-    _withMPI = True
-except ImportError:
-    print("No MPI")
-    _withMPI = False
-
-
 from ContactMechanics import FreeFFTElasticHalfSpace
 from NuMPI.Tools import Reduction
 
@@ -42,9 +34,10 @@ from NuMPI.Tools import Reduction
 def pnp(comm):
     return Reduction(comm)
 
+
 @pytest.fixture
 def basenpoints(comm):
-    return (comm.Get_size() -1)* 8
+    return (comm.Get_size() - 1) * 8
     # Base number of points in order to avoid
     # empty subdomains when using a lot of processors
 
@@ -60,7 +53,9 @@ def test_nb_grid_ptss(comm, pnp, nx, ny, basenpoints):
                                         fft='mpi', communicator=comm)
     assert substrate.nb_grid_pts == (nx, ny)
     assert substrate.nb_domain_grid_pts == (2 * nx, 2 * ny)
-    assert pnp.sum(np.array(np.prod(substrate.nb_subdomain_grid_pts))) == 4 * nx * ny
+    assert pnp.sum(
+        np.array(np.prod(substrate.nb_subdomain_grid_pts))) == 4 * nx * ny
+
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
 def test_weights(comm, pnp, nx, ny, basenpoints):
@@ -93,23 +88,26 @@ def test_weights(comm, pnp, nx, ny, basenpoints):
             y_s = np.where(y_s <= hs.nb_grid_pts[1], y_s,
                            y_s - hs.nb_grid_pts[1] * 2) * hs._steps[1]
             y_s.shape = (1, -1)
-            facts = 1 / (np.pi * hs.young) * (
-                    (x_s + a) * np.log(((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
-                                                            (x_s + a) * (x_s + a))) /
-                                       ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +
-                                                            (x_s + a) * (x_s + a)))) +
-                    (y_s + b) * np.log(((x_s + a) + np.sqrt((y_s + b) * (y_s + b) +
-                                                            (x_s + a) * (x_s + a))) /
-                                       ((x_s - a) + np.sqrt((y_s + b) * (y_s + b) +
-                                                            (x_s - a) * (x_s - a)))) +
-                    (x_s - a) * np.log(((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +
-                                                            (x_s - a) * (x_s - a))) /
-                                       ((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
-                                                            (x_s - a) * (x_s - a)))) +
-                    (y_s - b) * np.log(((x_s - a) + np.sqrt((y_s - b) * (y_s - b) +
-                                                            (x_s - a) * (x_s - a))) /
-                                       ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +
-                                                            (x_s + a) * (x_s + a)))))
+            facts = 1 / (np.pi * hs.young) * ((x_s + a) * np.log(
+                ((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
+                                     (x_s + a) * (x_s + a))) /
+                ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +
+                                     (x_s + a) * (x_s + a)))) +
+                                              (y_s + b) * np.log(
+                ((x_s + a) + np.sqrt((y_s + b) * (y_s + b) +
+                                     (x_s + a) * (x_s + a))) /
+                ((x_s - a) + np.sqrt((y_s + b) * (y_s + b) +
+                                     (x_s - a) * (x_s - a)))) +
+                                              (x_s - a) * np.log(
+                ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +
+                                     (x_s - a) * (x_s - a))) /
+                ((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
+                                     (x_s - a) * (x_s - a)))) +
+                                              (y_s - b) * np.log(
+                ((x_s - a) + np.sqrt((y_s - b) * (y_s - b) +
+                                     (x_s - a) * (x_s - a))) /
+                ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +
+                                     (x_s + a) * (x_s + a)))))
         weights = np.fft.rfftn(facts.T).T
         return weights, facts
 
@@ -122,9 +120,12 @@ def test_weights(comm, pnp, nx, ny, basenpoints):
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                         fft='mpi', communicator=comm)
     local_weights, local_facts = substrate._compute_fourier_coeffs()
-    #print(local_weights.shape, ref_weights.shape, substrate.fourier_slices)
-    np.testing.assert_allclose(local_weights, ref_weights[substrate.fourier_slices], 1e-12)
-    np.testing.assert_allclose(local_facts, ref_facts[substrate.subdomain_slices], 1e-12)
+    # print(local_weights.shape, ref_weights.shape, substrate.fourier_slices)
+    np.testing.assert_allclose(local_weights,
+                               ref_weights[substrate.fourier_slices], 1e-12)
+    np.testing.assert_allclose(local_facts,
+                               ref_facts[substrate.subdomain_slices], 1e-12)
+
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])
 def test_evaluate_disp_uniform_pressure(comm, pnp, nx, ny, basenpoints):
@@ -132,14 +133,15 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, nx, ny, basenpoints):
     ny += basenpoints
 
     sx, sy = 100, 200
-    E_s=1.5
+    E_s = 1.5
     forces = np.zeros((2 * nx, 2 * ny))
     x = (np.arange(2 * nx) - (nx - 1) / 2) * sx / nx
     x.shape = (-1, 1)
     y = (np.arange(2 * ny) - (ny - 1) / 2) * sy / ny
     y.shape = (1, -1)
 
-    forces[1:nx - 1, 1:ny - 1] = -np.ones((nx - 2, ny - 2)) * (sx * sy) / (nx * ny)
+    forces[1:nx - 1, 1:ny - 1] = -np.ones((nx - 2, ny - 2)) * (sx * sy) / (
+            nx * ny)
     a = (nx - 2) / 2 * sx / nx
     b = (ny - 2) / 2 * sy / ny
     refdisp = 1 / (np.pi * E_s) * (
@@ -160,7 +162,6 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, nx, ny, basenpoints):
                              ((x + a) + np.sqrt((y - b) * (y - b) +
                                                 (x + a) * (x + a)))))
 
-
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                         fft='mpi', communicator=comm)
 
@@ -174,12 +175,14 @@ def test_evaluate_disp_uniform_pressure(comm, pnp, nx, ny, basenpoints):
     computed_disp = substrate.evaluate_disp(forces[substrate.subdomain_slices])
     # print(computed_disp)
     # make the comparison only on the nonpadded domain
-    s_c = tuple([slice(1, max(0, min(substrate.nb_grid_pts[i] - 1 - substrate.subdomain_locations[i],
-                                     substrate.nb_subdomain_grid_pts[i])))
+    s_c = tuple([slice(1, max(0, min(
+        substrate.nb_grid_pts[i] - 1 - substrate.subdomain_locations[i],
+        substrate.nb_subdomain_grid_pts[i])))
                  for i in range(substrate.dim)])
 
     s_refdisp = tuple([slice(s_c[i].start + substrate.subdomain_locations[i],
-                             s_c[i].stop + substrate.subdomain_locations[i]) for i in range(substrate.dim)])
+                             s_c[i].stop + substrate.subdomain_locations[i])
+                       for i in range(substrate.dim)])
     # print(s_c)
     # print(s_refdisp)
     np.testing.assert_allclose(computed_disp[s_c], refdisp[s_refdisp])
@@ -191,7 +194,8 @@ def test_local_topography_subdomain_slices(comm):
     np.random.seed(0)
     globaldata = np.random.random((nx, ny))
 
-    substrate = FreeFFTElasticHalfSpace((nx, ny), 1., communicator=comm, fft='mpi')
+    substrate = FreeFFTElasticHalfSpace((nx, ny), 1., communicator=comm,
+                                        fft='mpi')
     assert (globaldata[substrate.subdomain_slices]
             [substrate.local_topography_subdomain_slices]
             ==

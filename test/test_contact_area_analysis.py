@@ -11,8 +11,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -35,14 +35,14 @@ import pytest
 
 from NuMPI import MPI
 
-pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
-                                reason="test only serial functionalities, please execute with pytest")
+from ContactMechanics.Tools.ContactAreaAnalysis import assign_patch_numbers, \
+    assign_segment_numbers, distance_map, inner_perimeter, outer_perimeter, \
+    patch_areas
 
-from ContactMechanics.Tools.ContactAreaAnalysis import (assign_patch_numbers, assign_segment_numbers, distance_map,
-                                                        inner_perimeter, outer_perimeter, patch_areas)
+pytestmark = pytest.mark.skipif(
+    MPI.COMM_WORLD.Get_size() > 1,
+    reason="test only serial functionalities, please execute with pytest")
 
-
-###
 
 class TestAnalysis(unittest.TestCase):
 
@@ -101,13 +101,18 @@ class TestAnalysis(unittest.TestCase):
                                                    [0, 0, 0],
                                                    [0, 0, 0]]))
 
-        m_xy = np.loadtxt('{}/contact_map.txt.gz'.format(os.path.dirname(os.path.realpath(__file__))), dtype=bool)
+        m_xy = np.loadtxt('{}/contact_map.txt.gz'.format(
+            os.path.dirname(os.path.realpath(__file__))), dtype=bool)
 
         # This is a regression test
-        ref_patch_areas = [403, 4, 210, 46, 1, 3, 2, 2, 16, 2977, 2, 11, 1, 13, 2, 3, 5, 2, 1, 2, 1, 1, 2, 2, 1, 5, 1,
-                           25, 2, 6526, 370, 1, 1, 1, 3, 1, 10, 4, 1, 5, 6, 24, 7, 1, 5, 16, 1, 10, 3, 1, 71, 1, 2, 1,
-                           1, 1, 1, 5, 4, 1, 2, 1, 6, 2, 5, 190, 17, 2, 2, 2, 10, 1, 1, 16, 1, 1, 1, 92, 8, 1, 1, 1, 2,
-                           1, 3, 3, 1, 33, 5, 4, 6, 3, 6, 43, 1, 4, 5, 1, 6, 4, 1, 1, 2, 15, 1, 3, 1, 1, 2, 2, 1, 28,
+        ref_patch_areas = [403, 4, 210, 46, 1, 3, 2, 2, 16, 2977, 2, 11, 1, 13,
+                           2, 3, 5, 2, 1, 2, 1, 1, 2, 2, 1, 5, 1,
+                           25, 2, 6526, 370, 1, 1, 1, 3, 1, 10, 4, 1, 5, 6, 24,
+                           7, 1, 5, 16, 1, 10, 3, 1, 71, 1, 2, 1,
+                           1, 1, 1, 5, 4, 1, 2, 1, 6, 2, 5, 190, 17, 2, 2, 2,
+                           10, 1, 1, 16, 1, 1, 1, 92, 8, 1, 1, 1, 2,
+                           1, 3, 3, 1, 33, 5, 4, 6, 3, 6, 43, 1, 4, 5, 1, 6, 4,
+                           1, 1, 2, 15, 1, 3, 1, 1, 2, 2, 1, 28,
                            3, 1, 1, 2, 1, 11, 2, 2, 2, 3, 1]
 
         nump, p_xy = assign_patch_numbers(m_xy)
@@ -214,7 +219,8 @@ class TestAnalysis(unittest.TestCase):
                                                        [False, True, False],
                                                        [False, False, False],
                                                        [False, True, False],
-                                                       [False, False, False]])))
+                                                       [False, False,
+                                                        False]])))
         self.assertTrue(np.array_equal(o_xy, np.array([[False, True, False],
                                                        [True, False, True],
                                                        [False, True, False],
