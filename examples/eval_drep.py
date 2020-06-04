@@ -30,15 +30,13 @@ import numpy as np
 from ContactMechanics.IO.NetCDF import NetCDFContainer
 from ContactMechanics.Tools.ContactAreaAnalysis import assign_segment_numbers
 
-###
-
 nc = NetCDFContainer(sys.argv[1])
 frame = nc[int(sys.argv[2])]
 
 f = frame.forces
 c = f > 1e-6
 
-# Indentify indidual segments
+# Identify individual segments
 ns, s = assign_segment_numbers(c)
 assert s.max() == ns
 
