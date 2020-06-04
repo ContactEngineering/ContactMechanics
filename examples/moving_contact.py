@@ -32,15 +32,15 @@ import numpy as np
 
 from PyCo.Adhesion import HardWall
 from ContactMechanics import PeriodicFFTElasticHalfSpace
-from SurfaceTopography import read_matrix, TranslatedTopography, CompoundTopography
+from SurfaceTopography import read_matrix, TranslatedTopography, \
+    CompoundTopography
 from ContactMechanics import make_system
-#from PyCo.Tools import compute_rms_height
+# from PyCo.Tools import compute_rms_height
 from ContactMechanics.IO.NetCDF import NetCDFContainer
 
 ###
 
 import matplotlib.pyplot as plt
-
 
 ###
 
@@ -91,7 +91,7 @@ container.surface2 = surface2.heights()
 # Loop over nd displacement steps.
 nd = 3
 step_size = 24
-for i, c in zip(range(0, step_size*nd, step_size), ['r', 'g', 'b', 'y']):
+for i, c in zip(range(0, step_size * nd, step_size), ['r', 'g', 'b', 'y']):
     print(i)
     xshift = i
     # Set the offset of the translated surface, i.e. the translation vector
@@ -101,10 +101,10 @@ for i, c in zip(range(0, step_size*nd, step_size), ['r', 'g', 'b', 'y']):
     # Solve the contact problem for a constant relative displacement (offset).
     opt = system.minimize_proxy(offset=-0.012, disp0=disp)
     # Alternative: Solve it with external force as boundary conditions
-    #opt = system.minimize_proxy(external_force=0.01, disp0=disp)
-    disp = opt.x # This is the displacement field
-    forces = opt.jac # These are the forces/pressures
-    offset = opt.offset # The relative displacement of the two surfaces
+    # opt = system.minimize_proxy(external_force=0.01, disp0=disp)
+    disp = opt.x  # This is the displacement field
+    forces = opt.jac  # These are the forces/pressures
+    offset = opt.offset  # The relative displacement of the two surfaces
 
     # Note: Either force or offset printed in screen should correspond to what
     # you have specified above.
@@ -119,11 +119,11 @@ for i, c in zip(range(0, step_size*nd, step_size), ['r', 'g', 'b', 'y']):
     # Reconstruct the deformed surfaces for plotting. Note that here we assume
     # that the two moduli are the same and half of the displacement is
     # carried by the top and the other half by the bottom surface.
-    top_surface = -translated_surface1[:,:]+disp/2-offset
-    bottom_surface = surface2[:,:]-disp/2
+    top_surface = -translated_surface1[:, :] + disp / 2 - offset
+    bottom_surface = surface2[:, :] - disp / 2
 
-    plt.plot(np.arange(nx), top_surface[:,150], c+'-')
-    plt.plot(np.arange(nx), bottom_surface[:,150], c+'-')
+    plt.plot(np.arange(nx), top_surface[:, 150], c + '-')
+    plt.plot(np.arange(nx), bottom_surface[:, 150], c + '-')
 
 container.close()
 
