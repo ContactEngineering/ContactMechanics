@@ -33,28 +33,25 @@ import ContactMechanics
 import SurfaceTopography
 from ContactMechanics.Systems import NonSmoothContactSystem
 
+
 class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
     """
     This system implements a simple penetration hardness model.
     """
 
     @staticmethod
-    def handles(substrate_type, interaction_type, surface_type, is_domain_decomposed):
+    def handles(substrate_type, surface_type, is_domain_decomposed):
         """
         determines whether this class can handle the proposed system
         composition
         Keyword Arguments:
         substrate_type   -- instance of ElasticSubstrate subclass
-        interaction_type -- instance of Interaction
         surface_type     --
         """
         is_ok = True
         # any type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
                             ContactMechanics.ElasticSubstrate)
-        # only hard interactions allowed
-        is_ok &= issubclass(interaction_type,
-                            Adhesion.HardWall)
 
         # any surface should do
         is_ok &= issubclass(surface_type,
@@ -66,14 +63,15 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
         """
         # Need to convert hardness into force units because the solvers operate
         # internally with forces, not pressures.
-        hardness = self.surface.hardness*self.surface.area_per_pt
+        hardness = self.surface.hardness * self.surface.area_per_pt
         opt = super().minimize_proxy(
             hardness=hardness,
             **kwargs
-            )
+        )
         if opt.success:
             plastic_mask = (self.force == hardness)
-            self.surface.plastic_displ += np.where(plastic_mask,
-                    self.compute_gap(self.disp, self.offset), 0.)
+            self.surface.plastic_displ += \
+                np.where(plastic_mask,
+                         self.compute_gap(self.disp, self.offset), 0.)
 
         return opt

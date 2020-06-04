@@ -29,16 +29,18 @@ Greenwood-Tripp model for the contact of rough spheres
 import numpy as np
 from scipy.integrate import quad, simps
 from scipy.interpolate import interp1d
+from scipy.optimize import brentq
 from scipy.special import ellipe, ellipk
+
+
 # Note on notation in paper and scipy: K(x) = ellipk(x**2), E(x) = ellipe(x**2)
 
-###
-
 def _Fn(h, n, phi):
-    v, err = quad(lambda s: (s-h)**n * phi(s), h, np.inf)
+    v, err = quad(lambda s: (s - h) ** n * phi(s), h, np.inf)
     return v
 
-def Fn(h, n, phi=lambda s: np.exp(-s**2/2)/((2*np.pi)**(1/2))):
+
+def Fn(h, n, phi=lambda s: np.exp(-s ** 2 / 2) / ((2 * np.pi) ** (1 / 2))):
     """
     Returns: int_h^infty (s-h)^n * phi(s) ds
     """
@@ -55,29 +57,32 @@ def s(ξ, ξ1=1e-5, ξ2=1e5):
              2/pi*ξ*E(1/ξ) if ξ>1
     Asymptotic cases are approximated by the asymptotic expressions.
     """
-    B = lambda x: ellipe(x**2)+(x**2-1)*ellipk(x**2)
+    def B(x):
+        return ellipe(x ** 2) + (x ** 2 - 1) * ellipk(x ** 2)
     m1 = ξ < ξ1
     m4 = ξ > ξ2
     m = ξ < 1
     m2 = np.logical_and(m, np.logical_not(m1))
     m3 = np.logical_and(np.logical_not(m), np.logical_not(m4))
     r = np.zeros_like(ξ)
-    r[m1] = ξ[m1]**2/2
+    r[m1] = ξ[m1] ** 2 / 2
     r[m4] = ξ[m4]
-    r[m2] = 2/np.pi*B(ξ[m2])
-    r[m3] = 2/np.pi*ξ[m3]*ellipe(1/ξ[m3]**2)
+    r[m2] = 2 / np.pi * B(ξ[m2])
+    r[m3] = 2 / np.pi * ξ[m3] * ellipe(1 / ξ[m3] ** 2)
     return r
 
 
 # Use asymptotic expressions for small and large values
 def ξ(s, s1=1e-5, s2=1e5):
-    ξnum = lambda s0: brentq(lambda ξ: s(ξ)-s0, 1e-12, 1e12) if isscalar(s0) \
-        else array([brentq(lambda ξ: s(ξ)-_s0, 1e-12, 1e12) for _s0 in s0])
+    def ξnum(s0):
+        return brentq(lambda ξ: s(ξ) - s0, 1e-12, 1e12) \
+            if np.isscalar(s0) else \
+            np.array([brentq(lambda ξ: s(ξ) - _s0, 1e-12, 1e12) for _s0 in s0])
     m1 = s < s1
     m3 = s > s2
     m2 = np.logical_and(np.logical_not(m1), np.logical_not(m3))
     r = np.zeros_like(s)
-    r[m1] = sqrt(2*s[m1])
+    r[m1] = np.sqrt(2 * s[m1])
     r[m3] = s[m3]
     r[m2] = ξnum(s[m2])
     return r
@@ -124,14 +129,14 @@ def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1,
     w = np.zeros_like(ρ)
     w0 = 0
     p = np.zeros_like(ρ)
-    pold = p.copy()+1.0
+    pold = p.copy() + 1.0
     it = 0
-    while np.abs(p-pold).max() > tol:
+    while np.abs(p - pold).max() > tol:
         if it > maxiter:
             raise RuntimeError('Maximum number of iterations (={}) '
                                'exceeded.'.format(maxiter))
         pold = p.copy()
-        p = mix*μ*Fn(d+ρ**2+w-w0, 3/2) + (1-mix)*p
+        p = mix * μ * Fn(d + ρ ** 2 + w - w0, 3 / 2) + (1 - mix) * p
         pint = interp1d(ρ, p)
         w0 = simps(p, x=ρ)
         w = np.zeros_like(ρ)
@@ -139,8 +144,8 @@ def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1,
             if i == 0:
                 w[0] = w0
             else:
-                ξ = np.linspace(0, (rhomax-eps)/_ρ, n)
-                w[i] = simps(_ρ*pint(_ρ*ξ), x=s(ξ))
+                ξ = np.linspace(0, (rhomax - eps) / _ρ, n)
+                w[i] = simps(_ρ * pint(_ρ * ξ), x=s(ξ))
         it += 1
-    p = μ*Fn(d+ρ**2+w-w0, 3/2)
-    return w-w0, p, ρ
+    p = μ * Fn(d + ρ ** 2 + w - w0, 3 / 2)
+    return w - w0, p, ρ

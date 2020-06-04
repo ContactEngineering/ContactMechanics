@@ -30,6 +30,7 @@ Base class for continuum mechanics models of halfspaces
 
 import abc
 
+
 class Substrate(object, metaclass=abc.ABCMeta):
     """ Generic baseclass from which all substate classes derive
     """
@@ -38,6 +39,7 @@ class Substrate(object, metaclass=abc.ABCMeta):
     class Error(Exception):
         # pylint: disable=missing-docstring
         pass
+
     name = 'generic_halfspace'
 
     def spawn_child(self, dummy):
@@ -88,12 +90,11 @@ class Substrate(object, metaclass=abc.ABCMeta):
         """Return the MPI communicator"""
         pass
 
-    #@property
-    #@abc.abstractmethod
-    #def dim(self, ):
+    # @property
+    # @abc.abstractmethod
+    # def dim(self, ):
     #    "return the substrate's physical dimension"
     #    pass
-
 
     def check(self, force=None):
         """
@@ -114,6 +115,7 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
     """ Generic baseclass for elastic substrates
     """
     name = 'generic_elastic_halfspace'
+
     # Since an elastic substrate essentially defines a Potential, a similar
     # internal structure is chosen
 
@@ -125,9 +127,10 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
         dims = 'x', 'y', 'z'
         size_str = ', '.join('{}: {}({})'.format(dim, size, nb_grid_pts) for
                              dim, size, nb_grid_pts in zip(dims, self.size,
-                                                          self.nb_grid_pts))
-        return ("{0.dim}-dimensional halfspace '{0.name}', physical_sizes(nb_grid_pts) in"
-                " {1}, E' = {0.young}").format(self, size_str)
+                                                           self.nb_grid_pts))
+        return "{0.dim}-dimensional halfspace '{0.name}', " \
+               "physical_sizes(nb_grid_pts) in  {1}, E' = {0.young}"\
+            .format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):
         """

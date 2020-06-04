@@ -27,5 +27,5 @@
 Optimization algorithms
 """
 
-from .ConstrainedConjugateGradients import constrained_conjugate_gradients
-from .SimpleRelaxation import simple_relaxation
+from .ConstrainedConjugateGradients import \
+    constrained_conjugate_gradients  # noqa: F401

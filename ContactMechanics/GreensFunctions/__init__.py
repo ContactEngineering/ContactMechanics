@@ -23,5 +23,5 @@
 # SOFTWARE.
 #
 
-from .Anisotropic import AnisotropicGreensFunction
-from .Isotropic import IsotropicGreensFunction
+from .Anisotropic import AnisotropicGreensFunction  # noqa: F401
+from .Isotropic import IsotropicGreensFunction  # noqa: F401

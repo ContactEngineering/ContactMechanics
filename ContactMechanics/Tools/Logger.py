@@ -37,7 +37,6 @@ import inspect
 from functools import reduce
 from numbers import Real
 
-###
 
 def hdr_str(s, x):
     """ Return header description strings
@@ -46,59 +45,61 @@ def hdr_str(s, x):
     if isinstance(x, str):
         return s
 
-    r = [ ]
+    r = []
     try:
         for i, v in enumerate(x):
-            r += [ s+'('+chr(ord('x')+i)+')' ]
-    except:
+            r += [s + '(' + chr(ord('x') + i) + ')']
+    except Exception:
         r = s
     return r
+
 
 def hdrfmt_str(x, i):
     """ Return header format string for datatype x
     """
 
     if isinstance(x, str):
-        return '{'+str(i)+':>20}'
+        return '{' + str(i) + ':>20}'
     elif isinstance(x, int):
-        return '{'+str(i)+':>8}'
+        return '{' + str(i) + ':>8}'
     elif isinstance(x, Real):
-        return '{'+str(i)+':>20}'
+        return '{' + str(i) + ':>20}'
     else:
         # Is this something we need to iterate over?
         try:
-            return [ hdrfmt_str(k,i+j) for j, k in enumerate(x) ]
-        except:
-            return '{'+str(i)+':>20}'
-    
+            return [hdrfmt_str(k, i + j) for j, k in enumerate(x)]
+        except Exception:
+            return '{' + str(i) + ':>20}'
+
+
 def numfmt_str(x, i):
     """ Return numeric format string for datatype x
     """
 
     if isinstance(x, str):
-        return '{'+str(i)+':>20}'
+        return '{' + str(i) + ':>20}'
     elif isinstance(x, int):
-        return '{'+str(i)+':>8}'
+        return '{' + str(i) + ':>8}'
     elif isinstance(x, Real):
-        return '{'+str(i)+':>20.12e}'
+        return '{' + str(i) + ':>20.12e}'
     else:
         # Is this something we need to iterate over?
         try:
-            return [ numfmt_str(k,i+j) for j, k in enumerate(x) ]
-        except:
-            return '{'+str(i)+':>20}'
+            return [numfmt_str(k, i + j) for j, k in enumerate(x)]
+        except Exception:
+            return '{' + str(i) + ':>20}'
+
 
 def flatten(x):
     if isinstance(x, str):
-        return [ x ]
+        return [x]
     else:
         # Is this something we can iterate over?
         try:
-            return reduce(lambda a,b: a+b, [ flatten(i) for i in x ])
-        except:
-            return [ x ]
+            return reduce(lambda a, b: a + b, [flatten(i) for i in x])
+        except Exception:
+            return [x]
 
-###
 
 class Logger(object):
     # Debug option, redirect all output to screen
@@ -113,10 +114,9 @@ class Logger(object):
         self.logfn = None
         self.logfile = None
 
-        self.buffer = [ ]
+        self.buffer = []
 
         self.set_logfile(logfile)
-
 
     def __open_logfile(self):
         if self.logfile is None and self.logfn is not None and \
@@ -132,20 +132,17 @@ class Logger(object):
                 os.rename(fn, '{0}.{1}.bak'.format(fn, i))
             self.logfile = open(fn, 'w')
 
-
     def _print(self, s, logfile=None):
         if logfile and self.logfile != logfile:
             print(s, file=logfile)
         if self.logfile:
             print(s, file=self.logfile)
         else:
-            self.buffer += [ s ]
-
+            self.buffer += [s]
 
     def flush(self):
         if self.logfile:
             self.logfile.flush()
-
 
     def set_logfile(self, logfile):
         if self.__all_output_to_stdout:
@@ -163,8 +160,7 @@ class Logger(object):
             for s in self.buffer:
                 self._print(s)
 
-        self.buffer = [ ]
-
+        self.buffer = []
 
     def pr(self, s, caller=None, logfile=None):
         self.__open_logfile()
@@ -173,10 +169,8 @@ class Logger(object):
         self._print('# {{{0}}}: {1}'.format(caller[3], s), logfile=logfile)
         self.flush()
 
-
     def warn(self, s, caller=None):
-        self.pr('Warning: '+s, caller=caller, logfile=sys.stdout)
-
+        self.pr('Warning: ' + s, caller=caller, logfile=sys.stdout)
 
     def st(self, hdr, vals, force_print=False):
         assert len(hdr) == len(vals)
@@ -191,29 +185,28 @@ class Logger(object):
             if self.outcounter <= 0:
                 do_print = True
                 self.outcounter = self.outevery
-        
+
         if do_print:
             self.sepcounter -= 1
             if self.sepcounter <= 0:
                 # For vectors we need a column for each component
-                hdr = flatten([ hdr_str(a, b) for a,b in zip(hdr, vals) ])
-                fmt_str = '#'+reduce(
-                    lambda a,b: '{0}  {1}'.format(a, b),
-                    flatten([ hdrfmt_str(i,j)
-                              for j,i in enumerate(flatten(vals)) ])
-                    )
-                self._print(fmt_str.format(*[ '{0}:{1}'.format(str(i+1), s)
-                                              for i, s in enumerate(hdr) ]))
+                hdr = flatten([hdr_str(a, b) for a, b in zip(hdr, vals)])
+                fmt_str = '#' + reduce(
+                    lambda a, b: '{0}  {1}'.format(a, b),
+                    flatten([hdrfmt_str(i, j)
+                             for j, i in enumerate(flatten(vals))])
+                )
+                self._print(fmt_str.format(*['{0}:{1}'.format(str(i + 1), s)
+                                             for i, s in enumerate(hdr)]))
                 self.sepcounter = self.sepevery
 
-            fmt_str = ' '+reduce(
-                lambda a,b: '{0}  {1}'.format(a, b),
-                flatten([ numfmt_str(i,j)
-                          for j,i in enumerate(flatten(vals)) ])
-                )
+            fmt_str = ' ' + reduce(
+                lambda a, b: '{0}  {1}'.format(a, b),
+                flatten([numfmt_str(i, j)
+                         for j, i in enumerate(flatten(vals))])
+            )
             self._print(fmt_str.format(*flatten(vals)))
             self.flush()
-
 
     def iteration_finished(self):
         self.it += 1
@@ -222,14 +215,11 @@ class Logger(object):
         if self.logfn is not None:
             self.logfile = None
 
-
     def get_logfile(self):
         return self.logfile
 
-
     def has_logfile(self):
         return self.logfile is not None
-
 
     def set_outevery(self, outevery):
         self.outevery = outevery
@@ -237,7 +227,6 @@ class Logger(object):
         self.outcounter = outevery
         self.sepcounter = 0
 
-###
 
 quiet = Logger(None)
 screen = Logger()

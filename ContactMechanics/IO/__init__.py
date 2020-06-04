@@ -23,4 +23,4 @@
 # SOFTWARE.
 #
 
-from .NetCDF import NetCDFContainer
+from .NetCDF import NetCDFContainer  # noqa: F401

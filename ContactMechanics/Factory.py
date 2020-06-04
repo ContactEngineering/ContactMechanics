@@ -29,7 +29,8 @@ Implements a convenient Factory function for Contact System creation
 """
 
 from ContactMechanics.Systems import NonSmoothContactSystem
-from ContactMechanics.PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
+from ContactMechanics.PlasticSystemSpecialisations import \
+    PlasticNonSmoothContactSystem
 
 from ContactMechanics import PeriodicFFTElasticHalfSpace
 from ContactMechanics import FreeFFTElasticHalfSpace
@@ -40,10 +41,10 @@ from NuMPI import MPI
 
 
 def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
-                physical_sizes=None, fft="mpi", **kwargs):
+                      physical_sizes=None, fft="mpi", **kwargs):
     """
     Factory function for contact systems. Checks the compatibility between the
-    substrate, interaction method and surface and returns an object of the
+    substrate and surface and returns an object of the
     appropriate type to handle it. The returned object is always of a subtype
     of SystemBase.
 
@@ -51,7 +52,6 @@ def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
     -----------
     substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                    the substrate
-    interaction -- An instance of Interaction. Defines the contact formulation
     surface     -- An instance of SurfaceTopography, defines the profile.
 
     Returns
@@ -60,47 +60,45 @@ def _make_system_args(substrate, surface, communicator=MPI.COMM_WORLD,
     # pylint: disable=invalid-name
     # pylint: disable=no-member
 
-    subclasses = list()
-
     # possibility to give file address instead of topography:
-    if (type(surface) is str
-        or
-        (hasattr(surface, 'read') # is a filelike object
-         and not hasattr(surface, 'topography'))): # but not a reader
+    if type(surface) is str or \
+            (hasattr(surface, 'read')  # is a filelike object
+             and not hasattr(surface, 'topography')):  # but not a reader
         if communicator is not None:
             openkwargs = {"communicator": communicator}
-        else: openkwargs={}
+        else:
+            openkwargs = {}
         surface = open_topography(surface, **openkwargs)
 
-    if hasattr(surface, "nb_grid_pts"): # it is a SurfaceTopography instance
+    if hasattr(surface, "nb_grid_pts"):  # it is a SurfaceTopography instance
         nb_grid_pts = surface.nb_grid_pts
-    else: # assume it is a reader instance
+    else:  # assume it is a reader instance
         nb_grid_pts = surface.default_channel.nb_grid_pts
 
     if physical_sizes is None:
         # if physical_sizes is not given in input arguments,
         # try to extract physical sizes from the input topography or reader
-        if hasattr(surface, "physical_sizes"):  # it is a SurfaceTopography instance
+        # it is a SurfaceTopography instance
+        if hasattr(surface, "physical_sizes"):
             surface_physical_sizes = surface.physical_sizes
         else:  # we assume it is a reader instance
             surface_physical_sizes = surface.default_channel.physical_sizes
         if surface_physical_sizes is None:
-            raise ValueError("physical sizes neither provided in input or in file")
+            raise ValueError("physical sizes neither provided in input or in "
+                             "file")
         else:
             physical_sizes = surface_physical_sizes
 
     # substrate build with physical sizes and nb_grid_pts
     # matching the topography
-    if substrate=="periodic":
+    if substrate == "periodic":
         substrate = PeriodicFFTElasticHalfSpace(
-            nb_grid_pts,
-            physical_sizes=physical_sizes, communicator=communicator, fft=fft, **kwargs)
-    elif substrate=="free":
+            nb_grid_pts, physical_sizes=physical_sizes,
+            communicator=communicator, fft=fft, **kwargs)
+    elif substrate == "free":
         substrate = FreeFFTElasticHalfSpace(
-            nb_grid_pts,
-            physical_sizes=physical_sizes, communicator=communicator, fft=fft, **kwargs)
-
-
+            nb_grid_pts, physical_sizes=physical_sizes,
+            communicator=communicator, fft=fft, **kwargs)
 
     # now the topography is ready to load
     if issubclass(surface.__class__, ReaderBase):
@@ -135,6 +133,7 @@ def make_system(*args, **kwargs):
 
     return NonSmoothContactSystem(substrate=substrate, surface=surface)
 
+
 def make_plastic_system(*args, **kwargs):
     """
     Factory function for contact systems. Checks the compatibility between the
@@ -156,5 +155,3 @@ def make_plastic_system(*args, **kwargs):
     substrate, surface = _make_system_args(*args, **kwargs)
 
     return PlasticNonSmoothContactSystem(substrate=substrate, surface=surface)
-
-

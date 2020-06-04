@@ -31,9 +31,7 @@ See: H.M. Westergaard, Trans. ASME, J. Appl. Mech. 6, 49 (1939)
 from __future__ import division
 
 import numpy as np
-from math import pi
 
-###
 
 def _pressure(x, contact_radius=None, mean_pressure=None):
     """
@@ -53,14 +51,15 @@ def _pressure(x, contact_radius=None, mean_pressure=None):
     p : array
         Non-dimensional pressure
     """
-    psi = np.pi*x
+    psi = np.pi * x
     if contact_radius is not None:
-        psia = np.pi*contact_radius
-        mean_pressure = np.pi*np.sin(psia)**2
+        psia = np.pi * contact_radius
+        mean_pressure = np.pi * np.sin(psia) ** 2
     elif mean_pressure is not None:
-        psia = np.arcsin(np.sqrt(mean_pressure/np.pi))
+        psia = np.arcsin(np.sqrt(mean_pressure / np.pi))
     p = np.zeros_like(x)
     m = np.cos(psi) > np.cos(psia)
     if m.sum() > 0:
-        p[m] = 2*np.cos(psi[m])/(np.sin(psia)**2)*np.sqrt(np.sin(psia)**2-np.sin(psi[m])**2)
+        p[m] = 2 * np.cos(psi[m]) / (np.sin(psia) ** 2) * np.sqrt(
+            np.sin(psia) ** 2 - np.sin(psi[m]) ** 2)
     return p

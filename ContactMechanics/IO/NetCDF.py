@@ -36,12 +36,13 @@ import numpy as np
 
 try:
     from netCDF4 import Dataset
+
     __have_netcdf4__ = True
-except:
+except ImportError:
     from pupynere import NetCDFFile
+
     __have_netcdf4__ = False
 
-###
 
 class NetCDFContainerFrame(object):
     def __init__(self, parent, i):
@@ -50,37 +51,36 @@ class NetCDFContainerFrame(object):
         if self._i < 0:
             self._i += len(parent)
 
-
     def _create_if_missing(self, name, value, shape=None):
         if name not in self._parent._data.variables:
             if isinstance(value, numbers.Integral):
-                self._parent._data.createVariable(name, 'i4', ( 'frame', ))
+                self._parent._data.createVariable(name, 'i4', ('frame',))
             elif isinstance(value, numbers.Real):
-                self._parent._data.createVariable(name, 'f8', ( 'frame', ))
+                self._parent._data.createVariable(name, 'f8', ('frame',))
             elif isinstance(value, np.ndarray):
                 if shape is None:
                     shape = value.shape
                 if shape == ():
-                    self._parent._data.createVariable(name, 'f8', ( 'frame', ))
+                    self._parent._data.createVariable(name, 'f8', ('frame',))
                 elif len(shape) == len(self._parent._shape) and np.all(
-                    np.array(shape) == np.array(self._parent._shape)):
+                        np.array(shape) == np.array(self._parent._shape)):
                     if len(self._parent._shape) == 3:
                         self._parent._data.createVariable(
                             name,
                             self._parent._float_str,
-                            ( 'frame', 'ndof', 'nx', 'ny', )
-                            )
+                            ('frame', 'ndof', 'nx', 'ny',)
+                        )
                     else:
                         self._parent._data.createVariable(
                             name,
                             self._parent._float_str,
-                            ( 'frame', 'nx', 'ny', )
-                            )
+                            ('frame', 'nx', 'ny',)
+                        )
                 elif len(shape) == 2 and np.all(
-                    np.array(shape) == np.array(self._parent._shape2)):
+                        np.array(shape) == np.array(self._parent._shape2)):
                     self._parent._data.createVariable(name,
                                                       self._parent._float_str,
-                                                      ( 'frame', 'nx', 'ny', ))
+                                                      ('frame', 'nx', 'ny',))
                 else:
                     raise RuntimeError('Not sure how to guess NetCDF type for '
                                        'field "{0}" which is a numpy ndarray '
@@ -91,7 +91,6 @@ class NetCDFContainerFrame(object):
                                    'field "{0}" with type {1}.'
                                    .format(name, type(value)))
 
-
     def _mangle_name(self, name):
         # Name mangling
         if self._parent._is_amber:
@@ -101,10 +100,9 @@ class NetCDFContainerFrame(object):
                 return 'forces'
         return name
 
-
     def __getattr__(self, name):
         if name[0] == '_':
-           return self.__dict__[name]
+            return self.__dict__[name]
 
         name = self._mangle_name(name)
 
@@ -115,7 +113,6 @@ class NetCDFContainerFrame(object):
             attr.shape = (nx, ny, 3)
         return attr
 
-
     def __setattr__(self, name, value):
         if name[0] == '_':
             object.__setattr__(self, name, value)
@@ -123,27 +120,24 @@ class NetCDFContainerFrame(object):
 
         name = self._mangle_name(name)
         self._create_if_missing(name, value)
-           
-        self._parent._data.variables[name][self._i] = value
 
+        self._parent._data.variables[name][self._i] = value
 
     def __getitem__(self, name):
         return self.__getattr__(name)
 
-
     def __setitem__(self, name, value):
         return self.__setattr__(name, value)
 
-
     def get_index(self):
         return self._i
-    index = property(get_index)
 
+    index = property(get_index)
 
     def get_traj(self):
         return self._parent
-    traj = property(get_traj)
 
+    traj = property(get_traj)
 
     def set_grid(self, name, value, x0=0, y0=0):
         """
@@ -156,13 +150,12 @@ class NetCDFContainerFrame(object):
         self._create_if_missing(name, value, shape=self._parent._shape)
 
         nx, ny = value.shape
-        #print x0, y0, x0+nx, y0+ny
-        self._parent._data.variables[name][self._i, x0:x0+nx, y0:y0+ny] = value
-
+        # print x0, y0, x0+nx, y0+ny
+        self._parent._data.variables[name][self._i, x0:x0 + nx, y0:y0 + ny] = \
+            value
 
     def sync(self):
         self._parent.sync()
-
 
 
 class NetCDFContainer(object):
@@ -196,39 +189,37 @@ class NetCDFContainer(object):
         else:
             if 'nx' in self._data.dimensions and 'ny' in self._data.dimensions:
                 try:
-                    self._shape = ( len(self._data.dimensions['nx']),
-                                    len(self._data.dimensions['ny']) )
-                except:
-                    self._shape = ( self._data.dimensions['nx'],
-                                    self._data.dimensions['ny'] )
+                    self._shape = (len(self._data.dimensions['nx']),
+                                   len(self._data.dimensions['ny']))
+                except TypeError:
+                    self._shape = (self._data.dimensions['nx'],
+                                   self._data.dimensions['ny'])
                 self._shape2 = self._shape
             elif 'atom' in self._data.dimensions:
                 n = self._data.dimensions['atom']
                 nx = int(sqrt(n))
-                assert nx*nx == n
-                self._shape = ( nx, nx )
-                self._shape2 = ( nx, nx )
+                assert nx * nx == n
+                self._shape = (nx, nx)
+                self._shape2 = (nx, nx)
 
                 self._is_amber = True
             else:
-                raise RuntimeError('Unknown NetCDF convention used for file ' \
-                                       '%s.' % fn)
+                raise RuntimeError('Unknown NetCDF convention used for file '
+                                   '%s.' % fn)
 
             self._is_defined = True
 
         if frame < 0:
-            self._cur_frame = len(self)+frame
+            self._cur_frame = len(self) + frame
         else:
             self._cur_frame = frame
-
 
     def __del__(self):
         if self._data is not None:
             self._data.close()
 
-
     def _define_file_structure(self, shape):
-        #print 'defining file structure, shape = {0}'.format(shape)
+        # print 'defining file structure, shape = {0}'.format(shape)
         self._shape = shape
 
         if len(shape) == 3:
@@ -237,32 +228,31 @@ class NetCDFContainer(object):
             ndof = 1
             nx, ny = shape
 
-        self._shape2 = ( nx, ny )
+        self._shape2 = (nx, ny)
 
-        if not 'frame' in self._data.dimensions:
+        if 'frame' not in self._data.dimensions:
             self._data.createDimension('frame', None)
-        if ndof > 1 and not 'ndof' in self._data.dimensions:
+        if ndof > 1 and 'ndof' not in self._data.dimensions:
             self._data.createDimension('ndof', ndof)
-        if not 'nx' in self._data.dimensions:
+        if 'nx' not in self._data.dimensions:
             self._data.createDimension('nx', nx)
-        if not 'ny' in self._data.dimensions:
+        if 'ny' not in self._data.dimensions:
             self._data.createDimension('ny', ny)
 
         self._data.sync()
 
         self._is_defined = True
 
-
     def set_shape(self, x, ndof=None):
         try:
             shape = x.shape
-        except:
+        except AttributeError:
             shape = x
         if not self._is_defined:
             if ndof is None or ndof == 1:
                 self._define_file_structure(shape)
             else:
-                self._define_file_structure([ndof]+list(shape))
+                self._define_file_structure([ndof] + list(shape))
         else:
             if ndof is None or ndof == 1:
                 if not np.all(np.array(shape) == np.array(self._shape)):
@@ -272,17 +262,15 @@ class NetCDFContainer(object):
                                        .format(self._shape[0], self._shape[1],
                                                shape[0], shape[1]))
             else:
-                assert np.all(np.array([ndof]+list(shape)) == 
+                assert np.all(np.array([ndof] + list(shape)) ==
                               np.array(self._shape))
-
 
     def __len__(self):
         try:
-            l = len(self._data.dimensions['frame'])
-        except:
-            l = self._data.dimensions['frame']
-        return l
-
+            length = len(self._data.dimensions['frame'])
+        except TypeError:
+            length = self._data.dimensions['frame']
+        return length
 
     def close(self):
         if self._data is not None:
@@ -290,10 +278,8 @@ class NetCDFContainer(object):
             self._is_defined = False
             self._data = None
 
-
     def has_h(self):
         return 'h' in self._data.variables
-
 
     def set_rigid_surface(self, h, ndof=None):
         self.set_shape(h, ndof=ndof)
@@ -306,55 +292,46 @@ class NetCDFContainer(object):
                     self._data.createDimension('rigid_nx', hnx)
                 if 'rigid_ny' not in self._data.dimensions:
                     self._data.createDimension('rigid_ny', hny)
-                self._data.createVariable('h', 'f8', ( 'rigid_nx',
-                                                       'rigid_ny', ) )
+                self._data.createVariable('h', 'f8', ('rigid_nx',
+                                                      'rigid_ny',))
             else:
-                self._data.createVariable('h', 'f8', ( 'nx', 'ny', ) )
+                self._data.createVariable('h', 'f8', ('nx', 'ny',))
 
         self._data.variables['h'][:, :] = h
 
     # Backward compatibility
     set_h = set_rigid_surface
 
-
     def set_elastic_surface(self, h):
         if 'elastic_surface' not in self._data.variables:
             self._data.createVariable('elastic_surface', 'f8',
-                                      ( 'nx', 'ny', )
+                                      ('nx', 'ny',)
                                       )
-        
-        self._data.variables['elastic_surface'][:, :] = h
 
+        self._data.variables['elastic_surface'][:, :] = h
 
     def get_rigid_surface(self):
         return self._data.variables['h'][:, :]
 
-
     # Backward compatibility
     get_h = get_rigid_surface
-
 
     def get_elastic_surface(self):
         return self._data.variables['elastic_surface']
 
-
     def get_filename(self):
         return self._fn
-
 
     def get_next_frame(self):
         frame = NetCDFContainerFrame(self, self._cur_frame)
         self._cur_frame += 1
         return frame
 
-
     def set_cursor(self, cur_frame):
         self._cur_frame = cur_frame
 
-
     def get_cursor(self):
         return self._cur_frame
-
 
     def __getattr__(self, name):
         if name[0] == '_':
@@ -365,7 +342,6 @@ class NetCDFContainer(object):
 
         return self._data.__getattr__(name)
 
-
     def __setattr__(self, name, value):
         if name[0] == '_':
             return object.__setattr__(self, name, value)
@@ -374,24 +350,22 @@ class NetCDFContainer(object):
             if name not in self._data.variables:
                 if len(value.shape) == len(self._shape) and \
                         np.all(np.array(value.shape) == np.array(self._shape)):
-                    self._data.createVariable(name, 'f8', ( 'nx', 'ny', ))
+                    self._data.createVariable(name, 'f8', ('nx', 'ny',))
                 else:
                     raise RuntimeError('Not sure how to guess NetCDF type for '
                                        'field "{0}" which is a numpy ndarray '
                                        'with type {1} and shape {2}.'
                                        .format(name, value.dtype, value.shape))
-            
+
             self._data.variables[name][:, :] = value
             return
 
         return self._data.__setattr__(name, value)
 
-
     def __setitem__(self, i, value):
         if isinstance(i, str):
             return self.__setattr__(i, value)
         raise RuntimeError('Cannot set full frame.')
-
 
     def __getitem__(self, i):
         if isinstance(i, str):
@@ -401,22 +375,19 @@ class NetCDFContainer(object):
                     for j in range(*i.indices(len(self)))]
         return NetCDFContainerFrame(self, i)
 
-
     def __iter__(self):
         for i in range(len(self)):
             yield NetCDFContainerFrame(self, i)
 
-
     def get_size(self):
         return self._shape
-
 
     def sync(self):
         self._data.sync()
 
-
     def __str__(self):
         return self._fn
+
 
 ###
 
@@ -425,7 +396,7 @@ def open(fn, mode='r', frame=None, **kwargs):
         return fn
     i = fn.find('@')
     if i > 0:
-        n = int(fn[i+1:])
+        n = int(fn[i + 1:])
         fn = fn[:i]
         return NetCDFContainer(fn, mode=mode, **kwargs)[n]
     elif frame is not None:

@@ -50,10 +50,16 @@ class IsotropicGreensFunction(object):
     def _greens_function(self, qx, qy):
         q = np.sqrt(qx ** 2 + qy ** 2)
         nu = self._nu
-        G = np.array([[1 / q - nu * qx ** 2 / q ** 3, -nu * qx * qy / q ** 3, 1j * (1 - 2 * nu) * qx / (2 * q ** 2)],
-                      [-nu * qx * qy / q ** 3, 1 / q - nu * qy ** 2 / q ** 3, 1j * (1 - 2 * nu) * qy / (2 * q ** 2)],
-                      [-1j * (1 - 2 * nu) * qx / (2 * q ** 2), -1j * (1 - 2 * nu) * qy / (2 * q ** 2), (1 - nu) / q]])
-        return G/self._mu
+        G = np.array([[1 / q - nu * qx ** 2 / q ** 3,
+                       -nu * qx * qy / q ** 3,
+                       1j * (1 - 2 * nu) * qx / (2 * q ** 2)],
+                      [-nu * qx * qy / q ** 3,
+                       1 / q - nu * qy ** 2 / q ** 3,
+                       1j * (1 - 2 * nu) * qy / (2 * q ** 2)],
+                      [-1j * (1 - 2 * nu) * qx / (2 * q ** 2),
+                       -1j * (1 - 2 * nu) * qy / (2 * q ** 2),
+                       (1 - nu) / q]])
+        return G / self._mu
 
     def _stiffness(self, qx, qy):
         if abs(qx) < 1e-6 and abs(qy) < 1e-6:
@@ -77,4 +83,5 @@ class IsotropicGreensFunction(object):
         for _qx, _qy in zip(qx, qy):
             gf += [self._stiffness(_qx, _qy)]
         return np.array(gf)
+
     __call__ = stiffness

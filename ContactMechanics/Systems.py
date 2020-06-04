@@ -25,7 +25,7 @@
 #
 
 """
-Defines the interface for PyCo systems
+Defines the interface for contact mechanics systems
 """
 
 import abc
@@ -51,21 +51,16 @@ class IncompatibleResolutionError(Exception):
 
 class SystemBase(object, metaclass=abc.ABCMeta):
     "Base class for contact systems"
-    def __init__(self, substrate, interaction, surface):
+
+    def __init__(self, substrate, surface):
         """ Represents a contact problem
         Keyword Arguments:
         substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                        the substrate
-        interaction -- An instance of Interaction. Defines the contact
-                       formulation. If this computes interaction energies,
-                       forces etc, these are supposed to be expressed per unit
-                       area in whatever units you use. The conversion is
-                       performed by the system
         surface     -- An instance of SurfaceTopography, defines the profile.
         """
         self.substrate = substrate
         self.area_per_pt = self.substrate.area_per_pt
-        self.interaction = interaction
         self.surface = surface
         self.dim = None
         self.gap = None
@@ -73,9 +68,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
         self.pnp = substrate.pnp
 
-        #TODO: assert that the interaction pnp is the same
-
         self.comp_slice = self.substrate.local_topography_subdomain_slices
+
     _proxyclass = False
 
     @abc.abstractmethod
@@ -108,13 +102,12 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
     # pylint: disable=unused-argument
     @staticmethod
-    def handles(substrate_type, interaction_type, surface_type, is_domain_decomposed):
+    def handles(substrate_type, surface_type, is_domain_decomposed):
         """
         returns whether this class (in practice a subclass) handles this
         combination of types
         Keyword Arguments:
         substrate_type   -- self-explanatory
-        interaction_type -- self-explanatory
         surface_type     -- self-explanatory
         is_domain_decomposed: some systems cannot handle parallel computation
         """
@@ -126,7 +119,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         non-penetrating contact has gap >= 0
         """
         if self.dim == 1:
-            return (disp[self.comp_slice] - # TODO: Check 1D Compatibility
+            return (disp[self.comp_slice] -  # TODO: Check 1D Compatibility
                     (self.surface.heights(*profile_args, **profile_kwargs) +
                      offset))
         return (disp[self.comp_slice] -
@@ -140,7 +133,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
     def compute_contact_area(self):
         "computes and returns the total contact area"
-        return self.compute_nb_contact_pts()*self.area_per_pt
+        return self.compute_nb_contact_pts() * self.area_per_pt
 
     @abc.abstractmethod
     def compute_nb_contact_pts(self):
@@ -156,17 +149,18 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         Aᵣ = ──
              A₀
         """
-        return self.compute_contact_area()/np.prod(self.substrate.physical_sizes)
+        return self.compute_contact_area() / np.prod(
+            self.substrate.physical_sizes)
 
     def shape_minimisation_input(self, in_array):
         """
         For minimisation of smart systems, the initial guess array (e.g.
-        displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes
-        may be decreased, as for free, non-periodic systems, or increased as
-        with augmented-lagrangian-type issues). Use the output of this function
-        as argument x0 for scipy minimisation functions. Also, if you initial
-        guess has a shape that makes no sense, this will tell you before you
-        get caught in debugging scipy-code
+        displacement) may have a non-intuitive shape and physical_sizes (The
+        problem physical_sizes may be decreased, as for free, non-periodic
+        systems, or increased as with augmented-lagrangian-type issues). Use
+        the output of this function as argument x0 for scipy minimisation
+        functions. Also, if you initial guess has a shape that makes no sense,
+        this will tell you before you get caught in debugging scipy-code
 
         Arguments:
         in_array -- array with the initial guess. has the intuitive shape you
@@ -179,10 +173,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
     def shape_minimisation_output(self, in_array):
         """
         For minimisation of smart systems, the output array (e.g.
-        displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes
-        may be decreased, as for free, non-periodic systems, or increased as
-        with augmented-lagrangian-type issues). Use  this function
-        to get the array shape you expect to have
+        displacement) may have a non-intuitive shape and physical_sizes (The
+        problem physical_sizes may be decreased, as for free, non-periodic
+        systems, or increased as with augmented-lagrangian-type issues). Use
+        this function to get the array shape you expect to have
 
         Arguments:
         in_array -- array with the initial guess. has the intuitive shape you
@@ -200,10 +194,12 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             bnds = tuple(zip(lbounds.tolist(), ubounds.tolist()))
         elif lbounds is not None:
             lbounds = disp_scale * self.shape_minimisation_input(lbounds)
-            bnds = tuple(zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
+            bnds = tuple(
+                zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
         elif ubounds is not None:
             ubounds = disp_scale * self.shape_minimisation_input(ubounds)
-            bnds = tuple(zip([None for i in range(len(ubounds))], ubounds.tolist()))
+            bnds = tuple(
+                zip([None for i in range(len(ubounds))], ubounds.tolist()))
         return bnds
 
     def _lbounds_from_heights(self, offset):
@@ -222,7 +218,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         self.evaluate(self.disp, offset, forces=gradient)
         result.x = self.shape_minimisation_output(result.x)
         result.jac = self.shape_minimisation_output(result.jac)
-        self.substrate.check(force=self.interaction.force)
+        # self.substrate.check(force=self.interaction.force)
         # the variable (= imposed by the minimzer) is here the displacement,
         # in contrast to Polonsky and Keer where it is the pressure.
         # Grad(objective) = substrate.force + interaction.force
@@ -233,7 +229,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         # given by the convergence criterion.
 
     def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
-                       gradient=True, lbounds=None, ubounds=None, callback=None,
+                       gradient=True, lbounds=None, ubounds=None,
+                       callback=None,
                        disp_scale=1., logger=None, **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
@@ -267,7 +264,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                   (default None)
         tol : float
               (default None)
-              tolerance for termination. For detailed control, use solver-specific options.
+              tolerance for termination. For detailed control, use
+              solver-specific options.
         callback : callable
                    (default None)
                    callback function to be at each iteration
@@ -277,13 +275,15 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                     function is called.
         disp_scale : float
                      (default 1.)
-                     allows to specify a scaling of the dislacement before evaluation.
+                     allows to specify a scaling of the displacement before
+                     evaluation.
         logger :
                  (default None)
                  log information at every iteration.
         """
 
-        if self.substrate.communicator is not None and self.substrate.communicator.size > 1:
+        if self.substrate.communicator is not None and \
+                self.substrate.communicator.size > 1:
             raise ValueError("{0}.minimize_proxy doesn't support "
                              "mpi parallelization, please use the minimizer "
                              "and {0}.objective directly"
@@ -315,7 +315,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                                              bounds=bnds, callback=callback,
                                              **kwargs)
         else:
-            result = scipy.optimize.minimize(fun, x0=disp_scale*disp0,
+            result = scipy.optimize.minimize(fun, x0=disp_scale * disp0,
                                              method=method, jac=gradient,
                                              callback=callback, **kwargs)
 
@@ -333,8 +333,9 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         interface. Returns a function of only disp
         Keyword Arguments:
         offset     -- determines indentation depth
-        disp0      -- preexisting displacement. influences e.g., the physical_sizes of
-                      the proxy system in some 'smart' system subclasses
+        disp0      -- preexisting displacement. influences e.g., the
+                      physical_sizes of the proxy system in some 'smart'
+                      system subclasses
         gradient   -- (default False) whether the gradient is supposed to be
                       used
         disp_scale -- (default 1.) allows to specify a scaling of the
@@ -353,6 +354,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
+
 class NonSmoothContactSystem(SystemBase):
     """
     For non-smooth contact mechanics (i.e, the equlibrium is the solution to a
@@ -361,6 +363,7 @@ class NonSmoothContactSystem(SystemBase):
     interaction between the tribopartners is just non-penetration without
     adhesion, belong to this type of system
     """
+
     # pylint: disable=abstract-method
 
     def __init__(self, substrate, surface):
@@ -370,33 +373,30 @@ class NonSmoothContactSystem(SystemBase):
                        the substrate
         surface     -- An instance of SurfaceTopography, defines the profile.
         """
-        super().__init__(substrate, "hardwall", surface)
+        super().__init__(substrate, surface)
         if not compare_containers(surface.nb_grid_pts, substrate.nb_grid_pts):
             raise IncompatibleResolutionError(
                 ("the substrate ({}) and the surface ({}) have incompatible "
                  "nb_grid_ptss.").format(
-                     substrate.nb_grid_pts, surface.nb_grid_pts))  # nopep8
+                    substrate.nb_grid_pts, surface.nb_grid_pts))  # nopep8
         self.dim = len(self.substrate.nb_grid_pts)
         self.energy = None
         self.force = None
         self.contact_zone = None
 
     @staticmethod
-    def handles(substrate_type, interaction_type, surface_type, is_domain_decomposed):
+    def handles(substrate_type, surface_type, is_domain_decomposed):
         """
         determines whether this class can handle the proposed system
         composition
         Keyword Arguments:
         substrate_type   -- instance of ElasticSubstrate subclass
-        interaction_type -- instance of Interaction
         surface_type     --
         """
         is_ok = True
         # any type of substrate formulation should do
         is_ok &= issubclass(substrate_type,
                             ContactMechanics.ElasticSubstrate)
-        # only hard interactions allowed
-        is_ok &= interaction_type == "hardwall"
 
         # any surface should do
         is_ok &= issubclass(surface_type,
@@ -462,7 +462,6 @@ class NonSmoothContactSystem(SystemBase):
                       dislacement before evaluation.
         """
         # pylint: disable=arguments-differ
-        dummy = disp0
         res = self.substrate.nb_domain_grid_pts
         if gradient:
             def fun(disp):
@@ -475,7 +474,7 @@ class NonSmoothContactSystem(SystemBase):
                     raise ValueError(
                         "{}: disp.shape: {}, res: {}".format(
                             err, disp.shape, res))
-                return (self.energy, -self.force.reshape(-1)*disp_scale)
+                return (self.energy, -self.force.reshape(-1) * disp_scale)
         else:
             def fun(disp):
                 # pylint: disable=missing-docstring

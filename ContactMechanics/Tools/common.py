@@ -95,8 +95,8 @@ def mean_err(arr1, arr2, rfft=False):
 
 def compute_wavevectors(nb_grid_pts, physical_sizes, nb_dims):
     """
-    computes and returns the wavevectors q that exist for the surfaces physical_sizes
-    and nb_grid_pts as one vector of components per dimension
+    computes and returns the wavevectors q that exist for the surfaces
+    physical_sizes and nb_grid_pts as one vector of components per dimension
     """
     vectors = list()
     if nb_dims == 1:

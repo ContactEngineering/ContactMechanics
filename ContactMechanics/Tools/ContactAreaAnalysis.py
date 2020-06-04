@@ -29,19 +29,19 @@ Tool for analysis contact geometry
 
 import numpy as np
 
-from _SurfaceTopography import assign_patch_numbers, assign_segment_numbers, distance_map, closest_patch_map
-
-###
+from _SurfaceTopography import assign_patch_numbers, assign_segment_numbers, \
+    distance_map, closest_patch_map  # noqa: F401
 
 # Stencils for determining nearest-neighbor relationships on a square grid
-nn_stencil = [(1,0), (0,1), (-1,0), (0,-1)]
-nnn_stencil = [(1,1), (1,0), (1,-1), (0,-1), (-1,-1), (-1,0), (-1,1), (0,1)]
+nn_stencil = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+nnn_stencil = [(1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1),
+               (0, 1)]
 
-###
 
 def coordination(c, stencil=nn_stencil):
     """
-    Return a map with coordination numbers, i.e. number of neighboring patches that also contact
+    Return a map with coordination numbers, i.e. number of neighboring patches
+    that also contact
     """
 
     coordination = np.zeros_like(c, dtype=int)
@@ -69,7 +69,8 @@ def outer_perimeter(c, stencil=nn_stencil):
     Return a map where surface points on the outer perimeter are marked.
     """
 
-    return np.logical_and(np.logical_not(c), coordination(c, stencil=stencil) > 0)
+    return np.logical_and(np.logical_not(c),
+                          coordination(c, stencil=stencil) > 0)
 
 
 def inner_perimeter(c, stencil=nn_stencil):
@@ -87,16 +88,20 @@ def patch_areas(patch_ids):
 
     return np.bincount(patch_ids.reshape((-1,)))[1:]
 
+
 def patch_forces(patch_ids, forces):
     """
     Return a list containing patch forces
     """
 
-    return np.bincount(patch_ids.reshape((-1,)),weights=forces.reshape((-1,)))[1:]
+    return np.bincount(patch_ids.reshape((-1,)),
+                       weights=forces.reshape((-1,)))[1:]
+
 
 def patch_perimeters(patch_ids, perim):
     """
     Return a list containing patch perimeters
     """
 
-    return np.bincount(patch_ids.reshape((-1,)),weights=perim.reshape((-1,)))[1:]
+    return np.bincount(patch_ids.reshape((-1,)),
+                       weights=perim.reshape((-1,)))[1:]

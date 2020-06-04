@@ -28,10 +28,11 @@
 Defines all solid mechanics model used in PyCo
 """
 
-from .Substrates import Substrate, ElasticSubstrate, PlasticSubstrate
-from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace
-from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace
-from .Factory import make_system
+from .Substrates import Substrate, ElasticSubstrate, \
+    PlasticSubstrate  # noqa: F401
+from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace  # noqa: F401
+from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace  # noqa: F401
+from .Factory import make_system  # noqa: F401
 
 try:
     from importlib.metadata import version
