@@ -7,10 +7,11 @@ scipy>=1.2.0
 netCDF4>=1.5.0
 h5py
 sphinx>=1.8.2
+sphinx_rtd_theme
 NuMPI>=0.1.1
 pytest>=4
 pytest-flake8
 setuptools_scm>=3.5.0
-git+https://gitlab.com/muspectre/muspectre.git@merge/20_stencil_database#egg=muFFT
-git+https://github.com/AntoineSIMTEK/runtests.git#egg=runtests
-git+https://github.com/ComputationalMechanics/SurfaceTopography.git
+muFFT>=0.9.1
+runtests>=0.0.28
+SurfaceTopography>=0.90.0
