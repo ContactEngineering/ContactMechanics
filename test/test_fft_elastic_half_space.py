@@ -142,8 +142,8 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
                                    hs.evaluate_disp(hs.evaluate_force(disp)))
             self.assertTrue(
                 error < tol,
-                "for nb_grid_pts = {}, error = {} > tol = {}".format(
-                    res, error, tol))
+                "for nb_grid_pts = {}, error = {} > tol = {}"
+                .format(res, error, tol))
 
             force = random(res)
             force -= force.mean()
