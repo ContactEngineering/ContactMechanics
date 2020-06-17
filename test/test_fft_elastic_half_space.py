@@ -30,7 +30,6 @@ Tests the fft elastic halfspace implementation
 """
 
 import unittest
-import time
 
 import pytest
 
