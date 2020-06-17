@@ -31,6 +31,7 @@ from runtests.mpi.tester import WorldTooSmall, create_comm
 import NuMPI
 from NuMPI import MPI
 
+
 def MyMPITestFixture(commsize, scope='function'):
     """
     Create a test fixture for MPI Communicators of various communicator
