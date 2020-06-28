@@ -12,6 +12,6 @@ NuMPI>=0.1.2
 pytest>=4
 pytest-flake8
 setuptools_scm>=3.5.0
-muFFT>=0.9.2
+muFFT>=0.9.3
 runtests>=0.0.28
 SurfaceTopography>=0.90.0

@@ -56,7 +56,7 @@ setup(
     install_requires=[
         'numpy>=1.11.0',
         'NuMPI>=0.1.2',
-        'muFFT>=0.9.2',
+        'muFFT>=0.9.3',
         'SurfaceTopography>=0.90.0'
     ]
 )
