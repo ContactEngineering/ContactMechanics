@@ -279,8 +279,8 @@ def constrained_conjugate_gradients(substrate, topography,
         # e_el = -0.5*np.sum(p_r*u_r)
 
         converged = converged and rms_pen < pentol and \
-                    max_pen < pentol and maxdu < pentol and \
-                    max_pres < prestol and pad_pres < prestol
+            max_pen < pentol and maxdu < pentol and \
+            max_pres < prestol and pad_pres < prestol
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
                        'offset']
