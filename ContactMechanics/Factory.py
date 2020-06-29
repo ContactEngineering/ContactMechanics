@@ -122,7 +122,6 @@ def make_system(*args, **kwargs):
     -----------
     substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                    the substrate
-    interaction -- An instance of Interaction. Defines the contact formulation
     surface     -- An instance of SurfaceTopography, defines the profile.
 
     Returns
@@ -145,7 +144,6 @@ def make_plastic_system(*args, **kwargs):
     -----------
     substrate   -- An instance of HalfSpace. Defines the solid mechanics in
                    the substrate
-    interaction -- An instance of Interaction. Defines the contact formulation
     surface     -- An instance of SurfaceTopography, defines the profile.
 
     Returns
