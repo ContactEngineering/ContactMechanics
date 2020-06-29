@@ -30,9 +30,10 @@ x-direction at constant height.
 
 import numpy as np
 
-from PyCo.Adhesion import HardWall
 from ContactMechanics import PeriodicFFTElasticHalfSpace
-from SurfaceTopography import read_matrix, TranslatedTopography, \
+from SurfaceTopography import read_topography
+from SurfaceTopography.UniformLineScanAndTopography import \
+    TranslatedTopography, \
     CompoundTopography
 from ContactMechanics import make_system
 # from PyCo.Tools import compute_rms_height
@@ -53,14 +54,14 @@ E_s = 2
 sx, sy = 1, 1
 
 # Read the two contacting surfacs.
-surface1 = read_matrix('surface1.out', physical_sizes=(sx, sy))
-surface2 = read_matrix('surface2.out', physical_sizes=(sx, sy))
+surface1 = read_topography('surface1.out', physical_sizes=(sx, sy))
+surface2 = read_topography('surface2.out', physical_sizes=(sx, sy))
 
 print('RMS heights of surfaces = {} {}'.format(surface1.rms_height(),
                                                surface2.rms_height()))
 
 # This is the grid nb_grid_pts of the two surfaces.
-nx, ny = surface1.shape
+nx, ny = surface1.nb_grid_pts
 
 # TranslatedSurface knows how to translate a surface into some direction.
 translated_surface1 = TranslatedTopography(surface1)
@@ -71,11 +72,10 @@ compound_surface = CompoundTopography(translated_surface1, surface2)
 
 # Periodic substrate and hard-wall interactions.
 substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sx))
-interaction = HardWall()
 
 # This creates a "System" object that knows about substrate, interaction and
 # surface.
-system = make_system(substrate, interaction, compound_surface)
+system = make_system(substrate, compound_surface)
 
 # Initial displacement field.
 disp = np.zeros(surface1.shape)
