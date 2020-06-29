@@ -60,7 +60,7 @@ The file will executed in a run with `pytest` and not with a (parallel) run with
 #### MPI Tests
 
 In order to vary the number of processors used in the tests, you should always 
-explictely use the communicator defined as fixture in `tests/conftest.py` instead
+explictely use the communicator defined as fixture in `test/conftest.py` instead
 of `MPI.COMM_WORLD`. 
 
 ```python
