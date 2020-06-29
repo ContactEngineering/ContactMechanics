@@ -34,7 +34,7 @@ import scipy.optimize as optim
 
 from ContactMechanics.Tools.Logger import screen
 from ContactMechanics import PeriodicFFTElasticHalfSpace
-from SurfaceTopography import read_matrix
+from SurfaceTopography import read_topography
 
 ###
 
@@ -105,7 +105,7 @@ def constrained_conjugate_gradients(substrate, topography,
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
         pentol = np.sqrt(np.sum(topography ** 2)) / (
-                    10 * np.mean(topography.shape))
+                10 * np.mean(topography.shape))
         # If pentol is zero, then this is a flat topography. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
@@ -183,7 +183,7 @@ def constrained_conjugate_gradients(substrate, topography,
         # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
         if delta > 0 and G_old > 0:
             t_r[comp_mask] = c_r[comp_mask] * (
-                        g_r + delta * (G / G_old) * t_r[comp_mask])
+                    g_r + delta * (G / G_old) * t_r[comp_mask])
         else:
             t_r[comp_mask] = c_r[comp_mask] * g_r
 
@@ -279,8 +279,8 @@ def constrained_conjugate_gradients(substrate, topography,
         # e_el = -0.5*np.sum(p_r*u_r)
 
         converged = converged and rms_pen < pentol and \
-            max_pen < pentol and maxdu < pentol and \
-            max_pres < prestol and pad_pres < prestol
+                    max_pen < pentol and maxdu < pentol and \
+                    max_pres < prestol and pad_pres < prestol
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
                        'offset']
@@ -347,7 +347,7 @@ def constrained_conjugate_gradients(substrate, topography,
 ###
 
 # Read the topography from file.
-topography = read_matrix('surface1.out', physical_sizes=(sx, sy))
+topography = read_topography('surface1.out', physical_sizes=(sx, sy))
 
 print('RMS height of topography = {}'.format(topography.rms_height()))
 print('RMS slope of topography = {}'.format(topography.rms_slope()))
