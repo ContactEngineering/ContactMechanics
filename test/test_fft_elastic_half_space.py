@@ -30,7 +30,6 @@ Tests the fft elastic halfspace implementation
 """
 
 import unittest
-import time
 
 import pytest
 
@@ -143,8 +142,8 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
                                    hs.evaluate_disp(hs.evaluate_force(disp)))
             self.assertTrue(
                 error < tol,
-                "for nb_grid_pts = {}, error = {} > tol = {}".format(
-                    res, error, tol))
+                "for nb_grid_pts = {}, error = {} > tol = {}"
+                .format(res, error, tol))
 
             force = random(res)
             force -= force.mean()
@@ -352,35 +351,17 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         error = ((pressure[0] - pressure[1]) ** 2).sum().sum() / base_res ** 2
         self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
 
-    def test_FourierCoeffCost(self):
-        print()
-        print('Computation of Fourier coefficients:')
-        for i in range(1, 4):
-            res = (2 ** i, 2 ** i)
-            hs = FreeFFTElasticHalfSpace(res, self.young, self.physical_sizes)
-
-            start = time.perf_counter()
-            w2, f2 = hs._compute_fourier_coeffs2()
-            duration2 = time.perf_counter() - start
-
-            start = time.perf_counter()
-            w3, f3 = hs._compute_fourier_coeffs()
-            duration3 = time.perf_counter() - start
-
-            print(
-                "for {0[0]}: np {1:.2f}, mat_scipy {2:.2f} ms({3:.1f}%)"
-                .format(res, duration2 * 1e3, duration3 * 1e3,
-                        1e2 * (1 - duration3 / duration2)))
-            error = Tools.mean_err(w2, w3)
-            self.assertTrue(error == 0)
-
     def test_rfftn(self):
         force = np.zeros([2 * r for r in self.res])
 
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         from muFFT import FFT
         ref = rfftn(force.T).T
-        tested = FFT([2 * r for r in self.res], fft="serial").fft(force)
+        fftengine = FFT([2 * r for r in self.res], fft="serial")
+        fftengine.initialise(1)
+        tested = np.zeros(fftengine.nb_fourier_grid_pts, order='f',
+                          dtype=complex)
+        fftengine.fft(force, tested)
         np.testing.assert_allclose(ref.real,
                                    tested.real)
         np.testing.assert_allclose(ref.imag,

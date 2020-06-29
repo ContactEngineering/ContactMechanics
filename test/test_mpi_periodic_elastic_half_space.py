@@ -139,14 +139,17 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
         if k[0] == nx // 2 and nx % 2 == 0:
             expected_k_disp[k[0], -k[1]] += .5 + .5j
 
-        np.testing.assert_allclose(
-            substrate.fftengine.fft(disp[substrate.subdomain_slices]) / (
-                    nx * ny),
-            expected_k_disp[substrate.fourier_slices], rtol=1e-7, atol=1e-10)
+        fft_disp = np.zeros(substrate.nb_fourier_grid_pts, order='f',
+                            dtype=complex)
+        substrate.fftengine.fft(disp[substrate.subdomain_slices], fft_disp)
+        np.testing.assert_allclose(fft_disp / (nx * ny),
+                                   expected_k_disp[substrate.fourier_slices],
+                                   rtol=1e-7, atol=1e-10)
 
         expected_k_pressure = - E_s / 2 * q * expected_k_disp
-        np.testing.assert_allclose(kpressure, expected_k_pressure[
-            substrate.fourier_slices], rtol=1e-7, atol=1e-10)
+        np.testing.assert_allclose(
+            kpressure, expected_k_pressure[substrate.fourier_slices],
+            rtol=1e-7, atol=1e-10)
 
         computedpressure = substrate.evaluate_force(
             disp[substrate.subdomain_slices]) / substrate.area_per_pt
