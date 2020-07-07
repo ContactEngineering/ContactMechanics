@@ -36,31 +36,22 @@ from ContactMechanics.ReferenceSolutions import Hertz as Hz
 DEBUG = False
 
 
-@pytest.fixture
-def self():
-    # sphere radius:
-    self.r_s = 20.0
-    # contact radius
-    self.r_c = .2
-    # peak pressure
-    self.p_0 = 2.5
-    # equivalent Young's modulus
-    self.E_s = 102.
-    return self
-
-
 @pytest.mark.parametrize("nb_grid_pts", [(512, 512), (512, 511), (511, 512)])
-def test_constrained_conjugate_gradients(self, nb_grid_pts, comm):
+def test_constrained_conjugate_gradients(nb_grid_pts, comm):
+    # sphere radius:
+    r_s = 20.0
+    # equivalent Young's modulus
+    E_s = 102.
     nx, ny = nb_grid_pts
     for disp0, normal_force in [(0.1, None), (0, 15.0)]:
         sx = 5.0
 
-        substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s, (sx, sx),
+        substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sx),
                                             fft='mpi',
                                             communicator=comm)
 
         surface = make_sphere(
-            self.r_s, (nx, ny), (sx, sx),
+            r_s, (nx, ny), (sx, sx),
             nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
             subdomain_locations=substrate.topography_subdomain_locations,
             communicator=substrate.communicator)
@@ -87,37 +78,37 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm):
 
             # print("penetration: computed: {}"
             #      "               Hertz : {}".format(result.offset,
-            #      penetration(normal_force,self.r_s,self.E_s)))
+            #      penetration(normal_force,r_s,E_s)))
             npt.assert_allclose(
                 result.offset,
-                Hz.penetration(normal_force, self.r_s, self.E_s),
+                Hz.penetration(normal_force, r_s, E_s),
                 rtol=1e-2,
                 err_msg="computed offset doesn't match with hertz theory for "
                         "imposed Load {}".format(normal_force))
             Eel_ref = Hz.elastic_energy(
-                Hz.penetration(normal_force, self.r_s, self.E_s), self.r_s,
-                self.E_s)
+                Hz.penetration(normal_force, r_s, E_s), r_s,
+                E_s)
 
         elif disp0 is not None:
-            Eel_ref = Hz.elastic_energy(disp0, self.r_s, self.E_s)
+            Eel_ref = Hz.elastic_energy(disp0, r_s, E_s)
             npt.assert_allclose(
                 disp0, result.offset, rtol=1e-7,
                 err_msg="Convergence Problem: computed penetration doesn't "
                         "match imposed penetration")
             npt.assert_allclose(
                 comp_normal_force,
-                Hz.normal_load(disp0, self.r_s, self.E_s),
+                Hz.normal_load(disp0, r_s, E_s),
                 rtol=1e-2,
                 err_msg="computed normal force doesn't match with hertz "
                         "theory for imposed Penetration {}".format(disp0))
             npt.assert_allclose(
                 system.compute_normal_force(),
-                Hz.normal_load(disp0, self.r_s, self.E_s),
+                Hz.normal_load(disp0, r_s, E_s),
                 rtol=1e-2,
                 err_msg="computed normal force doesn't match with hertz "
                         "theory for imposed Penetration {}".format(disp0))
 
-        a, p0 = Hz.radius_and_pressure(comp_normal_force, self.r_s, self.E_s)
+        a, p0 = Hz.radius_and_pressure(comp_normal_force, r_s, E_s)
 
         npt.assert_allclose(
             system.compute_contact_area(), np.pi * a ** 2, rtol=1e-1,
@@ -164,7 +155,7 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm):
         # plt.subplot(1,3,1)
         # plt.pcolormesh(p_analytical-p_numerical)
         # plt.colorbar()
-        # plt.plot(x, np.sqrt(self.r_s**2-x**2)-(self.r_s-disp0))
+        # plt.plot(x, np.sqrt(r_s**2-x**2)-(r_s-disp0))
         # plt.subplot(1,3,2)
         # plt.pcolormesh(p_analytical)
         # plt.colorbar()
@@ -211,7 +202,7 @@ def test_constrained_conjugate_gradients(self, nb_grid_pts, comm):
         try:
             assert Reduction(comm).max(
                 np.abs(p_analytical[r < 0.99 * a] -
-                       p_numerical[r < 0.99 * a])) / self.E_s < 1e-3, msg
+                       p_numerical[r < 0.99 * a])) / E_s < 1e-3, msg
             # TODO: assert the Contact area is OK
         except ValueError as err:
             msg = str(err) + msg
