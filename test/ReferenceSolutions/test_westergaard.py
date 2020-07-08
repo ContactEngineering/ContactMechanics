@@ -1,6 +1,13 @@
 from ContactMechanics.ReferenceSolutions import Westergaard
 import numpy as np
 
+from NuMPI import MPI
+import pytest
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
+                                reason="tests only serial funcionalities, "
+                                       "please execute with pytest")
+
 
 def test_mean_displacements():
     a = 0.3
