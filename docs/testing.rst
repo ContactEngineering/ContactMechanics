@@ -13,11 +13,11 @@ Tests that are parallelizable have to run with runtests_.
 
     python run-tests.py --no-build
 
-You can choose the number of processors with the option `--mpirun="mpirun -np 4"`. For development purposes you can go beyond the number of processors of your computer using `--mpirun="mpirun -np 10 --oversubscribe"`
+You can choose the number of processors with the option :code:`--mpirun="mpirun -np 4"`. For development purposes you can go beyond the number of processors of your computer using :code:`--mpirun="mpirun -np 10 --oversubscribe"`
 
 Other usefull flags:
 
-- `--xterm`: one window per processor
-- `--xterm --pdb`: debugging
+- :code:`--xterm`: one window per processor
+- :code:`--xterm --pdb`: debugging
 
 .. _runtests: https://github.com/bccp/runtests

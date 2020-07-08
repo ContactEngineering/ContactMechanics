@@ -104,6 +104,32 @@ Note: a single test function that should be run only with one processor:
     def test_parallel(comm_serial):
         pass
 
+or
+
+.. code-block:: python
+
+    from NuMPI import MPI
+
+
+    @pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
+        reason="tests only serial funcionalities, please execute with pytest")
+    def test_parallel(comm_serial):
+        pass
+
+
+How does :code:`runtests` behave when only one rank fails in the test ?
+
+See `test/_test_parallel_testing.py`. Nothing is special is necarry
+to do for the assertions. :code:`run-tests.py` will if only one rank fails in
+one test.
+
+However the errors may be cleaner if you parallelise the assertion.
+
+.. code-block:: python
+
+    pnp = Reduction(comm)
+    assert pnp.all(is_ok_boolean)
+
 Debug plots in the tests
 ------------------------
 
