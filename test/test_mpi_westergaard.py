@@ -35,8 +35,7 @@ from SurfaceTopography import Topography
 from ContactMechanics import make_system
 
 
-@pytest.mark.skip
-def test_constrained_conjugate_gradients(comm, fftengine_type):
+def test_constrained_conjugate_gradients(comm,):
     sx = 30.0
     sy = 1.0
     # equivalent Young's modulus
@@ -68,9 +67,9 @@ def test_constrained_conjugate_gradients(comm, fftengine_type):
             result = system.minimize_proxy(offset=disp0,
                                            external_force=normal_force,
                                            pentol=1e-12)
-            # offset = result.offset
+
             forces = result.jac
-            # displ = result.x[:forces.shape[0], :forces.shape[1]]
+
             converged = result.success
             assert converged
 
@@ -79,31 +78,39 @@ def test_constrained_conjugate_gradients(comm, fftengine_type):
 
             x = np.arange(nx) * sx / nx
             mean_pressure = pnp.sum(forces) / np.prod(subs.physical_sizes)
-            pth = mean_pressure * \
+            analytical_pressures = mean_pressure * \
                 _pressure(x / sx, mean_pressure=sx * mean_pressure / E_s)
 
             # symetrize the Profile
-            pth[1:] = pth[1:] + pth[:0:-1]
+            analytical_pressures[1:] = analytical_pressures[1:] \
+                + analytical_pressures[:0:-1]
 
-            # import matplotlib.pyplot as plt
-            # plt.figure()
-            # plt.plot(np.arange(nx)*sx/nx, profile)
-            # plt.plot(x, displ[:, 0], 'r-')
-            # plt.plot(x, surface[:, 0]+offset, 'k-')
-            # plt.figure()
-            # plt.plot(x, forces[:, 0]/substrate.area_per_pt, 'k-')
-            # plt.plot(x, pth, 'r-')
-            # plt.show()
+            if False:
+                offset = result.offset
+                displ = result.x[:forces.shape[0], :forces.shape[1]]
+                import matplotlib.pyplot as plt
+                plt.figure()
+                plt.plot(np.arange(nx)*sx/nx, profile[0, :], "--k")
+                plt.plot(x, displ[:, 0], 'r-', label="displacements")
+                plt.plot(x, surface[:, 0] + offset, 'k-', label="indenter")
+                plt.legend()
+                plt.figure()
+                plt.plot(x, forces[:, 0] / system.substrate.area_per_pt, 'k-',
+                         label="numerical")
+                plt.plot(x, analytical_pressures, 'r--', label="analytical")
+                plt.legend()
+                plt.show()
+
+            # boolean array indicating where tolerance is not reached
             error_mask = np.abs(
-                (forces[:, 0] / subs.area_per_pt - pth[
+                (forces[:, 0] / subs.area_per_pt - analytical_pressures[
                     subs.subdomain_slices[0]]) >= 1e-12 + 1e-2 * np.abs(
-                    pth[subs.subdomain_slices[0]]))
+                    analytical_pressures[subs.subdomain_slices[0]]))
 
-            # np.testing.assert_allclose(forces[:, 0]/substrate.area_per_
-            # pth[substrate.subdomain_slices[0]], rtol=1e-2, atol = 1e-12)
-            assert np.count_nonzero(
-                error_mask) == 0, "max relative diff at index {} with "\
-                                  "ref = {}, computed= {}".format(
+            # parallelise the check, this leads to cleaner failures
+            assert pnp.sum(np.count_nonzero(
+                error_mask)) == 0, "max relative diff at index {} with " \
+                                   "ref = {}, computed= {}".format(
                 np.arange(subs.nb_subdomain_grid_pts[0])[error_mask],
-                pth[subs.subdomain_slices[0]][error_mask],
+                analytical_pressures[subs.subdomain_slices[0]][error_mask],
                 forces[:, 0][error_mask] / subs.area_per_pt)
