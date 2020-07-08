@@ -77,8 +77,12 @@ and/or is incompatible with `runtests` (`unittest`), include following line:
 
 .. code-block:: python
 
-    pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
-            reason="tests only serial funcionalities, please execute with pytest")
+    from NuMPI import MPI
+    import pytest
+
+    pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
+                                    reason="tests only serial funcionalities, "
+                                           "please execute with pytest")
 
 The file will executed in a run with `pytest` and not with a (parallel) run with
 `python3 run-tests.py`
@@ -109,10 +113,11 @@ or
 .. code-block:: python
 
     from NuMPI import MPI
-
+    import pytest
 
     @pytest.mark.skipif(MPI.COMM_WORLD.Get_size()> 1,
-        reason="tests only serial funcionalities, please execute with pytest")
+                        reason="tests only serial funcionalities, "
+                               "please execute with pytest")
     def test_parallel(comm_serial):
         pass
 
