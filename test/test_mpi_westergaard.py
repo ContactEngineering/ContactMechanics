@@ -25,7 +25,6 @@
 
 
 import numpy as np
-import pytest
 
 from NuMPI.Tools.Reduction import Reduction
 
