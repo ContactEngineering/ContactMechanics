@@ -177,7 +177,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft,
                                  communicator=communicator)
             # Create plan for one degree of freedom
-            self.fftengine.initialise(1)
+            self.fftengine.create_plan(1)
 
         self.weights = np.zeros(self.fftengine.nb_fourier_grid_pts, order='f',
                                 dtype=complex)
