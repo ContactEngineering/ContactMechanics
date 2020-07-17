@@ -208,6 +208,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         lbounds.mask[self.substrate.topography_subdomain_slices] = False
         lbounds[self.substrate.topography_subdomain_slices] \
             = self.surface.heights() + offset
+
         lbounds.set_fill_value(-np.inf)
 
         return lbounds
@@ -518,3 +519,96 @@ class NonSmoothContactSystem(SystemBase):
 
             self.substrate.check()
         return result
+
+######################################################################################################################
+    def primal_objective(self,offset,pot=False,gradient=True):
+        """
+        To solve the primal objective using gap as the variable.
+        Can be fed directly to standard solvers ex: scipy solvers etc.
+
+        Parameters:
+        gap         -- gap between the contact surfaces.
+        pot         -- (default False)
+        gradient    -- (default True)
+        """
+
+        res = self.substrate.nb_domain_grid_pts
+        if gradient:
+            def fun(gap):
+                disp = gap.reshape(res) + self.surface.heights() + offset
+                try:
+                    self.evaluate(
+                        disp.reshape(res),offset,forces=True)
+                except ValueError as err:
+                    raise ValueError(
+                        "{}: gap.shape: {}, res: {}".format(
+                            err, gap.shape, res))
+                return (self.energy, -self.force.reshape(-1))
+        else:
+            def fun(gap):
+                disp = gap.reshape(res) + self.surface.heights() + offset
+                return self.evaluate(
+                    disp.reshape(res),offset, forces=False)[0]
+
+        return fun
+
+    def hessian_product(self,gap):
+        """
+        Returns the hessian product of the primal_objective function.
+        """
+
+        hessp = self.substrate.evaluate_force(gap)
+        return hessp
+
+    def evaluate_dual(self, press, offset, pot = True, forces = False):
+        """
+        Compute the energies and forces in the system for a given displacement
+        field
+        """
+        disp = self.substrate.evaluate_disp(-press)
+        if forces:
+            self.gradient = disp - self.surface.heights() - offset
+        else:
+            self.gradient = None
+
+        self.energy = 1 / 2 * np.sum(press * disp) - np.sum(press * (self.surface.heights()+offset))
+
+        return (self.energy, self.gradient)
+
+    def dual_objective(self,offset, pot=False, gradient=True):
+        """
+        Objective function to handle dual objective, i.e. the Legendre
+        transformation from displacements as variable to pressures
+        (the Lagrange multiplier) as variable.
+        """
+
+        res = self.substrate.nb_domain_grid_pts
+
+
+        if gradient:
+            def fun(pressure):
+                try:
+                    self.evaluate_dual(
+                        pressure.reshape(res),offset,forces=True)
+                except ValueError as err:
+                    raise ValueError(
+                        "{}: gap.shape: {}, res: {}".format(
+                            err, pressure.shape, res))
+                return (self.energy, self.gradient.reshape(-1))
+        else:
+            def fun(gap):
+                return self.evaluate(
+                    gap.reshape(res), forces=False)[0]
+
+        return fun
+
+    def dual_hessian_product(self,pressure):
+        """
+        Returns the hessian product of the dual_objective function.
+        """
+        #pressure = - pressure  #TODO:VERIFY THIS!!!!
+        hessp = self.substrate.evaluate_disp(-pressure)
+        return hessp
+
+
+
