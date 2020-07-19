@@ -520,16 +520,28 @@ class NonSmoothContactSystem(SystemBase):
             self.substrate.check()
         return result
 
-######################################################################################################################
+
     def primal_objective(self,offset,pot=False,gradient=True):
         """
         To solve the primal objective using gap as the variable.
         Can be fed directly to standard solvers ex: scipy solvers etc.
 
+        Objective:
+
+        ..math::
+            min_u J = 1/2U_i*K_{ij}*U_j \\
+            \\
+            gradient = K_{ij}*U_j which is, Force. \\
+
         Parameters:
         gap         -- gap between the contact surfaces.
+        offset      -- value of penetration or offset
         pot         -- (default False)
         gradient    -- (default True)
+
+        Returns:
+        energy      -- value of energy(scalar value).
+        force       -- value of force(array).
         """
 
         res = self.substrate.nb_domain_grid_pts
@@ -580,11 +592,27 @@ class NonSmoothContactSystem(SystemBase):
         Objective function to handle dual objective, i.e. the Legendre
         transformation from displacements as variable to pressures
         (the Lagrange multiplier) as variable.
+
+        Objective:
+
+        ..math::
+            min_u L(u,\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j - \lambda_i h_i \\
+            \\
+            gradient = K^{-1}_{ij}*\lambda_j - h_i which is, \\
+            gap = displacement - height \\
+
+        Parameters:
+        pressure    -- pressure between the contact surfaces.
+        offset      -- value of penetration or offset
+        pot         -- (default False)
+        gradient    -- (default True)
+
+        Returns:
+        energy      -- value of energy(scalar value).
+        gradient    -- value of gradient(array) or the value of gap.
         """
 
         res = self.substrate.nb_domain_grid_pts
-
-
         if gradient:
             def fun(pressure):
                 try:
@@ -606,9 +634,6 @@ class NonSmoothContactSystem(SystemBase):
         """
         Returns the hessian product of the dual_objective function.
         """
-        #pressure = - pressure  #TODO:VERIFY THIS!!!!
+
         hessp = self.substrate.evaluate_disp(-pressure)
         return hessp
-
-
-
