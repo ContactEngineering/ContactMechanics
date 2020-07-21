@@ -1,0 +1,620 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ContactMechanics.IO.NetCDF &mdash; ContactMechanics 0.90.1.dev25+g609c867 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.1.dev25+g609c867
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>ContactMechanics.IO.NetCDF</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ContactMechanics.IO.NetCDF</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016, 2019-2020 Lars Pastewka</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Output surface topography and contact deformation to a structured NetCDF</span>
+<span class="sd">database.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="n">Dataset</span>
+
+    <span class="n">__have_netcdf4__</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pupynere</span> <span class="k">import</span> <span class="n">NetCDFFile</span>
+
+    <span class="n">__have_netcdf4__</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="NetCDFContainerFrame"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainerFrame">[docs]</a><span class="k">class</span> <span class="nc">NetCDFContainerFrame</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_if_missing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;i4&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Real</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">shape</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span>
+                <span class="k">if</span> <span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,))</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_shape</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                            <span class="n">name</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_float_str</span><span class="p">,</span>
+                            <span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="s1">&#39;ndof&#39;</span><span class="p">,</span> <span class="s1">&#39;nx&#39;</span><span class="p">,</span> <span class="s1">&#39;ny&#39;</span><span class="p">,)</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span>
+                            <span class="n">name</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_float_str</span><span class="p">,</span>
+                            <span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="s1">&#39;nx&#39;</span><span class="p">,</span> <span class="s1">&#39;ny&#39;</span><span class="p">,)</span>
+                        <span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_shape2</span><span class="p">)):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_float_str</span><span class="p">,</span>
+                                                      <span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="s1">&#39;nx&#39;</span><span class="p">,</span> <span class="s1">&#39;ny&#39;</span><span class="p">,))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Not sure how to guess NetCDF type for &#39;</span>
+                                       <span class="s1">&#39;field &quot;</span><span class="si">{0}</span><span class="s1">&quot; which is a numpy ndarray &#39;</span>
+                                       <span class="s1">&#39;with type </span><span class="si">{1}</span><span class="s1"> and shape </span><span class="si">{2}</span><span class="s1">.&#39;</span>
+                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Not sure how to guess NetCDF type for &#39;</span>
+                                   <span class="s1">&#39;field &quot;</span><span class="si">{0}</span><span class="s1">&quot; with type </span><span class="si">{1}</span><span class="s1">.&#39;</span>
+                                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">_mangle_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="c1"># Name mangling</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_is_amber</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;u&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;coordinates&#39;</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;f&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;forces&#39;</span>
+        <span class="k">return</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mangle_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_i</span><span class="p">]</span>
+        <span class="c1"># Reshape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_is_amber</span><span class="p">:</span>
+            <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_shape</span>
+            <span class="n">attr</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">attr</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mangle_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_if_missing</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NetCDFContainerFrame.get_index"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_i</span></div>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_index</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NetCDFContainerFrame.get_traj"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_traj">[docs]</a>    <span class="k">def</span> <span class="nf">get_traj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span></div>
+
+    <span class="n">traj</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_traj</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NetCDFContainerFrame.set_grid"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.set_grid">[docs]</a>    <span class="k">def</span> <span class="nf">set_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assing a value to a certain grid, where the grid starts at x0,y0. Grid</span>
+<span class="sd">        can be smaller than the dimensions in the file. Padding region is then</span>
+<span class="sd">        set to undefined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mangle_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_if_missing</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_shape</span><span class="p">)</span>
+
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span>
+        <span class="c1"># print x0, y0, x0+nx, y0+ny</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_i</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span><span class="n">x0</span> <span class="o">+</span> <span class="n">nx</span><span class="p">,</span> <span class="n">y0</span><span class="p">:</span><span class="n">y0</span> <span class="o">+</span> <span class="n">ny</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">value</span></div>
+
+<div class="viewcode-block" id="NetCDFContainerFrame.sync"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.sync">[docs]</a>    <span class="k">def</span> <span class="nf">sync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="NetCDFContainer"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer">[docs]</a><span class="k">class</span> <span class="nc">NetCDFContainer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">double</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">store_force</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;NETCDF4&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span> <span class="o">=</span> <span class="n">fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">__have_netcdf4__</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;ws&#39;</span><span class="p">:</span>
+                    <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">NetCDFFile</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Error opening file &quot;</span><span class="si">{0}</span><span class="s1">&quot;: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">double</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_float_str</span> <span class="o">=</span> <span class="s1">&#39;f8&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_float_str</span> <span class="o">=</span> <span class="s1">&#39;f4&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_store_force</span> <span class="o">=</span> <span class="n">store_force</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_amber</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">mode</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;w&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">program</span> <span class="o">=</span> <span class="s1">&#39;PyCo&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">programVersion</span> <span class="o">=</span> <span class="s1">&#39;N/A&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_defined</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;nx&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span> <span class="ow">and</span> <span class="s1">&#39;ny&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s1">&#39;nx&#39;</span><span class="p">]),</span>
+                                   <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s1">&#39;ny&#39;</span><span class="p">]))</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s1">&#39;nx&#39;</span><span class="p">],</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s1">&#39;ny&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_shape2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
+            <span class="k">elif</span> <span class="s1">&#39;atom&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s1">&#39;atom&#39;</span><span class="p">]</span>
+                <span class="n">nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+                <span class="k">assert</span> <span class="n">nx</span> <span class="o">*</span> <span class="n">nx</span> <span class="o">==</span> <span class="n">n</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_shape2</span> <span class="o">=</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_is_amber</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Unknown NetCDF convention used for file &#39;</span>
+                                   <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="n">fn</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_defined</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">frame</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cur_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">+</span> <span class="n">frame</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cur_frame</span> <span class="o">=</span> <span class="n">frame</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_define_file_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="c1"># print &#39;defining file structure, shape = {0}&#39;.format(shape)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="n">shape</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">ndof</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ndof</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">shape</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape2</span> <span class="o">=</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;frame&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ndof</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s1">&#39;ndof&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s1">&#39;ndof&#39;</span><span class="p">,</span> <span class="n">ndof</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;nx&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s1">&#39;nx&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;ny&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s1">&#39;ny&#39;</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_defined</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="NetCDFContainer.set_shape"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.set_shape">[docs]</a>    <span class="k">def</span> <span class="nf">set_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">ndof</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_defined</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ndof</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ndof</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_define_file_structure</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_define_file_structure</span><span class="p">([</span><span class="n">ndof</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ndof</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">ndof</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Shape mismatch: NetCDF file has shape &#39;</span>
+                                       <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> x </span><span class="si">{1}</span><span class="s1">, but someone is trying to &#39;</span>
+                                       <span class="s1">&#39;override this with shape </span><span class="si">{2}</span><span class="s1"> x </span><span class="si">{3}</span><span class="s1">.&#39;</span>
+                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                               <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ndof</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span> <span class="o">==</span>
+                              <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s1">&#39;frame&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="s1">&#39;frame&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">length</span>
+
+<div class="viewcode-block" id="NetCDFContainer.close"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_defined</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="NetCDFContainer.has_h"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.has_h">[docs]</a>    <span class="k">def</span> <span class="nf">has_h</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;h&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span></div>
+
+<div class="viewcode-block" id="NetCDFContainer.set_rigid_surface"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.set_rigid_surface">[docs]</a>    <span class="k">def</span> <span class="nf">set_rigid_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">ndof</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_shape</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">ndof</span><span class="o">=</span><span class="n">ndof</span><span class="p">)</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape2</span>
+        <span class="n">hnx</span><span class="p">,</span> <span class="n">hny</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">if</span> <span class="s1">&#39;h&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">hnx</span> <span class="o">!=</span> <span class="n">nx</span> <span class="ow">or</span> <span class="n">hny</span> <span class="o">!=</span> <span class="n">ny</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;rigid_nx&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s1">&#39;rigid_nx&#39;</span><span class="p">,</span> <span class="n">hnx</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;rigid_ny&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s1">&#39;rigid_ny&#39;</span><span class="p">,</span> <span class="n">hny</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;rigid_nx&#39;</span><span class="p">,</span>
+                                                      <span class="s1">&#39;rigid_ny&#39;</span><span class="p">,))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;nx&#39;</span><span class="p">,</span> <span class="s1">&#39;ny&#39;</span><span class="p">,))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">][:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">h</span></div>
+
+    <span class="c1"># Backward compatibility</span>
+    <span class="n">set_h</span> <span class="o">=</span> <span class="n">set_rigid_surface</span>
+
+<div class="viewcode-block" id="NetCDFContainer.set_elastic_surface"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.set_elastic_surface">[docs]</a>    <span class="k">def</span> <span class="nf">set_elastic_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;elastic_surface&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s1">&#39;elastic_surface&#39;</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">,</span>
+                                      <span class="p">(</span><span class="s1">&#39;nx&#39;</span><span class="p">,</span> <span class="s1">&#39;ny&#39;</span><span class="p">,)</span>
+                                      <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;elastic_surface&#39;</span><span class="p">][:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">h</span></div>
+
+<div class="viewcode-block" id="NetCDFContainer.get_rigid_surface"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_rigid_surface">[docs]</a>    <span class="k">def</span> <span class="nf">get_rigid_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">][:,</span> <span class="p">:]</span></div>
+
+    <span class="c1"># Backward compatibility</span>
+    <span class="n">get_h</span> <span class="o">=</span> <span class="n">get_rigid_surface</span>
+
+<div class="viewcode-block" id="NetCDFContainer.get_elastic_surface"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_elastic_surface">[docs]</a>    <span class="k">def</span> <span class="nf">get_elastic_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;elastic_surface&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="NetCDFContainer.get_filename"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_filename">[docs]</a>    <span class="k">def</span> <span class="nf">get_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span></div>
+
+<div class="viewcode-block" id="NetCDFContainer.get_next_frame"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_next_frame">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">NetCDFContainerFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cur_frame</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">frame</span></div>
+
+<div class="viewcode-block" id="NetCDFContainer.set_cursor"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.set_cursor">[docs]</a>    <span class="k">def</span> <span class="nf">set_cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cur_frame</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cur_frame</span> <span class="o">=</span> <span class="n">cur_frame</span></div>
+
+<div class="viewcode-block" id="NetCDFContainer.get_cursor"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_cursor">[docs]</a>    <span class="k">def</span> <span class="nf">get_cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur_frame</span></div>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">)</span> <span class="ow">and</span> \
+                        <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">)):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;f8&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;nx&#39;</span><span class="p">,</span> <span class="s1">&#39;ny&#39;</span><span class="p">,))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Not sure how to guess NetCDF type for &#39;</span>
+                                       <span class="s1">&#39;field &quot;</span><span class="si">{0}</span><span class="s1">&quot; which is a numpy ndarray &#39;</span>
+                                       <span class="s1">&#39;with type </span><span class="si">{1}</span><span class="s1"> and shape </span><span class="si">{2}</span><span class="s1">.&#39;</span>
+                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="p">][:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">return</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Cannot set full frame.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">NetCDFContainerFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)))]</span>
+        <span class="k">return</span> <span class="n">NetCDFContainerFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">NetCDFContainerFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NetCDFContainer.get_size"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span></div>
+
+<div class="viewcode-block" id="NetCDFContainer.sync"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.sync">[docs]</a>    <span class="k">def</span> <span class="nf">sync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span></div>
+
+
+<span class="c1">###</span>
+
+<div class="viewcode-block" id="open"><a class="viewcode-back" href="../../../source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.open">[docs]</a><span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">NetCDFContainer</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">fn</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">fn</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fn</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">NetCDFContainer</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="n">n</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">NetCDFContainer</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="n">frame</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">NetCDFContainer</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2015-2020 The Authors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

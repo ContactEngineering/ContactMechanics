@@ -1,0 +1,46 @@
+ContactMechanics.ReferenceSolutions package
+===========================================
+
+Submodules
+----------
+
+ContactMechanics.ReferenceSolutions.Cone module
+-----------------------------------------------
+
+.. automodule:: ContactMechanics.ReferenceSolutions.Cone
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.ReferenceSolutions.GreenwoodTripp module
+---------------------------------------------------------
+
+.. automodule:: ContactMechanics.ReferenceSolutions.GreenwoodTripp
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.ReferenceSolutions.Hertz module
+------------------------------------------------
+
+.. automodule:: ContactMechanics.ReferenceSolutions.Hertz
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.ReferenceSolutions.Westergaard module
+------------------------------------------------------
+
+.. automodule:: ContactMechanics.ReferenceSolutions.Westergaard
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: ContactMechanics.ReferenceSolutions
+   :members:
+   :undoc-members:
+   :show-inheritance:

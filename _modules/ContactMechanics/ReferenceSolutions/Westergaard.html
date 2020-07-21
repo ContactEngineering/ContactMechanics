@@ -1,0 +1,446 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ContactMechanics.ReferenceSolutions.Westergaard &mdash; ContactMechanics 0.90.1.dev25+g609c867 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.1.dev25+g609c867
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>ContactMechanics.ReferenceSolutions.Westergaard</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ContactMechanics.ReferenceSolutions.Westergaard</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2017, 2020 Lars Pastewka</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Westergaard solution for partial contact of a sinusoidal periodic</span>
+<span class="sd">indenter.</span>
+<span class="sd">See: H.M. Westergaard, Trans. ASME, J. Appl. Mech. 6, 49 (1939)</span>
+
+<span class="sd">The indenter geometry is</span>
+<span class="sd">$2 h sin^2(\pi x / lambda)$</span>
+
+<span class="sd">Nommenclature:</span>
+<span class="sd">---------------</span>
+
+<span class="sd">- E^*: contact modulus</span>
+<span class="sd">- $\lambda$: period of the sinusoidal indenter</span>
+<span class="sd">- $h$ amplitude of the sinusoidal indenter. peak to tale distance is 2h</span>
+<span class="sd">- a: half contact width</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">log</span>
+
+
+<span class="k">def</span> <span class="nf">_map_x_on_0_05</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_pressure</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">contact_radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mean_pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute pressure for Westergaard solution of unit amplitude.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : array_like</span>
+<span class="sd">        Dimensionless positions array</span>
+<span class="sd">    contact_radius : float</span>
+<span class="sd">        Dimensionless contact radius</span>
+<span class="sd">    mean_pressure : float</span>
+<span class="sd">        mean pressure nondimensionalised by pi * Es * h0 / lam</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    p : array</span>
+<span class="sd">        Non-dimensional pressure</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">    &gt;&gt;&gt; fig, ax = plt.subplots()</span>
+<span class="sd">    &gt;&gt;&gt; x = np.linspace(-2.,2., 500)</span>
+<span class="sd">    &gt;&gt;&gt; l,= ax.plot(x, _pressure(x, 0.1), )</span>
+<span class="sd">    &gt;&gt;&gt; leg = ax.legend()</span>
+<span class="sd">    &gt;&gt;&gt; plt.show(block=True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">_map_x_on_0_05</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">psi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span>
+    <span class="k">if</span> <span class="n">contact_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">psia</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">contact_radius</span>
+        <span class="n">mean_pressure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">psia</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="k">elif</span> <span class="n">mean_pressure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">psia</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_pressure</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">psia</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">psi</span><span class="p">[</span><span class="n">m</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">psia</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">psia</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">psi</span><span class="p">[</span><span class="n">m</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">p</span>
+
+
+<div class="viewcode-block" id="displacements"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.displacements">[docs]</a><span class="k">def</span> <span class="nf">displacements</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Displacents u in units of 2h, the geometry is 2h sin^2(pi x / lambda)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: float or np.array</span>
+<span class="sd">        distance from the indenter tip contact point in units of lambda</span>
+<span class="sd">    a: float</span>
+<span class="sd">        half contact length in units of lambda</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Displacents u in units of 2h</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">    &gt;&gt;&gt; fig, ax = plt.subplots()</span>
+<span class="sd">    &gt;&gt;&gt; x = np.linspace(-1.,1., 500)</span>
+<span class="sd">    &gt;&gt;&gt; l,= ax.plot(x, displacements(x, 0.1), label=&quot;displacements&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; l2, = ax.plot(x, -np.sin(np.pi * x)**2, &quot;--k&quot;, label=&quot;geometry&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; ax.invert_yaxis()</span>
+<span class="sd">    &gt;&gt;&gt; leg = ax.legend()</span>
+<span class="sd">    &gt;&gt;&gt; plt.show(block=True)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">returnscalar</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">_map_x_on_0_05</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">returnscalar</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">sl_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">a</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span>
+
+    <span class="n">chi1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">chi2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">chi1</span><span class="p">[</span><span class="n">sl_out</span><span class="p">]</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">sl_out</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">chi2</span><span class="p">[</span><span class="n">sl_out</span><span class="p">]</span> <span class="o">=</span> <span class="n">log</span><span class="p">((</span><span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">sl_out</span><span class="p">])</span> <span class="o">+</span> <span class="n">chi1</span><span class="p">[</span><span class="n">sl_out</span><span class="p">])</span> <span class="o">/</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">))</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">chi1</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">chi2</span>
+
+    <span class="k">if</span> <span class="n">returnscalar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="gap"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.gap">[docs]</a><span class="k">def</span> <span class="nf">gap</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    gap g in units of 2h, the geometry is 2h sin^2(pi x / lambda)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: float or np.array</span>
+<span class="sd">        distance from the first contact point in units of lambda</span>
+<span class="sd">    a: float</span>
+<span class="sd">        half contact length in units of lambda</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Displacents u in units of 2h</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">displacements</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="mean_displacement"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.mean_displacement">[docs]</a><span class="k">def</span> <span class="nf">mean_displacement</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    mean gap would be 1 / 2 + mean displacement</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : float or np.array</span>
+<span class="sd">        half contactwidth in units of the wavelength lambda</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mean displacement in units of 2 h</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">    &gt;&gt;&gt; a = np.linspace(0,0.5)</span>
+<span class="sd">    &gt;&gt;&gt; l,= plt.plot(a, mean_displacement(a))</span>
+<span class="sd">    &gt;&gt;&gt; plt.show()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">log</span><span class="p">(</span>
+        <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="elastic_energy"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy">[docs]</a><span class="k">def</span> <span class="nf">elastic_energy</span><span class="p">(</span><span class="n">mean_pressure</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    elastic energy along the equilibrium curve</span>
+
+<span class="sd">    formula for the JKR contact but with  alpha = 0</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mean_pressure: float or np.array</span>
+<span class="sd">        mean pressure in units of pi Es h/ lambda</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    energy per unit area in units of $h p_{wfc}$</span>
+
+<span class="sd">    with $p_{wfc} = pi E^* h/\lambda$</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">mean_pressure</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">-</span> <span class="n">log</span><span class="p">(</span><span class="n">mean_pressure</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">mean_pressure</span> <span class="o">**</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="elastic_energy_a"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy_a">[docs]</a><span class="k">def</span> <span class="nf">elastic_energy_a</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    elastic energy in dependence of a</span>
+<span class="sd">    along the equilibrium curve</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a: float or np.array</span>
+<span class="sd">        half contact width in units of the wavelength $\lambda$</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    energy per unit area in units of $h p_{wfc}$</span>
+
+<span class="sd">    with $p_{wfc} = pi E^* h/\lambda$</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">-</span> <span class="n">log</span><span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mi">4</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2015-2020 The Authors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

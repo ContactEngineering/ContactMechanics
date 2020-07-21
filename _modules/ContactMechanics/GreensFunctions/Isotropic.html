@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ContactMechanics.GreensFunctions.Isotropic &mdash; ContactMechanics 0.90.1.dev25+g609c867 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.1.dev25+g609c867
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>ContactMechanics.GreensFunctions.Isotropic</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ContactMechanics.GreensFunctions.Isotropic</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2019-2020 Lars Pastewka</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+<span class="c1"># Isotropic continuum surface Green&#39;s function</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="c1">###</span>
+
+<div class="viewcode-block" id="IsotropicGreensFunction"><a class="viewcode-back" href="../../../source/ContactMechanics.GreensFunctions.html#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction">[docs]</a><span class="k">class</span> <span class="nc">IsotropicGreensFunction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shear_modulus</span><span class="p">,</span> <span class="n">Poisson_ratio</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the surface Green&#39;s function for a linear elastic half-space</span>
+<span class="sd">        with isotropic elastic constants.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shear_modulus : float</span>
+<span class="sd">            Shear modulus</span>
+<span class="sd">        Poisson_ratio : float</span>
+<span class="sd">            Poisson ratio</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mu</span> <span class="o">=</span> <span class="n">shear_modulus</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nu</span> <span class="o">=</span> <span class="n">Poisson_ratio</span>
+
+    <span class="k">def</span> <span class="nf">_greens_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">):</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">qx</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">qy</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">nu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nu</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span> <span class="o">/</span> <span class="n">q</span> <span class="o">-</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">qx</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">3</span><span class="p">,</span>
+                       <span class="o">-</span><span class="n">nu</span> <span class="o">*</span> <span class="n">qx</span> <span class="o">*</span> <span class="n">qy</span> <span class="o">/</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">3</span><span class="p">,</span>
+                       <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="n">qx</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)],</span>
+                      <span class="p">[</span><span class="o">-</span><span class="n">nu</span> <span class="o">*</span> <span class="n">qx</span> <span class="o">*</span> <span class="n">qy</span> <span class="o">/</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">3</span><span class="p">,</span>
+                       <span class="mi">1</span> <span class="o">/</span> <span class="n">q</span> <span class="o">-</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">qy</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">3</span><span class="p">,</span>
+                       <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="n">qy</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)],</span>
+                      <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="n">qx</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span>
+                       <span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="n">qy</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span>
+                       <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">nu</span><span class="p">)</span> <span class="o">/</span> <span class="n">q</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">G</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mu</span>
+
+    <span class="k">def</span> <span class="nf">_stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">qx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">qy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_greens_function</span><span class="p">(</span><span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">))</span>
+
+<div class="viewcode-block" id="IsotropicGreensFunction.greens_function"><a class="viewcode-back" href="../../../source/ContactMechanics.GreensFunctions.html#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction.greens_function">[docs]</a>    <span class="k">def</span> <span class="nf">greens_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">qx</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">qy</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_greens_function</span><span class="p">(</span><span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">)</span>
+
+        <span class="n">gf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_qx</span><span class="p">,</span> <span class="n">_qy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">):</span>
+            <span class="n">gf</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_greens_function</span><span class="p">(</span><span class="n">_qx</span><span class="p">,</span> <span class="n">_qy</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gf</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IsotropicGreensFunction.stiffness"><a class="viewcode-back" href="../../../source/ContactMechanics.GreensFunctions.html#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction.stiffness">[docs]</a>    <span class="k">def</span> <span class="nf">stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">qx</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">qy</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stiffness</span><span class="p">(</span><span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">)</span>
+
+        <span class="n">gf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_qx</span><span class="p">,</span> <span class="n">_qy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">):</span>
+            <span class="n">gf</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_stiffness</span><span class="p">(</span><span class="n">_qx</span><span class="p">,</span> <span class="n">_qy</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gf</span><span class="p">)</span></div>
+
+    <span class="fm">__call__</span> <span class="o">=</span> <span class="n">stiffness</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2015-2020 The Authors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

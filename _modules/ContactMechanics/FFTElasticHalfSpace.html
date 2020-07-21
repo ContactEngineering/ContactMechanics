@@ -1,0 +1,1086 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 0.90.1.dev25+g609c867 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.1.dev25+g609c867
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>ContactMechanics.FFTElasticHalfSpace</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ContactMechanics.FFTElasticHalfSpace</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016-2017, 2019-2020 Lars Pastewka</span>
+<span class="c1">#           2018, 2020 Antoine Sanner</span>
+<span class="c1">#           2019 Kai Haase</span>
+<span class="c1">#           2015-2016 Till Junge</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Implement the FFT-based elasticity solver of pycontact</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.Substrates</span> <span class="k">import</span> <span class="n">ElasticSubstrate</span>
+
+<span class="kn">from</span> <span class="nn">muFFT</span> <span class="k">import</span> <span class="n">FFT</span>
+<span class="kn">from</span> <span class="nn">NuMPI.Tools</span> <span class="k">import</span> <span class="n">Reduction</span>
+
+
+<div class="viewcode-block" id="PeriodicFFTElasticHalfSpace"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace">[docs]</a><span class="k">class</span> <span class="nc">PeriodicFFTElasticHalfSpace</span><span class="p">(</span><span class="n">ElasticSubstrate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Uses the FFT to solve the displacements and stresses in an elastic</span>
+<span class="sd">        Halfspace due to a given array of point forces. This halfspace</span>
+<span class="sd">        implementation cheats somewhat: since a net pressure would result in</span>
+<span class="sd">        infinite displacement, the first term of the FFT is systematically</span>
+<span class="sd">        dropped.</span>
+<span class="sd">        The implementation follows the description in Stanley &amp; Kato J. Tribol.</span>
+<span class="sd">        119(3), 481-485 (Jul 01, 1997)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;periodic_fft_elastic_halfspace&quot;</span>
+    <span class="n">_periodic</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+                 <span class="n">stiffness_q0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">superclass</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nb_grid_pts : int tuple</span>
+<span class="sd">            containing number of points in spatial directions.</span>
+<span class="sd">            The length of the tuple determines the spatial dimension</span>
+<span class="sd">            of the problem.</span>
+<span class="sd">        young : float</span>
+<span class="sd">            Young&#39;s modulus, if poisson is not specified it is the</span>
+<span class="sd">            contact modulus as defined in Johnson, Contact Mechanics</span>
+<span class="sd">        physical_sizes : float or float tuple</span>
+<span class="sd">            (default 2π) domain size.</span>
+<span class="sd">            For multidimensional problems,</span>
+<span class="sd">            a tuple can be provided to specify the lengths per</span>
+<span class="sd">            dimension. If the tuple has less entries than dimensions,</span>
+<span class="sd">            the last value in repeated.</span>
+<span class="sd">        stiffness_q0 : float, optional</span>
+<span class="sd">            Substrate stiffness at the Gamma-point (wavevector q=0).</span>
+<span class="sd">            If None, this is taken equal to the lowest nonvanishing</span>
+<span class="sd">            stiffness. Cannot be used in combination with thickness.</span>
+<span class="sd">        thickness : float, optional</span>
+<span class="sd">            Thickness of the elastic half-space. If None, this</span>
+<span class="sd">            models an infinitely deep half-space. Cannot be used in</span>
+<span class="sd">            combination with stiffness_q0.</span>
+<span class="sd">        poisson : float</span>
+<span class="sd">            Default 0</span>
+<span class="sd">             Poisson number. Need only be specified for substrates</span>
+<span class="sd">             of finite thickness. If left unspecified for substrates</span>
+<span class="sd">             of infinite thickness, then young is the contact</span>
+<span class="sd">             modulus.</span>
+<span class="sd">        superclass : bool</span>
+<span class="sd">            (default True)</span>
+<span class="sd">            client software never uses this.</span>
+<span class="sd">            Only inheriting subclasses use this.</span>
+<span class="sd">        fft: string</span>
+<span class="sd">            Default: &#39;serial&#39;</span>
+<span class="sd">            FFT engine to use. Options are &#39;fftw&#39;, &#39;fftwmpi&#39;, &#39;pfft&#39; and</span>
+<span class="sd">            &#39;p3dfft&#39;. &#39;serial&#39; and &#39;mpi&#39; can also be specified, where the</span>
+<span class="sd">            choice of the appropriate fft is made by muFFT</span>
+<span class="sd">        communicator : mpi4py communicator or NuMPI stub communicator</span>
+<span class="sd">            MPI communicator object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">nb_grid_pts</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="n">nb_grid_pts</span> <span class="o">=</span> <span class="p">(</span><span class="n">nb_grid_pts</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">physical_sizes</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+            <span class="n">physical_sizes</span> <span class="o">=</span> <span class="p">(</span><span class="n">physical_sizes</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nb_grid_pts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;Dimension of this problem is </span><span class="si">{}</span><span class="s2">. Only 1 and 2-dimensional &quot;</span>
+                 <span class="s2">&quot;problems are supported&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">stiffness_q0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">thickness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Please specify either stiffness_q0 or thickness &quot;</span>
+                             <span class="s2">&quot;or neither.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nb_grid_pts</span> <span class="o">=</span> <span class="n">nb_grid_pts</span>
+        <span class="n">tmpsize</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="n">tmpsize</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">physical_sizes</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">physical_sizes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_physical_sizes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tmpsize</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">/</span> <span class="n">res</span> <span class="k">for</span> <span class="n">size</span><span class="p">,</span> <span class="n">res</span> <span class="ow">in</span>
+                <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ZeroDivisionError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ZeroDivisionError</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">, when trying to handle &quot;</span>
+                 <span class="s2">&quot;    self._steps = tuple(&quot;</span>
+                 <span class="s2">&quot;        float(physical_sizes)/res for physical_sizes, res in&quot;</span>
+                 <span class="s2">&quot;        zip(self.physical_sizes, self.nb_grid_pts))&quot;</span>
+                 <span class="s2">&quot;Parameters: self.physical_sizes = </span><span class="si">{}</span><span class="s2">, self.nb_grid_pts = </span><span class="si">{}</span><span class="s2">&quot;</span>
+                 <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">young</span> <span class="o">=</span> <span class="n">young</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poisson</span> <span class="o">=</span> <span class="n">poisson</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_modulus</span> <span class="o">=</span> <span class="n">young</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">poisson</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stiffness_q0</span> <span class="o">=</span> <span class="n">stiffness_q0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">thickness</span>
+
+        <span class="k">if</span> <span class="n">fft</span> <span class="o">==</span> <span class="s2">&quot;numpy&quot;</span><span class="p">:</span>
+            <span class="k">class</span> <span class="nc">NumpyEngine</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_domain_grid_pts</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span> <span class="o">=</span> <span class="n">nb_domain_grid_pts</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span> <span class="o">=</span> <span class="n">nb_domain_grid_pts</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># readonly</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">nb_domain_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="o">*</span><span class="n">nb_domain_grid_pts</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+                <span class="nd">@property</span>
+                <span class="k">def</span> <span class="nf">subdomain_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+                        <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">length</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span> <span class="ow">in</span>
+                         <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)))</span>
+
+                <span class="nd">@property</span>
+                <span class="k">def</span> <span class="nf">fourier_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+                        <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">length</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">length</span> <span class="ow">in</span>
+                         <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">)))</span>
+
+                <span class="k">def</span> <span class="nf">fft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">arr_out</span><span class="p">):</span>
+                    <span class="n">arr_out</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+                <span class="k">def</span> <span class="nf">ifft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">arr_out</span><span class="p">):</span>
+                    <span class="n">arr_out</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span>
+                        <span class="n">arr</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+                <span class="nd">@property</span>
+                <span class="k">def</span> <span class="nf">normalisation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="mf">1.</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span> <span class="o">=</span> <span class="n">NumpyEngine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span> <span class="o">=</span> <span class="n">FFT</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="n">fft</span><span class="p">,</span>
+                                 <span class="n">communicator</span><span class="o">=</span><span class="n">communicator</span><span class="p">)</span>
+            <span class="c1"># Create plan for one degree of freedom</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">initialise</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span>
+                                <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communicator</span> <span class="o">=</span> <span class="n">communicator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span> <span class="o">=</span> <span class="n">Reduction</span><span class="p">(</span><span class="n">communicator</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">superclass</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compute_fourier_coeffs</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compute_i_fourier_coeffs</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="s2">&quot;return the substrate&#39;s physical dimension&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dim</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nb_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nb_grid_pts</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">area_per_pt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">physical_sizes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_physical_sizes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nb_domain_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        usually, the nb_grid_pts of the system is equal to the geometric</span>
+<span class="sd">        nb_grid_pts (of the surface). For example free boundary conditions,</span>
+<span class="sd">        require the computational nb_grid_pts to differ from the geometric one,</span>
+<span class="sd">        see FreeFFTElasticHalfSpace.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nb_subdomain_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">topography_nb_subdomain_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">subdomain_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">subdomain_locations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">topography_subdomain_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">subdomain_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">subdomain_slices</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">topography_subdomain_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span>
+                      <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topography_subdomain_locations</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">topography_nb_subdomain_grid_pts</span><span class="p">)])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">local_topography_subdomain_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        slice representing the local subdomain without the padding area</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+                      <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">topography_nb_subdomain_grid_pts</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nb_fourier_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fourier_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fourier_locations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fourier_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fourier_slices</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">communicator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the MPI communicator&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communicator</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span>
+        <span class="n">size_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">)</span> <span class="k">for</span>
+                             <span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">nb_grid_pts</span> <span class="ow">in</span>
+                             <span class="nb">zip</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{0.dim}</span><span class="s2">-dimensional halfspace &#39;</span><span class="si">{0.name}</span><span class="s2">&#39;, &quot;</span> \
+               <span class="s2">&quot;physical_sizes(nb_grid_pts) in </span><span class="si">{1}</span><span class="s2">, E&#39; = </span><span class="si">{0.young}</span><span class="s2">&quot;</span> \
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size_str</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_fourier_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the weights w relating fft(displacement) to fft(pressure):</span>
+<span class="sd">        fft(u) = w*fft(p), see (6) Stanley &amp; Kato J. Tribol. 119(3), 481-485</span>
+<span class="sd">        (Jul 01, 1997).</span>
+<span class="sd">        WARNING: the paper is dimensionally *incorrect*. see for the correct</span>
+<span class="sd">        1D formulation: Section 13.2 in</span>
+<span class="sd">            K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge:</span>
+<span class="sd">            Cambridge  University Press. Available from: Cambridge Books Online</span>
+<span class="sd">            &lt;http://dx.doi.org/10.1017/CBO9781139171731&gt; [Accessed 16 February</span>
+<span class="sd">            2015]</span>
+<span class="sd">        for correct 2D formulation: Appendix 1, eq A.2 in</span>
+<span class="sd">            Johnson, Greenwood and Higginson, &quot;The Contact of Elastic Regular</span>
+<span class="sd">            Wavy surfaces&quot;, Int. J. Mech. Sci. Vol. 27 No. 6, pp. 383-396, 1985</span>
+<span class="sd">            &lt;http://dx.doi.org/10.1016/0020-7403(85)90029-3&gt; [Accessed 18 March</span>
+<span class="sd">            2015]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">facts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">facts</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> \
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contact_modulus</span> <span class="o">*</span> <span class="n">index</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">facts</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span>
+                                        <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span>
+                <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span>
+                <span class="c1"># Note: q-values from 0 to 1, not from 0 to 2*pi</span>
+                <span class="n">qx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">qx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">qx</span> <span class="o">&lt;=</span> <span class="n">nx</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">qx</span> <span class="o">/</span> <span class="n">sx</span><span class="p">,</span> <span class="p">(</span><span class="n">nx</span> <span class="o">-</span> <span class="n">qx</span><span class="p">)</span> <span class="o">/</span> <span class="n">sx</span><span class="p">)</span>
+                <span class="n">qy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">qy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">qy</span> <span class="o">&lt;=</span> <span class="n">ny</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">qy</span> <span class="o">/</span> <span class="n">sy</span><span class="p">,</span> <span class="p">(</span><span class="n">ny</span> <span class="o">-</span> <span class="n">qy</span><span class="p">)</span> <span class="o">/</span> <span class="n">sy</span><span class="p">)</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">qx</span> <span class="o">*</span> <span class="n">qx</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+                            <span class="p">(</span><span class="n">qy</span> <span class="o">*</span> <span class="n">qy</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
+                    <span class="c1"># q[0,0] has no Impact on the end result,</span>
+                    <span class="c1"># but q[0,0] =  0 produces runtime Warnings</span>
+                    <span class="c1"># (because corr[0,0]=inf)</span>
+                <span class="n">facts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact_modulus</span> <span class="o">*</span> <span class="n">q</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Compute correction for finite thickness</span>
+                    <span class="n">q</span> <span class="o">*=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span>
+                    <span class="n">fac</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">poisson</span>
+                    <span class="n">off</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">poisson</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">poisson</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">5</span>
+                    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">over</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span>
+                                     <span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+                        <span class="n">corr</span> <span class="o">=</span> <span class="p">(</span><span class="n">fac</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cosh</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">off</span><span class="p">)</span> <span class="o">/</span> \
+                               <span class="p">(</span><span class="n">fac</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sinh</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span>
+                    <span class="c1"># The expression easily overflows numerically. These are</span>
+                    <span class="c1"># then q-values that are converged to the infinite system</span>
+                    <span class="c1"># expression.</span>
+                    <span class="n">corr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">corr</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.0</span>
+                    <span class="n">facts</span> <span class="o">*=</span> <span class="n">corr</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="n">facts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> \
+                            <span class="bp">self</span><span class="o">.</span><span class="n">young</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span> <span class="o">*</span> \
+                            <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">poisson</span><span class="p">)</span> <span class="o">*</span>
+                                                  <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">poisson</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stiffness_q0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">facts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">facts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">+</span>
+                                           <span class="n">facts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+                        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">stiffness_q0</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                            <span class="n">facts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">facts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stiffness_q0</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">facts</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stiffness_q0</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">facts</span>
+
+    <span class="k">def</span> <span class="nf">_compute_i_fourier_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Invert the weights w relating fft(displacement) to fft(pressure):</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iweights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iweights</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_disp"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_disp">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_disp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Computes the displacement due to a given force array</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        forces   -- a numpy array containing point forces (*not* pressures)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">forces</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;force array has a different shape (</span><span class="si">{0}</span><span class="s2">) than this halfspace&#39;&quot;</span>
+                 <span class="s2">&quot;s nb_grid_pts (</span><span class="si">{1}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">forces</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">))</span>  <span class="c1"># nopep8</span>
+        <span class="c1"># TODO(pastewka): Reuse buffers</span>
+        <span class="n">fft_forces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span>
+                              <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="o">-</span><span class="n">forces</span><span class="p">,</span> <span class="n">fft_forces</span><span class="p">)</span>
+        <span class="n">disp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">*</span> <span class="n">fft_forces</span><span class="p">,</span> <span class="n">disp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">disp</span><span class="o">.</span><span class="n">real</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">normalisation</span></div>
+
+<div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_force"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_force">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Computes the force (*not* pressures) due to a given displacement</span>
+<span class="sd">        array.</span>
+
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        disp   -- a numpy array containing point displacements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">disp</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;displacements array has a different shape (</span><span class="si">{0}</span><span class="s2">) than this &quot;</span>
+                 <span class="s2">&quot;halfspace&#39;s nb_grid_pts (</span><span class="si">{1}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">))</span>  <span class="c1"># nopep8</span>
+        <span class="c1"># TODO(pastewka): Reuse buffers</span>
+        <span class="n">fft_disp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">disp</span><span class="p">,</span> <span class="n">fft_disp</span><span class="p">)</span>
+        <span class="n">forces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iweights</span> <span class="o">*</span> <span class="n">fft_disp</span><span class="p">,</span> <span class="n">forces</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">forces</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">normalisation</span></div>
+
+<div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k_disp"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_disp">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k_disp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Computes the K-space displacement due to a given force array</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        forces   -- a numpy array containing point forces (*not* pressures)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">forces</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;force array has a different shape (</span><span class="si">{0}</span><span class="s2">) than this halfspace&#39;&quot;</span>
+                 <span class="s2">&quot;s nb_grid_pts (</span><span class="si">{1}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">forces</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">))</span>  <span class="c1"># nopep8</span>
+        <span class="n">fft_forces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span>
+                              <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="o">-</span><span class="n">forces</span><span class="p">,</span> <span class="n">fft_forces</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">*</span> <span class="n">fft_forces</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
+
+<div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k_force"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Computes the K-space forces (*not* pressures) due to a given</span>
+<span class="sd">        displacement array.</span>
+
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        disp   -- a numpy array containing point displacements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">disp</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;displacements array has a different shape (</span><span class="si">{0}</span><span class="s2">) than this &quot;</span>
+                 <span class="s2">&quot;halfspace&#39;s nb_grid_pts (</span><span class="si">{1}</span><span class="s2">)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">))</span>  <span class="c1"># nopep8</span>
+        <span class="n">fft_disp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">disp</span><span class="p">,</span> <span class="n">fft_disp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">iweights</span> <span class="o">*</span> <span class="n">fft_disp</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
+
+<div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_elastic_energy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_elastic_energy">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_elastic_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">,</span> <span class="n">disp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        computes and returns the elastic energy due to forces and displacements</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">        forces -- array of forces</span>
+<span class="sd">        disp   -- array of displacements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=no-self-use</span>
+        <span class="k">return</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">disp</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="o">-</span><span class="n">forces</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_elastic_energy_k_space"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_elastic_energy_k_space">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_elastic_energy_k_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kforces</span><span class="p">,</span> <span class="n">kdisp</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the Energy due to forces and displacements using their Fourier</span>
+<span class="sd">        representation.</span>
+
+<span class="sd">        This uses Parseval&#39;s Theorem:</span>
+
+<span class="sd">        .. math::  \frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{A}\sum_{\vec q_i}|H(\vec q_i)|^2</span>
+
+<span class="sd">        when using following definition of the FFT:</span>
+
+<span class="sd">        .. math::  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},</span>
+
+<span class="sd">        .. math::  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s</span>
+
+<span class="sd">        When fitting the definition to numpy&#39;s norming convention</span>
+<span class="sd">        (https://docs.scipy.org/doc/numpy/reference/routines.fft.html#module-numpy.fft)</span>
+<span class="sd">        Parseval&#39;s Theorem takes following form:</span>
+
+<span class="sd">        .. math::  \sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec q_i}|H(\vec q_i)|^2</span>
+
+
+<span class="sd">        In a parallelized code kforces and kdisp contain only the slice attributed to this processor</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kforces: array of complex type and of physical_sizes substrate.nb_domain_grid_pts</span>
+<span class="sd">        Fourier representation (output of a 2D rfftn) of the forces acting on the grid points</span>
+<span class="sd">        kdisp: array of complex type and of physical_sizes substrate.nb_domain_grid_pts</span>
+<span class="sd">        Fourier representation (output of a 2D rfftn) of the displacements of the grid points</span>
+
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The elastic energy due to the forces and displacements</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+        <span class="c1"># using vdot instead of dot because of conjugate</span>
+
+        <span class="c1"># kdisp and kforces are the output of the 2D rfftn, that means the a</span>
+        <span class="c1"># part of the transform is omitted because of the symetry along the</span>
+        <span class="c1"># last dimension</span>
+        <span class="c1">#</span>
+        <span class="c1"># That&#39;s why the components whose symetrics have been omitted are</span>
+        <span class="c1"># weighted with a factor of 2.</span>
+        <span class="c1">#</span>
+        <span class="c1"># The first column (indexes [...,0], wavevector 0 along the last</span>
+        <span class="c1"># dimension) has no symetric</span>
+        <span class="c1">#</span>
+        <span class="c1"># When the number of points in the last dimension is even, the last</span>
+        <span class="c1"># column (Nyquist Frequency) has also no symetric.</span>
+        <span class="c1">#</span>
+        <span class="c1"># The serial code implementation would look like this</span>
+        <span class="c1"># if (self.nb_domain_grid_pts[-1] % 2 == 0)</span>
+        <span class="c1">#   return .5*(np.vdot(kdisp, -kforces).real +</span>
+        <span class="c1">#           # adding the data that has been omitted by rfftn</span>
+        <span class="c1">#           np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real</span>
+        <span class="c1">#           # because of symetry</span>
+        <span class="c1">#           )/self.nb_pts</span>
+        <span class="c1"># else :</span>
+        <span class="c1">#   return .5 * (np.vdot(kdisp, -kforces).real +</span>
+        <span class="c1">#                  # adding the data that has been omitted by rfftn</span>
+        <span class="c1">#      #           np.vdot(kdisp[..., 1:], -kforces[..., 1:]).real</span>
+        <span class="c1">#      #           # because of symetry</span>
+        <span class="c1">#      #           )/self.nb_pts</span>
+        <span class="c1">#</span>
+        <span class="c1"># Parallelized Version</span>
+        <span class="c1"># The inner part of the fourier data should always be symetrized (i.e.</span>
+        <span class="c1"># multiplied by 2). When the fourier subdomain contains boundary values</span>
+        <span class="c1"># (wavevector 0 (even and odd) and ny//2 (only for odd)) these values</span>
+        <span class="c1"># should only be added once</span>
+
+        <span class="c1"># FIXME: why this test was done in earlier versions</span>
+        <span class="c1"># if kdisp.shape[-1] &gt; 0:</span>
+        <span class="k">if</span> <span class="n">kdisp</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># First row of this fourier data is first of global data</span>
+                <span class="n">fact0</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># local first row is not the first in the global data</span>
+                <span class="n">fact0</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fact0</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">factend</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="c1"># odd number of points, last row have always to be symmetrized</span>
+                <span class="n">factend</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># last row of the global rfftn already contains it&#39;s symmetric</span>
+                <span class="n">factend</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="c1"># print(&quot;last Element of the even data has to be accounted</span>
+                <span class="c1"># only once&quot;)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">factend</span> <span class="o">=</span> <span class="mi">2</span>
+                <span class="c1"># print(&quot;last element of this local slice is not last element</span>
+                <span class="c1"># of the total global data&quot;)</span>
+            <span class="c1"># print(&quot;fact0={}&quot;.format(fact0))</span>
+            <span class="c1"># print(&quot;factend={}&quot;.format(factend))</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">factmiddle</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">factmiddle</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">locsum</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+                    <span class="n">factmiddle</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">vdot</span><span class="p">(</span><span class="n">kdisp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+                                         <span class="o">-</span><span class="n">kforces</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span><span class="o">.</span><span class="n">real</span>
+                    <span class="o">+</span> <span class="n">fact0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">vdot</span><span class="p">(</span><span class="n">kdisp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">-</span><span class="n">kforces</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span><span class="o">.</span><span class="n">real</span>
+                    <span class="o">+</span> <span class="n">factend</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">vdot</span><span class="p">(</span><span class="n">kdisp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">-</span><span class="n">kforces</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span><span class="o">.</span><span class="n">real</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">)</span>  <span class="c1"># nopep8</span>
+            <span class="c1"># We divide by the total number of points to get the appropriate</span>
+            <span class="c1"># normalisation of the Fourier transform (in numpy the division by</span>
+            <span class="c1"># happens only at the inverse transform)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># This handles the case where the processor holds an empty</span>
+            <span class="c1"># subdomain</span>
+            <span class="n">locsum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">kdisp</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># print(locsum)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">locsum</span><span class="p">)</span></div>
+        <span class="c1"># else:</span>
+        <span class="c1">#    return 0</span>
+
+<div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluates the elastic energy and the point forces</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        disp   -- array of distances</span>
+<span class="sd">        pot    -- (default True) if true, returns potential energy</span>
+<span class="sd">        forces -- (default False) if true, returns forces</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">force</span> <span class="o">=</span> <span class="n">potential</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">forces</span><span class="p">:</span>
+            <span class="n">force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">disp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pot</span><span class="p">:</span>
+                <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_elastic_energy</span><span class="p">(</span><span class="n">force</span><span class="p">,</span> <span class="n">disp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">pot</span><span class="p">:</span>
+            <span class="n">kforce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_k_force</span><span class="p">(</span><span class="n">disp</span><span class="p">)</span>
+            <span class="c1"># TODO: OPTIMISATION: here kdisp is computed twice, because it&#39;s</span>
+            <span class="c1">#  needed in kforce</span>
+            <span class="n">fft_disp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span>
+                                <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">disp</span><span class="p">,</span> <span class="n">fft_disp</span><span class="p">)</span>
+            <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_elastic_energy_k_space</span><span class="p">(</span><span class="n">kforce</span><span class="p">,</span> <span class="n">fft_disp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">potential</span><span class="p">,</span> <span class="n">force</span></div></div>
+
+
+<div class="viewcode-block" id="FreeFFTElasticHalfSpace"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace">[docs]</a><span class="k">class</span> <span class="nc">FreeFFTElasticHalfSpace</span><span class="p">(</span><span class="n">PeriodicFFTElasticHalfSpace</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uses the FFT to solve the displacements and stresses in an non-periodic</span>
+<span class="sd">    elastic Halfspace due to a given array of point forces. Uses the Green&#39;s</span>
+<span class="sd">    functions formulaiton of Johnson (1985, p. 54). The application of the FFT</span>
+<span class="sd">    to a nonperiodic domain is explained in Hockney (1969, p. 178.)</span>
+
+<span class="sd">    K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge: Cambridge</span>
+<span class="sd">    University Press. Available from: Cambridge Books Online</span>
+<span class="sd">    &lt;http://dx.doi.org/10.1017/CBO9781139171731&gt; [Accessed 16 February 2015]</span>
+
+<span class="sd">    R. W. HOCKNEY, &quot;The potential calculation and some applications,&quot; Methods</span>
+<span class="sd">    of Computational Physics, B. Adler, S. Fernback and M. Rotenberg (Eds.),</span>
+<span class="sd">    Academic Press, New York, 1969, pp. 136-211.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;free_fft_elastic_halfspace&quot;</span>
+    <span class="n">_periodic</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+                 <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nb_grid_pts : tuple of floats</span>
+<span class="sd">            Tuple containing number of points in spatial directions. The length</span>
+<span class="sd">            of the tuple determines the spatial dimension of the problem.</span>
+<span class="sd">            Warning: internally, the free boundary conditions require the</span>
+<span class="sd">            system so store a system of 2*nb_grid_pts.x by 2*nb_grid_pts.y.</span>
+<span class="sd">            Keep in mind that if your surface is nx by ny, the forces and</span>
+<span class="sd">            displacements will still be 2nx by 2ny.</span>
+<span class="sd">        young : float</span>
+<span class="sd">            Equiv. Young&#39;s modulus E&#39;, 1/E&#39; = (i-ν_1**2)/E&#39;_1 + (i-ν_2**2)/E&#39;_2</span>
+<span class="sd">        physical_sizes : tuple of floats</span>
+<span class="sd">            (default 2π) domain physical_sizes. For multidimensional problems,</span>
+<span class="sd">            a tuple can be provided to specify the lengths per dimension. If</span>
+<span class="sd">            the tuple has less entries than dimensions, the last value in</span>
+<span class="sd">            repeated.</span>
+<span class="sd">        communicator : mpi4py communicator NuMPI stub communicator</span>
+<span class="sd">            MPI communicator object.</span>
+<span class="sd">        check_boundaries: bool</span>
+<span class="sd">        if set to true, the function check will test that the pressures are</span>
+<span class="sd">        zero at the boundary of the topography-domain.</span>
+<span class="sd">        `check()` is called systematically at the end of system.minimize_proxy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_comp_nb_grid_pts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">nb_grid_pts</span><span class="p">))</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="p">,</span> <span class="n">superclass</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                         <span class="n">fft</span><span class="o">=</span><span class="n">fft</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="n">communicator</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_fourier_coeffs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_i_fourier_coeffs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_boundaries</span> <span class="o">=</span> <span class="n">check_boundaries</span>
+
+<div class="viewcode-block" id="FreeFFTElasticHalfSpace.spawn_child"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.spawn_child">[docs]</a>    <span class="k">def</span> <span class="nf">spawn_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns an instance with same physical properties with a smaller</span>
+<span class="sd">        computational grid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                      <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">nb_grid_pts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">young</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nb_domain_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        usually, the nb_grid_pts of the system is equal to the geometric</span>
+<span class="sd">        nb_grid_pts (of the surface). For example free boundary conditions,</span>
+<span class="sd">        require the computational nb_grid_pts to differ from the geometric one,</span>
+<span class="sd">        see FreeFFTElasticHalfSpace.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_comp_nb_grid_pts</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">topography_nb_subdomain_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)])</span>
+
+    <span class="k">def</span> <span class="nf">_compute_fourier_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the weights w relating fft(displacement) to fft(pressure):</span>
+<span class="sd">           fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178</span>
+
+<span class="sd">           This version is less is copied from matscipy, use if memory is a</span>
+<span class="sd">           concern</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=invalid-name</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
+            <span class="n">x_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">x_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x_s</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_s</span><span class="p">,</span>
+                           <span class="n">x_s</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">x_s</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">y_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">y_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">y_s</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">y_s</span><span class="p">,</span>
+                           <span class="n">y_s</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">y_s</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">facts</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">young</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(((</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                                                            <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)))</span> <span class="o">/</span>  <span class="c1"># noqa: E501</span>
+                                       <span class="p">((</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                                                            <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">))))</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                    <span class="p">(</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(((</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                                                            <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)))</span> <span class="o">/</span>  <span class="c1"># noqa: E501</span>
+                                       <span class="p">((</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                                                            <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">))))</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                    <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(((</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                                                            <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)))</span> <span class="o">/</span>  <span class="c1"># noqa: E501</span>
+                                       <span class="p">((</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_s</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                                                            <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">))))</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                    <span class="p">(</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(((</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                                                            <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_s</span> <span class="o">-</span> <span class="n">a</span><span class="p">)))</span> <span class="o">/</span>  <span class="c1"># noqa: E501</span>
+                                       <span class="p">((</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_s</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># noqa: E501</span>
+                                                            <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_s</span> <span class="o">+</span> <span class="n">a</span><span class="p">)))))</span>  <span class="c1"># noqa: E501</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">facts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">facts</span>
+
+<div class="viewcode-block" id="FreeFFTElasticHalfSpace.evaluate_disp"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_disp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Computes the displacement due to a given force array</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        forces   -- a numpy array containing point forces (*not* pressures)</span>
+
+<span class="sd">        if running in MPI this should be only the forces in the Subdomain</span>
+
+<span class="sd">        if running in serial one can give the force array with or without the</span>
+<span class="sd">        padded region</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">forces</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="n">forces</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">forces</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">:</span>
+                <span class="c1"># Automatically pad forces if force array is half of subdomain</span>
+                <span class="c1"># nb_grid_pts</span>
+                <span class="n">padded_forces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">)</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">forces</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">forces</span><span class="o">.</span><span class="n">shape</span><span class="p">))]</span>
+                <span class="n">padded_forces</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">forces</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="n">padded_forces</span><span class="p">)[</span><span class="n">s</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;forces should be of subdomain nb_grid_pts when &quot;</span>
+                             <span class="s2">&quot;using MPI&quot;</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;force array has a different shape (</span><span class="si">{0}</span><span class="s2">) &quot;</span>
+                         <span class="s2">&quot;than the subdomain nb_grid_pts (</span><span class="si">{1}</span><span class="s2">), this &quot;</span>
+                         <span class="s2">&quot;halfspace&#39;s nb_grid_pts (</span><span class="si">{2}</span><span class="s2">) or &quot;</span>
+                         <span class="s2">&quot;half of it.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">forces</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">))</span></div>
+
+        <span class="c1"># possible implementation in parallel with adding gather</span>
+        <span class="c1"># padded_forces = np.zeros(self.nb_domain_grid_pts)</span>
+        <span class="c1"># s = [slice(0, max(0, min(self.nb_grid_pts[i] -</span>
+        <span class="c1"># self.subdomain_locations[i], self.nb_subdomain_grid_pts[i])))</span>
+        <span class="c1">#     for i in range(self.dim)]</span>
+        <span class="c1"># padded_forces[s] = forces</span>
+        <span class="c1"># return super().evaluate_disp(padded_forces)[s]</span>
+
+<div class="viewcode-block" id="FreeFFTElasticHalfSpace.FreeBoundaryError"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.FreeBoundaryError">[docs]</a>    <span class="k">class</span> <span class="nc">FreeBoundaryError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        called when the forces overlap into the padding region</span>
+<span class="sd">        (i.e. the outer ring of the force array equals zero),</span>
+<span class="sd">        needing an increase of the nb_grid_pts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FreeFFTElasticHalfSpace.check_boundaries"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.check_boundaries">[docs]</a>    <span class="k">def</span> <span class="nf">check_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Raises an error if the forces are not zero at the boundary of the</span>
+<span class="sd">        active domain</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        force</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">force</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span>
+        <span class="n">is_ok</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">force</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">check_vals</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tol</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="n">vals</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">check_vals</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tol</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">is_ok</span> <span class="o">&amp;=</span> <span class="n">check_vals</span><span class="p">(</span><span class="n">force</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+
+            <span class="n">maxiy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">topography_subdomain_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">maxiy</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">topography_nb_subdomain_grid_pts</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">is_ok</span> <span class="o">&amp;=</span> <span class="n">check_vals</span><span class="p">(</span><span class="n">force</span><span class="p">[:,</span> <span class="n">maxiy</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">is_ok</span> <span class="o">&amp;=</span> <span class="n">check_vals</span><span class="p">(</span><span class="n">force</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
+
+            <span class="n">maxix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">topography_subdomain_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">maxix</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">topography_nb_subdomain_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">is_ok</span> <span class="o">&amp;=</span> <span class="n">check_vals</span><span class="p">(</span><span class="n">force</span><span class="p">[</span><span class="n">maxix</span><span class="p">,</span> <span class="p">:])</span>
+
+        <span class="n">is_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">is_ok</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_ok</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">FreeBoundaryError</span><span class="p">(</span>
+                <span class="s2">&quot;The forces not zero at the boundary of the active domain.&quot;</span>
+                <span class="s2">&quot;This is typically an indication that the contact geometry &quot;</span>
+                <span class="s2">&quot;exceeds the bounds of the domain. Since this is a nonperiodic&quot;</span>
+                <span class="s2">&quot;calculation, you may want to increase the size of your &quot;</span>
+                <span class="s2">&quot;domain. If you are sure that the calculation is correct,&quot;</span>
+                <span class="s2">&quot; set check_boundary to False&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FreeFFTElasticHalfSpace.check"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks wether force is still in the value range handled correctly</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        force</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_boundaries</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_boundaries</span><span class="p">(</span><span class="n">force</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># convenient container for storing correspondences betwees small and large</span>
+<span class="c1"># system</span>
+<span class="n">BndSet</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;BndSet&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;large&#39;</span><span class="p">,</span> <span class="s1">&#39;small&#39;</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2015-2020 The Authors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

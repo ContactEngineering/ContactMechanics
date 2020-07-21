@@ -1,0 +1,22 @@
+ContactMechanics.IO package
+===========================
+
+Submodules
+----------
+
+ContactMechanics.IO.NetCDF module
+---------------------------------
+
+.. automodule:: ContactMechanics.IO.NetCDF
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: ContactMechanics.IO
+   :members:
+   :undoc-members:
+   :show-inheritance:

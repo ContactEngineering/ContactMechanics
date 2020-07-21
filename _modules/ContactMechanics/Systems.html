@@ -1,0 +1,735 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.1.dev25+g609c867 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.1.dev25+g609c867
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>ContactMechanics.Systems</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ContactMechanics.Systems</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2015, 2020 Lars Pastewka</span>
+<span class="c1">#           2018, 2020 Antoine Sanner</span>
+<span class="c1">#           2015-2016 Till Junge</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Defines the interface for contact mechanics systems</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">import</span> <span class="nn">ContactMechanics</span>
+<span class="kn">import</span> <span class="nn">SurfaceTopography</span>
+<span class="kn">from</span> <span class="nn">ContactMechanics.Optimization</span> <span class="k">import</span> <span class="n">constrained_conjugate_gradients</span>
+<span class="kn">from</span> <span class="nn">ContactMechanics.Tools</span> <span class="k">import</span> <span class="n">compare_containers</span>
+
+
+<div class="viewcode-block" id="IncompatibleFormulationError"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.IncompatibleFormulationError">[docs]</a><span class="k">class</span> <span class="nc">IncompatibleFormulationError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="c1"># pylint: disable=missing-docstring</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="IncompatibleResolutionError"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.IncompatibleResolutionError">[docs]</a><span class="k">class</span> <span class="nc">IncompatibleResolutionError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="c1"># pylint: disable=missing-docstring</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="SystemBase"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase">[docs]</a><span class="k">class</span> <span class="nc">SystemBase</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="s2">&quot;Base class for contact systems&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substrate</span><span class="p">,</span> <span class="n">surface</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Represents a contact problem</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        substrate   -- An instance of HalfSpace. Defines the solid mechanics in</span>
+<span class="sd">                       the substrate</span>
+<span class="sd">        surface     -- An instance of SurfaceTopography, defines the profile.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span> <span class="o">=</span> <span class="n">substrate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">area_per_pt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">surface</span> <span class="o">=</span> <span class="n">surface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">pnp</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">local_topography_subdomain_slices</span>
+
+    <span class="n">_proxyclass</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="SystemBase.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.evaluate">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the energies and forces in the system for a given displacement</span>
+<span class="sd">        field</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="SystemBase.is_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.is_proxy">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_proxy</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        subclasses may not be able to implement the full interface because they</span>
+<span class="sd">        try to do something smart and internally compute a different system.</span>
+<span class="sd">        They should declare to  to be proxies and provide a method called cls.</span>
+<span class="sd">        deproxyfied() that returns the energy, force and displacement of the</span>
+<span class="sd">        full problem based on its internal state. E.g at the end of an</span>
+<span class="sd">        optimization, you could have:</span>
+<span class="sd">        if system.is_proxy():</span>
+<span class="sd">            energy, force, disp = system.deproxyfied()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_proxyclass</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nb_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;For systems, nb_grid_pts can become non-trivial&quot;</span>
+        <span class="c1"># pylint: disable=no-self-use</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># pylint: disable=unused-argument</span>
+<div class="viewcode-block" id="SystemBase.handles"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.handles">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">handles</span><span class="p">(</span><span class="n">substrate_type</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">is_domain_decomposed</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns whether this class (in practice a subclass) handles this</span>
+<span class="sd">        combination of types</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        substrate_type   -- self-explanatory</span>
+<span class="sd">        surface_type     -- self-explanatory</span>
+<span class="sd">        is_domain_decomposed: some systems cannot handle parallel computation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="SystemBase.compute_gap"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_gap">[docs]</a>    <span class="k">def</span> <span class="nf">compute_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="o">*</span><span class="n">profile_args</span><span class="p">,</span> <span class="o">**</span><span class="n">profile_kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        evaluate the gap between surface and substrate. Convention is that</span>
+<span class="sd">        non-penetrating contact has gap &gt;= 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">disp</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">comp_slice</span><span class="p">]</span> <span class="o">-</span>  <span class="c1"># TODO: Check 1D Compatibility</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">(</span><span class="o">*</span><span class="n">profile_args</span><span class="p">,</span> <span class="o">**</span><span class="n">profile_kwargs</span><span class="p">)</span> <span class="o">+</span>
+                     <span class="n">offset</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">disp</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">comp_slice</span><span class="p">]</span> <span class="o">-</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">(</span><span class="o">*</span><span class="n">profile_args</span><span class="p">,</span> <span class="o">**</span><span class="n">profile_kwargs</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="n">offset</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SystemBase.compute_normal_force"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_normal_force">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">compute_normal_force</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;evaluates and returns the normal force between substrate and surface&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SystemBase.compute_contact_area"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_contact_area">[docs]</a>    <span class="k">def</span> <span class="nf">compute_contact_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;computes and returns the total contact area&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_nb_contact_pts</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
+
+<div class="viewcode-block" id="SystemBase.compute_nb_contact_pts"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_nb_contact_pts">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">compute_nb_contact_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        compute and return the number of contact points. Note that this is of</span>
+<span class="sd">        no physical interest, as it is a purely numerical artefact</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SystemBase.compute_relative_contact_area"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_relative_contact_area">[docs]</a>    <span class="k">def</span> <span class="nf">compute_relative_contact_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; compute and return the relative contact area:</span>
+<span class="sd">             A</span>
+<span class="sd">        Aᵣ = ──</span>
+<span class="sd">             A₀</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_contact_area</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SystemBase.shape_minimisation_input"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.shape_minimisation_input">[docs]</a>    <span class="k">def</span> <span class="nf">shape_minimisation_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_array</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For minimisation of smart systems, the initial guess array (e.g.</span>
+<span class="sd">        displacement) may have a non-intuitive shape and physical_sizes (The</span>
+<span class="sd">        problem physical_sizes may be decreased, as for free, non-periodic</span>
+<span class="sd">        systems, or increased as with augmented-lagrangian-type issues). Use</span>
+<span class="sd">        the output of this function as argument x0 for scipy minimisation</span>
+<span class="sd">        functions. Also, if you initial guess has a shape that makes no sense,</span>
+<span class="sd">        this will tell you before you get caught in debugging scipy-code</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        in_array -- array with the initial guess. has the intuitive shape you</span>
+<span class="sd">                    think it has</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span> <span class="o">==</span> <span class="n">in_array</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">in_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">IncompatibleResolutionError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SystemBase.shape_minimisation_output"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.shape_minimisation_output">[docs]</a>    <span class="k">def</span> <span class="nf">shape_minimisation_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_array</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For minimisation of smart systems, the output array (e.g.</span>
+<span class="sd">        displacement) may have a non-intuitive shape and physical_sizes (The</span>
+<span class="sd">        problem physical_sizes may be decreased, as for free, non-periodic</span>
+<span class="sd">        systems, or increased as with augmented-lagrangian-type issues). Use</span>
+<span class="sd">        this function to get the array shape you expect to have</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        in_array -- array with the initial guess. has the intuitive shape you</span>
+<span class="sd">                    think it has</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span> <span class="o">==</span> <span class="n">in_array</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">in_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">IncompatibleResolutionError</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_reshape_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lbounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="n">bnds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">lbounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ubounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ubounds</span> <span class="o">=</span> <span class="n">disp_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">ubounds</span><span class="p">)</span>
+            <span class="n">lbounds</span> <span class="o">=</span> <span class="n">disp_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">lbounds</span><span class="p">)</span>
+            <span class="n">bnds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">lbounds</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">ubounds</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="k">elif</span> <span class="n">lbounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lbounds</span> <span class="o">=</span> <span class="n">disp_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">lbounds</span><span class="p">)</span>
+            <span class="n">bnds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">zip</span><span class="p">(</span><span class="n">lbounds</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lbounds</span><span class="p">))]))</span>
+        <span class="k">elif</span> <span class="n">ubounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ubounds</span> <span class="o">=</span> <span class="n">disp_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">ubounds</span><span class="p">)</span>
+            <span class="n">bnds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">zip</span><span class="p">([</span><span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ubounds</span><span class="p">))],</span> <span class="n">ubounds</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">bnds</span>
+
+    <span class="k">def</span> <span class="nf">_lbounds_from_heights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+
+        <span class="n">lbounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
+        <span class="n">lbounds</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">topography_subdomain_slices</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">lbounds</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">topography_subdomain_slices</span><span class="p">]</span> \
+            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="n">lbounds</span><span class="o">.</span><span class="n">set_fill_value</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lbounds</span>
+
+    <span class="k">def</span> <span class="nf">_update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">disp_scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">jac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">jac</span><span class="p">)</span>
+        <span class="c1"># self.substrate.check(force=self.interaction.force)</span>
+        <span class="c1"># the variable (= imposed by the minimzer) is here the displacement,</span>
+        <span class="c1"># in contrast to Polonsky and Keer where it is the pressure.</span>
+        <span class="c1"># Grad(objective) = substrate.force + interaction.force</span>
+        <span class="c1"># norm(Grad(objective))&lt; numerical tolerance</span>
+        <span class="c1"># We can ensure that interaction.force is zero at the boundary by</span>
+        <span class="c1"># adapting the geometry and the potential (cutoff)</span>
+        <span class="c1"># substrate.force will still be nonzero within the numerical tolerance</span>
+        <span class="c1"># given by the convergence criterion.</span>
+
+<div class="viewcode-block" id="SystemBase.minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
+                       <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lbounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convenience function. Eliminates boilerplate code for most minimisation</span>
+<span class="sd">        problems by encapsulating the use of scipy.minimize for common default</span>
+<span class="sd">        options. In the case of smart proxy systems, this may also encapsulate</span>
+<span class="sd">        things like dynamics computation of safety margins, extrapolation of</span>
+<span class="sd">        results onto the proxied system, etc.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        offset : float</span>
+<span class="sd">                 determines indentation depth</span>
+<span class="sd">        disp0  : (default zero)</span>
+<span class="sd">                 initial guess for displacement field. If</span>
+<span class="sd">                 not chosen appropriately, results may be unreliable.</span>
+<span class="sd">        method : string or callable</span>
+<span class="sd">                (defaults to L-BFGS-B, see scipy documentation).</span>
+<span class="sd">                Be sure to choose method that can handle high-dimensional</span>
+<span class="sd">                parameter spaces.</span>
+<span class="sd">        options : dict</span>
+<span class="sd">                  (default None)</span>
+<span class="sd">                  options to be passed to the minimizer method</span>
+<span class="sd">        gradient : bool</span>
+<span class="sd">                   (default True)</span>
+<span class="sd">                   whether to use the gradient or not</span>
+<span class="sd">        lbounds : array of shape substrate.subdomain_nb_grid_pts or</span>
+<span class="sd">                      substrate.topography_subdomain_nb_grid_pts or &quot;auto&quot;</span>
+<span class="sd">                   (default None)</span>
+<span class="sd">                    nodal ceiling/floor</span>
+<span class="sd">        ubounds : array of shape substrate.subdomain_nb_grid_pts or</span>
+<span class="sd">                      substrate.topography_subdomain_nb_grid_pts</span>
+<span class="sd">                  (default None)</span>
+<span class="sd">        tol : float</span>
+<span class="sd">              (default None)</span>
+<span class="sd">              tolerance for termination. For detailed control, use</span>
+<span class="sd">              solver-specific options.</span>
+<span class="sd">        callback : callable</span>
+<span class="sd">                   (default None)</span>
+<span class="sd">                   callback function to be at each iteration</span>
+<span class="sd">                    as callback(disp_k) where disp_k is the current</span>
+<span class="sd">                    displacement vector. Instead of a callable, it can be set</span>
+<span class="sd">                    to &#39;True&#39;, in which case the system&#39;s default callback</span>
+<span class="sd">                    function is called.</span>
+<span class="sd">        disp_scale : float</span>
+<span class="sd">                     (default 1.)</span>
+<span class="sd">                     allows to specify a scaling of the displacement before</span>
+<span class="sd">                     evaluation.</span>
+<span class="sd">        logger :</span>
+<span class="sd">                 (default None)</span>
+<span class="sd">                 log information at every iteration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">communicator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.minimize_proxy doesn&#39;t support &quot;</span>
+                             <span class="s2">&quot;mpi parallelization, please use the minimizer &quot;</span>
+                             <span class="s2">&quot;and </span><span class="si">{0}</span><span class="s2">.objective directly&quot;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+        <span class="n">fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="n">disp_scale</span><span class="p">,</span>
+                             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">disp0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">disp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
+        <span class="n">disp0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">disp0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">callback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
+
+        <span class="c1"># convenience automatic choose of the lower bound</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lbounds</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">lbounds</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+                <span class="n">lbounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lbounds_from_heights</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="n">bnds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_bounds</span><span class="p">(</span><span class="n">lbounds</span><span class="p">,</span> <span class="n">ubounds</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="n">disp_scale</span><span class="p">)</span>
+
+        <span class="c1"># Scipy minimizers that accept bounds</span>
+        <span class="n">bounded_minimizers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="s1">&#39;TNC&#39;</span><span class="p">,</span> <span class="s1">&#39;SLSQP&#39;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">bounded_minimizers</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp0</span><span class="p">,</span>
+                                             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
+                                             <span class="n">bounds</span><span class="o">=</span><span class="n">bnds</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span>
+                                             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp0</span><span class="p">,</span>
+                                             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
+                                             <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_state</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">disp_scale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="SystemBase.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.objective">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
+                  <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This helper method exposes a scipy.optimize-friendly interface to the</span>
+<span class="sd">        evaluate() method. Use this for optimization purposes, it makes sure</span>
+<span class="sd">        that the shape of disp is maintained and lets you set the offset and</span>
+<span class="sd">        &#39;forces&#39; flag without using scipy&#39;s cumbersome argument passing</span>
+<span class="sd">        interface. Returns a function of only disp</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        offset     -- determines indentation depth</span>
+<span class="sd">        disp0      -- preexisting displacement. influences e.g., the</span>
+<span class="sd">                      physical_sizes of the proxy system in some &#39;smart&#39;</span>
+<span class="sd">                      system subclasses</span>
+<span class="sd">        gradient   -- (default False) whether the gradient is supposed to be</span>
+<span class="sd">                      used</span>
+<span class="sd">        disp_scale -- (default 1.) allows to specify a scaling of the</span>
+<span class="sd">                      dislacement before evaluation.</span>
+<span class="sd">        logger     -- (default None) log information at every iteration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SystemBase.callback"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.callback">[docs]</a>    <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Simple callback function that can be handed over to scipy&#39;s minimize to</span>
+<span class="sd">        get updates during minimisation</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        force -- (default False) whether to include the norm of the force</span>
+<span class="sd">                 vector in the update message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="NonSmoothContactSystem"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem">[docs]</a><span class="k">class</span> <span class="nc">NonSmoothContactSystem</span><span class="p">(</span><span class="n">SystemBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For non-smooth contact mechanics (i.e, the equlibrium is the solution to a</span>
+<span class="sd">    constrained optimisation problem with a non-zero gradient of the energy</span>
+<span class="sd">    functional at the solution). The classic contact problems, for which the</span>
+<span class="sd">    interaction between the tribopartners is just non-penetration without</span>
+<span class="sd">    adhesion, belong to this type of system</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=abstract-method</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substrate</span><span class="p">,</span> <span class="n">surface</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Represents a contact problem</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        substrate   -- An instance of HalfSpace. Defines the solid mechanics in</span>
+<span class="sd">                       the substrate</span>
+<span class="sd">        surface     -- An instance of SurfaceTopography, defines the profile.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">substrate</span><span class="p">,</span> <span class="n">surface</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">compare_containers</span><span class="p">(</span><span class="n">surface</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">substrate</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">IncompatibleResolutionError</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;the substrate (</span><span class="si">{}</span><span class="s2">) and the surface (</span><span class="si">{}</span><span class="s2">) have incompatible &quot;</span>
+                 <span class="s2">&quot;nb_grid_ptss.&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">substrate</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">surface</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">))</span>  <span class="c1"># nopep8</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.handles"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.handles">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">handles</span><span class="p">(</span><span class="n">substrate_type</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">is_domain_decomposed</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        determines whether this class can handle the proposed system</span>
+<span class="sd">        composition</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        substrate_type   -- instance of ElasticSubstrate subclass</span>
+<span class="sd">        surface_type     --</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_ok</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># any type of substrate formulation should do</span>
+        <span class="n">is_ok</span> <span class="o">&amp;=</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">substrate_type</span><span class="p">,</span>
+                            <span class="n">ContactMechanics</span><span class="o">.</span><span class="n">ElasticSubstrate</span><span class="p">)</span>
+
+        <span class="c1"># any surface should do</span>
+        <span class="n">is_ok</span> <span class="o">&amp;=</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">surface_type</span><span class="p">,</span>
+                            <span class="n">SurfaceTopography</span><span class="o">.</span><span class="n">UniformTopographyInterface</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">is_ok</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nb_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=missing-docstring</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">nb_grid_pts</span>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.compute_normal_force"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_normal_force">[docs]</a>    <span class="k">def</span> <span class="nf">compute_normal_force</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;computes and returns the sum of all forces&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.compute_nb_contact_pts"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_nb_contact_pts">[docs]</a>    <span class="k">def</span> <span class="nf">compute_nb_contact_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        compute and return the number of contact points. Note that this is of</span>
+<span class="sd">        no physical interest, as it is a purely numerical artefact</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.compute_contact_coordinates"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_contact_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">compute_contact_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns an array of all coordinates, where contact pressure is</span>
+<span class="sd">        repulsive. Useful for evaluating the number of contact islands etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the energies and forces in the system for a given displacement</span>
+<span class="sd">        field</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># attention: the substrate may have a higher nb_grid_pts than the gap</span>
+        <span class="c1"># and the interaction (e.g. FreeElasticHalfSpace)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_gap</span><span class="p">(</span><span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">disp</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">forces</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">energy</span> <span class="k">if</span> <span class="n">pot</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">forces</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.objective">[docs]</a>    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
+                  <span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This helper method exposes a scipy.optimize-friendly interface to the</span>
+<span class="sd">        evaluate() method. Use this for optimization purposes, it makes sure</span>
+<span class="sd">        that the shape of disp is maintained and lets you set the offset and</span>
+<span class="sd">        &#39;forces&#39; flag without using scipy&#39;s cumbersome argument passing</span>
+<span class="sd">        interface. Returns a function of only disp</span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">        offset     -- determines indentation depth</span>
+<span class="sd">        disp0      -- unused variable, present only for interface compatibility</span>
+<span class="sd">                      with inheriting classes</span>
+<span class="sd">        gradient   -- (default False) whether the gradient is supposed to be</span>
+<span class="sd">                      used</span>
+<span class="sd">        disp_scale -- (default 1.) allows to specify a scaling of the</span>
+<span class="sd">                      dislacement before evaluation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=arguments-differ</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
+        <span class="k">if</span> <span class="n">gradient</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">disp</span><span class="p">):</span>
+                <span class="c1"># pylint: disable=missing-docstring</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+                        <span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: disp.shape: </span><span class="si">{}</span><span class="s2">, res: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">err</span><span class="p">,</span> <span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">disp_scale</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">disp</span><span class="p">):</span>
+                <span class="c1"># pylint: disable=missing-docstring</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+                    <span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">fun</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">constrained_conjugate_gradients</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convenience function. Eliminates boilerplate code for most minimisation</span>
+<span class="sd">        problems by encapsulating the use of constrained minimisation.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        offset     -- determines indentation depth</span>
+<span class="sd">        disp0      -- initial guess for surface displacement. If not set, zero</span>
+<span class="sd">                      displacement of shape</span>
+<span class="sd">                      self.substrate.nb_domain_grid_pts is used</span>
+<span class="sd">        pentol     -- maximum penetration of contacting regions required for</span>
+<span class="sd">                      convergence</span>
+<span class="sd">        prestol    -- maximum pressure outside the contact region allowed for</span>
+<span class="sd">                      convergence</span>
+<span class="sd">        maxiter    -- maximum number of iterations allowed for convergence</span>
+<span class="sd">        logger     -- optional logger, to be used with a logger from</span>
+<span class="sd">                      PyCo.Tools.Logger</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=arguments-differ</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">offset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">jac</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">jac</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2015-2020 The Authors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

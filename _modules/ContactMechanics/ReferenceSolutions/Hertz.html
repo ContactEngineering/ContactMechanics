@@ -1,0 +1,726 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ContactMechanics.ReferenceSolutions.Hertz &mdash; ContactMechanics 0.90.1.dev25+g609c867 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.1.dev25+g609c867
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>ContactMechanics.ReferenceSolutions.Hertz</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ContactMechanics.ReferenceSolutions.Hertz</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016, 2020 Lars Pastewka</span>
+<span class="c1">#           2018-2019 Antoine Sanner</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Helper tools for PyCo</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="penetration"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.penetration">[docs]</a><span class="k">def</span> <span class="nf">penetration</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Es</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given normal load, sphere radius and contact modulus compute rigid body</span>
+<span class="sd">    penetration.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    N : float</span>
+<span class="sd">        Normal force.</span>
+<span class="sd">    R : float</span>
+<span class="sd">        Sphere radius.</span>
+<span class="sd">    Es : float</span>
+<span class="sd">        Contact modulus: Es = E/(1-nu**2) with Young&#39;s modulus E and Poisson</span>
+<span class="sd">        number nu.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">    Normal load</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="mi">9</span> <span class="o">*</span> <span class="n">N</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">Es</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="normal_load"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.normal_load">[docs]</a><span class="k">def</span> <span class="nf">normal_load</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Es</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given rigid Body Penetration, sphere radius and contact modulus compute</span>
+<span class="sd">    normal load.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    d : float</span>
+<span class="sd">        Rigid Body Penetration</span>
+<span class="sd">    R : float</span>
+<span class="sd">        Sphere Radius</span>
+<span class="sd">    Es: float</span>
+<span class="sd">        Contact modulus:  Es = E/(1-nu**2) with Young&#39;s modulus E and Poisson</span>
+<span class="sd">        number nu.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">    normal_load</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">Es</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">R</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="elastic_energy"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.elastic_energy">[docs]</a><span class="k">def</span> <span class="nf">elastic_energy</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Es</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    d : float</span>
+<span class="sd">        Rigid Body Penetration</span>
+<span class="sd">    R : float</span>
+<span class="sd">        Sphere Radius</span>
+<span class="sd">    Es: float</span>
+<span class="sd">        Contact modulus:  Es = E/(1-nu**2) with Young&#39;s modulus E and Poisson</span>
+<span class="sd">        number nu.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Elastic energy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">8</span> <span class="o">/</span> <span class="mi">15</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="o">*</span> <span class="n">Es</span> <span class="o">*</span> <span class="n">d</span> <span class="o">**</span> <span class="p">(</span><span class="mi">5</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="radius_and_pressure"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.radius_and_pressure">[docs]</a><span class="k">def</span> <span class="nf">radius_and_pressure</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Es</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given normal load, sphere radius and contact modulus compute contact radius</span>
+<span class="sd">    and peak pressure.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    N : float</span>
+<span class="sd">        Normal force.</span>
+<span class="sd">    R : float</span>
+<span class="sd">        Sphere radius.</span>
+<span class="sd">    Es : float</span>
+<span class="sd">        Contact modulus: Es = E/(1-nu**2) with Young&#39;s modulus E and Poisson</span>
+<span class="sd">        number nu.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    a : float</span>
+<span class="sd">        Contact radius.</span>
+<span class="sd">    p0 : float</span>
+<span class="sd">        Maximum pressure inside the contacting area (right under the apex).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">R</span> <span class="o">*</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">/</span> <span class="p">(</span><span class="n">Es</span> <span class="o">*</span> <span class="n">R</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">p0</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">N</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">p0</span></div>
+
+
+<div class="viewcode-block" id="max_pressure__penetration"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.max_pressure__penetration">[docs]</a><span class="k">def</span> <span class="nf">max_pressure__penetration</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">Es</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    when R and Es is not specified, delta is supposed to be in units of R</span>
+<span class="sd">    and p0 in units of Es</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    delta: penetration</span>
+<span class="sd">    R : Radius</span>
+<span class="sd">    Es : contact modulus</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    max pressure p0</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">Es</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">delta</span> <span class="o">/</span> <span class="n">R</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="surface_stress"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.surface_stress">[docs]</a><span class="k">def</span> <span class="nf">surface_stress</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given distance from the center of the sphere, contact radius and Poisson</span>
+<span class="sd">    number contact, compute the stress at the surface.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r : array_like</span>
+<span class="sd">        Array of distance (from the center of the sphere in units of contact</span>
+<span class="sd">        radius a).</span>
+<span class="sd">    poisson : float</span>
+<span class="sd">        Poisson number.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pz : array</span>
+<span class="sd">        Contact pressure (in units of maximum pressure p0).</span>
+<span class="sd">    sr : array</span>
+<span class="sd">        Radial stress (in units of maximum pressure p0).</span>
+<span class="sd">    stheta : array</span>
+<span class="sd">        Azimuthal stress (in units of maximum pressure p0).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mask0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
+    <span class="n">maski</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask0</span><span class="p">))</span>
+    <span class="n">masko</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">maski</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask0</span><span class="p">))</span>
+    <span class="n">r_0</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">mask0</span><span class="p">]</span>
+    <span class="n">r_i</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">maski</span><span class="p">]</span>
+    <span class="n">r_o</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">masko</span><span class="p">]</span>
+
+    <span class="c1"># Initialize</span>
+    <span class="n">pz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">sr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">stheta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="c1"># Solution at r=0</span>
+    <span class="k">if</span> <span class="n">mask0</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">pz</span><span class="p">[</span><span class="n">mask0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">r_0</span><span class="p">)</span>
+        <span class="n">sr</span><span class="p">[</span><span class="n">mask0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">r_0</span><span class="p">)</span>
+        <span class="n">stheta</span><span class="p">[</span><span class="n">mask0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">r_0</span><span class="p">)</span>
+
+    <span class="c1"># Solution inside the contact radius</span>
+    <span class="k">if</span> <span class="n">maski</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">r_a_sq</span> <span class="o">=</span> <span class="n">r_i</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">pz</span><span class="p">[</span><span class="n">maski</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r_a_sq</span><span class="p">)</span>
+        <span class="n">sr</span><span class="p">[</span><span class="n">maski</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">*</span> <span class="n">r_a_sq</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">r_a_sq</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">r_a_sq</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">stheta</span><span class="p">[</span><span class="n">maski</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">*</span> <span class="n">r_a_sq</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">r_a_sq</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">poisson</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">r_a_sq</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="c1"># Solution outside of the contact radius</span>
+    <span class="k">if</span> <span class="n">masko</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">r_a_sq</span> <span class="o">=</span> <span class="n">r_o</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">po</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">*</span> <span class="n">r_a_sq</span><span class="p">)</span>
+        <span class="n">sr</span><span class="p">[</span><span class="n">masko</span><span class="p">]</span> <span class="o">=</span> <span class="n">po</span>
+        <span class="n">stheta</span><span class="p">[</span><span class="n">masko</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">po</span>
+
+    <span class="k">return</span> <span class="n">pz</span><span class="p">,</span> <span class="n">sr</span><span class="p">,</span> <span class="n">stheta</span></div>
+
+
+<div class="viewcode-block" id="centerline_stress"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.centerline_stress">[docs]</a><span class="k">def</span> <span class="nf">centerline_stress</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given distance from the center of the sphere, contact radius and Poisson</span>
+<span class="sd">    number contact, compute the stress at the surface.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    z : array_like</span>
+<span class="sd">        Array of depths (from the center of the sphere in units of contact</span>
+<span class="sd">        radius a).</span>
+<span class="sd">    poisson : float</span>
+<span class="sd">        Poisson number.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    srr : array</span>
+<span class="sd">        Radial stress (in units of maximum pressure p0).</span>
+<span class="sd">    szz : array</span>
+<span class="sd">        Contact pressure (in units of maximum pressure p0).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">srr</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">z</span><span class="p">))</span> <span class="o">+</span> \
+        <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">szz</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">srr</span><span class="p">,</span> <span class="n">szz</span></div>
+
+
+<div class="viewcode-block" id="surface_displacements"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.surface_displacements">[docs]</a><span class="k">def</span> <span class="nf">surface_displacements</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the displacements at the surface due to an indenting sphere.</span>
+<span class="sd">    See: K.L. Johnson, Contact Mechanics, p. 61</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r : array_like</span>
+<span class="sd">        Radial position normalized by contact radius a.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    uz : array</span>
+<span class="sd">        Normal displacements at the surface of the contact (in units of</span>
+<span class="sd">        p0/Es * a where p0 is maximum pressure, Es contact modulus and a</span>
+<span class="sd">        contact radius).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">maski</span> <span class="o">=</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="mf">1.0</span>
+    <span class="n">masko</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">maski</span><span class="p">)</span>
+    <span class="n">r_i</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">maski</span><span class="p">]</span>
+    <span class="n">r_o</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">masko</span><span class="p">]</span>
+
+    <span class="c1"># Initialize</span>
+    <span class="n">uz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="c1"># Solution inside the contact circle</span>
+    <span class="k">if</span> <span class="n">maski</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">uz</span><span class="p">[</span><span class="n">maski</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">r_i</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.</span>
+
+    <span class="c1"># Solution outside the contact circle</span>
+    <span class="k">if</span> <span class="n">masko</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">uz</span><span class="p">[</span><span class="n">masko</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">r_o</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">r_o</span><span class="p">)</span> <span class="o">-</span>
+                     <span class="n">r_o</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">r_o</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="mf">2.</span>
+
+    <span class="k">return</span> <span class="n">uz</span></div>
+
+
+<div class="viewcode-block" id="stress"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.stress">[docs]</a><span class="k">def</span> <span class="nf">stress</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return components of the stress tensor in the interior of the Hertz solid.</span>
+<span class="sd">    This is the solution given by: M.T. Huber, Ann. Phys. 319, 153 (1904)</span>
+
+<span class="sd">    Note that the stress tensor at any point in the solid has the form below in</span>
+<span class="sd">    a cylindrical coordinate system centered at the tip apex. Some off-diagonal</span>
+<span class="sd">    components are zero by rotational symmetry. stt is the circumferential</span>
+<span class="sd">    component, srr the radial component and szz the normal component of the</span>
+<span class="sd">    stress tensor.</span>
+
+<span class="sd">            / stt  0   0  \</span>
+<span class="sd">        s = |  0  srr srz |</span>
+<span class="sd">            \  0  srz szz /</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r : array_like</span>
+<span class="sd">        Radial position (in units of the contact radius a).</span>
+<span class="sd">    z : array_like</span>
+<span class="sd">        Depth (in units of the contact radius a).</span>
+<span class="sd">    poisson: float</span>
+<span class="sd">        Poisson number.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stt : array</span>
+<span class="sd">        Circumferential component of the stress tensor (in units of maximum</span>
+<span class="sd">        pressure p0).</span>
+<span class="sd">    srr : array</span>
+<span class="sd">        Radial component of the stress tensor (in units of maximum pressure</span>
+<span class="sd">        p0).</span>
+<span class="sd">    szz : array</span>
+<span class="sd">        Normal component of the stress tensor (in units of maximum pressure</span>
+<span class="sd">        p0).</span>
+<span class="sd">    srz : array</span>
+<span class="sd">        Shear component of the stress tensor (in units of maximum pressure</span>
+<span class="sd">        p0).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">p</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">p</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">sqrtu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+
+    <span class="c1"># Note: The equation for u is</span>
+    <span class="c1">#     r**2/(1+u) + z**2/u = 1</span>
+    <span class="c1"># With r&#39; = r/sqrt(1+u) and z&#39; = z/sqrt(u) this expression becomes</span>
+    <span class="c1">#     r&#39;**2 + z&#39;**2 = 1, hence z&#39; = sqrt(1-r&#39;**2)</span>
+    <span class="c1"># Variables r and z below are substituted by r-&gt;r&#39; and z-&gt;z&#39;.</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">u</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># equiv. to z=u/sqrt(u), but defined for z=0</span>
+
+    <span class="c1"># Precompute arctan</span>
+    <span class="n">sqrtu_arctan_inv_sqrtu</span> <span class="o">=</span> <span class="n">sqrtu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">sqrtu</span><span class="p">)</span>
+
+    <span class="c1"># The next two expressions give numerical problems at the tip center and</span>
+    <span class="c1"># the contact edge, regularize with the asymptotic value.</span>
+
+    <span class="c1"># Note: (1-z**3)/r**2-&gt;3/2 for r-&gt;0</span>
+    <span class="n">one_minus_z3_div_r2</span> <span class="o">=</span> <span class="mf">3.</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">one_minus_z3_div_r2</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="n">r</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="c1"># Note: z**2/(u+z**2)-&gt;1 for u+z**2-&gt;0</span>
+    <span class="n">u_plus_z2</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">z2_div_u_plus_z2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">u_plus_z2</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">u_plus_z2</span><span class="p">,</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+
+    <span class="c1"># Compute stresses</span>
+    <span class="c1"># Note: the factor 1/(1+u) stems from the substitution r-&gt;r&#39; and z-&gt;z&#39;</span>
+    <span class="c1"># above</span>
+    <span class="n">stt</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.</span> <span class="o">*</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">one_minus_z3_div_r2</span> <span class="o">+</span> \
+        <span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">poisson</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">u</span><span class="p">)</span> <span class="o">-</span>
+             <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="n">sqrtu_arctan_inv_sqrtu</span><span class="p">)</span>
+    <span class="n">szz</span> <span class="o">=</span> <span class="n">z</span> <span class="o">*</span> <span class="n">z2_div_u_plus_z2</span>
+    <span class="n">srr</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="mf">1.</span> <span class="o">-</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.</span> <span class="o">*</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">one_minus_z3_div_r2</span> <span class="o">+</span>
+            <span class="n">z</span> <span class="o">*</span> <span class="n">z2_div_u_plus_z2</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="p">((</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">u</span><span class="p">)</span> <span class="o">+</span>
+            <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="n">sqrtu_arctan_inv_sqrtu</span> <span class="o">-</span> <span class="mf">2.</span><span class="p">))</span>
+
+    <span class="n">srz</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">z2_div_u_plus_z2</span> <span class="o">*</span> <span class="n">sqrtu</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">u</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="o">-</span><span class="n">stt</span><span class="p">,</span> <span class="o">-</span><span class="n">srr</span><span class="p">,</span> <span class="o">-</span><span class="n">szz</span><span class="p">,</span> <span class="o">-</span><span class="n">srz</span></div>
+
+
+<div class="viewcode-block" id="stress_Cartesian"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.stress_Cartesian">[docs]</a><span class="k">def</span> <span class="nf">stress_Cartesian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return components of the stress tensor in the interior of solid due to</span>
+<span class="sd">    normal Hertz loading.</span>
+<span class="sd">    This is the solution given by:</span>
+<span class="sd">    G.M. Hamilton, Proc. Instn. Mech. Engrs. 197C, 53-59 (1983)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x, y : array_like</span>
+<span class="sd">        In-plane positions (in units of the contact radius a).</span>
+<span class="sd">    z : array_like</span>
+<span class="sd">        Depth (in units of the contact radius a).</span>
+<span class="sd">    poisson : float</span>
+<span class="sd">        Poisson number.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sxx, syy, szz, syz, sxz, sxy : array</span>
+<span class="sd">        Individual components of the Cartesian stress tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">stress_offcenter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">r_sq</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">r_sq</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">A</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">S</span> <span class="o">+</span> <span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">S</span> <span class="o">-</span> <span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+
+        <span class="n">G</span> <span class="o">=</span> <span class="n">M</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">N</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">M</span> <span class="o">-</span> <span class="n">N</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">M</span> <span class="o">*</span> <span class="n">N</span> <span class="o">+</span> <span class="n">M</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">N</span>
+
+        <span class="n">sxx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="n">phi</span> <span class="o">+</span> \
+            <span class="mi">1</span> <span class="o">/</span> <span class="n">r_sq</span> <span class="o">*</span> <span class="p">((</span><span class="n">y</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">r_sq</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span> <span class="o">*</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="n">S</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">poisson</span> <span class="o">*</span> <span class="n">M</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span> <span class="o">-</span>  <span class="c1"># noqa: E501</span>
+                        <span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">poisson</span> <span class="o">*</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">M</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z</span> <span class="o">/</span> <span class="n">S</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">syy</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="n">phi</span> <span class="o">+</span> \
+            <span class="mi">1</span> <span class="o">/</span> <span class="n">r_sq</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">r_sq</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span> <span class="o">*</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="n">S</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">poisson</span> <span class="o">*</span> <span class="n">M</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span> <span class="o">-</span>  <span class="c1"># noqa: E501</span>
+                        <span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">poisson</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">M</span> <span class="o">*</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z</span> <span class="o">/</span> <span class="n">S</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">szz</span> <span class="o">=</span> <span class="o">-</span><span class="n">N</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">M</span> <span class="o">/</span> <span class="n">S</span>
+        <span class="n">sxy</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">/</span> <span class="n">r_sq</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> \
+            <span class="p">(</span><span class="o">-</span><span class="n">N</span> <span class="o">*</span> <span class="n">r_sq</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="n">S</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">A</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="n">z</span> <span class="o">*</span> <span class="n">N</span> <span class="o">+</span> <span class="n">M</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span> <span class="o">/</span> <span class="n">r_sq</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">M</span> <span class="o">*</span> <span class="n">r_sq</span> <span class="o">/</span> <span class="n">S</span> <span class="o">-</span> <span class="n">z</span> <span class="o">*</span> <span class="n">N</span> <span class="o">+</span> <span class="n">M</span><span class="p">)</span>
+        <span class="n">syz</span> <span class="o">=</span> <span class="o">-</span><span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">N</span> <span class="o">/</span> <span class="n">S</span> <span class="o">-</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="n">H</span> <span class="o">/</span> <span class="p">(</span><span class="n">G</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">H</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">sxz</span> <span class="o">=</span> <span class="o">-</span><span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">N</span> <span class="o">/</span> <span class="n">S</span> <span class="o">-</span> <span class="n">x</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="n">H</span> <span class="o">/</span> <span class="p">(</span><span class="n">G</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">H</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">sxx</span><span class="p">,</span> <span class="n">syy</span><span class="p">,</span> <span class="n">szz</span><span class="p">,</span> <span class="n">syz</span><span class="p">,</span> <span class="n">sxz</span><span class="p">,</span> <span class="n">sxy</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+    <span class="n">sxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">syy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">szz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">syz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">sxz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">sxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">r_sq</span> <span class="o">=</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">r_sq</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span><span class="p">,</span> <span class="n">yz</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">xy</span> <span class="o">=</span> <span class="n">stress_offcenter</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">z</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
+                                              <span class="n">r_sq</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">poisson</span><span class="o">=</span><span class="n">poisson</span><span class="p">)</span>
+    <span class="n">sxx</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">xx</span>
+    <span class="n">syy</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">yy</span>
+    <span class="n">szz</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">zz</span>
+    <span class="n">syz</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">yz</span>
+    <span class="n">sxz</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">xz</span>
+    <span class="n">sxy</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">sxx</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">poisson</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">syy</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">sxx</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">szz</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sxx</span><span class="p">,</span> <span class="n">syy</span><span class="p">,</span> <span class="n">szz</span><span class="p">,</span> <span class="n">syz</span><span class="p">,</span> <span class="n">sxz</span><span class="p">,</span> <span class="n">sxy</span></div>
+
+
+<div class="viewcode-block" id="stress_for_tangential_loading"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Hertz.stress_for_tangential_loading">[docs]</a><span class="k">def</span> <span class="nf">stress_for_tangential_loading</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return components of the stress tensor in the interior of solid due to</span>
+<span class="sd">    tangential (Hertz) loading.</span>
+<span class="sd">    This is the solution given by:</span>
+<span class="sd">    G.M. Hamilton, Proc. Instn. Mech. Engrs. 197C, 53-59 (1983)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x, y : array_like</span>
+<span class="sd">        In-plane positions (in units of the contact radius a).</span>
+<span class="sd">    z : array_like</span>
+<span class="sd">        Depth (in units of the contact radius a).</span>
+<span class="sd">    poisson : float</span>
+<span class="sd">        Poisson number.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sxx, syy, szz, syz, sxz, sxy : array</span>
+<span class="sd">        Individual components of the Cartesian stress tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">stress_offcenter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">r_sq</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">r_sq</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">A</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">S</span> <span class="o">+</span> <span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">S</span> <span class="o">-</span> <span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+
+        <span class="n">sxx</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span><span class="o">*</span><span class="p">(</span><span class="n">poisson</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">phi</span><span class="o">+</span><span class="n">x</span><span class="o">*</span><span class="n">M</span><span class="o">/</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">((</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">S</span><span class="o">*</span><span class="n">poisson</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">A</span><span class="o">*</span><span class="n">poisson</span><span class="o">+</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">S</span><span class="o">+</span><span class="mi">7</span><span class="o">*</span><span class="n">poisson</span><span class="o">*</span><span class="n">r_sq</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">r_sq</span><span class="p">)</span><span class="o">+</span><span class="n">x</span><span class="o">*</span><span class="n">z</span><span class="o">*</span><span class="n">N</span><span class="o">/</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">((</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="n">S</span><span class="o">/</span><span class="mi">6</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="p">)</span><span class="o">-</span><span class="n">A</span><span class="o">/</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="mi">3</span><span class="p">))</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">S</span><span class="o">-</span><span class="n">poisson</span><span class="o">*</span><span class="n">r_sq</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="mi">7</span><span class="o">*</span><span class="n">r_sq</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">z</span><span class="o">/</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">syy</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">poisson</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">phi</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="n">x</span><span class="o">*</span><span class="n">M</span><span class="o">/</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">poisson</span><span class="o">*</span><span class="p">(</span><span class="n">S</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">A</span><span class="o">+</span><span class="n">r_sq</span><span class="p">)</span><span class="o">+</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">S</span><span class="o">+</span><span class="mi">3</span><span class="o">/</span><span class="mi">4</span><span class="o">*</span><span class="n">poisson</span><span class="o">*</span><span class="n">r_sq</span><span class="p">)</span><span class="o">+</span><span class="n">z</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">N</span><span class="o">/</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="n">S</span><span class="o">/</span><span class="mi">6</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="p">)</span><span class="o">-</span><span class="n">A</span><span class="o">/</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="p">)</span><span class="o">-</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">S</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="mi">4</span><span class="o">*</span><span class="n">poisson</span><span class="o">*</span><span class="n">r_sq</span><span class="o">-</span><span class="n">r_sq</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="mi">4</span><span class="o">/</span><span class="mi">3</span><span class="o">*</span><span class="n">z</span><span class="o">*</span><span class="n">x</span><span class="o">/</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">szz</span> <span class="o">=</span> <span class="n">z</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">N</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">r_sq</span><span class="o">+</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">S</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">sxy</span> <span class="o">=</span> <span class="n">y</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">poisson</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">phi</span><span class="o">+</span><span class="n">y</span><span class="o">*</span><span class="n">M</span><span class="o">/</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">S</span><span class="o">+</span><span class="n">poisson</span><span class="o">*</span><span class="p">((</span><span class="n">S</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">A</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">r_sq</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="n">r_sq</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">))</span><span class="o">+</span><span class="n">y</span><span class="o">*</span><span class="n">z</span><span class="o">*</span><span class="n">N</span><span class="o">/</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">((</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">S</span><span class="o">/</span><span class="mi">6</span><span class="o">+</span><span class="n">A</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">-</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">r_sq</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">r_sq</span><span class="o">*</span><span class="n">poisson</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">S</span><span class="o">-</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">y</span><span class="o">*</span><span class="n">z</span><span class="o">/</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">poisson</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">syz</span> <span class="o">=</span> <span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="o">*</span><span class="n">z</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">r_sq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="o">/</span><span class="n">S</span><span class="o">*</span><span class="p">(</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">r_sq</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span><span class="o">+</span><span class="n">z</span><span class="o">*</span><span class="n">N</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="o">+</span><span class="mi">1</span><span class="o">/</span><span class="n">S</span><span class="o">*</span><span class="p">(</span><span class="mi">5</span><span class="o">+</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">r_sq</span><span class="p">)))</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">sxz</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">z</span><span class="o">*</span><span class="n">phi</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">z</span><span class="o">*</span><span class="n">M</span><span class="o">/</span><span class="n">r_sq</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">S</span><span class="p">)</span><span class="o">+</span><span class="n">N</span><span class="o">/</span><span class="n">r_sq</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="mi">4</span><span class="o">*</span><span class="p">(</span><span class="n">S</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">A</span><span class="p">)</span><span class="o">+</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="o">*</span><span class="n">r_sq</span><span class="o">+</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">r_sq</span><span class="p">))</span>  <span class="c1"># noqa: E501</span>
+
+        <span class="k">return</span> <span class="n">sxx</span><span class="p">,</span> <span class="n">syy</span><span class="p">,</span> <span class="n">szz</span><span class="p">,</span> <span class="n">syz</span><span class="p">,</span> <span class="n">sxz</span><span class="p">,</span> <span class="n">sxy</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+    <span class="n">sxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">syy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">szz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">syz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">sxz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">sxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">r_sq</span> <span class="o">=</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">r_sq</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span><span class="p">,</span> <span class="n">yz</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">xy</span> <span class="o">=</span> <span class="n">stress_offcenter</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">z</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
+                                              <span class="n">r_sq</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">poisson</span><span class="o">=</span><span class="n">poisson</span><span class="p">)</span>
+    <span class="n">sxx</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">xx</span>
+    <span class="n">syy</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">yy</span>
+    <span class="n">szz</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">zz</span>
+    <span class="n">syz</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">yz</span>
+    <span class="n">sxz</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">xz</span>
+    <span class="n">sxy</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">sxz</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="o">-</span> \
+            <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">sxx</span><span class="p">,</span> <span class="n">syy</span><span class="p">,</span> <span class="n">szz</span><span class="p">,</span> <span class="n">syz</span><span class="p">,</span> <span class="n">sxz</span><span class="p">,</span> <span class="n">sxy</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2015-2020 The Authors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

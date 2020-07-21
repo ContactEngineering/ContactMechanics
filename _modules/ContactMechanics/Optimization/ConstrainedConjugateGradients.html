@@ -1,0 +1,656 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.90.1.dev25+g609c867 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.1.dev25+g609c867
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>ContactMechanics.Optimization.ConstrainedConjugateGradients</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ContactMechanics.Optimization.ConstrainedConjugateGradients</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2015-2016, 2019-2020 Lars Pastewka</span>
+<span class="c1">#           2018-2019 Antoine Sanner</span>
+<span class="c1">#           2015-2016 Till Junge</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Implementation of the constrained conjugate gradient algorithm as described in</span>
+<span class="sd">I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">isnan</span><span class="p">,</span> <span class="n">sqrt</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">optim</span>
+
+<span class="kn">from</span> <span class="nn">SurfaceTopography</span> <span class="k">import</span> <span class="n">Topography</span>
+
+
+<div class="viewcode-block" id="constrained_conjugate_gradients"><a class="viewcode-back" href="../../../source/ContactMechanics.Optimization.html#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients">[docs]</a><span class="k">def</span> <span class="nf">constrained_conjugate_gradients</span><span class="p">(</span><span class="n">substrate</span><span class="p">,</span> <span class="n">topography</span><span class="p">,</span> <span class="n">hardness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">external_force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">pentol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prestol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+                                    <span class="n">mixfac</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                                    <span class="n">maxiter</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                                    <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use a constrained conjugate gradient optimization to find the equilibrium</span>
+<span class="sd">    configuration deflection of an elastic manifold. The conjugate gradient</span>
+<span class="sd">    iteration is reset using the steepest descent direction whenever the</span>
+<span class="sd">    contact area changes.</span>
+<span class="sd">    Method is described in I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    substrate : elastic manifold</span>
+<span class="sd">        Elastic manifold.</span>
+<span class="sd">    topography: SurfaceTopography object</span>
+<span class="sd">        Height profile of the rigid counterbody</span>
+<span class="sd">    hardness : array_like</span>
+<span class="sd">        Hardness of the substrate. Pressure cannot exceed this value. Can be</span>
+<span class="sd">        scalar or array (i.e. per pixel) value.</span>
+<span class="sd">    external_force : float</span>
+<span class="sd">        External force. Don&#39;t optimize force if None.</span>
+<span class="sd">    offset : float</span>
+<span class="sd">        Offset of rigid surface. Ignore if external_force is specified.</span>
+<span class="sd">    disp0 : array_like</span>
+<span class="sd">        Displacement field for initializing the solver. Guess an initial</span>
+<span class="sd">        value if set to None.</span>
+<span class="sd">    u_r : array</span>
+<span class="sd">        Array used for initial displacements. A new array is created if</span>
+<span class="sd">        omitted.</span>
+<span class="sd">    pentol : float</span>
+<span class="sd">        Maximum penetration of contacting regions required for convergence.</span>
+<span class="sd">    maxiter : float</span>
+<span class="sd">        Maximum number of iterations.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : array</span>
+<span class="sd">        2d-array of displacements.</span>
+<span class="sd">    p : array</span>
+<span class="sd">        2d-array of pressure.</span>
+<span class="sd">    converged : bool</span>
+<span class="sd">        True if iteration stopped due to convergence criterion.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span> <span class="o">!=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">:</span>
+        <span class="c1"># check that a topography instance is provided and not only a numpy</span>
+        <span class="c1"># array</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">topography</span><span class="p">,</span> <span class="s2">&quot;nb_grid_pts&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You should provide a topography object when &quot;</span>
+                             <span class="s2">&quot;working with MPI&quot;</span><span class="p">)</span>
+
+    <span class="n">pnp</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">pnp</span>
+
+    <span class="c1"># surface is the array holding the data assigned to the processsor</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">topography</span><span class="p">,</span> <span class="s2">&quot;nb_grid_pts&quot;</span><span class="p">):</span>
+        <span class="n">surface</span> <span class="o">=</span> <span class="n">topography</span>
+        <span class="n">topography</span> <span class="o">=</span> <span class="n">Topography</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span>
+                                <span class="n">physical_sizes</span><span class="o">=</span><span class="n">substrate</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">surface</span> <span class="o">=</span> <span class="n">topography</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span>  <span class="c1"># Local data</span>
+
+    <span class="c1"># Note: Suffix _r deontes real-space _q reciprocal space 2d-arrays</span>
+
+    <span class="n">nb_surface_pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pentol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Heuristics for the possible tolerance on penetration.</span>
+        <span class="c1"># This is necessary because numbers can vary greatly</span>
+        <span class="c1"># depending on the system of units.</span>
+        <span class="n">pentol</span> <span class="o">=</span> <span class="n">topography</span><span class="o">.</span><span class="n">rms_height</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">))</span>
+        <span class="c1"># If pentol is zero, then this is a flat surface. This only makes</span>
+        <span class="c1"># sense for nonperiodic calculations, i.e. it is a punch. Then</span>
+        <span class="c1"># use the offset to determine the tolerance</span>
+        <span class="k">if</span> <span class="n">pentol</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pentol</span> <span class="o">=</span> <span class="p">(</span><span class="n">offset</span> <span class="o">+</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surface</span><span class="p">[</span><span class="o">...</span><span class="p">])</span> <span class="o">/</span> <span class="n">nb_surface_pts</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+        <span class="c1"># If we are still zero use an arbitrary value</span>
+        <span class="k">if</span> <span class="n">pentol</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pentol</span> <span class="o">=</span> <span class="mf">1e-3</span>
+
+    <span class="n">surf_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmask</span><span class="p">(</span>
+        <span class="n">surface</span><span class="p">)</span>  <span class="c1"># TODO: Test behaviour with masked arrays.</span>
+
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">pr</span><span class="p">(</span><span class="s1">&#39;maxiter = </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maxiter</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">pr</span><span class="p">(</span><span class="s1">&#39;pentol = </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pentol</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">disp0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">u_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">u_r</span> <span class="o">=</span> <span class="n">disp0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># slice of the local data of the computation subdomain corresponding to the</span>
+    <span class="c1"># topography subdomain. It&#39;s typically the first half of the computation</span>
+    <span class="c1"># subdomain (along the non-parallelized dimension) for FreeFFTElHS</span>
+    <span class="c1"># It&#39;s the same for PeriodicFFTElHS</span>
+    <span class="n">comp_slice</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span>
+        <span class="n">substrate</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">substrate</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+        <span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
+                  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">substrate</span><span class="o">.</span><span class="n">dim</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">substrate</span><span class="o">.</span><span class="n">dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;Constrained conjugate gradient currently only implemented for 1 &quot;</span>
+             <span class="s2">&quot;or 2 dimensions (Your substrate has </span><span class="si">{}</span><span class="s2">.).&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">substrate</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+
+    <span class="n">comp_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">comp_mask</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">surf_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmask</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">surf_mask</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">nomask</span><span class="p">:</span>
+        <span class="n">surf_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">comp_mask</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)][</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">surf_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">surf_mask</span><span class="p">)</span>
+    <span class="n">pad_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">comp_mask</span><span class="p">)</span>
+    <span class="n">N_pad</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pad_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
+                              <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
+                              <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">OptimizeResult</span><span class="p">()</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">nit</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Not Converged (yet)&quot;</span>
+
+    <span class="c1"># Compute forces</span>
+    <span class="c1"># p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real</span>
+    <span class="n">p_r</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">u_r</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="c1"># Pressure outside the computational region must be zero</span>
+    <span class="n">p_r</span><span class="p">[</span><span class="n">pad_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># iteration</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">delta_str</span> <span class="o">=</span> <span class="s1">&#39;reset&#39;</span>
+    <span class="n">G_old</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">t_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">u_r</span><span class="p">)</span>
+
+    <span class="n">tau</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxiter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">nit</span> <span class="o">=</span> <span class="n">it</span>
+
+        <span class="c1"># Reset contact area (area that feels compressive stress)</span>
+        <span class="n">c_r</span> <span class="o">=</span> <span class="n">p_r</span> <span class="o">&lt;</span> <span class="mf">0.0</span>
+        <span class="c1"># TODO: maybe np.where(self.interaction.force &lt; 0., 1., 0.)</span>
+
+        <span class="c1"># Compute total contact area (area with compressive pressure)</span>
+        <span class="n">A_contact</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># If a hardness is specified, exclude values that exceed the hardness</span>
+        <span class="c1"># from the &quot;contact area&quot;. Note: &quot;contact area&quot; here is the region that</span>
+        <span class="c1"># is optimized by the CG iteration.</span>
+        <span class="k">if</span> <span class="n">hardness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">c_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">c_r</span><span class="p">,</span> <span class="n">p_r</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">hardness</span><span class="p">)</span>
+
+        <span class="c1"># Compute total are treated by the CG optimizer (which exclude flowing)</span>
+        <span class="c1"># portions.</span>
+        <span class="n">A_cg</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Compute gap</span>
+        <span class="n">g_r</span> <span class="o">=</span> <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">external_force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">A_cg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">offset</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g_r</span><span class="p">[</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]])</span> <span class="o">/</span> <span class="n">A_cg</span>
+        <span class="n">g_r</span> <span class="o">-=</span> <span class="n">offset</span>
+
+        <span class="c1"># Compute G = sum(g*g) (over contact area only)</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">g_r</span> <span class="o">*</span> <span class="n">g_r</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">delta_str</span> <span class="o">!=</span> <span class="s1">&#39;mix&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">hardness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">A_cg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="c1"># t = (g + delta*(G/G_old)*t) inside contact area and 0 outside</span>
+            <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">G_old</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">t_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span>
+                        <span class="n">g_r</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">G</span> <span class="o">/</span> <span class="n">G_old</span><span class="p">)</span> <span class="o">*</span> <span class="n">t_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">t_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">g_r</span>
+
+            <span class="c1"># Compute elastic displacement that belong to t_r</span>
+            <span class="c1"># substrate (Nelastic manifold: r_r is negative of Polonsky,</span>
+            <span class="c1"># Kerr&#39;s r)</span>
+            <span class="c1"># r_r = -np.fft.ifft2(gf_q*np.fft.fft2(t_r)).real</span>
+            <span class="n">r_r</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="n">t_r</span><span class="p">)</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c1"># Note: Sign reversed from Polonsky, Keer because this r_r is</span>
+            <span class="c1"># negative of theirs.</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">if</span> <span class="n">A_cg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># tau = -sum(g*t)/sum(r*t) where sum is only over contact</span>
+                <span class="c1"># region</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="n">r_r</span> <span class="o">*</span> <span class="n">t_r</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="n">tau</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">g_r</span> <span class="o">*</span> <span class="n">t_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span> <span class="o">/</span> <span class="n">x</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">G</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+            <span class="n">p_r</span> <span class="o">+=</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">c_r</span> <span class="o">*</span> <span class="n">t_r</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># The CG area can vanish if this is a plastic calculation. In that</span>
+            <span class="c1"># case we need to use the gap to decide which regions contact. All</span>
+            <span class="c1"># contact area should then be the hardness value. We use simple</span>
+            <span class="c1"># relaxation algorithm to converge the contact area in that case.</span>
+
+            <span class="k">if</span> <span class="n">delta_str</span> <span class="o">!=</span> <span class="s1">&#39;mixconv&#39;</span><span class="p">:</span>
+                <span class="n">delta_str</span> <span class="o">=</span> <span class="s1">&#39;mix&#39;</span>
+
+            <span class="c1"># Mix pressure</span>
+            <span class="c1"># p_r[comp_mask] = (1-mixfac)*p_r[comp_mask] + \</span>
+            <span class="c1">#                 mixfac*np.where(g_r &lt; 0.0,</span>
+            <span class="c1">#                                 -hardness*np.ones_like(g_r),</span>
+            <span class="c1">#                                 np.zeros_like(g_r))</span>
+            <span class="c1"># Evolve pressure in direction of energy gradient</span>
+            <span class="c1"># p_r[comp_mask] += mixfac*(u_r[comp_mask] + g_r)</span>
+            <span class="n">p_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mixfac</span><span class="p">)</span> <span class="o">*</span> <span class="n">p_r</span><span class="p">[</span>
+                <span class="n">comp_mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">mixfac</span> <span class="o">*</span> <span class="n">hardness</span> <span class="o">*</span> <span class="p">(</span><span class="n">g_r</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">mixfac</span> <span class="o">*=</span> <span class="mf">0.5</span>
+            <span class="c1"># p_r[comp_mask] = -hardness*(g_r &lt; 0.0)</span>
+
+        <span class="c1"># Find area with tensile stress and negative gap</span>
+        <span class="c1"># (i.e. penetration of the two surfaces)</span>
+        <span class="n">mask_tensile</span> <span class="o">=</span> <span class="n">p_r</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+        <span class="n">nc_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">mask_tensile</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">],</span> <span class="n">g_r</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="c1"># If hardness is specified, find area where pressure exceeds hardness</span>
+        <span class="c1"># but gap is positive</span>
+        <span class="k">if</span> <span class="n">hardness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask_flowing</span> <span class="o">=</span> <span class="n">p_r</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="n">hardness</span>
+            <span class="n">nc_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">nc_r</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">mask_flowing</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">],</span>
+                                                      <span class="n">g_r</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">))</span>
+
+        <span class="c1"># For nonperiodic calculations: Find maximum pressure in pad region.</span>
+        <span class="c1"># This must be zero.</span>
+        <span class="n">pad_pres</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">N_pad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pad_pres</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">pad_mask</span><span class="p">]))</span>
+
+        <span class="c1"># Find maximum pressure outside contacting region and the deviation</span>
+        <span class="c1"># from hardness inside the flowing regions. This should go to zero.</span>
+        <span class="n">max_pres</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_tensile</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">max_pres</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">mask_tensile</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hardness</span><span class="p">:</span>
+            <span class="n">A_fl</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_flowing</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">A_fl</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_pres</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_pres</span><span class="p">,</span>
+                               <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">mask_flowing</span><span class="p">]</span> <span class="o">+</span> <span class="n">hardness</span><span class="p">))</span>
+
+        <span class="c1"># Set all tensile stresses to zero</span>
+        <span class="n">p_r</span><span class="p">[</span><span class="n">mask_tensile</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># Adjust pressure</span>
+        <span class="k">if</span> <span class="n">external_force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">psum</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">psum</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">p_r</span> <span class="o">*=</span> <span class="n">external_force</span> <span class="o">/</span> <span class="n">psum</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p_r</span> <span class="o">=</span> <span class="o">-</span><span class="n">external_force</span> <span class="o">/</span> <span class="n">nb_surface_pts</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">p_r</span><span class="p">)</span>
+                <span class="n">p_r</span><span class="p">[</span><span class="n">pad_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># If hardness is specified, set all stress larger than hardness to the</span>
+        <span class="c1"># hardness value (i.e. truncate pressure)</span>
+        <span class="k">if</span> <span class="n">hardness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p_r</span><span class="p">[</span><span class="n">mask_flowing</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">hardness</span>
+
+        <span class="k">if</span> <span class="n">delta_str</span> <span class="o">!=</span> <span class="s1">&#39;mix&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nc_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># The contact area has changed! nc_r contains area that</span>
+                <span class="c1"># penetrate but have zero (or tensile) pressure. They hence</span>
+                <span class="c1"># violate the contact constraint. Update their forces and</span>
+                <span class="c1"># reset the CG iteration.</span>
+                <span class="n">p_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">nc_r</span> <span class="o">*</span> <span class="n">g_r</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">delta_str</span> <span class="o">=</span> <span class="s1">&#39;sd&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">delta_str</span> <span class="o">=</span> <span class="s1">&#39;cg&#39;</span>
+
+        <span class="c1"># Check convergence respective pressure</span>
+        <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">psum</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">external_force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">converged</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">psum</span> <span class="o">-</span> <span class="n">external_force</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">prestol</span>
+
+        <span class="c1"># Compute new displacements from updated forces</span>
+        <span class="c1"># u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real</span>
+        <span class="n">new_u_r</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="n">p_r</span><span class="p">)</span>
+        <span class="n">maxdu</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">new_u_r</span> <span class="o">-</span> <span class="n">u_r</span><span class="p">))</span>
+        <span class="n">u_r</span> <span class="o">=</span> <span class="n">new_u_r</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Store G for next step</span>
+        <span class="n">G_old</span> <span class="o">=</span> <span class="n">G</span>
+
+        <span class="c1"># Compute root-mean square penetration, max penetration and max force</span>
+        <span class="c1"># difference between the steps</span>
+        <span class="k">if</span> <span class="n">A_cg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rms_pen</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">G</span> <span class="o">/</span> <span class="n">A_cg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rms_pen</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+        <span class="n">max_pen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span>
+                      <span class="n">pnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span> <span class="o">-</span>
+                                                <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">maxcv</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;max_pen&quot;</span><span class="p">:</span> <span class="n">max_pen</span><span class="p">,</span>
+                        <span class="s2">&quot;max_pres&quot;</span><span class="p">:</span> <span class="n">max_pres</span><span class="p">}</span>
+
+        <span class="c1"># Elastic energy would be</span>
+        <span class="c1"># e_el = -0.5*pnp.sum(p_r*u_r)</span>
+
+        <span class="k">if</span> <span class="n">delta_str</span> <span class="o">==</span> <span class="s1">&#39;mix&#39;</span><span class="p">:</span>
+            <span class="n">converged</span> <span class="o">=</span> <span class="n">converged</span> <span class="ow">and</span> <span class="n">maxdu</span> <span class="o">&lt;</span> <span class="n">pentol</span> <span class="ow">and</span> \
+                        <span class="n">max_pres</span> <span class="o">&lt;</span> <span class="n">prestol</span> <span class="ow">and</span> <span class="n">pad_pres</span> <span class="o">&lt;</span> <span class="n">prestol</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">converged</span> <span class="o">=</span> <span class="n">converged</span> <span class="ow">and</span> <span class="n">rms_pen</span> <span class="o">&lt;</span> <span class="n">pentol</span> <span class="ow">and</span> \
+                        <span class="n">max_pen</span> <span class="o">&lt;</span> <span class="n">pentol</span> <span class="ow">and</span> <span class="n">maxdu</span> <span class="o">&lt;</span> <span class="n">pentol</span> <span class="ow">and</span> \
+                        <span class="n">max_pres</span> <span class="o">&lt;</span> <span class="n">prestol</span> <span class="ow">and</span> <span class="n">pad_pres</span> <span class="o">&lt;</span> <span class="n">prestol</span>
+
+        <span class="n">log_headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;frac. area&#39;</span><span class="p">,</span> <span class="s1">&#39;total force&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;offset&#39;</span><span class="p">]</span>
+        <span class="n">log_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">delta_str</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="n">A_contact</span><span class="p">,</span>
+                      <span class="n">A_contact</span> <span class="o">/</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">),</span> <span class="n">psum</span><span class="p">,</span>
+                      <span class="n">offset</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">hardness</span><span class="p">:</span>
+            <span class="n">log_headers</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;plast. area&#39;</span><span class="p">,</span> <span class="s1">&#39;frac.plast. area&#39;</span><span class="p">]</span>
+            <span class="n">log_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">A_fl</span><span class="p">,</span> <span class="n">A_fl</span> <span class="o">/</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">log_headers</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;rms pen.&#39;</span><span class="p">,</span> <span class="s1">&#39;max. pen.&#39;</span><span class="p">,</span> <span class="s1">&#39;max. force&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;max. pad force&#39;</span><span class="p">,</span> <span class="s1">&#39;max. du&#39;</span><span class="p">,</span> <span class="s1">&#39;CG area&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;frac. CG area&#39;</span><span class="p">,</span> <span class="s1">&#39;sum(nc_r)&#39;</span><span class="p">]</span>
+            <span class="n">log_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">rms_pen</span><span class="p">,</span> <span class="n">max_pen</span><span class="p">,</span> <span class="n">max_pres</span><span class="p">,</span> <span class="n">pad_pres</span><span class="p">,</span> <span class="n">maxdu</span><span class="p">,</span> <span class="n">A_cg</span><span class="p">,</span>
+                           <span class="n">A_cg</span> <span class="o">/</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">),</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nc_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">delta_str</span> <span class="o">==</span> <span class="s1">&#39;mix&#39;</span><span class="p">:</span>
+                <span class="n">log_headers</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;mixfac&#39;</span><span class="p">]</span>
+                <span class="n">log_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">mixfac</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log_headers</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;tau&#39;</span><span class="p">]</span>
+                <span class="n">log_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">tau</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">converged</span> <span class="ow">and</span> <span class="n">delta_str</span> <span class="o">==</span> <span class="s1">&#39;mix&#39;</span><span class="p">:</span>
+            <span class="n">delta_str</span> <span class="o">=</span> <span class="s1">&#39;mixconv&#39;</span>
+            <span class="n">log_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">delta_str</span>
+            <span class="n">mixfac</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="k">elif</span> <span class="n">converged</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CONVERGED&#39;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">st</span><span class="p">(</span><span class="n">log_headers</span><span class="p">,</span> <span class="n">log_values</span><span class="p">,</span> <span class="n">force_print</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># Return full u_r because this is required to reproduce pressure</span>
+            <span class="c1"># from evalualte_force</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">u_r</span>  <span class="c1"># [comp_mask]</span>
+            <span class="c1"># Return partial p_r because pressure outside computational region</span>
+            <span class="c1"># is zero anyway</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">jac</span> <span class="o">=</span> <span class="o">-</span><span class="n">p_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">active_set</span> <span class="o">=</span> <span class="n">c_r</span>
+            <span class="c1"># Compute elastic energy</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="n">p_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span> <span class="o">*</span> <span class="n">u_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)])</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Polonsky converged&quot;</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">it</span> <span class="o">&lt;</span> <span class="n">maxiter</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">st</span><span class="p">(</span><span class="n">log_headers</span><span class="p">,</span> <span class="n">log_values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">area</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">A_contact</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                     <span class="n">fractional_area</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span>
+                         <span class="n">A_contact</span> <span class="o">/</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                     <span class="n">rms_penetration</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">rms_pen</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                     <span class="n">max_penetration</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">max_pen</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                     <span class="n">max_pressure</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">max_pres</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                     <span class="n">pad_pressure</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">pad_pres</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                     <span class="n">penetration_tol</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">pentol</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                     <span class="n">pressure_tol</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">prestol</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="n">callback</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">p_r</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">isnan</span><span class="p">(</span><span class="n">G</span><span class="p">)</span> <span class="ow">or</span> <span class="n">isnan</span><span class="p">(</span><span class="n">rms_pen</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;nan encountered.&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NOT CONVERGED&#39;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">st</span><span class="p">(</span><span class="n">log_headers</span><span class="p">,</span> <span class="n">log_values</span><span class="p">,</span> <span class="n">force_print</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Return full u_r because this is required to reproduce pressure</span>
+    <span class="c1"># from evalualte_force</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">u_r</span>  <span class="c1"># [comp_mask]</span>
+    <span class="c1"># Return partial p_r because pressure outside computational region</span>
+    <span class="c1"># is zero anyway</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">jac</span> <span class="o">=</span> <span class="o">-</span><span class="n">p_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">active_set</span> <span class="o">=</span> <span class="n">c_r</span>
+    <span class="c1"># Compute elastic energy</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span> <span class="o">*</span> <span class="n">u_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Reached maxiter = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maxiter</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2015-2020 The Authors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

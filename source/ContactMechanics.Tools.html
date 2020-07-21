@@ -1,0 +1,469 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ContactMechanics.Tools package &mdash; ContactMechanics 0.90.1.dev25+g609c867 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="ContactMechanics.ReferenceSolutions package" href="ContactMechanics.ReferenceSolutions.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.1.dev25+g609c867
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="ContactMechanics.html">ContactMechanics package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="ContactMechanics.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ContactMechanics.Tools package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ContactMechanics.Tools.ContactAreaAnalysis">ContactMechanics.Tools.ContactAreaAnalysis module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ContactMechanics.Tools.Logger">ContactMechanics.Tools.Logger module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ContactMechanics.Tools.common">ContactMechanics.Tools.common module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-ContactMechanics.Tools">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.FFTElasticHalfSpace">ContactMechanics.FFTElasticHalfSpace module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.Factory">ContactMechanics.Factory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.PlasticSystemSpecialisations">ContactMechanics.PlasticSystemSpecialisations module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.Substrates">ContactMechanics.Substrates module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.Systems">ContactMechanics.Systems module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ContactMechanics.Tools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.Tools.ContactAreaAnalysis">ContactMechanics.Tools.ContactAreaAnalysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.Tools.Logger">ContactMechanics.Tools.Logger module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.Tools.common">ContactMechanics.Tools.common module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.Tools">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="ContactMechanics.html">ContactMechanics package</a> &raquo;</li>
+        
+      <li>ContactMechanics.Tools package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/ContactMechanics.Tools.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="contactmechanics-tools-package">
+<h1>ContactMechanics.Tools package<a class="headerlink" href="#contactmechanics-tools-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ContactMechanics.Tools.ContactAreaAnalysis">
+<span id="contactmechanics-tools-contactareaanalysis-module"></span><h2>ContactMechanics.Tools.ContactAreaAnalysis module<a class="headerlink" href="#module-ContactMechanics.Tools.ContactAreaAnalysis" title="Permalink to this headline">¶</a></h2>
+<p>Tool for analysis contact geometry</p>
+<dl class="py function">
+<dt id="ContactMechanics.Tools.ContactAreaAnalysis.coordination">
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">coordination</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[1, 0, 0, 1, - 1, 0, 0, - 1]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#coordination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.coordination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a map with coordination numbers, i.e. number of neighboring patches
+that also contact</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.ContactAreaAnalysis.edge_perimeter_length">
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">edge_perimeter_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[1, 0, 0, 1, - 1, 0, 0, - 1]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#edge_perimeter_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.edge_perimeter_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the length of the perimeter as measured by tracing the length of
+the interface between contacting and non-contacting points.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.ContactAreaAnalysis.inner_perimeter">
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">inner_perimeter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[1, 0, 0, 1, - 1, 0, 0, - 1]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#inner_perimeter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.inner_perimeter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a map where surface points on the inner perimeter are marked.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.ContactAreaAnalysis.outer_perimeter">
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">outer_perimeter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[1, 0, 0, 1, - 1, 0, 0, - 1]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#outer_perimeter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.outer_perimeter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a map where surface points on the outer perimeter are marked.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.ContactAreaAnalysis.patch_areas">
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">patch_areas</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">patch_ids</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#patch_areas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.patch_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list containing patch areas</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.ContactAreaAnalysis.patch_forces">
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">patch_forces</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">patch_ids</span></em>, <em class="sig-param"><span class="n">forces</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#patch_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.patch_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list containing patch forces</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.ContactAreaAnalysis.patch_perimeters">
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">patch_perimeters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">patch_ids</span></em>, <em class="sig-param"><span class="n">perim</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#patch_perimeters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.patch_perimeters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list containing patch perimeters</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ContactMechanics.Tools.Logger">
+<span id="contactmechanics-tools-logger-module"></span><h2>ContactMechanics.Tools.Logger module<a class="headerlink" href="#module-ContactMechanics.Tools.Logger" title="Permalink to this headline">¶</a></h2>
+<p>Log status to screen or file</p>
+<dl class="py class">
+<dt id="ContactMechanics.Tools.Logger.Logger">
+<em class="property">class </em><code class="sig-prename descclassname">ContactMechanics.Tools.Logger.</code><code class="sig-name descname">Logger</code><span class="sig-paren">(</span><em class="sig-param">logfile=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em>, <em class="sig-param">outevery=1</em>, <em class="sig-param">sepevery=10</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.flush">
+<code class="sig-name descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.flush" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.get_logfile">
+<code class="sig-name descname">get_logfile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.get_logfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.get_logfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.has_logfile">
+<code class="sig-name descname">has_logfile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.has_logfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.has_logfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.iteration_finished">
+<code class="sig-name descname">iteration_finished</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.iteration_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.iteration_finished" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.pr">
+<code class="sig-name descname">pr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">caller</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">logfile</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.pr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.pr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.set_logfile">
+<code class="sig-name descname">set_logfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">logfile</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.set_logfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.set_logfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.set_outevery">
+<code class="sig-name descname">set_outevery</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">outevery</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.set_outevery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.set_outevery" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.st">
+<code class="sig-name descname">st</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hdr</span></em>, <em class="sig-param"><span class="n">vals</span></em>, <em class="sig-param"><span class="n">force_print</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.st"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.st" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Tools.Logger.Logger.warn">
+<code class="sig-name descname">warn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">caller</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#Logger.warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.Logger.warn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.Logger.flatten">
+<code class="sig-prename descclassname">ContactMechanics.Tools.Logger.</code><code class="sig-name descname">flatten</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.flatten" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.Logger.hdr_str">
+<code class="sig-prename descclassname">ContactMechanics.Tools.Logger.</code><code class="sig-name descname">hdr_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#hdr_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.hdr_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return header description strings</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.Logger.hdrfmt_str">
+<code class="sig-prename descclassname">ContactMechanics.Tools.Logger.</code><code class="sig-name descname">hdrfmt_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#hdrfmt_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.hdrfmt_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return header format string for datatype x</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.Logger.numfmt_str">
+<code class="sig-prename descclassname">ContactMechanics.Tools.Logger.</code><code class="sig-name descname">numfmt_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/Logger.html#numfmt_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.Logger.numfmt_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return numeric format string for datatype x</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ContactMechanics.Tools.common">
+<span id="contactmechanics-tools-common-module"></span><h2>ContactMechanics.Tools.common module<a class="headerlink" href="#module-ContactMechanics.Tools.common" title="Permalink to this headline">¶</a></h2>
+<p>Bin for small common helper function and classes</p>
+<dl class="py function">
+<dt id="ContactMechanics.Tools.common.compare_containers">
+<code class="sig-prename descclassname">ContactMechanics.Tools.common.</code><code class="sig-name descname">compare_containers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cont_a</span></em>, <em class="sig-param"><span class="n">cont_b</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/common.html#compare_containers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.common.compare_containers" title="Permalink to this definition">¶</a></dt>
+<dd><p>compares whether two containers have the same content regardless of their
+type. eg, compares [1, 2, 3] and (1, 2., 3.) as True
+Keyword Arguments:
+cont_a – one container
+cont_b – other container</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.common.compute_wavevectors">
+<code class="sig-prename descclassname">ContactMechanics.Tools.common.</code><code class="sig-name descname">compute_wavevectors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nb_grid_pts</span></em>, <em class="sig-param"><span class="n">physical_sizes</span></em>, <em class="sig-param"><span class="n">nb_dims</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/common.html#compute_wavevectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.common.compute_wavevectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes and returns the wavevectors q that exist for the surfaces
+physical_sizes and nb_grid_pts as one vector of components per dimension</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.common.evaluate_gradient">
+<code class="sig-prename descclassname">ContactMechanics.Tools.common.</code><code class="sig-name descname">evaluate_gradient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">delta</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/common.html#evaluate_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.common.evaluate_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Don’t actually use this function in production code, it’s not efficient.
+Returns an approximation of the gradient evaluated using central
+differences.</p>
+<p>(grad f)_i = ((f(x+e_i*delta/2)-f(x-e_i*delta/2))/delta)</p>
+<p>Arguments:
+fun   – function to be evaluated
+x     – point of evaluation
+delta – step width</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.common.fftn">
+<code class="sig-prename descclassname">ContactMechanics.Tools.common.</code><code class="sig-name descname">fftn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr</span></em>, <em class="sig-param"><span class="n">integral</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/common.html#fftn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.common.fftn" title="Permalink to this definition">¶</a></dt>
+<dd><p>n-dimensional fft according to the conventions detailed in
+power_spectrum.tex in the notes folder.</p>
+<p>Keyword Arguments:
+arr      – Input array, can be complex
+integral – depending of dimensionality:</p>
+<blockquote>
+<div><p>1D: Length of domain
+2D: Area
+etc</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.common.get_q_from_lambda">
+<code class="sig-prename descclassname">ContactMechanics.Tools.common.</code><code class="sig-name descname">get_q_from_lambda</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_min</span></em>, <em class="sig-param"><span class="n">lambda_max</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/common.html#get_q_from_lambda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.common.get_q_from_lambda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conversion between wavelength and angular frequency</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.common.ifftn">
+<code class="sig-prename descclassname">ContactMechanics.Tools.common.</code><code class="sig-name descname">ifftn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr</span></em>, <em class="sig-param"><span class="n">integral</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/common.html#ifftn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.common.ifftn" title="Permalink to this definition">¶</a></dt>
+<dd><p>n-dimensional ifft according to the conventions detailed in
+power_spectrum.tex in the notes folder.</p>
+<p>Keyword Arguments:
+arr      – Input array, can be complex
+integral – depending of dimensionality:</p>
+<blockquote>
+<div><p>1D: Length of domain
+2D: Area
+etc</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.Tools.common.mean_err">
+<code class="sig-prename descclassname">ContactMechanics.Tools.common.</code><code class="sig-name descname">mean_err</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr1</span></em>, <em class="sig-param"><span class="n">arr2</span></em>, <em class="sig-param"><span class="n">rfft</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/common.html#mean_err"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.common.mean_err" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes the mean element-wise difference between two containers</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ContactMechanics.Tools">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ContactMechanics.Tools" title="Permalink to this headline">¶</a></h2>
+<p>Helper tools for PyCo</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="ContactMechanics.ReferenceSolutions.html" class="btn btn-neutral float-left" title="ContactMechanics.ReferenceSolutions package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2015-2020 The Authors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+ContactMechanics package
+========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ContactMechanics.GreensFunctions
+   ContactMechanics.IO
+   ContactMechanics.Optimization
+   ContactMechanics.ReferenceSolutions
+   ContactMechanics.Tools
+
+Submodules
+----------
+
+ContactMechanics.FFTElasticHalfSpace module
+-------------------------------------------
+
+.. automodule:: ContactMechanics.FFTElasticHalfSpace
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.Factory module
+-------------------------------
+
+.. automodule:: ContactMechanics.Factory
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.PlasticSystemSpecialisations module
+----------------------------------------------------
+
+.. automodule:: ContactMechanics.PlasticSystemSpecialisations
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.Substrates module
+----------------------------------
+
+.. automodule:: ContactMechanics.Substrates
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.Systems module
+-------------------------------
+
+.. automodule:: ContactMechanics.Systems
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: ContactMechanics
+   :members:
+   :undoc-members:
+   :show-inheritance:

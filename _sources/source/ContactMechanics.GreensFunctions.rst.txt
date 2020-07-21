@@ -1,0 +1,30 @@
+ContactMechanics.GreensFunctions package
+========================================
+
+Submodules
+----------
+
+ContactMechanics.GreensFunctions.Anisotropic module
+---------------------------------------------------
+
+.. automodule:: ContactMechanics.GreensFunctions.Anisotropic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.GreensFunctions.Isotropic module
+-------------------------------------------------
+
+.. automodule:: ContactMechanics.GreensFunctions.Isotropic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: ContactMechanics.GreensFunctions
+   :members:
+   :undoc-members:
+   :show-inheritance:

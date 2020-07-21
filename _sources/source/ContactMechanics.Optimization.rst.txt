@@ -1,0 +1,22 @@
+ContactMechanics.Optimization package
+=====================================
+
+Submodules
+----------
+
+ContactMechanics.Optimization.ConstrainedConjugateGradients module
+------------------------------------------------------------------
+
+.. automodule:: ContactMechanics.Optimization.ConstrainedConjugateGradients
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: ContactMechanics.Optimization
+   :members:
+   :undoc-members:
+   :show-inheritance:
