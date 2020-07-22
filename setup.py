@@ -43,7 +43,8 @@ setup(
     # metadata for upload to PyPI
     author="Lars Pastewka",
     author_email="lars.pastewka@imtek.uni-freiburg.de",
-    description="Efficient contact mechanics using elastic half-space methods",
+    description="Efficient contact mechanics using elastic half-space "
+                "methods",
     license="MIT",
     test_suite='test',
     # dependencies
