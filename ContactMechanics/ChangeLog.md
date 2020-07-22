@@ -2,6 +2,12 @@
 Change log for ContactMechanics
 ===============================
 
+head (not yet released)
+-----------------------
+
+- MAINT: Bumped muFFT dependency to v0.10.0
+- MAINT: Avoid unnecessary buffer copies in FFT
+
 v0.90.0 (29Jun20)
 ----------------
 
