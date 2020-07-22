@@ -520,28 +520,32 @@ class NonSmoothContactSystem(SystemBase):
             self.substrate.check()
         return result
 
-
-    def primal_objective(self,offset,pot=False,gradient=True):
-        """
-        To solve the primal objective using gap as the variable.
+    def primal_objective(self, offset, pot=False, gradient=True):
+        r"""To solve the primal objective using gap as the variable.
         Can be fed directly to standard solvers ex: scipy solvers etc.
 
+        Parameters
+        __________
+
+        gap : gap between the contact surfaces.
+        offset : value of penetration or offset
+        pot : (default False)
+        gradient : (default True)
+
+        Returns
+        _______
+        energy : value of energy(scalar value).
+        force : value of force(array).
+
+        Notes
+        _____
+
         Objective:
-
-        ..math::
-            min_u J = 1/2U_i*K_{ij}*U_j \\
+        .. math ::
+            min_u f = 1/2u_i*K_{ij}*u_j \\
             \\
-            gradient = K_{ij}*U_j which is, Force. \\
+            gradient = K_{ij}*u_j which is, Force. \\
 
-        Parameters:
-        gap         -- gap between the contact surfaces.
-        offset      -- value of penetration or offset
-        pot         -- (default False)
-        gradient    -- (default True)
-
-        Returns:
-        energy      -- value of energy(scalar value).
-        force       -- value of force(array).
         """
 
         res = self.substrate.nb_domain_grid_pts
@@ -550,7 +554,7 @@ class NonSmoothContactSystem(SystemBase):
                 disp = gap.reshape(res) + self.surface.heights() + offset
                 try:
                     self.evaluate(
-                        disp.reshape(res),offset,forces=True)
+                        disp.reshape(res), offset, forces=True)
                 except ValueError as err:
                     raise ValueError(
                         "{}: gap.shape: {}, res: {}".format(
@@ -560,19 +564,18 @@ class NonSmoothContactSystem(SystemBase):
             def fun(gap):
                 disp = gap.reshape(res) + self.surface.heights() + offset
                 return self.evaluate(
-                    disp.reshape(res),offset, forces=False)[0]
+                    disp.reshape(res), offset, forces=False)[0]
 
         return fun
 
-    def hessian_product(self,gap):
-        """
-        Returns the hessian product of the primal_objective function.
+    def hessian_product(self, gap):
+        """Returns the hessian product of the primal_objective function.
         """
 
         hessp = self.substrate.evaluate_force(gap)
         return hessp
 
-    def evaluate_dual(self, press, offset, pot = True, forces = False):
+    def evaluate_dual(self, press, offset, pot=True, forces=False):
         """
         Compute the energies and forces in the system for a given displacement
         field
@@ -583,33 +586,38 @@ class NonSmoothContactSystem(SystemBase):
         else:
             self.gradient = None
 
-        self.energy = 1 / 2 * np.sum(press * disp) - np.sum(press * (self.surface.heights()+offset))
+        self.energy = 1 / 2 * np.sum(press * disp) - np.sum(press * (self.surface.heights() + offset))
 
         return (self.energy, self.gradient)
 
-    def dual_objective(self,offset, pot=False, gradient=True):
-        """
-        Objective function to handle dual objective, i.e. the Legendre
+    def dual_objective(self, offset, pot=False, gradient=True):
+        r"""Objective function to handle dual objective, i.e. the Legendre
         transformation from displacements as variable to pressures
         (the Lagrange multiplier) as variable.
 
+        Parameters
+        __________
+        pressure : pressure between the contact surfaces.
+        offset : value of penetration or offset
+        pot : (default False)
+        gradient : (default True)
+
+        Returns
+        _______
+        energy : value of energy(scalar value).
+        gradient : value of gradient(array) or the value of gap.
+
+        Notes
+        _____
         Objective:
 
-        ..math::
-            min_u L(u,\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j - \lambda_i h_i \\
+        .. math ::
+
+            min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j - \lambda_i h_i \\
             \\
             gradient = K^{-1}_{ij}*\lambda_j - h_i which is, \\
             gap = displacement - height \\
 
-        Parameters:
-        pressure    -- pressure between the contact surfaces.
-        offset      -- value of penetration or offset
-        pot         -- (default False)
-        gradient    -- (default True)
-
-        Returns:
-        energy      -- value of energy(scalar value).
-        gradient    -- value of gradient(array) or the value of gap.
         """
 
         res = self.substrate.nb_domain_grid_pts
@@ -617,7 +625,7 @@ class NonSmoothContactSystem(SystemBase):
             def fun(pressure):
                 try:
                     self.evaluate_dual(
-                        pressure.reshape(res),offset,forces=True)
+                        pressure.reshape(res), offset, forces=True)
                 except ValueError as err:
                     raise ValueError(
                         "{}: gap.shape: {}, res: {}".format(
@@ -630,9 +638,8 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
-    def dual_hessian_product(self,pressure):
-        """
-        Returns the hessian product of the dual_objective function.
+    def dual_hessian_product(self, pressure):
+        r"""Returns the hessian product of the dual_objective function.
         """
 
         hessp = self.substrate.evaluate_disp(-pressure)
