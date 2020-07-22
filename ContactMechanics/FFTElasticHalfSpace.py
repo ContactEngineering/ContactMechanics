@@ -374,7 +374,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.fourier_buffer.array()[...] *= self.weights
         self.fftengine.ifft(self.fourier_buffer, self.real_buffer)
         return self.real_buffer.array().real / \
-               self.area_per_pt * self.fftengine.normalisation
+            self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_force(self, disp):
         """ Computes the force (*not* pressures) due to a given displacement
@@ -393,7 +393,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.fourier_buffer.array()[...] *= self.iweights
         self.fftengine.ifft(self.fourier_buffer, self.real_buffer)
         return -self.real_buffer.array().real * \
-               self.area_per_pt * self.fftengine.normalisation
+            self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
@@ -405,8 +405,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s nb_grid_pts ({1})").format(
                     forces.shape, self.nb_subdomain_grid_pts))  # nopep8
-        fft_forces = np.zeros(self.fftengine.nb_fourier_grid_pts,
-                              dtype=complex, order='f')
         self.real_buffer.array()[...] = -forces
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
         return self.weights * self.fourier_buffer.array() / self.area_per_pt
@@ -579,8 +577,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             kforce = self.evaluate_k_force(disp)
             # TODO: OPTIMISATION: here kdisp is computed twice, because it's
             #  needed in kforce
-            fft_disp = np.zeros(self.fftengine.nb_fourier_grid_pts,
-                                dtype=complex, order='f')
             self.real_buffer.array()[...] = disp
             self.fftengine.fft(self.real_buffer, self.fourier_buffer)
             potential = self.evaluate_elastic_energy_k_space(
