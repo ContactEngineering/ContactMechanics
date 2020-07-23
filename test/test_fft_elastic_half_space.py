@@ -177,7 +177,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
             # verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, L)
             fforce = rfftn(force.T).T
-            fdisp = hs.weights * fforce
+            fdisp = hs.greens_function * fforce
             self.assertTrue(
                 Tools.mean_err(fforce, Fforce, rfft=True) < tol,
                 "fforce = \n{},\nFforce = \n{}".format(
@@ -314,14 +314,14 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
                                           self.physical_sizes, thickness=20,
                                           poisson=self.poisson)
         # diff = hs.weights - hsf.weights
-        np.testing.assert_allclose(hs.weights.ravel()[1:],
-                                   hsf.weights.ravel()[1:], atol=1e-6)
+        np.testing.assert_allclose(hs.greens_function.ravel()[1:],
+                                   hsf.greens_function.ravel()[1:], atol=1e-6)
 
     def test_no_nans(self):
         hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
                                          self.physical_sizes, thickness=100,
                                          poisson=self.poisson)
-        self.assertTrue(np.count_nonzero(np.isnan(hs.weights)) == 0)
+        self.assertTrue(np.count_nonzero(np.isnan(hs.greens_function)) == 0)
 
     # TODO: Test independence of result of x and y Direction,
     # this is already in the MPI variant
@@ -382,7 +382,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
         # np.testing.assert_allclose(rfftn(-force), hs.fftengine.fft(-force))
         # hs.fftengine.fft(-force)
-        kdisp_hs = hs.weights * rfftn(-force.T).T / hs.area_per_pt
+        kdisp_hs = hs.greens_function * rfftn(-force.T).T / hs.area_per_pt
         kdisp = hs.evaluate_k_disp(force)
 
         np.testing.assert_allclose(kdisp_hs, kdisp, rtol=1e-10)
@@ -450,7 +450,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             # verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, L)
             fforce = rfftn(force.T).T
-            fdisp = hs.weights * fforce
+            fdisp = hs.greens_function * fforce
             self.assertTrue(
                 Tools.mean_err(fforce, Fforce, rfft=True) < tol,
                 "fforce = \n{},\nFforce = \n{}".format(

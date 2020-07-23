@@ -65,11 +65,11 @@ def test_weights(comm, pnp, nx, ny,
     reference = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                             fft="fftw",
                                             communicator=MPI.COMM_SELF)
-    np.testing.assert_allclose(reference.weights[substrate.fourier_slices],
-                               substrate.weights, rtol=0, atol=1e-16,
+    np.testing.assert_allclose(reference.greens_function[substrate.fourier_slices],
+                               substrate.greens_function, rtol=0, atol=1e-16,
                                err_msg="weights are different")
-    np.testing.assert_allclose(reference.iweights[substrate.fourier_slices],
-                               substrate.iweights, rtol=0, atol=1e-16,
+    np.testing.assert_allclose(reference.surface_stiffness[substrate.fourier_slices],
+                               substrate.surface_stiffness, rtol=0, atol=1e-16,
                                err_msg="iweights are different")
 
 

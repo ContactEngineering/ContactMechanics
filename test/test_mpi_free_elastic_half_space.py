@@ -119,7 +119,7 @@ def test_weights(comm, pnp, nx, ny, basenpoints):
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                         fft='mpi', communicator=comm)
-    local_weights = substrate._compute_fourier_coeffs()
+    local_weights = substrate._compute_greens_function()
     # print(local_weights.shape, ref_weights.shape, substrate.fourier_slices)
     np.testing.assert_allclose(local_weights,
                                ref_weights[substrate.fourier_slices], 1e-12)
