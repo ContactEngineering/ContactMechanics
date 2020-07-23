@@ -4,7 +4,7 @@ import scipy.optimize as optim
 
 import numpy as np
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 def test_primal_obj():
@@ -19,7 +19,6 @@ def test_primal_obj():
 
     system = Solid.Systems.NonSmoothContactSystem(substrate, surface)
 
-    gtol = 1e-8
     offset = 0.005
     lbounds = np.zeros((nx, ny))
     bnds = system._reshape_bounds(lbounds, )
@@ -43,8 +42,10 @@ def test_primal_obj():
     #
     # plt.colorbar(axpl.pcolormesh(_lbfgsb))
     # plt.colorbar(axpc.pcolormesh(_ccg))
-    # axg.plot(system.surface.positions()[0][:,0], _lbfgsb[:,ny//2],'x', label='lbfgsb' )
-    # axg.plot(system.surface.positions()[0][:,0], _ccg[:, ny // 2], '+',label='ccg')
+    # axg.plot(system.surface.positions()[0][:,0], _lbfgsb[:,ny//2],'x',
+    # label='lbfgsb' )
+    # axg.plot(system.surface.positions()[0][:,0], _ccg[:, ny // 2], '+',
+    # label='ccg')
     # axg.legend()
     # plt.show()
     # fig.tight_layout()
@@ -79,14 +80,14 @@ def test_dual_obj():
     CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area
     fun = system.dual_objective(offset, gradient=True)
     gap_lbfgsb = fun(res.x)[1]
-    gap_lbfgsb = gap_lbfgsb.reshape((nx,ny))
+    gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
-    res = system.minimize_proxy(offset=offset,pentol=1e-8)
+    res = system.minimize_proxy(offset=offset, pentol=1e-8)
     assert res.success
 
     CA_ccg = res.jac > 0  # Contact area
-    #print("shape of disp_ccg  {}".format(np.shape(res.x)))
-    gap_ccg = system.compute_gap(res.x,offset)
+    # print("shape of disp_ccg  {}".format(np.shape(res.x)))
+    gap_ccg = system.compute_gap(res.x, offset)
 
     np.testing.assert_allclose(CA_lbfgsb, CA_ccg, 1e-8)
-    np.testing.assert_allclose(gap_lbfgsb, gap_ccg,atol=1e-8)
+    np.testing.assert_allclose(gap_lbfgsb, gap_ccg, atol=1e-8)

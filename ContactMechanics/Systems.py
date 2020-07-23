@@ -588,7 +588,8 @@ class NonSmoothContactSystem(SystemBase):
         else:
             self.gradient = None
 
-        self.energy = 1 / 2 * np.sum(press * disp) - np.sum(press * (self.surface.heights() + offset))
+        self.energy = 1 / 2 * np.sum(press * disp) - np.sum(
+            press * (self.surface.heights() + offset))
 
         return (self.energy, self.gradient)
 
