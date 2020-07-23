@@ -1,15 +1,14 @@
-
 Change log for ContactMechanics
 ===============================
 
-head (not yet released)
------------------------
+v0.90.1 (23Jul20)
+-----------------
 
 - MAINT: Bumped muFFT dependency to v0.10.0
 - MAINT: Avoid unnecessary buffer copies in FFT
 
 v0.90.0 (29Jun20)
-----------------
+-----------------
 
 - Refactored PyCo code into three separate Python modules:
   SurfaceTopography, ContactMechanics and Adhesion
