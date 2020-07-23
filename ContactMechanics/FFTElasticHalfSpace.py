@@ -298,7 +298,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         elif self.dim == 2:
             if np.prod(self.nb_fourier_grid_pts) == 0:
                 greens_function = np.zeros(self.nb_fourier_grid_pts, order='f',
-                                   dtype=complex)
+                                           dtype=complex)
             else:
                 nx, ny = self.nb_grid_pts
                 sx, sy = self.physical_sizes
@@ -413,7 +413,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     forces.shape, self.nb_subdomain_grid_pts))  # nopep8
         self.real_buffer.array()[...] = -forces
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-        return self.greens_function * self.fourier_buffer.array() / self.area_per_pt
+        return self.greens_function * \
+               self.fourier_buffer.array() / self.area_per_pt
 
     def evaluate_k_force(self, disp):
         """ Computes the K-space forces (*not* pressures) due to a given
@@ -429,7 +430,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     disp.shape, self.nb_subdomain_grid_pts))  # nopep8
         self.real_buffer.array()[...] = disp
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-        return -self.surface_stiffness * self.fourier_buffer.array() * self.area_per_pt
+        return -self.surface_stiffness * \
+               self.fourier_buffer.array() * self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
         """
