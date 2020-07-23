@@ -43,7 +43,8 @@ setup(
     # metadata for upload to PyPI
     author="Lars Pastewka",
     author_email="lars.pastewka@imtek.uni-freiburg.de",
-    description="Efficient contact mechanics using elastic half-space methods",
+    description="Efficient contact mechanics using elastic half-space "
+                "methods",
     license="MIT",
     test_suite='test',
     # dependencies
@@ -56,7 +57,7 @@ setup(
     install_requires=[
         'numpy>=1.11.0',
         'NuMPI>=0.1.2',
-        'muFFT>=0.9.3',
+        'muFFT>=0.10.0',
         'SurfaceTopography>=0.90.0'
     ]
 )
