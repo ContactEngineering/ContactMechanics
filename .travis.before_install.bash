@@ -18,4 +18,6 @@ python -m pip install $(grep numpy requirements.txt)
 if [ "$WITH_MPI" == "yes" ]; then
   python -m pip install --no-binary mpi4py mpi4py==${MPI4PY_VERSION}
   BUILDDIR=/tmp PREFIX=$HOME/.local source .install_parallel_netcdf.sh
+else
+  sudo apt-get install libhdf5-dev libnetcdf-dev
 fi
