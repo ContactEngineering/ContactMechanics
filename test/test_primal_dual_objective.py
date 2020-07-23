@@ -63,11 +63,10 @@ def test_dual_obj():
 
     system = Solid.Systems.NonSmoothContactSystem(substrate, surface)
 
-    gtol = 1e-8
-    offset = 0.05
+    offset = 0.005
     lbounds = np.zeros((nx, ny))
     bnds = system._reshape_bounds(lbounds, )
-    init_gap = np.zeros((nx, ny))  # .flatten()
+    init_gap = np.zeros((nx, ny))
     disp = init_gap + surface.heights() + offset
     init_pressure = substrate.evaluate_force(disp)
 
@@ -78,9 +77,16 @@ def test_dual_obj():
                          options=dict(gtol=1e-8, ftol=1e-20))
     assert res.success
     CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area
+    fun = system.dual_objective(offset, gradient=True)
+    gap_lbfgsb = fun(res.x)[1]
+    gap_lbfgsb = gap_lbfgsb.reshape((nx,ny))
 
-    res = system.minimize_proxy(offset=offset)
+    res = system.minimize_proxy(offset=offset,pentol=1e-8)
     assert res.success
 
     CA_ccg = res.jac > 0  # Contact area
+    #print("shape of disp_ccg  {}".format(np.shape(res.x)))
+    gap_ccg = system.compute_gap(res.x,offset)
+
     np.testing.assert_allclose(CA_lbfgsb, CA_ccg, 1e-8)
+    np.testing.assert_allclose(gap_lbfgsb, gap_ccg,atol=1e-8)

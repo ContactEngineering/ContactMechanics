@@ -522,13 +522,15 @@ class NonSmoothContactSystem(SystemBase):
 
     def primal_objective(self, offset, pot=False, gradient=True):
         r"""To solve the primal objective using gap as the variable.
-        Can be fed directly to standard solvers ex: scipy solvers etc.
+        Can be fed directly to standard solvers ex: scipy solvers etc
+        and returns the elastic energy and it's gradient (negative of
+        the forces) as a function of the gap.
 
         Parameters
         __________
 
         gap : gap between the contact surfaces.
-        offset : value of penetration or offset
+        offset : "constant value to add to the surface heights
         pot : (default False)
         gradient : (default True)
 
@@ -598,7 +600,7 @@ class NonSmoothContactSystem(SystemBase):
         Parameters
         __________
         pressure : pressure between the contact surfaces.
-        offset : value of penetration or offset
+        offset : constant value to add to the surface heights
         pot : (default False)
         gradient : (default True)
 
@@ -613,9 +615,11 @@ class NonSmoothContactSystem(SystemBase):
 
         .. math ::
 
-            min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j - \lambda_i h_i \\
+            min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j -
+            \lambda_i h_i \\
             \\
-            gradient = K^{-1}_{ij}*\lambda_j - h_i which is, \\
+            gradient = K^{-1}_{ij}*\lambda_j - h_i \hspace{0.1cm}
+            \text{which is,} \\
             gap = displacement - height \\
 
         """
