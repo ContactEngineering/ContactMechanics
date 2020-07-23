@@ -26,6 +26,7 @@
 import numpy as np
 import pytest
 
+from muFFT import FFT
 from NuMPI import MPI
 
 from ContactMechanics import PeriodicFFTElasticHalfSpace
@@ -126,6 +127,8 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
 
         substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                                 fft='mpi', communicator=comm)
+        fftengine = FFT((nx, ny), fft='mpi', communicator=comm)
+        fftengine.create_plan(1)
 
         kpressure = substrate.evaluate_k_force(
             disp[substrate.subdomain_slices]) / substrate.area_per_pt / (
@@ -141,7 +144,7 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
 
         fft_disp = np.zeros(substrate.nb_fourier_grid_pts, order='f',
                             dtype=complex)
-        substrate.fftengine.fft(disp[substrate.subdomain_slices], fft_disp)
+        fftengine.fft(disp[substrate.subdomain_slices], fft_disp)
         np.testing.assert_allclose(fft_disp / (nx * ny),
                                    expected_k_disp[substrate.fourier_slices],
                                    rtol=1e-7, atol=1e-10)

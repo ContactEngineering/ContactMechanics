@@ -136,6 +136,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft,
                              communicator=communicator,
+                             allow_temporary_buffer=False,
                              allow_destroy_input=True)
         # Allocate buffers and create plan for one degree of freedom
         self.real_buffer = self.fftengine.register_real_space_field(
@@ -149,8 +150,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.pnp = Reduction(communicator)
 
         if superclass:
-            self._compute_fourier_coeffs()
-            self._compute_i_fourier_coeffs()
+            self.weights = self._compute_fourier_coeffs()
+            self.iweights = self._compute_i_fourier_coeffs()
 
     @property
     def dim(self, ):
@@ -287,17 +288,16 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             2015]
         """
         if self.dim == 1:
-            facts = np.zeros(self.nb_fourier_grid_pts, order='f')
+            weights = np.zeros(self.nb_fourier_grid_pts, order='f')
             for index in range(self.fourier_locations[0] + 2,
                                self.nb_fourier_grid_pts[0] + 1):
-                facts[index - 1] = \
+                weights[index - 1] = \
                     self.physical_sizes[0] / \
                     (self.contact_modulus * index * np.pi)
-            self.weights = facts
         elif self.dim == 2:
             if np.prod(self.nb_fourier_grid_pts) == 0:
-                self.weights = np.zeros(self.nb_fourier_grid_pts, order='f',
-                                        dtype=complex)
+                weights = np.zeros(self.nb_fourier_grid_pts, order='f',
+                                   dtype=complex)
             else:
                 nx, ny = self.nb_grid_pts
                 sx, sy = self.physical_sizes
@@ -347,17 +347,18 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                         else:
                             facts[0, 0] = self.stiffness_q0
 
-                self.weights = 1 / facts
+                weights = 1 / facts
                 if self.fourier_locations == (0, 0):
                     if self.stiffness_q0 == 0.0:
-                        self.weights[0, 0] = 0.0
-        return self.weights, facts
+                        weights[0, 0] = 0.0
+        return weights
 
     def _compute_i_fourier_coeffs(self):
         """Invert the weights w relating fft(displacement) to fft(pressure):
         """
-        self.iweights = np.zeros_like(self.weights)
-        self.iweights[self.weights != 0] = 1. / self.weights[self.weights != 0]
+        iweights = np.zeros(self.nb_fourier_grid_pts, order='f', dtype=complex)
+        iweights[self.weights != 0] = 1. / self.weights[self.weights != 0]
+        return iweights
 
     def evaluate_disp(self, forces):
         """ Computes the displacement due to a given force array
@@ -631,8 +632,8 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
         super().__init__(nb_grid_pts, young, physical_sizes, superclass=False,
                          fft=fft, communicator=communicator)
-        self._compute_fourier_coeffs()
-        self._compute_i_fourier_coeffs()
+        self.weights = self._compute_fourier_coeffs()
+        self.iweights = self._compute_i_fourier_coeffs()
         self._check_boundaries = check_boundaries
 
     def spawn_child(self, nb_grid_pts):
@@ -704,8 +705,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                        ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
                                                             (x_s + a) * (x_s + a)))))  # noqa: E501
             self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-            self.weights = self.fourier_buffer.array().copy()
-            return self.weights, self.real_buffer.array()
+            return self.fourier_buffer.array().copy()
 
     def evaluate_disp(self, forces):
         """ Computes the displacement due to a given force array
