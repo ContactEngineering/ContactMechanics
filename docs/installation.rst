@@ -1,17 +1,17 @@
 Installation
 ============
 
-You need Python 3 and FFTW3_ to run SurfaceTopography. All Python dependencies can be installed
+You need Python 3 and FFTW3_ to run ContactMechanics. All Python dependencies can be installed
 automatically by invoking
 
 Direct installation with pip
 ----------------------------
 
-SurfaceTopography can be installed by invoking
+ContactMechanics can be installed by invoking
 
 .. code-block:: bash
 
-    python3 -m pip  install [--user] git+https://github.com/ComputationalMechanics/SurfaceTopography.git
+    python3 -m pip  install [--user] git+https://github.com/ComputationalMechanics/ContactMechanics.git
 
 The command will install other dependencies including muFFT_, NuMPI_ and
 runtests_.
@@ -29,7 +29,7 @@ If you cloned the repository. You can install the dependencies with
 
     python3 -m pip install -r requirements.txt
 
-in the source directory. SurfaceTopography can be installed by invoking
+in the source directory. ContactMechanics can be installed by invoking
 
 .. code-block:: bash
 
@@ -63,10 +63,10 @@ provided by `numpy`, as often experienced on macOS, try providing following envi
 where the paths have probably to be adapted to your particular installation method.
 Here OpenBLAS_ and LAPACK_ was installed via Homebrew_.
 
-Updating SurfaceTopography
+Updating ContactMechanics
 --------------------------
 
-If you update SurfaceTopography (whether with pip or `git pull` if you cloned the repository),  you may need to
+If you update ContactMechanics (whether with pip or `git pull` if you cloned the repository),  you may need to
 uninstall `NuMPI`, `muSpectre` and or `runtests`, so that the newest version of them will be installed.
 
 .. _FFTW3: http://www.fftw.org/
