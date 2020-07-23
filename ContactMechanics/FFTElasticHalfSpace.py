@@ -414,7 +414,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.real_buffer.array()[...] = -forces
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
         return self.greens_function * \
-               self.fourier_buffer.array() / self.area_per_pt
+            self.fourier_buffer.array() / self.area_per_pt
 
     def evaluate_k_force(self, disp):
         """ Computes the K-space forces (*not* pressures) due to a given
@@ -431,7 +431,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.real_buffer.array()[...] = disp
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
         return -self.surface_stiffness * \
-               self.fourier_buffer.array() * self.area_per_pt
+            self.fourier_buffer.array() * self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
         """
