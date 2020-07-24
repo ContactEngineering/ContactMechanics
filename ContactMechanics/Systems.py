@@ -529,15 +529,19 @@ class NonSmoothContactSystem(SystemBase):
         Parameters
         __________
 
-        gap : gap between the contact surfaces.
-        offset : "constant value to add to the surface heights
+        gap : float
+              gap between the contact surfaces.
+        offset : float
+                constant value to add to the surface heights
         pot : (default False)
         gradient : (default True)
 
         Returns
         _______
-        energy : value of energy(scalar value).
-        force : value of force(array).
+        energy : float
+                value of energy(scalar value).
+        force : float,array
+                value of force(array).
 
         Notes
         _____
@@ -579,7 +583,7 @@ class NonSmoothContactSystem(SystemBase):
 
     def evaluate_dual(self, press, offset, pot=True, forces=False):
         """
-        Compute the energies and forces in the system for a given displacement
+        Computes the energies and forces in the system for a given displacement
         field
         """
         disp = self.substrate.evaluate_disp(-press)
@@ -600,15 +604,20 @@ class NonSmoothContactSystem(SystemBase):
 
         Parameters
         __________
-        pressure : pressure between the contact surfaces.
-        offset : constant value to add to the surface heights
+        pressure : float
+                pressure between the contact surfaces.
+        offset : float
+                constant value to add to the surface heights
         pot : (default False)
         gradient : (default True)
 
         Returns
         _______
-        energy : value of energy(scalar value).
-        gradient : value of gradient(array) or the value of gap.
+        energy : float
+                value of energy(scalar value).
+
+        gradient : float,array
+                value of gradient(array) or the value of gap.
 
         Notes
         _____
