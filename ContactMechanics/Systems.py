@@ -574,11 +574,12 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
-    def hessian_product(self, gap):
+    def primal_hessian_product(self, gap):
         """Returns the hessian product of the primal_objective function.
         """
+        res = self.substrate.nb_domain_grid_pts
 
-        hessp = self.substrate.evaluate_force(gap)
+        hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(-1)
         return hessp
 
     def evaluate_dual(self, press, offset, pot=True, forces=False):
@@ -655,6 +656,6 @@ class NonSmoothContactSystem(SystemBase):
     def dual_hessian_product(self, pressure):
         r"""Returns the hessian product of the dual_objective function.
         """
-
-        hessp = self.substrate.evaluate_disp(-pressure)
-        return hessp
+        res = self.substrate.nb_domain_grid_pts
+        hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
+        return hessp.reshape(-1)
