@@ -513,3 +513,18 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         error = Tools.mean_err(forces[0], forces[1])
         self.assertTrue(error < tol,
                         "error = {} ≥ tol = {}".format(error, tol))
+
+
+def test_domain_boundary_mask():
+    nx = 4
+    system = FreeFFTElasticHalfSpace((nx, nx), 1, (1., 1.))
+
+    np.testing.assert_allclose(
+        system.domain_boundary_mask,
+        [
+            [1, 1, 1, 1],
+            [1, 0, 0, 1],
+            [1, 0, 0, 1],
+            [1, 1, 1, 1],
+            ]
+        )
