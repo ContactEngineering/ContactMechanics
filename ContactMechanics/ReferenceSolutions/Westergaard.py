@@ -28,15 +28,19 @@ indenter.
 See: H.M. Westergaard, Trans. ASME, J. Appl. Mech. 6, 49 (1939)
 
 The indenter geometry is
-$2 h sin^2(\pi x / lambda)$
+
+.. math ::
+
+    2 h sin^2(\pi x / \lambda)
 
 Nommenclature:
 ---------------
 
-- E^*: contact modulus
-- $\lambda$: period of the sinusoidal indenter
-- $h$ amplitude of the sinusoidal indenter. peak to tale distance is 2h
-- a: half contact width
+- :math:`E^*`: contact modulus
+- :math:`\lambda`: period of the sinusoidal indenter
+- :math:`h` amplitude of the sinusoidal indenter.
+peak to tale distance is :math:`2h`
+- :math:`a`: half contact width, "contact radius"
 
 
 """
@@ -229,3 +233,18 @@ def elastic_energy_a(a):
     with $p_{wfc} = pi E^* h/\lambda$
     """
     return (1 / 4 - log(sin(pi * a) ** 2) / 2) * sin(pi * a) ** 4
+
+
+def contact_radius(mean_pressure):
+    r"""
+
+    Parameters
+    ----------
+    mean_pressure: float, array_like
+        mean pressure in units of :math:`\pi E^* h / \lambda`
+    Returns
+    -------
+    contact radius in units of :math:`\lambda`
+
+    """
+    return 1 / np.pi * np.arcsin(np.sqrt(mean_pressure))
