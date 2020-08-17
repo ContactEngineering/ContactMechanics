@@ -238,7 +238,8 @@ def elastic_energy_a(a):
 def contact_radius(mean_pressure):
     r"""
 
-    Johnson, K. L. International Journal of Solids and Structures 32, 423–430 (1995)
+    Johnson, K. L.
+    International Journal of Solids and Structures 32, 423–430 (1995)
 
     Equation (4)
 
@@ -253,10 +254,12 @@ def contact_radius(mean_pressure):
     """
     return 1 / np.pi * np.arcsin(np.sqrt(mean_pressure))
 
+
 def mean_pressure(contact_radius):
     r"""
 
-    Johnson, K. L. International Journal of Solids and Structures 32, 423–430 (1995)
+    Johnson, K. L.
+    International Journal of Solids and Structures 32, 423–430 (1995)
 
     Equation (4)
 
