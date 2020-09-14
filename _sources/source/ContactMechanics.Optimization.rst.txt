@@ -12,7 +12,6 @@ ContactMechanics.Optimization.ConstrainedConjugateGradients module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

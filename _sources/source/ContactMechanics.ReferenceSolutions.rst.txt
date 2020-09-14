@@ -36,7 +36,6 @@ ContactMechanics.ReferenceSolutions.Westergaard module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

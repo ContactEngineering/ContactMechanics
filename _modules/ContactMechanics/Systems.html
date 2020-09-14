@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.1 documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev13+g4f57f69 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.90.1
+                0.90.2.dev13+g4f57f69
               </div>
             
           
@@ -374,6 +374,7 @@
         <span class="n">lbounds</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">topography_subdomain_slices</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">lbounds</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">topography_subdomain_slices</span><span class="p">]</span> \
             <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span>
+
         <span class="n">lbounds</span><span class="o">.</span><span class="n">set_fill_value</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">lbounds</span>
@@ -683,7 +684,147 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">jac</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">result</span></div></div>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.primal_objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective">[docs]</a>    <span class="k">def</span> <span class="nf">primal_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;To solve the primal objective using gap as the variable.</span>
+<span class="sd">        Can be fed directly to standard solvers ex: scipy solvers etc</span>
+<span class="sd">        and returns the elastic energy and it&#39;s gradient (negative of</span>
+<span class="sd">        the forces) as a function of the gap.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        __________</span>
+
+<span class="sd">        gap : float</span>
+<span class="sd">              gap between the contact surfaces.</span>
+<span class="sd">        offset : float</span>
+<span class="sd">                constant value to add to the surface heights</span>
+<span class="sd">        pot : (default False)</span>
+<span class="sd">        gradient : (default True)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        _______</span>
+<span class="sd">        energy : float</span>
+<span class="sd">                value of energy(scalar value).</span>
+<span class="sd">        force : float,array</span>
+<span class="sd">                value of force(array).</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        _____</span>
+
+<span class="sd">        Objective:</span>
+<span class="sd">        .. math ::</span>
+<span class="sd">            min_u f = 1/2u_i*K_{ij}*u_j \\</span>
+<span class="sd">            \\</span>
+<span class="sd">            gradient = K_{ij}*u_j which is, Force. \\</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
+        <span class="k">if</span> <span class="n">gradient</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">gap</span><span class="p">):</span>
+                <span class="n">disp</span> <span class="o">=</span> <span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+                        <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: gap.shape: </span><span class="si">{}</span><span class="s2">, res: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">err</span><span class="p">,</span> <span class="n">gap</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">gap</span><span class="p">):</span>
+                <span class="n">disp</span> <span class="o">=</span> <span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+                    <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">fun</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.primal_hessian_product"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_hessian_product">[docs]</a>    <span class="k">def</span> <span class="nf">primal_hessian_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gap</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the hessian product of the primal_objective function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
+
+        <span class="n">hessp</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hessp</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.evaluate_dual"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_dual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">press</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the energies and forces in the system for a given displacement</span>
+<span class="sd">        field</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">disp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="o">-</span><span class="n">press</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">forces</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span> <span class="o">=</span> <span class="n">disp</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">-</span> <span class="n">offset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">press</span> <span class="o">*</span> <span class="n">disp</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">press</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.dual_objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective">[docs]</a>    <span class="k">def</span> <span class="nf">dual_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Objective function to handle dual objective, i.e. the Legendre</span>
+<span class="sd">        transformation from displacements as variable to pressures</span>
+<span class="sd">        (the Lagrange multiplier) as variable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        __________</span>
+<span class="sd">        pressure : float</span>
+<span class="sd">                pressure between the contact surfaces.</span>
+<span class="sd">        offset : float</span>
+<span class="sd">                constant value to add to the surface heights</span>
+<span class="sd">        pot : (default False)</span>
+<span class="sd">        gradient : (default True)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        _______</span>
+<span class="sd">        energy : float</span>
+<span class="sd">                value of energy(scalar value).</span>
+
+<span class="sd">        gradient : float,array</span>
+<span class="sd">                value of gradient(array) or the value of gap.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        _____</span>
+<span class="sd">        Objective:</span>
+
+<span class="sd">        .. math ::</span>
+
+<span class="sd">            min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j -</span>
+<span class="sd">            \lambda_i h_i \\</span>
+<span class="sd">            \\</span>
+<span class="sd">            gradient = K^{-1}_{ij}*\lambda_j - h_i \hspace{0.1cm}</span>
+<span class="sd">            \text{which is,} \\</span>
+<span class="sd">            gap = displacement - height \\</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
+        <span class="k">if</span> <span class="n">gradient</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">pressure</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_dual</span><span class="p">(</span>
+                        <span class="n">pressure</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: gap.shape: </span><span class="si">{}</span><span class="s2">, res: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">err</span><span class="p">,</span> <span class="n">pressure</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">gap</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+                    <span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">fun</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.dual_hessian_product"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_hessian_product">[docs]</a>    <span class="k">def</span> <span class="nf">dual_hessian_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pressure</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the hessian product of the dual_objective function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
+        <span class="n">hessp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="o">-</span><span class="n">pressure</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">hessp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>

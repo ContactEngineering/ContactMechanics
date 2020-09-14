@@ -56,7 +56,6 @@ ContactMechanics.Systems module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

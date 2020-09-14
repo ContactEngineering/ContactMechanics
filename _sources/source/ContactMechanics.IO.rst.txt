@@ -12,7 +12,6 @@ ContactMechanics.IO.NetCDF module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 
