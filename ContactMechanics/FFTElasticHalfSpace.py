@@ -433,6 +433,25 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return -self.surface_stiffness * \
             self.fourier_buffer.array() * self.area_per_pt
 
+
+    #####################################################################333
+    def evaluate_k_force_k(self, disp_k):
+        """ Computes the K-space forces (*not* pressures) due to a given
+        displacement array.
+
+        Keyword Arguments:
+        disp   -- a numpy array containing point displacements
+        """
+        # if disp.shape != self.nb_subdomain_grid_pts:
+        #     raise self.Error(
+        #         ("displacements array has a different shape ({0}) than this "
+        #          "halfspace's nb_grid_pts ({1})").format(
+        #             disp.shape, self.nb_subdomain_grid_pts))  # nopep8
+        # self.fourier_buffer.array()[...] = disp_k
+        # self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+        return -self.surface_stiffness * disp_k * self.area_per_pt
+    ########################################################################
+
     def evaluate_elastic_energy(self, forces, disp):
         """
         computes and returns the elastic energy due to forces and displacements
@@ -590,6 +609,23 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             potential = self.evaluate_elastic_energy_k_space(
                 kforce, self.fourier_buffer.array())
         return potential, force
+
+    def evaluate_k(self, disp_k, pot=True, forces=False):
+        """Evaluates the elastic energy and the point forces
+        Keyword Arguments:
+        disp   -- array of distances
+        pot    -- (default True) if true, returns potential energy
+        forces -- (default False) if true, returns forces
+        """
+        force = potential = None
+        if forces:
+            force_k = self.evaluate_k_force_k(disp_k)
+            if pot:
+                potential = self.evaluate_elastic_energy_k_space(force_k, disp_k)
+        elif pot:
+            force_k = self.evaluate_k_force_k(disp_k)
+            potential = self.evaluate_elastic_energy_k_space(force_k, disp_k)
+        return potential, force_k
 
 
 class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
