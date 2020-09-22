@@ -125,10 +125,13 @@ muFFT the first
 real_buffer.array()[..] = a
 fftengine.fft(real_buffer, fourier_buffer)
 fourier_buffer <--> np.rfft2(a.T).T <--> np.fft.rfft2(a, axes=(1,0))
-"""
+
 # FIXME: @pastewka: I expected the fourier array to be transposed, so there is a
 #                   wrapper swapping the indexes and the array
 #                   is transposed in memory ?
+
+""" # noqa E501
+
 
 from collections import namedtuple
 
@@ -419,7 +422,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 if self.stiffness_q0 == 0.0:
                     greens_function[0, 0] = 0.0
 
-
         elif self.dim == 2:
             if np.prod(self.nb_fourier_grid_pts) == 0:
                 greens_function = np.zeros(self.nb_fourier_grid_pts, order='f',
@@ -560,8 +562,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         return -self.surface_stiffness * \
             self.fourier_buffer.array() * self.area_per_pt
 
-
-    #####################################################################333
     def evaluate_k_force_k(self, disp_k):
         """ Computes the K-space forces (*not* pressures) due to a given
         displacement array.
@@ -577,7 +577,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # self.fourier_buffer.array()[...] = disp_k
         # self.fftengine.fft(self.real_buffer, self.fourier_buffer)
         return -self.surface_stiffness * disp_k * self.area_per_pt
-    ########################################################################
 
     def evaluate_elastic_energy(self, forces, disp):
         """
@@ -591,8 +590,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
     def evaluate_scalar_product_k_space(self, ka, kb):
         r"""
-        Computes the scalar product, i.e. the power, between the `a` and `b`, given
-        their fourier representation.
+        Computes the scalar product, i.e. the power, between the `a` and `b`,
+        given their fourier representation.
 
         `Power theorem
         <https://ccrma.stanford.edu/~jos/mdft/Power_Theorem.html>`_:
@@ -713,7 +712,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         r"""
         Computes the Energy due to forces and displacements using their Fourier
         representation.
-        
+
         .. math ::
         
             E_{el} &= - \frac{1}{2} \sum_{ij} u_{ij} f_{ij}  
@@ -739,10 +738,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         -------
         E
             The elastic energy due to the forces and displacements
-        """  # noqa: E501
+        """  # noqa: E501, W291, W293
 
         return - 0.5 * self.evaluate_scalar_product_k_space(kdisp, kforces)
-
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces
@@ -773,11 +771,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         pot    -- (default True) if true, returns potential energy
         forces -- (default False) if true, returns forces
         """
-        force = potential = None
+        potential = None
         if forces:
             force_k = self.evaluate_k_force_k(disp_k)
             if pot:
-                potential = self.evaluate_elastic_energy_k_space(force_k, disp_k)
+                potential = self.evaluate_elastic_energy_k_space(force_k,
+                                                                 disp_k)
         elif pot:
             force_k = self.evaluate_k_force_k(disp_k)
             potential = self.evaluate_elastic_energy_k_space(force_k, disp_k)
