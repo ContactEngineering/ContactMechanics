@@ -172,7 +172,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
 
             # theoretical FFT of disp
             Fdisp = np.zeros_like(x)
-            Fdisp[1] = Fdisp[-1] = res / 2. * a / E * L / (2 * np.pi)
+            Fdisp[1] = Fdisp[-1] = res / 2. * a / E * L  / np.pi
 
             # verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, L)
@@ -445,7 +445,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
             # theoretical FFT of disp
             Fdisp = np.zeros_like(x)
-            Fdisp[1] = Fdisp[-1] = res / 2. * a / E * L / (2. * np.pi)
+            Fdisp[1] = Fdisp[-1] = res / 2. * a / E * L / (np.pi)
 
             # verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, L)
