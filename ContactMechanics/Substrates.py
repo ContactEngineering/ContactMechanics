@@ -122,6 +122,7 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
     def __init__(self):
         self.energy = None
         self.force = None
+        self.force_k = None
 
     def __repr__(self):
         dims = 'x', 'y', 'z'
@@ -129,7 +130,7 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
                              dim, size, nb_grid_pts in zip(dims, self.size,
                                                            self.nb_grid_pts))
         return "{0.dim}-dimensional halfspace '{0.name}', " \
-               "physical_sizes(nb_grid_pts) in  {1}, E' = {0.young}"\
+               "physical_sizes(nb_grid_pts) in  {1}, E' = {0.young}" \
             .format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):
@@ -150,10 +151,10 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
     def compute_k(self, disp_k, pot=True, forces=False):
         """
         computes and stores the elastic energy and/or surface forces
-        the as function of the surface displacement in Fourier Space. Note that forces, not
-        surface pressures are expected. This is contrary to most formulations
-        in the literature, but convenient in the code (consistency with the
-        softWall interaction potentials). This choice may come back to bite me.
+        the as function of the surface displacement in Fourier Space. Note
+        that forces, not surface pressures are expected. This is contrary to
+        most formulations in the literature, but convenient in the code
+        (consistency with the softWall interaction potentials).
         Parameters:
         gap    -- array containing the point-wise gap values
         pot    -- (default True) whether the energy should be evaluated
