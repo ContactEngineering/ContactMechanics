@@ -114,7 +114,7 @@ def test_lbfgsb_1D(dx, n):
                          method='L-BFGS-B', jac=True,
                          bounds=bnds,
                          options=dict(gtol=1e-5 * Es * surface.rms_slope()
-                                           * surface.area_per_pt,
+                                      * surface.area_per_pt,
                                       ftol=0))
 
     forces = res.jac
