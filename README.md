@@ -40,3 +40,8 @@ The package requires :
 
 Optional dependencies:
 - **runtests** - https://github.com/bccp/runtests
+
+Funding
+-------
+
+Development of this project is funded by the [European Research Council](https://erc.europa.eu) within [Starting Grant 757343](https://cordis.europa.eu/project/id/757343) and by the [Deutsche Forschungsgemeinschaft](https://www.dfg.de/en) within projects [PA 2023/2](https://gepris.dfg.de/gepris/projekt/258153560) and [EXC 2193](https://gepris.dfg.de/gepris/projekt/390951807).
