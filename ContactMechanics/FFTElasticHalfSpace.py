@@ -822,10 +822,15 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
 
         temp_k = x_k.copy()
-        float = np.zeros(self.nb_grid_pts[0] + 1 )
+        float = np.zeros(self.nb_grid_pts[0])
         float[0] = temp_k[0]
-        float[1::2] = temp_k[1:].real
-        float[2::2] = temp_k[1:].imag
+
+        if (self.nb_grid_pts[0] % 2) == 0:
+            float[2::2] = temp_k[1:-1].imag
+            float[1::2] = temp_k[1:].real
+        else:
+            float[1::2] = temp_k[1:].real
+            float[2::2] = temp_k[1:].imag
 
         return float
 
@@ -847,7 +852,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         x_k   :   (n//2 + 1,) dimension array
         """
         temp = x.copy()
-        k_space = np.zeros((((len(temp)+1)//2),), dtype= complex)
+        temp = np.append(temp,0*1j)
+        if (self.nb_grid_pts[0] % 2) == 0:
+            k_space = np.zeros(((len(temp)//2) + 1,), dtype=complex)
+        else:
+            k_space = np.zeros((((len(temp)+1)//2),), dtype= complex)
         k_space[0] = temp[0]
         k_space[1:] = temp[1::2] + temp[2::2]*1j
         return k_space
