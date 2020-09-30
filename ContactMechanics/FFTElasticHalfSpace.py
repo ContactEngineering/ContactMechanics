@@ -26,7 +26,92 @@
 #
 
 """
-Implement the FFT-based elasticity solver of pycontact
+Implement the FFT-based elasticity solver of ContactMechanics
+
+Convention used for the DFT :
+-----------------------------
+
+In addition to the sum of the product with the exponential function, the
+one has to divide by :math:`n_x n_y` once during the roundtrip.
+
+When this is actually done is arbitrary.
+
+Our convension:
+
+fourier transform:
+
+.. math ::
+
+    \tilde h_{op} =
+    \Sum_{mn} h_{mn} e^{i \underline{x}_{mn} \underline{q}_{op}}
+
+corresponding `np.fft.rfft` and `fftengine.fft`
+
+fourier space input fields are assumed to be linked to the realspace field thru
+this fourier transform.
+
+fourier inverse transform:
+
+.. math ::
+
+    \tilde h_{mn} = \frac{1}{n_x n_y}
+    \Sum_{op} \tilde h_{op} e^{i \underline{x}_{mn} \underline{q}_{op}}
+
+corresponding `np.fft.irfft` and `fftengine.fft * normalisation`
+
+Note that this is different from the definition in
+Jacobs, T. D. B. et al. Surf. Topogr.: Metrol. Prop. 5, 013001 (2017)
+(Equations A.3, A.4), that is closer to the continuous fourier transform.
+
+Parseval's theorem: Convolutions and powers:
+--------------------------------------------
+
+The prefactors in front of Parseval's theorem depend on the definition of
+the fourier transform.
+
+# TODO
+
+When the fourier space array contains only half the spectrum, making use of
+hermitian symmetry, extra care has to be taken when performing the sum.
+
+# TODO
+
+
+muFFT fourier transform:
+------------------------
+
+fft and ifft never applies the normalisation factor, meaning that you will need
+to multiply `ifft(fft)` by `1 / np.prod(nb_grid_pts) = fftengine.normalisation`)
+in order to have a roundtrip.
+
+muFFT vs. np.fft:
+-----------------
+
+Normalisation:
+---------------
+
+np.fft.rfft <--> fftengine.fft
+
+np.fft.irfft <--> fftengine.ifft * fftengine.normalisation
+
+
+2D FFT:
+-------
+
+numpy by default transforms the last index first.
+
+muFFT the first
+
+real_buffer.array()[..] = a
+fftengine.fft(real_buffer, fourier_buffer)
+fourier_buffer <--> np.rfft2(a.T).T <--> np.fft.rfft2(a, axes=(1,0))
+
+#FIXME: @pastewka: I expected the fourier array to be transposed, so there is a
+#                  wrapper swapping the indexes and the array
+#                  is transposed in memory ?
+
+
+
 """
 
 from collections import namedtuple
@@ -272,10 +357,18 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             .format(self, size_str)
 
     def _compute_greens_function(self):
-        """
+        r"""
         Compute the weights w relating fft(displacement) to fft(pressure):
         fft(u) = w*fft(p), see (6) Stanley & Kato J. Tribol. 119(3), 481-485
         (Jul 01, 1997).
+
+        For the infinite halfspace,
+        .. math ::
+
+            w = q E^* / 2
+
+        q is the wavevector (:math:`2 \pi / wavelength`)
+
         WARNING: the paper is dimensionally *incorrect*. see for the correct
         1D formulation: Section 13.2 in
             K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge:
@@ -335,6 +428,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     # but q[0,0] =  0 produces runtime Warnings
                     # (because corr[0,0]=inf)
                 surface_stiffness = np.pi * self.contact_modulus * q
+                #                   E* / 2 (2 \pi / \lambda)
+                #                   (q is 1 / lambda, here)
                 if self.thickness is not None:
                     # Compute correction for finite thickness
                     q *= 2 * np.pi * self.thickness
