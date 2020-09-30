@@ -289,12 +289,28 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             2015]
         """
         if self.dim == 1:
-            greens_function = np.zeros(self.nb_fourier_grid_pts, order='f')
-            for index in range(self.fourier_locations[0] + 2,
-                               self.nb_fourier_grid_pts[0] + 1):
-                greens_function[index - 1] = \
-                    self.physical_sizes[0] / \
-                    (self.contact_modulus * index * np.pi)
+            nx, = self.nb_grid_pts
+            sx, = self.physical_sizes
+            # Note: q-values from 0 to 1, not from 0 to 2*pi
+            qx = np.arange(self.fourier_locations[0],
+                           self.fourier_locations[0] +
+                           self.nb_fourier_grid_pts[0], dtype=np.float64)
+            qx = np.where(qx <= nx // 2, qx / sx, (nx - qx) / sx)
+            surface_stiffness = np.pi * self.contact_modulus * qx
+
+            if self.stiffness_q0 is None:
+                surface_stiffness[0] = surface_stiffness[1].real
+            elif self.stiffness_q0 == 0.0:
+                surface_stiffness[0] = 1.0
+            else:
+                surface_stiffness[0] = self.stiffness_q0
+
+            greens_function = 1 / surface_stiffness
+            if self.fourier_locations == (0,):
+                if self.stiffness_q0 == 0.0:
+                    greens_function[0, 0] = 0.0
+
+
         elif self.dim == 2:
             if np.prod(self.nb_fourier_grid_pts) == 0:
                 greens_function = np.zeros(self.nb_fourier_grid_pts, order='f',
