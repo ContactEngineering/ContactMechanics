@@ -85,7 +85,8 @@ def test_constrained_conjugate_gradients():
 
 
 @pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
-                    reason="test only serial functionalities, please execute with pytest")
+                    reason="test only serial functionalities, "
+                           "please execute with pytest")
 @pytest.mark.parametrize("dx,n", [(1., 32),
                                   (1., 33),
                                   (0.5, 32)])
@@ -113,7 +114,7 @@ def test_lbfgsb_1D(dx, n):
                          method='L-BFGS-B', jac=True,
                          bounds=bnds,
                          options=dict(gtol=1e-5 * Es * surface.rms_slope()
-                                           * surface.area_per_pt,
+                                      * surface.area_per_pt,
                                       ftol=0))
 
     forces = res.jac
@@ -133,17 +134,16 @@ def test_lbfgsb_1D(dx, n):
         x / s,
         mean_pressure=s * mean_pressure / Es)
 
-    import matplotlib.pyplot as plt
-    plt.figure()
-    #plt.plot(np.arange(n)*s/n, surface.heights())
-    plt.plot(x, gap +  (surface.heights()[:]+offset) , 'r-')
-    plt.plot(x, (surface.heights()[:]+offset), 'k-')
-    plt.figure()
-    plt.plot(x, forces/substrate.area_per_pt, 'k-')
-    plt.plot(x, pth, 'r-')
-    plt.show()
-
-
+    if False:
+        import matplotlib.pyplot as plt
+        plt.figure()
+        # plt.plot(np.arange(n)*s/n, surface.heights())
+        plt.plot(x, gap + (surface.heights()[:] + offset), 'r-')
+        plt.plot(x, (surface.heights()[:] + offset), 'k-')
+        plt.figure()
+        plt.plot(x, forces / substrate.area_per_pt, 'k-')
+        plt.plot(x, pth, 'r-')
+        plt.show()
 
     assert (np.allclose(
         forces /

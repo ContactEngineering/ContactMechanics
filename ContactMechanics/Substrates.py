@@ -151,10 +151,11 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
     def compute_k(self, disp_k, pot=True, forces=False):
         """
         computes and stores the elastic energy and/or surface forces
-        the as function of the surface displacement in Fourier Space. Note
-        that forces, not surface pressures are expected. This is contrary to
-        most formulations in the literature, but convenient in the code
-        (consistency with the softWall interaction potentials).
+        the as function of the surface displacement in Fourier Space.
+        Note that forces, not surface pressures are expected.
+        This is contrary to most formulations
+        in the literature, but convenient in the code (consistency with the
+        softWall interaction potentials). This choice may come back to bite me.
         Parameters:
         gap    -- array containing the point-wise gap values
         pot    -- (default True) whether the energy should be evaluated

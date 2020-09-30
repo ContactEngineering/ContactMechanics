@@ -25,7 +25,7 @@
 # SOFTWARE.
 #
 
-"""
+r"""
 Implement the FFT-based elasticity solver of ContactMechanics
 
 Convention used for the DFT :
@@ -43,7 +43,7 @@ fourier transform:
 .. math ::
 
     \tilde h_{op} =
-    \Sum_{mn} h_{mn} e^{i \underline{x}_{mn} \underline{q}_{op}}
+    \sum_{mn} h_{mn} e^{i x_{mn} q_{op}}
 
 corresponding `np.fft.rfft` and `fftengine.fft`
 
@@ -55,21 +55,41 @@ fourier inverse transform:
 .. math ::
 
     \tilde h_{mn} = \frac{1}{n_x n_y}
-    \Sum_{op} \tilde h_{op} e^{i \underline{x}_{mn} \underline{q}_{op}}
+    \sum_{op} \tilde h_{op} e^{i x_{mn} q_{op}}
 
-corresponding `np.fft.irfft` and `fftengine.fft * normalisation`
+corresponding `np.fft.irfft` and `fftengine.fft * fftengine.normalisation`
 
 Note that this is different from the definition in
 Jacobs, T. D. B. et al. Surf. Topogr.: Metrol. Prop. 5, 013001 (2017)
 (Equations A.3, A.4), that is closer to the continuous fourier transform.
 
-Parseval's theorem: Convolutions and powers:
+Parseval's theorem, Convolutions and powers:
 --------------------------------------------
 
-The prefactors in front of Parseval's theorem depend on the definition of
+The prefactors in front of the sums depend on the definition of
 the fourier transform.
 
-# TODO
+`Convolution theorem <https://ccrma.stanford.edu/~jos/mdft/Convolution_Theorem.html>`_:
+
+.. math ::
+
+    (x * y)_m = \sum_n x_n y_{m-n} = IDFT(\tilde x_k \tilde y_k)_m
+
+The `power theorem <https://ccrma.stanford.edu/~jos/mdft/Power_Theorem.html>`_
+can be deduced from the convolution theorem and states that:
+
+.. math ::
+
+    \sum_n x_n \overline{y_n} = \frac{1}{N} \sum_n \tilde x_n
+                                \overline{\tilde y_n}
+
+
+Parseval's Theorem is a special case of the power theorem:
+
+.. math::
+
+    \sum_n |x_n|^2 = \frac{1}{N} \sum_n |\tilde x_n|^2
+
 
 When the fourier space array contains only half the spectrum, making use of
 hermitian symmetry, extra care has to be taken when performing the sum.
@@ -106,13 +126,12 @@ real_buffer.array()[..] = a
 fftengine.fft(real_buffer, fourier_buffer)
 fourier_buffer <--> np.rfft2(a.T).T <--> np.fft.rfft2(a, axes=(1,0))
 
-#FIXME: @pastewka: I expected the fourier array to be transposed, so there is a
-#                  wrapper swapping the indexes and the array
-#                  is transposed in memory ?
+# FIXME: @pastewka: I expected the fourier array to be transposed, so there is a
+#                   wrapper swapping the indexes and the array
+#                   is transposed in memory ?
 
+""" # noqa E501
 
-
-"""
 
 from collections import namedtuple
 
@@ -403,7 +422,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 if self.stiffness_q0 == 0.0:
                     greens_function[0, 0] = 0.0
 
-
         elif self.dim == 2:
             if np.prod(self.nb_fourier_grid_pts) == 0:
                 greens_function = np.zeros(self.nb_fourier_grid_pts, order='f',
@@ -491,7 +509,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.fourier_buffer.array()[...] *= self.greens_function
         self.fftengine.ifft(self.fourier_buffer, self.real_buffer)
         return self.real_buffer.array().real / \
-               self.area_per_pt * self.fftengine.normalisation
+            self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_force(self, disp):
         """ Computes the force (*not* pressures) due to a given displacement
@@ -510,7 +528,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.fourier_buffer.array()[...] *= self.surface_stiffness
         self.fftengine.ifft(self.fourier_buffer, self.real_buffer)
         return -self.real_buffer.array().real * \
-               self.area_per_pt * self.fftengine.normalisation
+            self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
@@ -525,7 +543,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.real_buffer.array()[...] = -forces
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
         return self.greens_function * \
-               self.fourier_buffer.array() / self.area_per_pt
+            self.fourier_buffer.array() / self.area_per_pt
 
     def evaluate_k_force(self, disp):
         """ Computes the K-space forces (*not* pressures) due to a given
@@ -564,55 +582,42 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # pylint: disable=no-self-use
         return .5 * self.pnp.dot(np.ravel(disp), np.ravel(-forces))
 
-    def evaluate_elastic_energy_k_space(self, kforces, kdisp):
+    def evaluate_scalar_product_k_space(self, ka, kb):
         r"""
-        Computes the Energy due to forces and displacements using their Fourier
-        representation.
+        Computes the scalar product, i.e. the power, between the `a` and `b`,
+        given their fourier representation.
 
-        This uses Parseval's Theorem:
+        `Power theorem
+        <https://ccrma.stanford.edu/~jos/mdft/Power_Theorem.html>`_:
 
-        .. math::  \frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{
-        A}\sum_{\vec q_i}|H(\vec q_i)|^2
+        .. math ::
 
-        when using following definition of the FFT:
+            P = \sum_{ij} a_{ij} b_{ij} =
+                \frac{1}{n_x n_y}\sum_{ij}
+                \tilde a_{ij} \overline{\tilde b_{ij}}
 
-        .. math::  H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{
-        N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},
+        Note that for `a`, `b` real,
 
-        .. math::  h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{
-        A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s
-
-        When fitting the definition to numpy's norming convention
-        (https://docs.scipy.org/doc/numpy/reference/routines.fft.html#module
-        -numpy.fft)
-        Parseval's Theorem takes following form:
-
-        .. math::  \sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec 
-        q_i}|H(\vec q_i)|^2
+        .. math :: P = \sum_{kl} Re(\tilde a_{kl}) Re(\tilde b_{kl})
+        + Im(\tilde a_{kl}) Im(\tilde b_{kl})
 
 
-        In a parallelized code kforces and kdisp contain only the slice 
-        attributed to this processor
         Parameters
         ----------
-        kforces: array of complex type and of physical_sizes 
-        substrate.nb_domain_grid_pts
-        Fourier representation (output of a 2D rfftn) of the forces acting 
-        on the grid points
-        kdisp: array of complex type and of physical_sizes 
-        substrate.nb_domain_grid_pts
-        Fourier representation (output of a 2D rfftn) of the displacements 
-        of the grid points
+        ka, kb:
+            arrays of complex type and of size substrate.nb_fourier_grid_pts
+            Fourier representation (output of a 2D rfftn) `a` (resp. `b`)
+            (`nx, ny` real array)
 
 
         Returns
         -------
-        The elastic energy due to the forces and displacements
-        """  # noqa: E501
+        P
+            The scalar product of a and b
 
-        # using vdot instead of dot because of conjugate
+        """
 
-        # kdisp and kforces are the output of the 2D rfftn, that means the a
+        # ka and kb are the output of the 2D rfftn, that means the a
         # part of the transform is omitted because of the symetry along the
         # last dimension
         #
@@ -627,15 +632,15 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         #
         # The serial code implementation would look like this
         # if (self.nb_domain_grid_pts[-1] % 2 == 0)
-        #   return .5*(np.vdot(kdisp, -kforces).real +
+        #   return .5*(np.vdot(ka, kb).real +
         #           # adding the data that has been omitted by rfftn
-        #           np.vdot(kdisp[..., 1:-1], -kforces[..., 1:-1]).real
+        #           np.vdot(ka[..., 1:-1], kb[..., 1:-1]).real
         #           # because of symetry
         #           )/self.nb_pts
         # else :
-        #   return .5 * (np.vdot(kdisp, -kforces).real +
+        #   return .5 * (np.vdot(ka, kb).real +
         #                  # adding the data that has been omitted by rfftn
-        #      #           np.vdot(kdisp[..., 1:], -kforces[..., 1:]).real
+        #      #           np.vdot(ka[..., 1:], kb[..., 1:]).real
         #      #           # because of symetry
         #      #           )/self.nb_pts
         #
@@ -645,9 +650,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         # (wavevector 0 (even and odd) and ny//2 (only for odd)) these values
         # should only be added once
 
-        # FIXME: why this test was done in earlier versions
-        # if kdisp.shape[-1] > 0:
-        if kdisp.size > 0:
+        if ka.size > 0:
             if self.fourier_locations[0] == 0:
                 # First row of this fourier data is first of global data
                 fact0 = 1
@@ -682,11 +685,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             else:
                 factmiddle = 0
 
-            locsum = 0.5 * (
-                    factmiddle * np.vdot(kdisp[1:-1, ...],
-                                         -kforces[1:-1, ...]).real
-                    + fact0 * np.vdot(kdisp[0, ...], -kforces[0, ...]).real
-                    + factend * np.vdot(kdisp[-1, ...], -kforces[-1, ...]).real
+            # vdot(a, b) = conj(a) .  b
+            locsum = (
+                    factmiddle * np.vdot(ka[1:-1, ...],
+                                         kb[1:-1, ...]).real
+                    + fact0 * np.vdot(ka[0, ...], kb[0, ...]).real
+                    + factend * np.vdot(ka[-1, ...], kb[-1, ...]).real
             ) / np.prod(self.nb_domain_grid_pts)  # nopep8
             # We divide by the total number of points to get the appropriate
             # normalisation of the Fourier transform (in numpy the division by
@@ -694,11 +698,43 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         else:
             # This handles the case where the processor holds an empty
             # subdomain
-            locsum = np.array([], dtype=kdisp.real.dtype)
+            locsum = np.array([], dtype=ka.real.dtype)
         # print(locsum)
         return self.pnp.sum(locsum)
-        # else:
-        #    return 0
+
+    def evaluate_elastic_energy_k_space(self, kforces, kdisp):
+        r"""
+        Computes the Energy due to forces and displacements using their Fourier
+        representation.
+
+        .. math ::
+        
+            E_{el} &= - \frac{1}{2} \sum_{ij} u_{ij} f_{ij}  
+
+                   &= - \frac{1}{2} \frac{1}{n_x n_y} \sum_{kl} \tilde u{kl} \overline{\tilde f_{kl}} 
+        (:math:`\tilde f_{ij} = - \tilde K_{ijkl} u`)
+        
+        In a parallelized code kforces and kdisp contain only the slice 
+        attributed to this processor
+        
+        
+        Parameters
+        ----------
+        kforces: 
+            array of complex type and of size substrate.nb_fourier_grid_pts
+            Fourier representation (output of a 2D rfftn) of the forces acting on the grid points
+        kdisp: 
+            array of complex type and of physical_sizes substrate.nb_fourier_grid_pts
+            Fourier representation (output of a 2D rfftn) of the displacements of the grid points
+
+
+        Returns
+        -------
+        E
+            The elastic energy due to the forces and displacements
+        """  # noqa: E501, W291, W293
+
+        return - 0.5 * self.evaluate_scalar_product_k_space(kdisp, kforces)
 
     def evaluate(self, disp, pot=True, forces=False):
         """Evaluates the elastic energy and the point forces
@@ -726,11 +762,15 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """Evaluates the elastic energy and the point forces in fourier space
 
         Parameters:
-        disp_k   -- array of displacements in fourier space
-        pot    -- (default True) if true, returns potential energy
-        forces -- (default False) if true, returns forces
+        -----------
+        disp_k:
+            array of displacements in fourier space
+        pot: bool
+            (default True) if true, returns potential energy
+        forces: bool
+            (default False) if true, returns forces
         """
-        force = potential = None
+        potential = None
         if forces:
             force_k = self.evaluate_k_force_k(disp_k)
             if pot:
@@ -845,26 +885,22 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                            y_s - self.nb_grid_pts[1] * 2) * self._steps[1]
             y_s.shape = (1, -1)
             self.real_buffer.array()[...] = 1 / (np.pi * self.young) * (
-                    (x_s + a) * np.log(
-                ((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
-                                     (x_s + a) * (x_s + a))) /  # noqa: E501
-                ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
-                                     (x_s + a) * (x_s + a)))) +  # noqa: E501
-                    (y_s + b) * np.log(
-                ((x_s + a) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
-                                     (x_s + a) * (x_s + a))) /  # noqa: E501
-                ((x_s - a) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
-                                     (x_s - a) * (x_s - a)))) +  # noqa: E501
-                    (x_s - a) * np.log(
-                ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
-                                     (x_s - a) * (x_s - a))) /  # noqa: E501
-                ((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
-                                     (x_s - a) * (x_s - a)))) +  # noqa: E501
-                    (y_s - b) * np.log(
-                ((x_s - a) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
-                                     (x_s - a) * (x_s - a))) /  # noqa: E501
-                ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
-                                     (x_s + a) * (x_s + a)))))  # noqa: E501
+                    (x_s + a) * np.log(((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
+                                                            (x_s + a) * (x_s + a))) /  # noqa: E501
+                                       ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
+                                                            (x_s + a) * (x_s + a)))) +  # noqa: E501
+                    (y_s + b) * np.log(((x_s + a) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
+                                                            (x_s + a) * (x_s + a))) /  # noqa: E501
+                                       ((x_s - a) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
+                                                            (x_s - a) * (x_s - a)))) +  # noqa: E501
+                    (x_s - a) * np.log(((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
+                                                            (x_s - a) * (x_s - a))) /  # noqa: E501
+                                       ((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
+                                                            (x_s - a) * (x_s - a)))) +  # noqa: E501
+                    (y_s - b) * np.log(((x_s - a) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
+                                                            (x_s - a) * (x_s - a))) /  # noqa: E501
+                                       ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
+                                                            (x_s + a) * (x_s + a)))))  # noqa: E501
             self.fftengine.fft(self.real_buffer, self.fourier_buffer)
             return self.fourier_buffer.array().copy()
 
@@ -949,7 +985,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 is_ok &= check_vals(force[:, 0])
 
             maxiy = self.nb_grid_pts[1] - 1 - \
-                    self.topography_subdomain_locations[1]
+                self.topography_subdomain_locations[1]
             if 0 < maxiy < self.topography_nb_subdomain_grid_pts[1]:
                 is_ok &= check_vals(force[:, maxiy])
 
@@ -957,7 +993,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 is_ok &= check_vals(force[0, :])
 
             maxix = self.nb_grid_pts[0] - 1 - \
-                    self.topography_subdomain_locations[0]
+                self.topography_subdomain_locations[0]
             if 0 < maxix < self.topography_nb_subdomain_grid_pts[0]:
                 is_ok &= check_vals(force[maxix, :])
 
