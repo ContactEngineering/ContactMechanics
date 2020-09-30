@@ -38,14 +38,7 @@ import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
 from ContactMechanics.Tools import compare_containers
 
-###########TODO: REMOVE THIS IMPORT######################
-import sys
-
-sys.path.insert(1, '/home/sindhu/Downloads/Thesis/code/SindhuThesis')
-from optimiser import generic_cg_polonsky
-
-
-################################################################
+from NuMPI.Optimization import generic_cg_polonsky
 
 
 class IncompatibleFormulationError(Exception):

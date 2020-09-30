@@ -10,7 +10,7 @@ def test_primal_obj():
     sx, sy = 1., 1.
     R = 10.
 
-    gtol = 1e-5
+    gtol = 1e-8
 
     surface = make_sphere(R, (nx, ny), (sx, sy), kind="paraboloid")
     Es = 50.
@@ -25,25 +25,25 @@ def test_primal_obj():
     init_gap = np.zeros((nx, ny))  # .flatten()
     disp = init_gap + surface.heights() + offset
 
-    #####################POLONSKY-KEER########################################
+    # ####################POLONSKY-KEER##############################
     res = generic_cg_polonsky.min_cg(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product,
-        disp, polonskykeer=True)
+        disp, polonskykeer=True, gtol=gtol)
 
     assert res.success
     polonsky = res.x.reshape((nx, ny))
 
-    #####################BUGNICOURT#######################################
+    # ####################BUGNICOURT###################################
     res = generic_cg_polonsky.min_cg(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product,
-        disp, bugnicourt=True)
+        disp, bugnicourt=True, gtol=gtol)
     assert res.success
 
     bugnicourt = res.x.reshape((nx, ny))
 
-    ######################LBFGSB###########################################
+    # #####################LBFGSB#####################################
     res = optim.minimize(system.primal_objective(offset, gradient=True),
                          disp,
                          method='L-BFGS-B', jac=True,
@@ -63,6 +63,8 @@ def test_dual_obj():
     sx, sy = 1., 1.
     R = 10.
 
+    gtol = 1e-8
+
     surface = make_sphere(R, (nx, ny), (sx, sy), kind="paraboloid")
     Es = 50.
     substrate = Solid.PeriodicFFTElasticHalfSpace((nx, ny), young=Es,
@@ -77,7 +79,7 @@ def test_dual_obj():
     disp = init_gap + surface.heights() + offset
     init_pressure = substrate.evaluate_force(disp)
 
-    #####################LBFGSB#############################################
+    # ####################LBFGSB########################################
     res = optim.minimize(system.dual_objective(offset, gradient=True),
                          init_pressure,
                          method='L-BFGS-B', jac=True,
@@ -89,11 +91,11 @@ def test_dual_obj():
     gap_lbfgsb = fun(res.x)[1]
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
-    ####################BUGNICOURT########################################
+    # ###################BUGNICOURT########################################
     res = generic_cg_polonsky.min_cg(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product,
-        init_pressure, bugnicourt=True)
+        init_pressure, bugnicourt=True, gtol=gtol)
     assert res.success
 
     CA_bugnicourt = res.x.reshape((nx, ny)) > 0  # Contact area
@@ -101,11 +103,11 @@ def test_dual_obj():
     gap_bugnicourt = fun(res.x)[1]
     gap_bugnicourt = gap_bugnicourt.reshape((nx, ny))
 
-    ###################POLONSKY-KEER#####################################
+    # ##################POLONSKY-KEER#####################################
     res = generic_cg_polonsky.min_cg(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product,
-        init_pressure, polonskykeer=True)
+        init_pressure, polonskykeer=True, gtol=gtol)
     assert res.success
 
     CA_polonsky = res.x.reshape((nx, ny)) > 0  # Contact area

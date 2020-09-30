@@ -532,8 +532,18 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
-        Keyword Arguments:
-        forces   -- a numpy array containing point forces (*not* pressures)
+
+        Parameters
+        __________
+
+        forces : ndarray
+            a numpy array containing point forces (*not* pressures)
+
+        Returns
+        _______
+
+        displacement  :  ndarray
+                        displacement in k-space
         """
         if forces.shape != self.nb_subdomain_grid_pts:
             raise self.Error(
@@ -559,15 +569,24 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     disp.shape, self.nb_subdomain_grid_pts))  # nopep8
         self.real_buffer.array()[...] = disp
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-        return -self.surface_stiffness * \
-               self.fourier_buffer.array() * self.area_per_pt
+        return -self.surface_stiffness * self.fourier_buffer.array() * \
+            self.area_per_pt
 
     def evaluate_k_force_k(self, disp_k):
         """ Computes the K-space forces (*not* pressures) due to a given
         K-space displacement array.
 
-        Keyword Arguments:
-        disp?k   -- a complex numpy array containing point displacements
+        Parameters
+        __________
+
+        disp : ndarray k-space
+            a numpy k-space array containing point displacements
+
+        Returns
+        _______
+
+        force_k : nd array k-sapce forces
+
         """
 
         return -self.surface_stiffness * disp_k * self.area_per_pt
@@ -749,17 +768,20 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             if pot:
                 potential = self.evaluate_elastic_energy(force, disp)
         elif pot:
-            kforce = self.evaluate_k_force(disp)
+            # kforce = self.evaluate_k_force(disp)
             # TODO: OPTIMISATION: here kdisp is computed twice, because it's
             #  needed in kforce
             self.real_buffer.array()[...] = disp
             self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+            dispk = self.fourier_buffer.array()[...].copy()
+            kforce = self.evaluate_k_force_k(dispk)
             potential = self.evaluate_elastic_energy_k_space(
-                kforce, self.fourier_buffer.array())
+                kforce, dispk)
         return potential, force
 
     def evaluate_k(self, disp_k, pot=True, forces=False):
-        """Evaluates the elastic energy and the point forces in fourier space
+        """Evaluates the elastic energy and the point forces in fourier sapce
+        or k-space or reciprocal space.
 
         Parameters:
         -----------
@@ -770,7 +792,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         forces: bool
             (default False) if true, returns forces
         """
-        potential = None
+        force_k = potential = None
         if forces:
             force_k = self.evaluate_k_force_k(disp_k)
             if pot:
@@ -780,6 +802,64 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             force_k = self.evaluate_k_force_k(disp_k)
             potential = self.evaluate_elastic_energy_k_space(force_k, disp_k)
         return potential, force_k
+
+
+    def k_to_float(self,x_k):
+        """ This functions converts a k-space or reciprocal space or fourier
+        space 1D array ( shape: n // 2 + 1 or n+1 // 2 ) into a float array
+        (shape: (n+1,) ) with real & imaginary part arranged in adjacent places.
+
+        Parameters
+        __________
+
+        x_k :   (n//2 + 1,) shape array in k-space
+
+        Returns
+        _______
+
+        float_k_array   :   (n+1,) dimension array
+        """
+
+
+        temp_k = x_k.copy()
+        float = np.zeros(self.nb_grid_pts[0])
+        float[0] = temp_k[0]
+
+        if (self.nb_grid_pts[0] % 2) == 0:
+            float[2::2] = temp_k[1:-1].imag
+            float[1::2] = temp_k[1:].real
+        else:
+            float[1::2] = temp_k[1:].real
+            float[2::2] = temp_k[1:].imag
+
+        return float
+
+    def float_to_k(self,x):
+        """ This functions is inverse of function k_to_float(self,x_k). This
+        function converts a a float array
+        (shape: (n+1,) ) with real & imaginary part arranged in
+        adjacent places into a k-space or reciprocal space or fourier space
+        1D array ( shape: (n // 2 + 1 or n+1 // 2 , ) ) with values a+bj.
+
+        Parameters
+        __________
+
+        float_k_array :  (n+1,) shape array in k-space
+
+        Returns
+        _______
+
+        x_k   :   (n//2 + 1,) dimension array
+        """
+        temp = x.copy()
+        temp = np.append(temp,0*1j)
+        if (self.nb_grid_pts[0] % 2) == 0:
+            k_space = np.zeros(((len(temp)//2) + 1,), dtype=complex)
+        else:
+            k_space = np.zeros((((len(temp)+1)//2),), dtype= complex)
+        k_space[0] = temp[0]
+        k_space[1:] = temp[1::2] + temp[2::2]*1j
+        return k_space
 
 
 class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
