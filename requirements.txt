@@ -8,7 +8,7 @@ netCDF4==1.5.3
 h5py
 sphinx>=1.8.2
 sphinx_rtd_theme
-NuMPI>=0.1.2
+git+https://github.com/IMTEK-Simulation/NuMPI.git@feat/20_optimizer
 pytest>=4
 pytest-flake8
 setuptools_scm>=3.5.0
