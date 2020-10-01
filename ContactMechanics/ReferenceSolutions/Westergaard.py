@@ -38,8 +38,8 @@ Nommenclature:
 
 - :math:`E^*`: contact modulus
 - :math:`\lambda`: period of the sinusoidal indenter
-- :math:`h` amplitude of the sinusoidal indenter.
-peak to tale distance is :math:`2h`
+- :math:`h`: amplitude of the sinusoidal indenter. peak to tale distance
+  is :math:`2h`
 - :math:`a`: half contact width, "contact radius"
 
 
@@ -101,7 +101,8 @@ def _pressure(x, contact_radius=None, mean_pressure=None):
 
 def displacements(x, a):
     """
-    Displacents u in units of 2h, the geometry is 2h sin^2(pi x / lambda)
+    Displacements u in units of 2h, the geometry is
+    :math:`2h sin^2(pi x / lambda)`
 
     Parameters
     ----------
@@ -152,7 +153,7 @@ def displacements(x, a):
 
 def gap(x, a):
     """
-    gap g in units of 2h, the geometry is 2h sin^2(pi x / lambda)
+    gap g in units of 2h, the geometry is :math:`2h sin^2(pi x / lambda)`
 
     Parameters
     ----------
@@ -202,13 +203,13 @@ def elastic_energy(mean_pressure):
     Parameters
     ----------
     mean_pressure: float or np.array
-        mean pressure in units of pi Es h/ lambda
+        mean pressure in units of :math:`\pi Es h/ lambda`
 
     Returns
     -------
-    energy per unit area in units of $h p_{wfc}$
+    energy per unit area in units of :math:`h p_{wfc}`
 
-    with $p_{wfc} = pi E^* h/\lambda$
+    with :math:`p_{wfc} = \pi E^* h/\lambda`
     """
 
     assert np.all(mean_pressure <= 1)
@@ -224,13 +225,13 @@ def elastic_energy_a(a):
     Parameters
     ----------
     a: float or np.array
-        half contact width in units of the wavelength $\lambda$
+        half contact width in units of the wavelength :math:`\lambda`
 
     Returns
     -------
-    energy per unit area in units of $h p_{wfc}$
+    energy per unit area in units of :math:`h p_{wfc}`
 
-    with $p_{wfc} = pi E^* h/\lambda$
+    with :math:`p_{wfc} = pi E^* h/\lambda`
     """
     return (1 / 4 - log(sin(pi * a) ** 2) / 2) * sin(pi * a) ** 4
 
