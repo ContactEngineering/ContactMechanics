@@ -134,55 +134,25 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
 
-        if fft == "numpy":
-            class NumpyEngine:
-                def __init__(self, nb_domain_grid_pts):
-                    self.nb_domain_grid_pts = nb_domain_grid_pts
-                    self.nb_subdomain_grid_pts = nb_domain_grid_pts
-                    self.subdomain_locations = (0, 0)  # readonly
+        self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft,
+                             communicator=communicator,
+                             allow_temporary_buffer=False,
+                             allow_destroy_input=True)
+        # Allocate buffers and create plan for one degree of freedom
+        self.real_buffer = self.fftengine.register_real_space_field(
+            "real-space", 1)
+        self.fourier_buffer = self.fftengine.register_fourier_space_field(
+            "fourier-space", 1)
 
-                    self.nb_fourier_grid_pts = (
-                        nb_domain_grid_pts[0] // 2 + 1,
-                        *nb_domain_grid_pts[1:])
-                    self.fourier_locations = (0, 0)
-
-                @property
-                def subdomain_slices(self):
-                    return tuple(
-                        (slice(start, start + length) for start, length in
-                         zip(self.subdomain_locations,
-                             self.nb_subdomain_grid_pts)))
-
-                @property
-                def fourier_slice(self):
-                    return tuple(
-                        (slice(start, start + length) for start, length in
-                         zip(self.fourier_locations,
-                             self.nb_fourier_grid_pts)))
-
-                def fft(self, arr):
-                    return np.fft.rfftn(arr.T).T
-
-                def ifft(self, arr):
-                    return np.fft.irfftn(arr.T,
-                                         self.nb_subdomain_grid_pts[::-1]).T
-
-                @property
-                def normalisation(self):
-                    return 1.
-
-            self.fftengine = NumpyEngine(self.nb_domain_grid_pts)
-
-        else:
-            self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft,
-                                 communicator=communicator)
+        self.greens_function = None
+        self.surface_stiffness = None
 
         self._communicator = communicator
         self.pnp = Reduction(communicator)
 
         if superclass:
-            self._compute_fourier_coeffs()
-            self._compute_i_fourier_coeffs()
+            self.greens_function = self._compute_greens_function()
+            self.surface_stiffness = self._compute_surface_stiffness()
 
     @property
     def dim(self, ):
@@ -301,7 +271,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                "physical_sizes(nb_grid_pts) in {1}, E' = {0.young}" \
             .format(self, size_str)
 
-    def _compute_fourier_coeffs(self):
+    def _compute_greens_function(self):
         """
         Compute the weights w relating fft(displacement) to fft(pressure):
         fft(u) = w*fft(p), see (6) Stanley & Kato J. Tribol. 119(3), 481-485
@@ -319,16 +289,16 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             2015]
         """
         if self.dim == 1:
-            facts = np.zeros(self.nb_fourier_grid_pts)
+            greens_function = np.zeros(self.nb_fourier_grid_pts, order='f')
             for index in range(self.fourier_locations[0] + 2,
                                self.nb_fourier_grid_pts[0] + 1):
-                facts[index - 1] = \
+                greens_function[index - 1] = \
                     self.physical_sizes[0] / \
                     (self.contact_modulus * index * np.pi)
-            self.weights = facts
         elif self.dim == 2:
             if np.prod(self.nb_fourier_grid_pts) == 0:
-                self.weights = np.zeros(self.nb_fourier_grid_pts)
+                greens_function = np.zeros(self.nb_fourier_grid_pts, order='f',
+                                           dtype=complex)
             else:
                 nx, ny = self.nb_grid_pts
                 sx, sy = self.physical_sizes
@@ -348,7 +318,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     # q[0,0] has no Impact on the end result,
                     # but q[0,0] =  0 produces runtime Warnings
                     # (because corr[0,0]=inf)
-                facts = np.pi * self.contact_modulus * q
+                surface_stiffness = np.pi * self.contact_modulus * q
                 if self.thickness is not None:
                     # Compute correction for finite thickness
                     q *= 2 * np.pi * self.thickness
@@ -362,32 +332,38 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     # then q-values that are converged to the infinite system
                     # expression.
                     corr[np.isnan(corr)] = 1.0
-                    facts *= corr
+                    surface_stiffness *= corr
                     if self.fourier_locations == (0, 0):
-                        facts[0, 0] = \
+                        surface_stiffness[0, 0] = \
                             self.young / self.thickness * \
                             (1 - self.poisson) / ((1 - 2 * self.poisson) *
                                                   (1 + self.poisson))
                 else:
                     if self.fourier_locations == (0, 0):
                         if self.stiffness_q0 is None:
-                            facts[0, 0] = (facts[1, 0].real +
-                                           facts[0, 1].real) / 2
+                            surface_stiffness[0, 0] = \
+                                (surface_stiffness[1, 0].real +
+                                 surface_stiffness[0, 1].real) / 2
                         elif self.stiffness_q0 == 0.0:
-                            facts[0, 0] = 1.0
+                            surface_stiffness[0, 0] = 1.0
                         else:
-                            facts[0, 0] = self.stiffness_q0
+                            surface_stiffness[0, 0] = self.stiffness_q0
 
-                self.weights = 1 / facts
+                greens_function = 1 / surface_stiffness
                 if self.fourier_locations == (0, 0):
                     if self.stiffness_q0 == 0.0:
-                        self.weights[0, 0] = 0.0
+                        greens_function[0, 0] = 0.0
+        return greens_function
 
-    def _compute_i_fourier_coeffs(self):
-        """Invert the weights w relating fft(displacement) to fft(pressure):
+    def _compute_surface_stiffness(self):
         """
-        self.iweights = np.zeros_like(self.weights)
-        self.iweights[self.weights != 0] = 1. / self.weights[self.weights != 0]
+        Invert the weights w relating fft(displacement) to fft(pressure):
+        """
+        surface_stiffness = np.zeros(self.nb_fourier_grid_pts, order='f',
+                                     dtype=complex)
+        surface_stiffness[self.greens_function != 0] = \
+            1. / self.greens_function[self.greens_function != 0]
+        return surface_stiffness
 
     def evaluate_disp(self, forces):
         """ Computes the displacement due to a given force array
@@ -396,11 +372,14 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """
         if forces.shape != self.nb_subdomain_grid_pts:
             raise self.Error(
-                ("force array has a different shape ({0}) than this halfspace'"
-                 "s nb_grid_pts ({1})").format(
-                    forces.shape, self.nb_subdomain_grid_pts))  # nopep8
-        return self.fftengine.ifft(
-            self.weights * self.fftengine.fft(-forces)).real / \
+                ("force array has a different shape ({0}) than this "
+                 "halfspace's nb_grid_pts ({1})").format(
+                    forces.shape, self.nb_subdomain_grid_pts))
+        self.real_buffer.array()[...] = -forces
+        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+        self.fourier_buffer.array()[...] *= self.greens_function
+        self.fftengine.ifft(self.fourier_buffer, self.real_buffer)
+        return self.real_buffer.array().real / \
             self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_force(self, disp):
@@ -412,11 +391,14 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """
         if disp.shape != self.nb_subdomain_grid_pts:
             raise self.Error(
-                ("displacements array has a different shape ({0}) than this "
-                 "halfspace's nb_grid_pts ({1})").format(
-                    disp.shape, self.nb_subdomain_grid_pts))  # nopep8
-        return -self.fftengine.ifft(
-            self.iweights * self.fftengine.fft(disp)).real * \
+                ("displacements array has a different shape ({0}) than "
+                 "this halfspace's nb_grid_pts ({1})").format(
+                    disp.shape, self.nb_subdomain_grid_pts))
+        self.real_buffer.array()[...] = disp
+        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+        self.fourier_buffer.array()[...] *= self.surface_stiffness
+        self.fftengine.ifft(self.fourier_buffer, self.real_buffer)
+        return -self.real_buffer.array().real * \
             self.area_per_pt * self.fftengine.normalisation
 
     def evaluate_k_disp(self, forces):
@@ -429,7 +411,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("force array has a different shape ({0}) than this halfspace'"
                  "s nb_grid_pts ({1})").format(
                     forces.shape, self.nb_subdomain_grid_pts))  # nopep8
-        return self.weights * self.fftengine.fft(-forces) / self.area_per_pt
+        self.real_buffer.array()[...] = -forces
+        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+        return self.greens_function * \
+            self.fourier_buffer.array() / self.area_per_pt
 
     def evaluate_k_force(self, disp):
         """ Computes the K-space forces (*not* pressures) due to a given
@@ -443,7 +428,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 ("displacements array has a different shape ({0}) than this "
                  "halfspace's nb_grid_pts ({1})").format(
                     disp.shape, self.nb_subdomain_grid_pts))  # nopep8
-        return -self.iweights * self.fftengine.fft(disp) * self.area_per_pt
+        self.real_buffer.array()[...] = disp
+        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+        return -self.surface_stiffness * \
+            self.fourier_buffer.array() * self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
         """
@@ -597,8 +585,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             kforce = self.evaluate_k_force(disp)
             # TODO: OPTIMISATION: here kdisp is computed twice, because it's
             #  needed in kforce
+            self.real_buffer.array()[...] = disp
+            self.fftengine.fft(self.real_buffer, self.fourier_buffer)
             potential = self.evaluate_elastic_energy_k_space(
-                kforce, self.fftengine.fft(disp))
+                kforce, self.fourier_buffer.array())
         return potential, force
 
 
@@ -649,8 +639,8 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
         super().__init__(nb_grid_pts, young, physical_sizes, superclass=False,
                          fft=fft, communicator=communicator)
-        self._compute_fourier_coeffs()
-        self._compute_i_fourier_coeffs()
+        self.greens_function = self._compute_greens_function()
+        self.surface_stiffness = self._compute_surface_stiffness()
         self._check_boundaries = check_boundaries
 
     def spawn_child(self, nb_grid_pts):
@@ -679,59 +669,36 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                  self.nb_subdomain_grid_pts[i]))
                       for i in range(self.dim)])
 
-    def _compute_fourier_coeffs2(self):
-        """Compute the weights w relating fft(displacement) to fft(pressure):
-           fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
-           Now Deprecated
-           This is the fastest version, about 2 orders faster than the python
-           versions, however a bit memory-hungry, this version used to be
-           default, but turns out to have no significant advantage over the
-           matscipy implementation
+    @property
+    def domain_boundary_mask(self):
+        r"""
+
+        Returns a mask of the points that are on the boundary of the domain
+
+        Returns
+        -------
+        bool ndarray with size self.topography_nb_subdomain_grid_pts
         """
-        # pylint: disable=too-many-locals
-        if self.communicator is not None and self.communicator.size > 1:
-            raise NotImplementedError(
-                "This implementation of the computation of the fourier coeffs "
-                "only works in serial.")
+        mask = np.zeros(self.topography_nb_subdomain_grid_pts, dtype=bool)
+        if self.dim == 2:
+            if self.subdomain_locations[1] == 0:
+                mask[:, 0] = 1
 
-        if self.dim == 1:
-            pass
-        else:
-            x_grid = np.arange(self.nb_grid_pts[0] * 2)
-            x_grid = np.where(
-                x_grid <= self.nb_grid_pts[0], x_grid,
-                x_grid - self.nb_grid_pts[0] * 2) * self._steps[0]
-            x_grid.shape = (-1, 1)
-            y_grid = np.arange(self.nb_grid_pts[1] * 2)
-            y_grid = np.where(
-                y_grid <= self.nb_grid_pts[1], y_grid,
-                y_grid - self.nb_grid_pts[1] * 2) * self._steps[1]
-            y_grid.shape = (1, -1)
-            x_p = (x_grid + self._steps[0] * .5).reshape((-1, 1))
-            x_m = (x_grid - self._steps[0] * .5).reshape((-1, 1))
-            xp2 = x_p * x_p
-            xm2 = x_m * x_m
+            maxiy = self.nb_grid_pts[1] - 1 - \
+                self.topography_subdomain_locations[1]
+            if 0 < maxiy < self.topography_nb_subdomain_grid_pts[1]:
+                mask[:, maxiy] = 1
 
-            y_p = y_grid + self._steps[1] * .5
-            y_m = y_grid - self._steps[1] * .5
-            yp2 = y_p * y_p
-            ym2 = y_m * y_m
-            sqrt_yp_xp = np.sqrt(yp2 + xp2)
-            sqrt_ym_xp = np.sqrt(ym2 + xp2)
-            sqrt_yp_xm = np.sqrt(yp2 + xm2)
-            sqrt_ym_xm = np.sqrt(ym2 + xm2)
-            facts = 1 / (np.pi * self.young) * (
-                    x_p * np.log((y_p + sqrt_yp_xp) /
-                                 (y_m + sqrt_ym_xp)) +
-                    y_p * np.log((x_p + sqrt_yp_xp) /
-                                 (x_m + sqrt_yp_xm)) +
-                    x_m * np.log((y_m + sqrt_ym_xm) /
-                                 (y_p + sqrt_yp_xm)) +
-                    y_m * np.log((x_m + sqrt_ym_xm) /
-                                 (x_p + sqrt_ym_xp)))
-        return self.fftengine.fft(facts).copy(), facts
+            if self.subdomain_locations[0] == 0:
+                mask[0, :] = 1
 
-    def _compute_fourier_coeffs(self):
+            maxix = self.nb_grid_pts[0] - 1 - \
+                self.topography_subdomain_locations[0]
+            if 0 < maxix < self.topography_nb_subdomain_grid_pts[0]:
+                mask[maxix, :] = 1
+        return mask
+
+    def _compute_greens_function(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
            fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
 
@@ -739,7 +706,6 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
            concern
         """
         # pylint: disable=invalid-name
-        facts = np.zeros(self.nb_subdomain_grid_pts)
         a = self._steps[0] * .5
         if self.dim == 1:
             pass
@@ -757,7 +723,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             y_s = np.where(y_s <= self.nb_grid_pts[1], y_s,
                            y_s - self.nb_grid_pts[1] * 2) * self._steps[1]
             y_s.shape = (1, -1)
-            facts = 1 / (np.pi * self.young) * (
+            self.real_buffer.array()[...] = 1 / (np.pi * self.young) * (
                     (x_s + a) * np.log(((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +  # noqa: E501
                                                             (x_s + a) * (x_s + a))) /  # noqa: E501
                                        ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
@@ -774,11 +740,8 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                                             (x_s - a) * (x_s - a))) /  # noqa: E501
                                        ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +  # noqa: E501
                                                             (x_s + a) * (x_s + a)))))  # noqa: E501
-            self.weights = self.fftengine.fft(facts).copy()
-            # copy is needed because the output of fftengine.fft is only a view
-            # on the outputarray, that means it will be overwritten during the
-            # next fft
-            return self.weights, facts
+            self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+            return self.fourier_buffer.array().copy()
 
     def evaluate_disp(self, forces):
         """ Computes the displacement due to a given force array

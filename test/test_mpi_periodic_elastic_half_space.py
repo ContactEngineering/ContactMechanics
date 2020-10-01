@@ -26,6 +26,7 @@
 import numpy as np
 import pytest
 
+from muFFT import FFT
 from NuMPI import MPI
 
 from ContactMechanics import PeriodicFFTElasticHalfSpace
@@ -64,12 +65,14 @@ def test_weights(comm, pnp, nx, ny,
     reference = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                             fft="fftw",
                                             communicator=MPI.COMM_SELF)
-    np.testing.assert_allclose(reference.weights[substrate.fourier_slices],
-                               substrate.weights, rtol=0, atol=1e-16,
-                               err_msg="weights are different")
-    np.testing.assert_allclose(reference.iweights[substrate.fourier_slices],
-                               substrate.iweights, rtol=0, atol=1e-16,
-                               err_msg="iweights are different")
+    np.testing.assert_allclose(
+        reference.greens_function[substrate.fourier_slices],
+        substrate.greens_function, rtol=0, atol=1e-16,
+        err_msg="weights are different")
+    np.testing.assert_allclose(
+        reference.surface_stiffness[substrate.fourier_slices],
+        substrate.surface_stiffness, rtol=0, atol=1e-16,
+        err_msg="iweights are different")
 
 
 @pytest.mark.parametrize("nx, ny", [(8, 15),
@@ -126,6 +129,8 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
 
         substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                                 fft='mpi', communicator=comm)
+        fftengine = FFT((nx, ny), fft='mpi', communicator=comm)
+        fftengine.create_plan(1)
 
         kpressure = substrate.evaluate_k_force(
             disp[substrate.subdomain_slices]) / substrate.area_per_pt / (
@@ -139,14 +144,17 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
         if k[0] == nx // 2 and nx % 2 == 0:
             expected_k_disp[k[0], -k[1]] += .5 + .5j
 
-        np.testing.assert_allclose(
-            substrate.fftengine.fft(disp[substrate.subdomain_slices]) / (
-                    nx * ny),
-            expected_k_disp[substrate.fourier_slices], rtol=1e-7, atol=1e-10)
+        fft_disp = np.zeros(substrate.nb_fourier_grid_pts, order='f',
+                            dtype=complex)
+        fftengine.fft(disp[substrate.subdomain_slices], fft_disp)
+        np.testing.assert_allclose(fft_disp / (nx * ny),
+                                   expected_k_disp[substrate.fourier_slices],
+                                   rtol=1e-7, atol=1e-10)
 
         expected_k_pressure = - E_s / 2 * q * expected_k_disp
-        np.testing.assert_allclose(kpressure, expected_k_pressure[
-            substrate.fourier_slices], rtol=1e-7, atol=1e-10)
+        np.testing.assert_allclose(
+            kpressure, expected_k_pressure[substrate.fourier_slices],
+            rtol=1e-7, atol=1e-10)
 
         computedpressure = substrate.evaluate_force(
             disp[substrate.subdomain_slices]) / substrate.area_per_pt

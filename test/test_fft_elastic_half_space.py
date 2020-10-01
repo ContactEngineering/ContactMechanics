@@ -30,7 +30,6 @@ Tests the fft elastic halfspace implementation
 """
 
 import unittest
-import time
 
 import pytest
 
@@ -143,8 +142,8 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
                                    hs.evaluate_disp(hs.evaluate_force(disp)))
             self.assertTrue(
                 error < tol,
-                "for nb_grid_pts = {}, error = {} > tol = {}".format(
-                    res, error, tol))
+                "for nb_grid_pts = {}, error = {} > tol = {}"
+                .format(res, error, tol))
 
             force = random(res)
             force -= force.mean()
@@ -178,7 +177,7 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
             # verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, L)
             fforce = rfftn(force.T).T
-            fdisp = hs.weights * fforce
+            fdisp = hs.greens_function * fforce
             self.assertTrue(
                 Tools.mean_err(fforce, Fforce, rfft=True) < tol,
                 "fforce = \n{},\nFforce = \n{}".format(
@@ -315,14 +314,14 @@ class PeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
                                           self.physical_sizes, thickness=20,
                                           poisson=self.poisson)
         # diff = hs.weights - hsf.weights
-        np.testing.assert_allclose(hs.weights.ravel()[1:],
-                                   hsf.weights.ravel()[1:], atol=1e-6)
+        np.testing.assert_allclose(hs.greens_function.ravel()[1:],
+                                   hsf.greens_function.ravel()[1:], atol=1e-6)
 
     def test_no_nans(self):
         hs = PeriodicFFTElasticHalfSpace(self.res, self.young,
                                          self.physical_sizes, thickness=100,
                                          poisson=self.poisson)
-        self.assertTrue(np.count_nonzero(np.isnan(hs.weights)) == 0)
+        self.assertTrue(np.count_nonzero(np.isnan(hs.greens_function)) == 0)
 
     # TODO: Test independence of result of x and y Direction,
     # this is already in the MPI variant
@@ -352,35 +351,17 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         error = ((pressure[0] - pressure[1]) ** 2).sum().sum() / base_res ** 2
         self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
 
-    def test_FourierCoeffCost(self):
-        print()
-        print('Computation of Fourier coefficients:')
-        for i in range(1, 4):
-            res = (2 ** i, 2 ** i)
-            hs = FreeFFTElasticHalfSpace(res, self.young, self.physical_sizes)
-
-            start = time.perf_counter()
-            w2, f2 = hs._compute_fourier_coeffs2()
-            duration2 = time.perf_counter() - start
-
-            start = time.perf_counter()
-            w3, f3 = hs._compute_fourier_coeffs()
-            duration3 = time.perf_counter() - start
-
-            print(
-                "for {0[0]}: np {1:.2f}, mat_scipy {2:.2f} ms({3:.1f}%)"
-                .format(res, duration2 * 1e3, duration3 * 1e3,
-                        1e2 * (1 - duration3 / duration2)))
-            error = Tools.mean_err(w2, w3)
-            self.assertTrue(error == 0)
-
     def test_rfftn(self):
         force = np.zeros([2 * r for r in self.res])
 
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         from muFFT import FFT
         ref = rfftn(force.T).T
-        tested = FFT([2 * r for r in self.res], fft="serial").fft(force)
+        fftengine = FFT([2 * r for r in self.res], fft="serial")
+        fftengine.create_plan(1)
+        tested = np.zeros(fftengine.nb_fourier_grid_pts, order='f',
+                          dtype=complex)
+        fftengine.fft(force, tested)
         np.testing.assert_allclose(ref.real,
                                    tested.real)
         np.testing.assert_allclose(ref.imag,
@@ -401,7 +382,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
 
         # np.testing.assert_allclose(rfftn(-force), hs.fftengine.fft(-force))
         # hs.fftengine.fft(-force)
-        kdisp_hs = hs.weights * rfftn(-force.T).T / hs.area_per_pt
+        kdisp_hs = hs.greens_function * rfftn(-force.T).T / hs.area_per_pt
         kdisp = hs.evaluate_k_disp(force)
 
         np.testing.assert_allclose(kdisp_hs, kdisp, rtol=1e-10)
@@ -469,7 +450,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
             # verify consistency
             hs = PeriodicFFTElasticHalfSpace(res, E, L)
             fforce = rfftn(force.T).T
-            fdisp = hs.weights * fforce
+            fdisp = hs.greens_function * fforce
             self.assertTrue(
                 Tools.mean_err(fforce, Fforce, rfft=True) < tol,
                 "fforce = \n{},\nFforce = \n{}".format(
@@ -532,3 +513,18 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         error = Tools.mean_err(forces[0], forces[1])
         self.assertTrue(error < tol,
                         "error = {} ≥ tol = {}".format(error, tol))
+
+
+def test_domain_boundary_mask():
+    nx = 4
+    system = FreeFFTElasticHalfSpace((nx, nx), 1, (1., 1.))
+
+    np.testing.assert_allclose(
+        system.domain_boundary_mask,
+        [
+            [1, 1, 1, 1],
+            [1, 0, 0, 1],
+            [1, 0, 0, 1],
+            [1, 1, 1, 1],
+            ]
+        )

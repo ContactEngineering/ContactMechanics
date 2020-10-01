@@ -109,22 +109,20 @@ def test_weights(comm, pnp, nx, ny, basenpoints):
                 ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +
                                      (x_s + a) * (x_s + a)))))
         weights = np.fft.rfftn(facts.T).T
-        return weights, facts
+        return weights
 
     sx, sy = 100, 200
 
-    ref_weights, ref_facts = _compute_fourier_coeffs_serial_impl(
+    ref_weights = _compute_fourier_coeffs_serial_impl(
         FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                 fft="serial"))
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                         fft='mpi', communicator=comm)
-    local_weights, local_facts = substrate._compute_fourier_coeffs()
+    local_weights = substrate._compute_greens_function()
     # print(local_weights.shape, ref_weights.shape, substrate.fourier_slices)
     np.testing.assert_allclose(local_weights,
                                ref_weights[substrate.fourier_slices], 1e-12)
-    np.testing.assert_allclose(local_facts,
-                               ref_facts[substrate.subdomain_slices], 1e-12)
 
 
 @pytest.mark.parametrize("nx,ny", [(64, 32), (65, 33)])

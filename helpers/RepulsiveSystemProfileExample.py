@@ -32,9 +32,8 @@ to profile and accelerate PyCo
 import numpy as np
 
 from ContactMechanics import FreeFFTElasticHalfSpace
-from PyCo.Adhesion import HardWall
-from SurfaceTopography import make_sphere
-from PyCo.System import make_system
+from SurfaceTopography.Special import make_sphere
+from ContactMechanics.Factory import make_system
 import sys
 
 #import matplotlib.pyplot as plt
@@ -50,8 +49,7 @@ radius = 500e-6
 e_combo = 4e6
 
 # system
-substrate = FreeFFTElasticHalfSpace((res, res), e_combo, (size, size))
-interaction = HardWall()
+
 surface = make_sphere(radius, (res, res), (size, size))
 system = make_system(substrate, interaction, surface)
 
