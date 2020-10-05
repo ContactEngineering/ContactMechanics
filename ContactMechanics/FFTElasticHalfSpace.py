@@ -939,6 +939,35 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                                  self.nb_subdomain_grid_pts[i]))
                       for i in range(self.dim)])
 
+    @property
+    def domain_boundary_mask(self):
+        r"""
+
+        Returns a mask of the points that are on the boundary of the domain
+
+        Returns
+        -------
+        bool ndarray with size self.topography_nb_subdomain_grid_pts
+        """
+        mask = np.zeros(self.topography_nb_subdomain_grid_pts, dtype=bool)
+        if self.dim == 2:
+            if self.subdomain_locations[1] == 0:
+                mask[:, 0] = 1
+
+            maxiy = self.nb_grid_pts[1] - 1 - \
+                self.topography_subdomain_locations[1]
+            if 0 < maxiy < self.topography_nb_subdomain_grid_pts[1]:
+                mask[:, maxiy] = 1
+
+            if self.subdomain_locations[0] == 0:
+                mask[0, :] = 1
+
+            maxix = self.nb_grid_pts[0] - 1 - \
+                self.topography_subdomain_locations[0]
+            if 0 < maxix < self.topography_nb_subdomain_grid_pts[0]:
+                mask[maxix, :] = 1
+        return mask
+
     def _compute_greens_function(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
            fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
