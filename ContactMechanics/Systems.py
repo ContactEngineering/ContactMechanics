@@ -577,8 +577,11 @@ class NonSmoothContactSystem(SystemBase):
     def primal_hessian_product(self, gap):
         """Returns the hessian product of the primal_objective function.
         """
-        res = self.substrate.nb_domain_grid_pts
+        res = self.substrate.nb_domain_grid_pts # TODO: this is not parallelized yet
 
+        # TODO: do all the minimizers want to use 1d arrays ?
+        # If not the reshape(-1) has to be put there depending on the shape of gap
+        # or simple .reshape(gap.shape)
         hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(-1)
         return hessp
 
