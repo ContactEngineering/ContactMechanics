@@ -208,6 +208,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         lbounds.mask[self.substrate.topography_subdomain_slices] = False
         lbounds[self.substrate.topography_subdomain_slices] \
             = self.surface.heights() + offset
+
         lbounds.set_fill_value(-np.inf)
 
         return lbounds
@@ -279,7 +280,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                      evaluation.
         logger :
                  (default None)
-                 log information at every iteration.
+                 log information at every objective evaluation.
         """
 
         if self.substrate.communicator is not None and \
@@ -518,3 +519,143 @@ class NonSmoothContactSystem(SystemBase):
 
             self.substrate.check()
         return result
+
+    def primal_objective(self, offset, pot=False, gradient=True):
+        r"""To solve the primal objective using gap as the variable.
+        Can be fed directly to standard solvers ex: scipy solvers etc
+        and returns the elastic energy and it's gradient (negative of
+        the forces) as a function of the gap.
+
+        Parameters
+        __________
+
+        gap : float
+              gap between the contact surfaces.
+        offset : float
+                constant value to add to the surface heights
+        pot : (default False)
+        gradient : (default True)
+
+        Returns
+        _______
+        energy : float
+                value of energy(scalar value).
+        force : float,array
+                value of force(array).
+
+        Notes
+        _____
+
+        Objective:
+        .. math ::
+            min_u f = 1/2u_i*K_{ij}*u_j \\
+            \\
+            gradient = K_{ij}*u_j which is, Force. \\
+
+        """
+
+        res = self.substrate.nb_domain_grid_pts
+        if gradient:
+            def fun(gap):
+                disp = gap.reshape(res) + self.surface.heights() + offset
+                try:
+                    self.evaluate(
+                        disp.reshape(res), offset, forces=True)
+                except ValueError as err:
+                    raise ValueError(
+                        "{}: gap.shape: {}, res: {}".format(
+                            err, gap.shape, res))
+                return (self.energy, -self.force.reshape(-1))
+        else:
+            def fun(gap):
+                disp = gap.reshape(res) + self.surface.heights() + offset
+                return self.evaluate(
+                    disp.reshape(res), offset, forces=False)[0]
+
+        return fun
+
+    def primal_hessian_product(self, gap):
+        """Returns the hessian product of the primal_objective function.
+        """
+        res = self.substrate.nb_domain_grid_pts
+
+        hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(-1)
+        return hessp
+
+    def evaluate_dual(self, press, offset, pot=True, forces=False):
+        """
+        Computes the energies and forces in the system for a given displacement
+        field
+        """
+        disp = self.substrate.evaluate_disp(-press)
+        if forces:
+            self.gradient = disp - self.surface.heights() - offset
+        else:
+            self.gradient = None
+
+        self.energy = 1 / 2 * np.sum(press * disp) - np.sum(
+            press * (self.surface.heights() + offset))
+
+        return (self.energy, self.gradient)
+
+    def dual_objective(self, offset, pot=False, gradient=True):
+        r"""Objective function to handle dual objective, i.e. the Legendre
+        transformation from displacements as variable to pressures
+        (the Lagrange multiplier) as variable.
+
+        Parameters
+        __________
+        pressure : float
+                pressure between the contact surfaces.
+        offset : float
+                constant value to add to the surface heights
+        pot : (default False)
+        gradient : (default True)
+
+        Returns
+        _______
+        energy : float
+                value of energy(scalar value).
+
+        gradient : float,array
+                value of gradient(array) or the value of gap.
+
+        Notes
+        _____
+        Objective:
+
+        .. math ::
+
+            min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j -
+            \lambda_i h_i \\
+            \\
+            gradient = K^{-1}_{ij}*\lambda_j - h_i \hspace{0.1cm}
+            \text{which is,} \\
+            gap = displacement - height \\
+
+        """
+
+        res = self.substrate.nb_domain_grid_pts
+        if gradient:
+            def fun(pressure):
+                try:
+                    self.evaluate_dual(
+                        pressure.reshape(res), offset, forces=True)
+                except ValueError as err:
+                    raise ValueError(
+                        "{}: gap.shape: {}, res: {}".format(
+                            err, pressure.shape, res))
+                return (self.energy, self.gradient.reshape(-1))
+        else:
+            def fun(gap):
+                return self.evaluate(
+                    gap.reshape(res), forces=False)[0]
+
+        return fun
+
+    def dual_hessian_product(self, pressure):
+        r"""Returns the hessian product of the dual_objective function.
+        """
+        res = self.substrate.nb_domain_grid_pts
+        hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
+        return hessp.reshape(-1)
