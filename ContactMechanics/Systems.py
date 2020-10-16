@@ -280,7 +280,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                      evaluation.
         logger :
                  (default None)
-                 log information at every iteration.
+                 log information at every objective evaluation.
         """
 
         if self.substrate.communicator is not None and \
