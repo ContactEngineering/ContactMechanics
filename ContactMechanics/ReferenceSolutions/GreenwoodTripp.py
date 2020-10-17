@@ -41,8 +41,10 @@ def _Fn(h, n, phi):
 
 
 def Fn(h, n, phi=lambda s: np.exp(-s ** 2 / 2) / ((2 * np.pi) ** (1 / 2))):
-    """
-    Returns: int_h^infty (s-h)^n * phi(s) ds
+    r"""
+    Returns:
+    --------
+         :math:`\int_h^\infty (s-h)^n \phi(s) ds`
     """
     if np.isscalar(h):
         return _Fn(h, n, phi)
@@ -52,9 +54,16 @@ def Fn(h, n, phi=lambda s: np.exp(-s ** 2 / 2) / ((2 * np.pi) ** (1 / 2))):
 
 # Use asymptotic expressions for small and large values
 def s(ξ, ξ1=1e-5, ξ2=1e5):
-    """
-    Returns: 2/pi*E(ξ)+(ξ^2-1)*K(ξ) if ξ<=1
-             2/pi*ξ*E(1/ξ) if ξ>1
+    r"""
+    Returns:
+    --------
+
+    .. math ::
+
+        2/\pi*E(ξ)+(ξ^2-1)*K(ξ) \text{     if  } ξ<=1
+
+        2/\pi*ξ*E(1/ξ) \text{     if  } ξ>1
+
     Asymptotic cases are approximated by the asymptotic expressions.
     """
     def B(x):

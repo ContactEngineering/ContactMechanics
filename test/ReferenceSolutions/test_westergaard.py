@@ -25,3 +25,10 @@ def test_mean_displacements():
     assert abs(
         np.mean(Westergaard.displacements(np.linspace(0, 1, 1000), a))
         - analytical) / abs(analytical) < 1e-3
+
+
+def test_radius_mean_pressure_inverse():
+    radius = 0.4
+
+    assert abs(radius - Westergaard.contact_radius(
+        Westergaard.mean_pressure(radius))) < 1e-13
