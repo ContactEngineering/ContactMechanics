@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.ReferenceSolutions.Westergaard &mdash; ContactMechanics 0.90.2.dev23+g84aad18 documentation</title>
+  <title>ContactMechanics.ReferenceSolutions.Westergaard &mdash; ContactMechanics 0.90.2.dev29+g9d2c07c documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.90.2.dev23+g84aad18
+                0.90.2.dev29+g9d2c07c
               </div>
             
           
@@ -194,15 +194,19 @@
 <span class="sd">See: H.M. Westergaard, Trans. ASME, J. Appl. Mech. 6, 49 (1939)</span>
 
 <span class="sd">The indenter geometry is</span>
-<span class="sd">$2 h sin^2(\pi x / lambda)$</span>
+
+<span class="sd">.. math ::</span>
+
+<span class="sd">    2 h sin^2(\pi x / \lambda)</span>
 
 <span class="sd">Nommenclature:</span>
 <span class="sd">---------------</span>
 
-<span class="sd">- E^*: contact modulus</span>
-<span class="sd">- $\lambda$: period of the sinusoidal indenter</span>
-<span class="sd">- $h$ amplitude of the sinusoidal indenter. peak to tale distance is 2h</span>
-<span class="sd">- a: half contact width</span>
+<span class="sd">- :math:`E^*`: contact modulus</span>
+<span class="sd">- :math:`\lambda`: period of the sinusoidal indenter</span>
+<span class="sd">- :math:`h`: amplitude of the sinusoidal indenter. peak to tale distance</span>
+<span class="sd">  is :math:`2h`</span>
+<span class="sd">- :math:`a`: half contact width, &quot;contact radius&quot;</span>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -263,7 +267,8 @@
 
 <div class="viewcode-block" id="displacements"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.displacements">[docs]</a><span class="k">def</span> <span class="nf">displacements</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Displacents u in units of 2h, the geometry is 2h sin^2(pi x / lambda)</span>
+<span class="sd">    Displacements u in units of 2h, the geometry is</span>
+<span class="sd">    :math:`2h sin^2(pi x / lambda)`</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -314,7 +319,7 @@
 
 <div class="viewcode-block" id="gap"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.gap">[docs]</a><span class="k">def</span> <span class="nf">gap</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    gap g in units of 2h, the geometry is 2h sin^2(pi x / lambda)</span>
+<span class="sd">    gap g in units of 2h, the geometry is :math:`2h sin^2(pi x / lambda)`</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -364,13 +369,13 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    mean_pressure: float or np.array</span>
-<span class="sd">        mean pressure in units of pi Es h/ lambda</span>
+<span class="sd">        mean pressure in units of :math:`\pi Es h/ lambda`</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    energy per unit area in units of $h p_{wfc}$</span>
+<span class="sd">    energy per unit area in units of :math:`h p_{wfc}`</span>
 
-<span class="sd">    with $p_{wfc} = pi E^* h/\lambda$</span>
+<span class="sd">    with :math:`p_{wfc} = \pi E^* h/\lambda`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">mean_pressure</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span>
@@ -386,15 +391,59 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    a: float or np.array</span>
-<span class="sd">        half contact width in units of the wavelength $\lambda$</span>
+<span class="sd">        half contact width in units of the wavelength :math:`\lambda`</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    energy per unit area in units of $h p_{wfc}$</span>
+<span class="sd">    energy per unit area in units of :math:`h p_{wfc}`</span>
 
-<span class="sd">    with $p_{wfc} = pi E^* h/\lambda$</span>
+<span class="sd">    with :math:`p_{wfc} = pi E^* h/\lambda`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">-</span> <span class="n">log</span><span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mi">4</span></div>
+
+
+<div class="viewcode-block" id="contact_radius"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.contact_radius">[docs]</a><span class="k">def</span> <span class="nf">contact_radius</span><span class="p">(</span><span class="n">mean_pressure</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Johnson, K. L.</span>
+<span class="sd">    International Journal of Solids and Structures 32, 423–430 (1995)</span>
+
+<span class="sd">    Equation (4)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mean_pressure: float, array_like</span>
+<span class="sd">        mean pressure in units of :math:`\pi E^* h / \lambda`</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    contact radius in units of :math:`\lambda`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_pressure</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="mean_pressure"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Westergaard.mean_pressure">[docs]</a><span class="k">def</span> <span class="nf">mean_pressure</span><span class="p">(</span><span class="n">contact_radius</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Johnson, K. L.</span>
+<span class="sd">    International Journal of Solids and Structures 32, 423–430 (1995)</span>
+
+<span class="sd">    Equation (4)</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    contact_radius: float</span>
+<span class="sd">     in units of :math:`\lambda`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mean pressure: float, array_like</span>
+<span class="sd">            mean pressure in units of :math:`\pi E^* h / \lambda`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">contact_radius</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span></div>
 </pre></div>
 
            </div>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.ReferenceSolutions package &mdash; ContactMechanics 0.90.2.dev23+g84aad18 documentation</title>
+  <title>ContactMechanics.ReferenceSolutions package &mdash; ContactMechanics 0.90.2.dev29+g9d2c07c documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.90.2.dev23+g84aad18
+                0.90.2.dev29+g9d2c07c
               </div>
             
           
@@ -219,7 +219,9 @@
 <dl class="py function">
 <dt id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.Fn">
 <code class="sig-prename descclassname">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</code><code class="sig-name descname">Fn</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">n</em>, <em class="sig-param">phi=&lt;function &lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#Fn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp.Fn" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns: int_h^infty (s-h)^n * phi(s) ds</p>
+<dd><blockquote>
+<div><p><span class="math notranslate nohighlight">\(\int_h^\infty (s-h)^n \phi(s) ds\)</span></p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py function">
@@ -258,10 +260,8 @@ the contact modulus.</p></li>
 <dl class="py function">
 <dt id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.s">
 <code class="sig-prename descclassname">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</code><code class="sig-name descname">s</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ξ</span></em>, <em class="sig-param"><span class="n">ξ1</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">ξ2</span><span class="o">=</span><span class="default_value">100000.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#s"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp.s" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Returns: 2/pi*E(ξ)+(ξ^2-1)*K(ξ) if ξ&lt;=1</dt><dd><p>2/pi*ξ*E(1/ξ) if ξ&gt;1</p>
-</dd>
-</dl>
+<dd><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}2/\pi*E(ξ)+(ξ^2-1)*K(ξ) \text{     if  } ξ&lt;=1\\2/\pi*ξ*E(1/ξ) \text{     if  } ξ&gt;1\end{aligned}\end{align} \]</div>
 <p>Asymptotic cases are approximated by the asymptotic expressions.</p>
 </dd></dl>
 
@@ -554,20 +554,42 @@ radius a).</p></li>
 <p>Westergaard solution for partial contact of a sinusoidal periodic
 indenter.
 See: H.M. Westergaard, Trans. ASME, J. Appl. Mech. 6, 49 (1939)</p>
-<p>The indenter geometry is
-$2 h sin^2(pi x / lambda)$</p>
+<p>The indenter geometry is</p>
+<div class="math notranslate nohighlight">
+\[2 h sin^2(\pi x / \lambda)\]</div>
 <div class="section" id="nommenclature">
 <h3>Nommenclature:<a class="headerlink" href="#nommenclature" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>E^*: contact modulus</p></li>
-<li><p>$lambda$: period of the sinusoidal indenter</p></li>
-<li><p>$h$ amplitude of the sinusoidal indenter. peak to tale distance is 2h</p></li>
-<li><p>a: half contact width</p></li>
+<li><p><span class="math notranslate nohighlight">\(E^*\)</span>: contact modulus</p></li>
+<li><p><span class="math notranslate nohighlight">\(\lambda\)</span>: period of the sinusoidal indenter</p></li>
+<li><p><span class="math notranslate nohighlight">\(h\)</span>: amplitude of the sinusoidal indenter. peak to tale distance
+is <span class="math notranslate nohighlight">\(2h\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(a\)</span>: half contact width, “contact radius”</p></li>
 </ul>
+<dl class="py function">
+<dt id="ContactMechanics.ReferenceSolutions.Westergaard.contact_radius">
+<code class="sig-prename descclassname">ContactMechanics.ReferenceSolutions.Westergaard.</code><code class="sig-name descname">contact_radius</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mean_pressure</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#contact_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.contact_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Johnson, K. L.
+International Journal of Solids and Structures 32, 423–430 (1995)</p>
+<p>Equation (4)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mean_pressure</strong> (<em>float</em><em>, </em><em>array_like</em>) – mean pressure in units of <span class="math notranslate nohighlight">\(\pi E^* h / \lambda\)</span></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>contact radius in units of <span class="math notranslate nohighlight">\(\lambda\)</span></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt id="ContactMechanics.ReferenceSolutions.Westergaard.displacements">
 <code class="sig-prename descclassname">ContactMechanics.ReferenceSolutions.Westergaard.</code><code class="sig-name descname">displacements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">a</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#displacements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.displacements" title="Permalink to this definition">¶</a></dt>
-<dd><p>Displacents u in units of 2h, the geometry is 2h sin^2(pi x / lambda)</p>
+<dd><p>Displacements u in units of 2h, the geometry is
+<span class="math notranslate nohighlight">\(2h sin^2(pi x / lambda)\)</span></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -602,12 +624,12 @@ $2 h sin^2(pi x / lambda)$</p>
 <p>formula for the JKR contact but with  alpha = 0</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>mean_pressure</strong> (<em>float</em><em> or </em><em>np.array</em>) – mean pressure in units of pi Es h/ lambda</p>
+<dd class="field-odd"><p><strong>mean_pressure</strong> (<em>float</em><em> or </em><em>np.array</em>) – mean pressure in units of <span class="math notranslate nohighlight">\(\pi Es h/ lambda\)</span></p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><em>energy per unit area in units of $h p_{wfc}$</em></p></li>
-<li><p><em>with $p_{wfc} = pi E^</em> h/lambda$*</p></li>
+<li><p>energy per unit area in units of <span class="math notranslate nohighlight">\(h p_{wfc}\)</span></p></li>
+<li><p>with <span class="math notranslate nohighlight">\(p_{wfc} = \pi E^* h/\lambda\)</span></p></li>
 </ul>
 </p>
 </dd>
@@ -621,12 +643,12 @@ $2 h sin^2(pi x / lambda)$</p>
 along the equilibrium curve</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>a</strong> (<em>float</em><em> or </em><em>np.array</em>) – half contact width in units of the wavelength $lambda$</p>
+<dd class="field-odd"><p><strong>a</strong> (<em>float</em><em> or </em><em>np.array</em>) – half contact width in units of the wavelength <span class="math notranslate nohighlight">\(\lambda\)</span></p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><em>energy per unit area in units of $h p_{wfc}$</em></p></li>
-<li><p><em>with $p_{wfc} = pi E^</em> h/lambda$*</p></li>
+<li><p>energy per unit area in units of <span class="math notranslate nohighlight">\(h p_{wfc}\)</span></p></li>
+<li><p>with <span class="math notranslate nohighlight">\(p_{wfc} = pi E^* h/\lambda\)</span></p></li>
 </ul>
 </p>
 </dd>
@@ -636,7 +658,7 @@ along the equilibrium curve</p>
 <dl class="py function">
 <dt id="ContactMechanics.ReferenceSolutions.Westergaard.gap">
 <code class="sig-prename descclassname">ContactMechanics.ReferenceSolutions.Westergaard.</code><code class="sig-name descname">gap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">a</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#gap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.gap" title="Permalink to this definition">¶</a></dt>
-<dd><p>gap g in units of 2h, the geometry is 2h sin^2(pi x / lambda)</p>
+<dd><p>gap g in units of 2h, the geometry is <span class="math notranslate nohighlight">\(2h sin^2(pi x / lambda)\)</span></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -675,6 +697,25 @@ along the equilibrium curve</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ContactMechanics.ReferenceSolutions.Westergaard.mean_pressure">
+<code class="sig-prename descclassname">ContactMechanics.ReferenceSolutions.Westergaard.</code><code class="sig-name descname">mean_pressure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">contact_radius</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#mean_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.mean_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Johnson, K. L.
+International Journal of Solids and Structures 32, 423–430 (1995)</p>
+<p>Equation (4)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>contact_radius</strong> (<em>float</em>) – in units of <span class="math notranslate nohighlight">\(\lambda\)</span></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mean pressure</strong> – mean pressure in units of <span class="math notranslate nohighlight">\(\pi E^* h / \lambda\)</span></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float, array_like</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
