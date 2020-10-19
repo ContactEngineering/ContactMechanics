@@ -78,8 +78,8 @@ def test_primal_obj():
 
     bugnicourt_mean = res.x.reshape((nx, ny))
 
-    np.testing.assert_allclose(polonsky_mean, bugnicourt_mean, atol=1e-3)
-
+    np.testing.assert_allclose(polonsky_mean, _lbfgsb, atol=1e-3)
+    np.testing.assert_allclose(bugnicourt_mean, _lbfgsb, atol=1e-3)
 
 def test_dual_obj():
     nx, ny = 128, 128
@@ -171,4 +171,5 @@ def test_dual_obj():
 
     bugnicourt_mean = res.x.reshape((nx, ny))
 
-    np.testing.assert_allclose(polonsky_mean, bugnicourt_mean, atol=1e-3)
+    np.testing.assert_allclose(polonsky_mean, _lbfgsb, atol=1e-3)
+    np.testing.assert_allclose(bugnicourt_mean, _lbfgsb, atol=1e-3)
