@@ -28,10 +28,14 @@ Tests adhesion-free flat punch results
 """
 
 import numpy as np
+import pytest
+import scipy.optimize as optim
+
+from NuMPI import MPI
 
 from ContactMechanics.ReferenceSolutions.Westergaard import _pressure
 from ContactMechanics import PeriodicFFTElasticHalfSpace
-from SurfaceTopography import Topography
+from SurfaceTopography import Topography, UniformLineScan
 from ContactMechanics import make_system
 
 
@@ -78,3 +82,69 @@ def test_constrained_conjugate_gradients():
             assert (np.allclose(
                 forces[:nx // 2, 0] /
                 substrate.area_per_pt, pth[:nx // 2], atol=1e-2))
+
+
+@pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
+                    reason="test only serial functionalities, "
+                           "please execute with pytest")
+@pytest.mark.parametrize("dx,n", [(1., 32),
+                                  (1., 33),
+                                  (0.5, 32)])
+def test_lbfgsb_1D(dx, n):
+    # test the 1D periodic objective is working
+
+    s = n * dx
+
+    Es = 1.
+
+    substrate = PeriodicFFTElasticHalfSpace((n,), young=Es,
+                                            physical_sizes=(s,), fft='serial')
+
+    surface = UniformLineScan(np.cos(2 * np.pi * np.arange(n) / n), (s,))
+    system = make_system(substrate, surface)
+
+    offset = 0.005
+    lbounds = np.zeros(n)
+    bnds = system._reshape_bounds(lbounds, )
+    init_gap = np.zeros(n, )  # .flatten()
+    disp = init_gap + surface.heights() + offset
+
+    res = optim.minimize(system.primal_objective(offset, gradient=True),
+                         disp,
+                         method='L-BFGS-B', jac=True,
+                         bounds=bnds,
+                         options=dict(gtol=1e-5 * Es * surface.rms_slope()
+                                      * surface.area_per_pt,
+                                      ftol=0))
+
+    forces = res.jac
+    gap = res.x
+    converged = res.success
+    assert converged
+    assert \
+        res.message == b"CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL", \
+        res.message
+
+    x = np.arange(n) * s / n
+    mean_pressure = np.mean(forces) / substrate.area_per_pt
+
+    assert mean_pressure > 0
+
+    pth = mean_pressure * _pressure(
+        x / s,
+        mean_pressure=s * mean_pressure / Es)
+
+    if False:
+        import matplotlib.pyplot as plt
+        plt.figure()
+        # plt.plot(np.arange(n)*s/n, surface.heights())
+        plt.plot(x, gap + (surface.heights()[:] + offset), 'r-')
+        plt.plot(x, (surface.heights()[:] + offset), 'k-')
+        plt.figure()
+        plt.plot(x, forces / substrate.area_per_pt, 'k-')
+        plt.plot(x, pth, 'r-')
+        plt.show()
+
+    assert (np.allclose(
+        forces /
+        substrate.area_per_pt, pth, atol=1e-2))
