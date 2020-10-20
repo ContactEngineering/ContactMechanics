@@ -130,5 +130,5 @@ def test_primal_hessian(s):
 
     np.testing.assert_allclose(dgrad_from_hess, dgrad)
 
+# TODO: test dual hessian
 
-#TODO: test dual hessian

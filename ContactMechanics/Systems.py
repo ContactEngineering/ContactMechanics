@@ -598,7 +598,7 @@ class NonSmoothContactSystem(SystemBase):
         inres = gap.shape
         res = self.substrate.nb_subdomain_grid_pts
         hessp = -self.substrate.evaluate_force(gap.reshape(res)
-            ).reshape(inres)
+                                               ).reshape(inres)
         return hessp
 
     def evaluate_dual(self, press, offset, pot=True, forces=False):

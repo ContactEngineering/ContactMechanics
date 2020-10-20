@@ -566,16 +566,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         """ Computes the K-space forces (*not* pressures) due to a given
         displacement array.
 
-        Keyword Arguments:
-        disp   -- a numpy array containing point displacements
+        Parameters:
+        -----------
+        disp_k: complex nd_array
+            a numpy array containing the rfft of point displacements
         """
-        # if disp.shape != self.nb_subdomain_grid_pts:
-        #     raise self.Error(
-        #         ("displacements array has a different shape ({0}) than this "
-        #          "halfspace's nb_grid_pts ({1})").format(
-        #             disp.shape, self.nb_subdomain_grid_pts))  # nopep8
-        # self.fourier_buffer.array()[...] = disp_k
-        # self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+
         return -self.surface_stiffness * disp_k * self.area_per_pt
 
     def evaluate_elastic_energy(self, forces, disp):
