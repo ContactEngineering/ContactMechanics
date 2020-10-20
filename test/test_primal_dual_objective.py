@@ -119,13 +119,16 @@ def test_primal_hessian(s):
     gaps = np.random.random(size=(nx, ny))
     dgaps = np.random.random(size=(nx, ny))
 
-    _, grad = obj(gaps)
+    _, grad = obj(gaps.reshape(-1))
 
     h = 1.
-    _, grad_d = obj(gaps + h * dgaps)
+    _, grad_d = obj((gaps + h * dgaps).reshape(-1))
 
     dgrad = grad_d - grad
 
-    dgrad_from_hess = system.primal_hessian_product(h * dgaps)
+    dgrad_from_hess = system.primal_hessian_product((h * dgaps).reshape(-1))
 
     np.testing.assert_allclose(dgrad_from_hess, dgrad)
+
+
+#TODO: test dual hessian

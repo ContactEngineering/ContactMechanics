@@ -485,10 +485,23 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
-    def hessp(self, disp):
-        prod = -self.substrate.evaluate_force(
-            disp.reshape(self.substrate.nb_domain_grid_pts))
-        return prod.reshape(-1)
+    def hessian_product(self, disp):
+        """
+        computes the hessian product for objective
+
+        this is the same then primal_hessian_product
+
+        Parameters:
+        -----------
+        disp: float array
+            array of shape nb_subdomain_grid_pts or a flattened version of it
+
+        Returns:
+        --------
+        hessian product
+
+        """
+        return self.primal_hessian_product(disp)
 
     def minimize_proxy(self, solver=constrained_conjugate_gradients, **kwargs):
         """
@@ -582,13 +595,10 @@ class NonSmoothContactSystem(SystemBase):
     def primal_hessian_product(self, gap):
         """Returns the hessian product of the primal_objective function.
         """
-        res = self.substrate.nb_domain_grid_pts
-        # TODO: this is not parallelized yet
-
-        # TODO: do all the minimizers want to use 1d arrays ?
-        # If not the reshape(-1) has to be put there depending on the shape of
-        # gap or simple .reshape(gap.shape)
-        hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(-1)
+        inres = gap.shape
+        res = self.substrate.nb_subdomain_grid_pts
+        hessp = -self.substrate.evaluate_force(gap.reshape(res)
+            ).reshape(inres)
         return hessp
 
     def evaluate_dual(self, press, offset, pot=True, forces=False):
@@ -665,6 +675,7 @@ class NonSmoothContactSystem(SystemBase):
     def dual_hessian_product(self, pressure):
         r"""Returns the hessian product of the dual_objective function.
         """
-        res = self.substrate.nb_domain_grid_pts
+        inres = pressure.shape
+        res = self.substrate.nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
-        return hessp.reshape(-1)
+        return hessp.reshape(inres)
