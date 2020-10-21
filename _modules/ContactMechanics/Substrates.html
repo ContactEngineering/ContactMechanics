@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.Substrates &mdash; ContactMechanics 0.90.2.dev29+g9d2c07c documentation</title>
+  <title>ContactMechanics.Substrates &mdash; ContactMechanics 0.90.2.dev45+g63644bb documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.90.2.dev29+g9d2c07c
+                0.90.2.dev45+g63644bb
               </div>
             
           
@@ -312,6 +312,22 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
             <span class="n">disp</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">forces</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ElasticSubstrate.compute_k"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Substrates.ElasticSubstrate.compute_k">[docs]</a>    <span class="k">def</span> <span class="nf">compute_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp_k</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        computes and stores the elastic energy and/or surface forces</span>
+<span class="sd">        the as function of the surface displacement in Fourier Space.</span>
+<span class="sd">        Note that forces, not surface pressures are expected.</span>
+<span class="sd">        This is contrary to most formulations</span>
+<span class="sd">        in the literature, but convenient in the code (consistency with the</span>
+<span class="sd">        softWall interaction potentials). This choice may come back to bite me.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        gap    -- array containing the point-wise gap values</span>
+<span class="sd">        pot    -- (default True) whether the energy should be evaluated</span>
+<span class="sd">        forces -- (default False) whether the forces should be evaluated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_k</span><span class="p">(</span>
+            <span class="n">disp_k</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">forces</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ElasticSubstrate.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Substrates.ElasticSubstrate.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

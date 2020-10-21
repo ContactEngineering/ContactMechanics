@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; ContactMechanics 0.90.2.dev29+g9d2c07c documentation</title>
+  <title>Index &mdash; ContactMechanics 0.90.2.dev45+g63644bb documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.90.2.dev29+g9d2c07c
+                0.90.2.dev45+g63644bb
               </div>
             
           
@@ -246,6 +246,8 @@
 </li>
       <li><a href="source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_gap">compute_gap() (ContactMechanics.Systems.SystemBase method)</a>
 </li>
+      <li><a href="source/ContactMechanics.html#ContactMechanics.Substrates.ElasticSubstrate.compute_k">compute_k() (ContactMechanics.Substrates.ElasticSubstrate method)</a>
+</li>
       <li><a href="source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_nb_contact_pts">compute_nb_contact_pts() (ContactMechanics.Systems.NonSmoothContactSystem method)</a>
 
       <ul>
@@ -301,6 +303,8 @@
         <li><a href="source/ContactMechanics.GreensFunctions.html#module-ContactMechanics.GreensFunctions.Anisotropic">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ContactMechanics.GreensFunctions.Isotropic
 
@@ -308,8 +312,6 @@
         <li><a href="source/ContactMechanics.GreensFunctions.html#module-ContactMechanics.GreensFunctions.Isotropic">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ContactMechanics.IO
 
@@ -465,14 +467,14 @@
         <li><a href="source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.evaluate">(ContactMechanics.Systems.SystemBase method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp">evaluate_disp() (ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace method)</a>
 
       <ul>
         <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_disp">(ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">evaluate_dual() (ContactMechanics.Systems.NonSmoothContactSystem method)</a>
 </li>
       <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_elastic_energy">evaluate_elastic_energy() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
@@ -483,9 +485,15 @@
 </li>
       <li><a href="source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.evaluate_gradient">evaluate_gradient() (in module ContactMechanics.Tools.common)</a>
 </li>
+      <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k">evaluate_k() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
+</li>
       <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_disp">evaluate_k_disp() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
 </li>
       <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force">evaluate_k_force() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
+</li>
+      <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force_k">evaluate_k_force_k() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
+</li>
+      <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space">evaluate_scalar_product_k_space() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -569,15 +577,17 @@
         <li><a href="source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.handles">(ContactMechanics.Systems.SystemBase static method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.has_h">has_h() (ContactMechanics.IO.NetCDF.NetCDFContainer method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.Logger.has_logfile">has_logfile() (ContactMechanics.Tools.Logger.Logger method)</a>
 </li>
       <li><a href="source/ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.hdr_str">hdr_str() (in module ContactMechanics.Tools.Logger)</a>
 </li>
       <li><a href="source/ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.hdrfmt_str">hdrfmt_str() (in module ContactMechanics.Tools.Logger)</a>
+</li>
+      <li><a href="source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.hessian_product">hessian_product() (ContactMechanics.Systems.NonSmoothContactSystem method)</a>
 </li>
   </ul></td>
 </tr></table>

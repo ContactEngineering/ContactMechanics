@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev29+g9d2c07c documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev45+g63644bb documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.90.2.dev29+g9d2c07c
+                0.90.2.dev45+g63644bb
               </div>
             
           
@@ -651,6 +651,24 @@
 
         <span class="k">return</span> <span class="n">fun</span></div>
 
+<div class="viewcode-block" id="NonSmoothContactSystem.hessian_product"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.hessian_product">[docs]</a>    <span class="k">def</span> <span class="nf">hessian_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        computes the hessian product for objective</span>
+
+<span class="sd">        this is the same then primal_hessian_product</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        disp: float array</span>
+<span class="sd">            array of shape nb_subdomain_grid_pts or a flattened version of it</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        hessian product</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">primal_hessian_product</span><span class="p">(</span><span class="n">disp</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="NonSmoothContactSystem.minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">constrained_conjugate_gradients</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convenience function. Eliminates boilerplate code for most minimisation</span>
@@ -743,9 +761,10 @@
 <div class="viewcode-block" id="NonSmoothContactSystem.primal_hessian_product"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_hessian_product">[docs]</a>    <span class="k">def</span> <span class="nf">primal_hessian_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gap</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns the hessian product of the primal_objective function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
-
-        <span class="n">hessp</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">inres</span> <span class="o">=</span> <span class="n">gap</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
+        <span class="n">hessp</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+                                               <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inres</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">hessp</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.evaluate_dual"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_dual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">press</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -822,9 +841,10 @@
 <div class="viewcode-block" id="NonSmoothContactSystem.dual_hessian_product"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_hessian_product">[docs]</a>    <span class="k">def</span> <span class="nf">dual_hessian_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pressure</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the hessian product of the dual_objective function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
+        <span class="n">inres</span> <span class="o">=</span> <span class="n">pressure</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
         <span class="n">hessp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="o">-</span><span class="n">pressure</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">hessp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">hessp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inres</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>

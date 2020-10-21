@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics package &mdash; ContactMechanics 0.90.2.dev29+g9d2c07c documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 0.90.2.dev45+g63644bb documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.90.2.dev29+g9d2c07c
+                0.90.2.dev45+g63644bb
               </div>
             
           
@@ -106,7 +106,15 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.FFTElasticHalfSpace">ContactMechanics.FFTElasticHalfSpace module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.FFTElasticHalfSpace">ContactMechanics.FFTElasticHalfSpace module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#convention-used-for-the-dft">Convention used for the DFT :</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parseval-s-theorem-convolutions-and-powers">Parseval’s theorem, Convolutions and powers:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mufft-fourier-transform">muFFT fourier transform:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mufft-vs-np-fft">muFFT vs. np.fft:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#normalisation">Normalisation:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#d-fft">2D FFT:</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.Factory">ContactMechanics.Factory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.PlasticSystemSpecialisations">ContactMechanics.PlasticSystemSpecialisations module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.Substrates">ContactMechanics.Substrates module</a></li>
@@ -237,7 +245,72 @@
 </div>
 <div class="section" id="module-ContactMechanics.FFTElasticHalfSpace">
 <span id="contactmechanics-fftelastichalfspace-module"></span><h2>ContactMechanics.FFTElasticHalfSpace module<a class="headerlink" href="#module-ContactMechanics.FFTElasticHalfSpace" title="Permalink to this headline">¶</a></h2>
-<p>Implement the FFT-based elasticity solver of pycontact</p>
+<p>Implement the FFT-based elasticity solver of ContactMechanics</p>
+<div class="section" id="convention-used-for-the-dft">
+<h3>Convention used for the DFT :<a class="headerlink" href="#convention-used-for-the-dft" title="Permalink to this headline">¶</a></h3>
+<p>In addition to the sum of the product with the exponential function, the
+one has to divide by <span class="math notranslate nohighlight">\(n_x n_y\)</span> once during the roundtrip.</p>
+<p>When this is actually done is arbitrary.</p>
+<p>Our convension:</p>
+<p>fourier transform:</p>
+<div class="math notranslate nohighlight">
+\[\tilde h_{op} =
+\sum_{mn} h_{mn} e^{i x_{mn} q_{op}}\]</div>
+<p>corresponding <cite>np.fft.rfft</cite> and <cite>fftengine.fft</cite></p>
+<p>fourier space input fields are assumed to be linked to the realspace field thru
+this fourier transform.</p>
+<p>fourier inverse transform:</p>
+<div class="math notranslate nohighlight">
+\[\tilde h_{mn} = \frac{1}{n_x n_y}
+\sum_{op} \tilde h_{op} e^{i x_{mn} q_{op}}\]</div>
+<p>corresponding <cite>np.fft.irfft</cite> and <cite>fftengine.fft * fftengine.normalisation</cite></p>
+<p>Note that this is different from the definition in
+Jacobs, T. D. B. et al. Surf. Topogr.: Metrol. Prop. 5, 013001 (2017)
+(Equations A.3, A.4), that is closer to the continuous fourier transform.</p>
+</div>
+<div class="section" id="parseval-s-theorem-convolutions-and-powers">
+<h3>Parseval’s theorem, Convolutions and powers:<a class="headerlink" href="#parseval-s-theorem-convolutions-and-powers" title="Permalink to this headline">¶</a></h3>
+<p>The prefactors in front of the sums depend on the definition of
+the fourier transform.</p>
+<p><a class="reference external" href="https://ccrma.stanford.edu/~jos/mdft/Convolution_Theorem.html">Convolution theorem</a>:</p>
+<div class="math notranslate nohighlight">
+\[(x * y)_m = \sum_n x_n y_{m-n} = IDFT(\tilde x_k \tilde y_k)_m\]</div>
+<p>The <a class="reference external" href="https://ccrma.stanford.edu/~jos/mdft/Power_Theorem.html">power theorem</a>
+can be deduced from the convolution theorem and states that:</p>
+<div class="math notranslate nohighlight">
+\[\sum_n x_n \overline{y_n} = \frac{1}{N} \sum_n \tilde x_n
+                            \overline{\tilde y_n}\]</div>
+<p>Parseval’s Theorem is a special case of the power theorem:</p>
+<div class="math notranslate nohighlight">
+\[\sum_n |x_n|^2 = \frac{1}{N} \sum_n |\tilde x_n|^2\]</div>
+<p>When the fourier space array contains only half the spectrum, making use of
+hermitian symmetry, extra care has to be taken when performing the sum.</p>
+<p># TODO</p>
+</div>
+<div class="section" id="mufft-fourier-transform">
+<h3>muFFT fourier transform:<a class="headerlink" href="#mufft-fourier-transform" title="Permalink to this headline">¶</a></h3>
+<p>fft and ifft never applies the normalisation factor, meaning that you will need
+to multiply <cite>ifft(fft)</cite> by <cite>1 / np.prod(nb_grid_pts) = fftengine.normalisation</cite>)
+in order to have a roundtrip.</p>
+</div>
+<div class="section" id="mufft-vs-np-fft">
+<h3>muFFT vs. np.fft:<a class="headerlink" href="#mufft-vs-np-fft" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="normalisation">
+<h3>Normalisation:<a class="headerlink" href="#normalisation" title="Permalink to this headline">¶</a></h3>
+<p>np.fft.rfft &lt;–&gt; fftengine.fft</p>
+<p>np.fft.irfft &lt;–&gt; fftengine.ifft * fftengine.normalisation</p>
+</div>
+<div class="section" id="d-fft">
+<h3>2D FFT:<a class="headerlink" href="#d-fft" title="Permalink to this headline">¶</a></h3>
+<p>numpy by default transforms the last index first.</p>
+<p>muFFT the first</p>
+<p>real_buffer.array()[..] = a
+fftengine.fft(real_buffer, fourier_buffer)
+fourier_buffer &lt;–&gt; np.rfft2(a.T).T &lt;–&gt; np.fft.rfft2(a, axes=(1,0))</p>
+<p># FIXME: &#64;pastewka: I expected the fourier array to be transposed, so there is a
+#                   wrapper swapping the indexes and the array
+#                   is transposed in memory ?</p>
 <dl class="py class">
 <dt id="ContactMechanics.FFTElasticHalfSpace.BndSet">
 <em class="property">class </em><code class="sig-prename descclassname">ContactMechanics.FFTElasticHalfSpace.</code><code class="sig-name descname">BndSet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">large</span></em>, <em class="sig-param"><span class="n">small</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.BndSet" title="Permalink to this definition">¶</a></dt>
@@ -411,32 +484,25 @@ disp   – array of displacements</p>
 <code class="sig-name descname">evaluate_elastic_energy_k_space</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kforces</span></em>, <em class="sig-param"><span class="n">kdisp</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/FFTElasticHalfSpace.html#PeriodicFFTElasticHalfSpace.evaluate_elastic_energy_k_space"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_elastic_energy_k_space" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Energy due to forces and displacements using their Fourier
 representation.</p>
-<p>This uses Parseval’s Theorem:</p>
 <div class="math notranslate nohighlight">
-\[\frac{A}{N}\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{A}\sum_{\vec q_i}|H(\vec q_i)|^2\]</div>
-<p>when using following definition of the FFT:</p>
-<div class="math notranslate nohighlight">
-\[H(\vec q_i) = \mathtt{FFT}(h(\vec x_j)) = \frac{A}{N}\sum_{\vec x_j}h(\vec x_j)e^{-i\vec q_i\cdot\vec x_j},\]</div>
-<div class="math notranslate nohighlight">
-\[h(\vec x_i) = \mathtt{FFT}^{-1}(H(\vec q_j))= \frac{1}{A}\sum_{\vec q_j}H(\vec q_j)e^{i\vec q_j\cdot\vec x_i}s\]</div>
-<p>When fitting the definition to numpy’s norming convention
-(<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/routines.fft.html#module-numpy.fft">https://docs.scipy.org/doc/numpy/reference/routines.fft.html#module-numpy.fft</a>)
-Parseval’s Theorem takes following form:</p>
-<div class="math notranslate nohighlight">
-\[\sum_{\vec x_i}|h(\vec x_i)|^2 = \frac{1}{N} \sum_{\vec q_i}|H(\vec q_i)|^2\]</div>
-<p>In a parallelized code kforces and kdisp contain only the slice attributed to this processor
-:param kforces:
-:type kforces: array of complex type and of physical_sizes substrate.nb_domain_grid_pts
-:param Fourier representation (output of a 2D rfftn) of the forces acting on the grid points:
-:param kdisp:
-:type kdisp: array of complex type and of physical_sizes substrate.nb_domain_grid_pts
-:param Fourier representation (output of a 2D rfftn) of the displacements of the grid points:</p>
+\[ \begin{align}\begin{aligned}E_{el} &amp;= - \frac{1}{2} \sum_{ij} u_{ij} f_{ij}\\       &amp;= - \frac{1}{2} \frac{1}{n_x n_y} \sum_{kl} \tilde u{kl} \overline{\tilde f_{kl}}\end{aligned}\end{align} \]</div>
+<p>(<span class="math notranslate nohighlight">\(\tilde f_{ij} = - \tilde K_{ijkl} u\)</span>)</p>
+<p>In a parallelized code kforces and kdisp contain only the slice
+attributed to this processor</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kforces</strong> – array of complex type and of size substrate.nb_fourier_grid_pts
+Fourier representation (output of a 2D rfftn) of the forces acting on the grid points</p></li>
+<li><p><strong>kdisp</strong> – array of complex type and of physical_sizes substrate.nb_fourier_grid_pts
+Fourier representation (output of a 2D rfftn) of the displacements of the grid points</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The elastic energy due to the forces and displacements</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>E</p>
 </dd>
 </dl>
 </dd></dl>
@@ -448,6 +514,16 @@ Parseval’s Theorem takes following form:</p>
 array.</p>
 <p>Keyword Arguments:
 disp   – a numpy array containing point displacements</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k">
+<code class="sig-name descname">evaluate_k</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disp_k</span></em>, <em class="sig-param"><span class="n">pot</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">forces</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/FFTElasticHalfSpace.html#PeriodicFFTElasticHalfSpace.evaluate_k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the elastic energy and the point forces
+Keyword Arguments:
+disp   – array of distances
+pot    – (default True) if true, returns potential energy
+forces – (default False) if true, returns forces</p>
 </dd></dl>
 
 <dl class="py method">
@@ -465,6 +541,53 @@ forces   – a numpy array containing point forces (<em>not</em> pressures)</p>
 displacement array.</p>
 <p>Keyword Arguments:
 disp   – a numpy array containing point displacements</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force_k">
+<code class="sig-name descname">evaluate_k_force_k</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disp_k</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/FFTElasticHalfSpace.html#PeriodicFFTElasticHalfSpace.evaluate_k_force_k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the K-space forces (<em>not</em> pressures) due to a given
+displacement array.</p>
+<dl class="simple">
+<dt>disp_k: complex nd_array</dt><dd><p>a numpy array containing the rfft of point displacements</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space">
+<code class="sig-name descname">evaluate_scalar_product_k_space</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ka</span></em>, <em class="sig-param"><span class="n">kb</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/FFTElasticHalfSpace.html#PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the scalar product, i.e. the power, between the <cite>a</cite> and <cite>b</cite>,
+given their fourier representation.</p>
+<p><a class="reference external" href="https://ccrma.stanford.edu/~jos/mdft/Power_Theorem.html">Power theorem</a>:</p>
+<div class="math notranslate nohighlight">
+\[P = \sum_{ij} a_{ij} b_{ij} =
+    \frac{1}{n_x n_y}\sum_{ij}
+    \tilde a_{ij} \overline{\tilde b_{ij}}\]</div>
+<p>Note that for <cite>a</cite>, <cite>b</cite> real,</p>
+<div class="math notranslate nohighlight">
+\[P = \sum_{kl} Re(\tilde a_{kl}) Re(\tilde b_{kl})\]</div>
+<ul class="simple">
+<li><p>Im(tilde a_{kl}) Im(tilde b_{kl})</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ka</strong> – arrays of complex type and of size substrate.nb_fourier_grid_pts
+Fourier representation (output of a 2D rfftn) <cite>a</cite> (resp. <cite>b</cite>)
+(<cite>nx, ny</cite> real array)</p></li>
+<li><p><strong>kb</strong> – arrays of complex type and of size substrate.nb_fourier_grid_pts
+Fourier representation (output of a 2D rfftn) <cite>a</cite> (resp. <cite>b</cite>)
+(<cite>nx, ny</cite> real array)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The scalar product of a and b</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>P</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -581,6 +704,7 @@ see FreeFFTElasticHalfSpace.</p>
 </dd></dl>
 
 </div>
+</div>
 <div class="section" id="module-ContactMechanics.Factory">
 <span id="contactmechanics-factory-module"></span><h2>ContactMechanics.Factory module<a class="headerlink" href="#module-ContactMechanics.Factory" title="Permalink to this headline">¶</a></h2>
 <p>Implements a convenient Factory function for Contact System creation</p>
@@ -653,6 +777,21 @@ surface_type     –</p>
 <dd><p>computes and stores the elastic energy and/or surface forces
 the as function of the surface displacement. Note that forces, not
 surface pressures are expected. This is contrary to most formulations
+in the literature, but convenient in the code (consistency with the
+softWall interaction potentials). This choice may come back to bite me.
+Parameters:
+gap    – array containing the point-wise gap values
+pot    – (default True) whether the energy should be evaluated
+forces – (default False) whether the forces should be evaluated</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Substrates.ElasticSubstrate.compute_k">
+<code class="sig-name descname">compute_k</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disp_k</span></em>, <em class="sig-param"><span class="n">pot</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">forces</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Substrates.html#ElasticSubstrate.compute_k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Substrates.ElasticSubstrate.compute_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes and stores the elastic energy and/or surface forces
+the as function of the surface displacement in Fourier Space.
+Note that forces, not surface pressures are expected.
+This is contrary to most formulations
 in the literature, but convenient in the code (consistency with the
 softWall interaction potentials). This choice may come back to bite me.
 Parameters:
@@ -870,6 +1009,18 @@ composition
 Keyword Arguments:
 substrate_type   – instance of ElasticSubstrate subclass
 surface_type     –</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ContactMechanics.Systems.NonSmoothContactSystem.hessian_product">
+<code class="sig-name descname">hessian_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disp</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.hessian_product"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.hessian_product" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes the hessian product for objective</p>
+<p>this is the same then primal_hessian_product</p>
+<dl class="simple">
+<dt>disp: float array</dt><dd><p>array of shape nb_subdomain_grid_pts or a flattened version of it</p>
+</dd>
+</dl>
+<p>hessian product</p>
 </dd></dl>
 
 <dl class="py method">
