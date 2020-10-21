@@ -485,6 +485,24 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
+    def hessian_product(self, disp):
+        """
+        computes the hessian product for objective
+
+        this is the same then primal_hessian_product
+
+        Parameters:
+        -----------
+        disp: float array
+            array of shape nb_subdomain_grid_pts or a flattened version of it
+
+        Returns:
+        --------
+        hessian product
+
+        """
+        return self.primal_hessian_product(disp)
+
     def minimize_proxy(self, solver=constrained_conjugate_gradients, **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
@@ -577,9 +595,10 @@ class NonSmoothContactSystem(SystemBase):
     def primal_hessian_product(self, gap):
         """Returns the hessian product of the primal_objective function.
         """
-        res = self.substrate.nb_domain_grid_pts
-
-        hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(-1)
+        inres = gap.shape
+        res = self.substrate.nb_subdomain_grid_pts
+        hessp = -self.substrate.evaluate_force(gap.reshape(res)
+                                               ).reshape(inres)
         return hessp
 
     def evaluate_dual(self, press, offset, pot=True, forces=False):
@@ -656,6 +675,7 @@ class NonSmoothContactSystem(SystemBase):
     def dual_hessian_product(self, pressure):
         r"""Returns the hessian product of the dual_objective function.
         """
-        res = self.substrate.nb_domain_grid_pts
+        inres = pressure.shape
+        res = self.substrate.nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
-        return hessp.reshape(-1)
+        return hessp.reshape(inres)
