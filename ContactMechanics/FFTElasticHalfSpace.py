@@ -818,16 +818,25 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Returns
         _______
 
-        float_k_array   :   (n+1,) dimension array
+        float_k_array   :   (n,) dimension array
         """
 
         temp_k = x_k.copy()
         float = np.zeros(self.nb_grid_pts[0])
         float[0] = temp_k[0]
 
-        if (self.nb_grid_pts[0] % 2) == 0:
-            float[2::2] = temp_k[1:-1].imag
-            float[1::2] = temp_k[1:].real
+        n = self.nb_grid_pts[0]
+
+        if (n % 2) == 0:
+
+            # float[2::2] = temp_k[1:-1].imag #original
+            # float[1::2] = temp_k[1:].real # original
+            #
+            imag = temp_k[1:-1].imag # temporary
+            imag = imag[::-1] # temporary
+            i = int((n//2)+1)
+            float[1:i] = temp_k[1:].real # temporary
+            float[i:] = imag # temporary
         else:
             float[1::2] = temp_k[1:].real
             float[2::2] = temp_k[1:].imag
@@ -844,21 +853,33 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         Parameters
         __________
 
-        float_k_array :  (n+1,) shape array in k-space
+        float_k_array :  (n,) shape array in k-space
 
         Returns
         _______
 
         x_k   :   (n//2 + 1,) dimension array
         """
+        # temp = x.copy() # original
+        # temp = np.append(temp, 0 * 1j) # original
+        # if (self.nb_grid_pts[0] % 2) == 0:  # original
+        #     k_space = np.zeros(((len(temp) // 2) + 1,), dtype=complex) # original
+        # else: # original
+        #     k_space = np.zeros((((len(temp) + 1) // 2),), dtype=complex) # original
+        # k_space[0] = temp[0] # original
+        # k_space[1:] = temp[1::2] + temp[2::2] * 1j # original
         temp = x.copy()
-        temp = np.append(temp, 0 * 1j)
-        if (self.nb_grid_pts[0] % 2) == 0:
-            k_space = np.zeros(((len(temp) // 2) + 1,), dtype=complex)
-        else:
-            k_space = np.zeros((((len(temp) + 1) // 2),), dtype=complex)
+        n = self.nb_grid_pts[0] #temporary
+        k_space = np.zeros(((n//2) + 1), dtype=complex)
+
         k_space[0] = temp[0]
-        k_space[1:] = temp[1::2] + temp[2::2] * 1j
+
+        i = int((n//2)) #temporary
+
+        imag = temp[i+1:] * 1j #temporary
+        imag = imag[::-1] #temporary
+        k_space[1:-1] = temp[1:i] + imag #temporary
+        k_space[-1] = temp[i]
         return k_space
 
 
