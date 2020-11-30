@@ -32,8 +32,9 @@ I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)
 from math import isnan, sqrt
 
 import numpy as np
-
 import scipy.optimize as optim
+
+from NuMPI.Tools import Reduction
 
 from SurfaceTopography import Topography
 
@@ -92,7 +93,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             raise ValueError("You should provide a topography object when "
                              "working with MPI")
 
-    reduction = substrate.pnp
+    reduction = Reduction(substrate.communicator)
 
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "nb_grid_pts"):
