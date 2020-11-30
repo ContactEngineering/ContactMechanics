@@ -33,6 +33,8 @@ import abc
 import numpy as np
 import scipy
 
+from NuMPI.Tools import Reduction
+
 import ContactMechanics
 import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
@@ -66,9 +68,9 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         self.gap = None
         self.disp = None
 
-        self.pnp = substrate.pnp
+        self.reduction = Reduction(substrate.communicator)
 
-        self.comp_slice = self.substrate.local_topography_subdomain_slices
+        self.comp_slice = self.substrate.subdomain_slices
 
     _proxyclass = False
 
@@ -411,14 +413,14 @@ class NonSmoothContactSystem(SystemBase):
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
-        return self.pnp.sum(self.substrate.force)
+        return self.reduction.sum(self.substrate.force)
 
     def compute_nb_contact_pts(self):
         """
         compute and return the number of contact points. Note that this is of
         no physical interest, as it is a purely numerical artefact
         """
-        return self.pnp.sum(self.contact_zone)
+        return self.reduction.sum(self.contact_zone)
 
     def compute_contact_coordinates(self):
         """

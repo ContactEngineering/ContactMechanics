@@ -92,7 +92,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             raise ValueError("You should provide a topography object when "
                              "working with MPI")
 
-    pnp = substrate.pnp
+    pnp = substrate.reduction
 
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "nb_grid_pts"):
