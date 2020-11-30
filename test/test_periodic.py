@@ -44,5 +44,5 @@ def test_constrained_conjugate_gradients():
     topography = fourier_synthesis(nb_grid_pts, physical_sizes, hurst, rms_slope=rms_slope)
 
     substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, modulus, physical_sizes)
-    system = make_system(topography, substrate)
-
+    system = make_system(substrate, topography)
+    system.minimize_proxy(offset=0.1)
