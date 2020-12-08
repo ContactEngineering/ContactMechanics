@@ -116,7 +116,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
         if pentol == 0:
-            pentol = (offset + reduction.sum(surface[...]) / nb_surface_pts) / 1000
+            pentol = (offset + reduction.sum(surface[...]) / nb_surface_pts) \
+                     / 1000
         # If we are still zero use an arbitrary value
         if pentol == 0:
             pentol = 1e-3
@@ -238,7 +239,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                 # region
                 x = -reduction.sum(c_r * r_r * t_r)
                 if x > 0.0:
-                    tau = reduction.sum(c_r[comp_mask] * g_r * t_r[comp_mask]) / x
+                    tau = \
+                        reduction.sum(c_r[comp_mask] * g_r * t_r[comp_mask]) \
+                        / x
                 else:
                     G = 0.0
 
@@ -345,8 +348,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         else:
             rms_pen = sqrt(G)
         max_pen = max(0.0,
-                      reduction.max(c_r[comp_mask] * (surface[surf_mask] + offset -
-                                                u_r[comp_mask])))
+                      reduction.max(c_r[comp_mask] * (surface[surf_mask] +
+                                                      offset -
+                                                      u_r[comp_mask])))
         result.maxcv = {"max_pen": max_pen,
                         "max_pres": max_pres}
 
@@ -375,7 +379,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                             'max. pad force', 'max. du', 'CG area',
                             'frac. CG area', 'sum(nc_r)']
             log_values += [rms_pen, max_pen, max_pres, pad_pres, maxdu, A_cg,
-                           A_cg / reduction.sum(surf_mask * 1), reduction.sum(nc_r * 1)]
+                           A_cg / reduction.sum(surf_mask * 1),
+                           reduction.sum(nc_r * 1)]
             if delta_str == 'mix':
                 log_headers += ['mixfac']
                 log_values += [mixfac]
