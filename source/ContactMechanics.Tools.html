@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.Tools package &mdash; ContactMechanics 0.90.2.dev45+g63644bb documentation</title>
+  <title>ContactMechanics.Tools package &mdash; ContactMechanics 0.90.2.dev47+gb5c884b documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.90.2.dev45+g63644bb
+                0.90.2.dev47+gb5c884b
               </div>
             
           
@@ -209,27 +209,27 @@
 <p>Tool for analysis contact geometry</p>
 <dl class="py function">
 <dt id="ContactMechanics.Tools.ContactAreaAnalysis.coordination">
-<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">coordination</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[1, 0, 0, 1, - 1, 0, 0, - 1]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#coordination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.coordination" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">coordination</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[(1, 0), (0, 1), (- 1, 0), (0, - 1)]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#coordination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.coordination" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a map with coordination numbers, i.e. number of neighboring patches
 that also contact</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ContactMechanics.Tools.ContactAreaAnalysis.edge_perimeter_length">
-<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">edge_perimeter_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[1, 0, 0, 1, - 1, 0, 0, - 1]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#edge_perimeter_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.edge_perimeter_length" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">edge_perimeter_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[(1, 0), (0, 1), (- 1, 0), (0, - 1)]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#edge_perimeter_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.edge_perimeter_length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the length of the perimeter as measured by tracing the length of
 the interface between contacting and non-contacting points.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ContactMechanics.Tools.ContactAreaAnalysis.inner_perimeter">
-<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">inner_perimeter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[1, 0, 0, 1, - 1, 0, 0, - 1]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#inner_perimeter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.inner_perimeter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">inner_perimeter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[(1, 0), (0, 1), (- 1, 0), (0, - 1)]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#inner_perimeter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.inner_perimeter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a map where surface points on the inner perimeter are marked.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ContactMechanics.Tools.ContactAreaAnalysis.outer_perimeter">
-<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">outer_perimeter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[1, 0, 0, 1, - 1, 0, 0, - 1]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#outer_perimeter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.outer_perimeter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ContactMechanics.Tools.ContactAreaAnalysis.</code><code class="sig-name descname">outer_perimeter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">stencil</span><span class="o">=</span><span class="default_value">[(1, 0), (0, 1), (- 1, 0), (0, - 1)]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Tools/ContactAreaAnalysis.html#outer_perimeter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Tools.ContactAreaAnalysis.outer_perimeter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a map where surface points on the outer perimeter are marked.</p>
 </dd></dl>
 
