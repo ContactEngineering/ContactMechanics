@@ -43,10 +43,10 @@ def test_constrained_conjugate_gradients():
         for disp0, normal_force in [(None, 15), (0.1, None)]:
             sx = sy = 2.5 * r_s
             substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy))
-            r_sq = (sx / nx * (np.arange(nx) - nx // 2)) \
-                       .reshape(-1, 1) ** 2 + \
-                   (sy / ny * (np.arange(ny) - ny // 2)) \
-                       .reshape(1, -1) ** 2
+            x_range = np.arange(nx).reshape(-1, 1)
+            y_range = np.arange(ny).reshape(1, -1)
+            r_sq = (sx / nx * (x_range - nx // 2)) ** 2 + \
+                   (sy / ny * (y_range - ny // 2)) ** 2
             surface = Topography(
                 np.ma.masked_where(r_sq > r_s ** 2, np.zeros([nx, ny])),
                 (sx, sy)
