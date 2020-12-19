@@ -527,7 +527,7 @@ class NonSmoothContactSystem(SystemBase):
             self.substrate.check()
         return result
 
-    def primal_objective(self, offset, pot=False, gradient=True):
+    def primal_objective(self, offset, gradient=True):
         r"""To solve the primal objective using gap as the variable.
         Can be fed directly to standard solvers ex: scipy solvers etc
         and returns the elastic energy and it's gradient (negative of

@@ -125,8 +125,6 @@ def test_dual_obj():
     assert res.success
 
     CA_bugnicourt = res.x.reshape((nx, ny)) > 0  # Contact area
-    # print(CA_bugnicourt / (nx * ny))
-    # print("shape of disp_ccg  {}".format(np.shape(res.x)))
     gap_bugnicourt = fun(res.x)[1]
     gap_bugnicourt = gap_bugnicourt.reshape((nx, ny))
 
@@ -138,7 +136,6 @@ def test_dual_obj():
     assert res.success
 
     CA_polonsky = res.x.reshape((nx, ny)) > 0  # Contact area
-    # print("shape of disp_ccg  {}".format(np.shape(res.x)))
     gap_polonsky = fun(res.x)[1]
     gap_polonsky = gap_polonsky.reshape((nx, ny))
 
@@ -152,8 +149,6 @@ def test_dual_obj():
     # ##########TEST MEAN VALUES#######################################
     mean_val = np.mean(_lbfgsb)
     # print('mean {}'.format(mean_val))
-    # sum_val = np.sum(_lbfgsb)
-    # init_pressure = _lbfgsb
     # ####################POLONSKY-KEER##############################
     res = generic_cg_polonsky.min_cg(
         system.dual_objective(offset, gradient=True),
@@ -164,17 +159,16 @@ def test_dual_obj():
     polonsky_mean = res.x.reshape((nx, ny))
     # print('polonsky mean {}'.format(np.mean(polonsky_mean)))
 
-    # TODO: FIX BUGNICOURT CG FOR DUAL OBJ AND MEAN VAL CONSTRAINT.
     # # ####################BUGNICOURT###################################
-    # res = generic_cg_polonsky.min_cg(
-    #     system.dual_objective(offset, gradient=True),
-    #     system.dual_hessian_product,
-    #     init_pressure, mean_value=mean_val, gtol=gtol, bugnicourt=True,
-    #     residual_plot=False, maxiter=5000)
-    # assert res.success
-    #
-    # bugnicourt_mean = res.x.reshape((nx, ny))
-    # print(bugnicourt_mean)
+    res = generic_cg_polonsky.min_cg(
+        system.dual_objective(offset, gradient=True),
+        system.dual_hessian_product,
+        init_pressure, mean_value=mean_val, gtol=gtol, bugnicourt=True,
+        residual_plot=False, maxiter=5000)
+    assert res.success
+
+    bugnicourt_mean = res.x.reshape((nx, ny))
+    print(bugnicourt_mean)
 
     np.testing.assert_allclose(polonsky_mean, _lbfgsb, atol=1e-3)
-    # np.testing.assert_allclose(bugnicourt_mean, _lbfgsb, atol=1e-3)
+    np.testing.assert_allclose(bugnicourt_mean, _lbfgsb, atol=1e-3)

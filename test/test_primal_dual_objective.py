@@ -114,7 +114,7 @@ def test_primal_hessian(s):
 
     system = NonSmoothContactSystem(substrate=substrate, surface=topography)
 
-    obj = system.primal_objective(0, True, True)
+    obj = system.primal_objective(0, True)
 
     gaps = np.random.random(size=(nx, ny))
     dgaps = np.random.random(size=(nx, ny))
