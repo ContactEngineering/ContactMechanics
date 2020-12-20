@@ -103,7 +103,7 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
     ny += basenpoints
     sx = 2.45  # 30.0
     sy = 1.0
-
+    ATOL = 1e-10 *(nx * ny)
     # equivalent Young's modulus
     E_s = 1.0
 
@@ -133,8 +133,7 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
         fftengine.create_plan(1)
 
         kpressure = substrate.evaluate_k_force(
-            disp[substrate.subdomain_slices]) / substrate.area_per_pt #/ (
-                            #nx * ny)
+            disp[substrate.subdomain_slices]) / substrate.area_per_pt
         expected_k_disp = np.zeros((nx // 2 + 1, ny), dtype=complex)
         expected_k_disp[k[0], k[1]] += (.5 - .5j)*(nx * ny)
 
@@ -149,18 +148,18 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
         fftengine.fft(disp[substrate.subdomain_slices], fft_disp)
         np.testing.assert_allclose(fft_disp,
                                    expected_k_disp[substrate.fourier_slices],
-                                   rtol=1e-7, atol=1e-10)
+                                   rtol=1e-7, atol=ATOL )
 
         expected_k_pressure = - E_s / 2 * q * expected_k_disp
         np.testing.assert_allclose(
             kpressure, expected_k_pressure[substrate.fourier_slices],
-            rtol=1e-7, atol=1e-10)
+            rtol=1e-7, atol=ATOL)
 
         computedpressure = substrate.evaluate_force(
             disp[substrate.subdomain_slices]) / substrate.area_per_pt
         np.testing.assert_allclose(computedpressure,
                                    refpressure[substrate.subdomain_slices],
-                                   atol=1e-10, rtol=1e-7)
+                                   atol=ATOL, rtol=1e-7)
 
         computedenergy_kspace = \
             substrate.evaluate(disp[substrate.subdomain_slices], pot=True,
