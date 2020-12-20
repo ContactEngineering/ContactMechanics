@@ -41,11 +41,13 @@ from SurfaceTopography import Topography
 def constrained_conjugate_gradients(substrate, topography, hardness=None,
                                     external_force=None, offset=None,
                                     disp0=None,
+                                    forces0=None,
                                     pentol=None, prestol=1e-5,
                                     mixfac=0.1,
                                     maxiter=100000,
                                     logger=None,
-                                    callback=None, verbose=False):
+                                    callback=None,
+                                    verbose=False):
     """
     Use a constrained conjugate gradient optimization to find the equilibrium
     configuration deflection of an elastic manifold. The conjugate gradient
@@ -172,7 +174,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
     # Compute forces
     # p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real
-    p_r = substrate.evaluate_force(u_r)
+    if forces0 is None:
+        p_r = substrate.evaluate_force(u_r)
+    else:
+        p_r = forces0.copy()
+        u_r = substrate.evaluate_disp(p_r)
+
     result.nfev += 1
     # Pressure outside the computational region must be zero
     p_r[pad_mask] = 0.0
