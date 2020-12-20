@@ -572,7 +572,7 @@ class NonSmoothContactSystem(SystemBase):
 
         """
 
-        res = self.substrate.nb_domain_grid_pts
+        res = self.substrate.nb_subdomain_grid_pts
         if gradient:
             def fun(gap):
                 disp = gap.reshape(res) + self.surface.heights() + offset
