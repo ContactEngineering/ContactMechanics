@@ -832,11 +832,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             # float[2::2] = temp_k[1:-1].imag #original
             # float[1::2] = temp_k[1:].real # original
             #
-            imag = temp_k[1:-1].imag # temporary
-            imag = imag[::-1] # temporary
-            i = int((n//2)+1)
-            float[1:i] = temp_k[1:].real # temporary
-            float[i:] = imag # temporary
+            imag = temp_k[1:-1].imag  # temporary
+            imag = imag[::-1]  # temporary
+            i = int((n // 2) + 1)
+            float[1:i] = temp_k[1:].real  # temporary
+            float[i:] = imag  # temporary
         else:
             float[1::2] = temp_k[1:].real
             float[2::2] = temp_k[1:].imag
@@ -860,25 +860,27 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         x_k   :   (n//2 + 1,) dimension array
         """
-        # temp = x.copy() # original
-        # temp = np.append(temp, 0 * 1j) # original
-        # if (self.nb_grid_pts[0] % 2) == 0:  # original
-        #     k_space = np.zeros(((len(temp) // 2) + 1,), dtype=complex) # original
-        # else: # original
-        #     k_space = np.zeros((((len(temp) + 1) // 2),), dtype=complex) # original
-        # k_space[0] = temp[0] # original
-        # k_space[1:] = temp[1::2] + temp[2::2] * 1j # original
+        # ORIGINAL
+        # temp = x.copy()
+        # temp = np.append(temp, 0 * 1j)
+        # if (self.nb_grid_pts[0] % 2) == 0:
+        #     k_space = np.zeros(((len(temp) // 2) + 1,), dtype=complex)
+        # else:
+        #     k_space = np.zeros((((len(temp) + 1) // 2),), dtype=complex)
+        # k_space[0] = temp[0]
+        # k_space[1:] = temp[1::2] + temp[2::2] * 1j
+        # END ORIGINAL
         temp = x.copy()
-        n = self.nb_grid_pts[0] #temporary
-        k_space = np.zeros(((n//2) + 1), dtype=complex)
+        n = self.nb_grid_pts[0]  # temporary
+        k_space = np.zeros(((n // 2) + 1), dtype=complex)
 
         k_space[0] = temp[0]
 
-        i = int((n//2)) #temporary
+        i = int((n // 2))  # temporary
 
-        imag = temp[i+1:] * 1j #temporary
-        imag = imag[::-1] #temporary
-        k_space[1:-1] = temp[1:i] + imag #temporary
+        imag = temp[i + 1:] * 1j  # temporary
+        imag = imag[::-1]  # temporary
+        k_space[1:-1] = temp[1:i] + imag  # temporary
         k_space[-1] = temp[i]
         return k_space
 
