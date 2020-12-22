@@ -94,7 +94,7 @@ def test_primal_obj(_solver):
                                                       (offset, gradient=True),
                                                       system.
                                                       primal_hessian_product,
-                                                      disp0=disp,
+                                                      x0=disp,
                                                       mean_val=None, gtol=1e-8)
 
         bugnicourt = res.x.reshape((nx, ny))
@@ -107,7 +107,7 @@ def test_primal_obj(_solver):
                                                       (offset, gradient=True),
                                                       system.
                                                       primal_hessian_product,
-                                                      disp0=disp,
+                                                      x0=disp,
                                                       mean_val=mean_val,
                                                       gtol=1e-8
                                                       )
