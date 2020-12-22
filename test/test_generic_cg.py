@@ -4,7 +4,7 @@ from NuMPI.Optimization import generic_cg_polonsky, bugnicourt_cg
 import numpy as np
 import scipy.optimize as optim
 import pytest
-from nuMPI import MPI
+from NuMPI import MPI
 
 pytestmark = pytest.mark.skipif(
     MPI.COMM_WORLD.Get_size() > 1,
