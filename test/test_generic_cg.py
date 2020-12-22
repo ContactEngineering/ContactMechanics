@@ -4,6 +4,11 @@ from NuMPI.Optimization import generic_cg_polonsky, bugnicourt_cg
 import numpy as np
 import scipy.optimize as optim
 import pytest
+from nuMPI import MPI
+
+pytestmark = pytest.mark.skipif(
+    MPI.COMM_WORLD.Get_size() > 1,
+    reason="NuMPI CGs not MPI yet")
 
 
 @pytest.mark.parametrize('_solver', ['generic_cg_polonsky', 'bugnicourt_cg'])
