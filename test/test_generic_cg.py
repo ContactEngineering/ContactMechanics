@@ -113,6 +113,7 @@ def test_primal_obj(_solver):
     else:
         assert False
 
+
 @pytest.mark.parametrize('_solver', ['generic_cg_polonsky', 'bugnicourt_cg'])
 def test_dual_obj(_solver):
     nx, ny = 128, 128
