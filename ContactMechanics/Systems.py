@@ -38,6 +38,8 @@ import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
 from ContactMechanics.Tools import compare_containers
 
+from NuMPI.Optimization import generic_cg_polonsky
+
 
 class IncompatibleFormulationError(Exception):
     # pylint: disable=missing-docstring
@@ -538,7 +540,7 @@ class NonSmoothContactSystem(SystemBase):
             self.substrate.check()
         return result
 
-    def primal_objective(self, offset, pot=False, gradient=True):
+    def primal_objective(self, offset, gradient=True):
         r"""To solve the primal objective using gap as the variable.
         Can be fed directly to standard solvers ex: scipy solvers etc
         and returns the elastic energy and it's gradient (negative of
@@ -600,6 +602,39 @@ class NonSmoothContactSystem(SystemBase):
         hessp = -self.substrate.evaluate_force(gap.reshape(res)
                                                ).reshape(inres)
         return hessp
+
+    def primal_minimize_proxy(self, offset, solver=generic_cg_polonsky,
+                              **kwargs):
+        """
+        Convenience function. Eliminates boilerplate code for PRIMAL
+        minimisation
+        problems by encapsulating the use of constrained minimisation.
+
+        Parameters:
+        offset     -- determines indentation depth
+        disp0      -- initial guess for surface displacement. If not set, zero
+                      displacement of shape
+                      self.substrate.nb_domain_grid_pts is used
+        maxiter    -- maximum number of iterations allowed for convergence
+        logger     -- optional logger, to be used with a logger from
+                      PyCo.Tools.Logger
+        """
+        # pylint: disable=arguments-differ
+        self.disp = None
+        self.force = None
+        self.contact_zone = None
+        result = solver.min_cg(
+            self.primal_objective(offset, gradient=True),
+            self.primal_hessian_product,
+            **kwargs)
+        if result.success:
+            self.offset = offset
+            self.disp = result.x
+            self.force = self.substrate.force = result.jac
+            self.contact_zone = result.jac > 0
+
+            self.substrate.check()
+        return result
 
     def evaluate_dual(self, press, offset, pot=True, forces=False):
         """
@@ -679,3 +714,35 @@ class NonSmoothContactSystem(SystemBase):
         res = self.substrate.nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
+
+    def dual_minimize_proxy(self, offset, solver=generic_cg_polonsky,
+                            **kwargs):
+        """
+        Convenience function. Eliminates boilerplate code for DUAL minimisation
+        problems by encapsulating the use of constrained minimisation.
+
+        Parameters:
+        offset     -- determines indentation depth
+        disp0      -- initial guess for surface displacement. If not set, zero
+                      displacement of shape
+                      self.substrate.nb_domain_grid_pts is used
+        maxiter    -- maximum number of iterations allowed for convergence
+        logger     -- optional logger, to be used with a logger from
+                      PyCo.Tools.Logger
+        """
+        # pylint: disable=arguments-differ
+        self.disp = None
+        self.force = None
+        self.contact_zone = None
+        result = solver.min_cg(
+            self.dual_objective(offset, gradient=True),
+            self.dual_hessian_product,
+            **kwargs)
+        if result.success:
+            self.offset = offset
+            self.disp = result.jac
+            self.force = self.substrate.force = result.x
+            self.contact_zone = result.x > 0
+
+            self.substrate.check()
+        return result
