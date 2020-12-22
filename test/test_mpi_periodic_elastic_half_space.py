@@ -103,7 +103,7 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
     ny += basenpoints
     sx = 2.45  # 30.0
     sy = 1.0
-    ATOL = 1e-10 *(nx * ny)
+    ATOL = 1e-10 * (nx * ny)
     # equivalent Young's modulus
     E_s = 1.0
 
@@ -148,7 +148,7 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
         fftengine.fft(disp[substrate.subdomain_slices], fft_disp)
         np.testing.assert_allclose(fft_disp,
                                    expected_k_disp[substrate.fourier_slices],
-                                   rtol=1e-7, atol=ATOL )
+                                   rtol=1e-7, atol=ATOL)
 
         expected_k_pressure = - E_s / 2 * q * expected_k_disp
         np.testing.assert_allclose(
