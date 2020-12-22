@@ -110,7 +110,8 @@ def test_primal_obj(_solver):
         bugnicourt_mean = res.x.reshape((nx, ny))
 
         np.testing.assert_allclose(_lbfgsb, bugnicourt_mean, atol=1e-3)
-
+    else:
+        assert False
 
 @pytest.mark.parametrize('_solver', ['generic_cg_polonsky', 'bugnicourt_cg'])
 def test_dual_obj(_solver):
@@ -210,7 +211,7 @@ def test_dual_obj(_solver):
         np.testing.assert_allclose(polonsky_mean, _lbfgsb, atol=1e-3)
         np.testing.assert_allclose(bugnicourt_mean, _lbfgsb, atol=1e-3)
 
-    elif _solver == 'bugncourt_cg':
+    elif _solver == 'bugnicourt_cg':
         bugnicourt_cg.constrained_conjugate_gradients(system.dual_objective
                                                       (offset, gradient=True),
                                                       system.
@@ -235,3 +236,5 @@ def test_dual_obj(_solver):
         bugnicourt_mean = res.x.reshape((nx, ny))
 
         np.testing.assert_allclose(_lbfgsb, bugnicourt_mean, atol=1e-3)
+    else:
+        assert False
