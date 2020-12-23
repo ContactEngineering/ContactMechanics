@@ -243,7 +243,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         Parameters:
         offset : float
                  determines indentation depth
-        disp0  : (default zero)
+        initial_displacements  : (default zero)
                  initial guess for displacement field. If
                  not chosen appropriately, results may be unreliable.
         method : string or callable

@@ -119,8 +119,8 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
         else:
             disp0 = (disp[i]+disp[i+1])/2
 
-    opt = system.minimize_proxy(offset=disp0, pentol=pentol, maxiter=maxiter, logger=logger,
-                                verbose=arguments.verbose)
+    opt = system.minimize_proxy(offset=disp0, logger=logger, pentol=pentol,
+                                maxiter=maxiter, verbose=arguments.verbose)
     c = opt.active_set
     f = opt.jac
     u = opt.x[:f.shape[0], :f.shape[1]]
@@ -419,11 +419,12 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         suffix = '.{}'.format(i)
         if len(pressure) == 1:
             suffix = ''
-        opt = system.minimize_proxy(
-            external_force=_pressure*np.prod(surface.physical_sizes),
-            pentol=arguments.pentol,
-            maxiter=arguments.maxiter, logger=logger,
-            verbose=arguments.verbose)
+        opt = system.minimize_proxy(logger=logger,
+                                    external_force=_pressure * np.prod(
+                                        surface.physical_sizes),
+                                    pentol=arguments.pentol,
+                                    maxiter=arguments.maxiter,
+                                    verbose=arguments.verbose)
         c = opt.active_set
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]
@@ -466,11 +467,10 @@ elif arguments.displacement is not None:
         suffix = '.{}'.format(i)
         if len(displacement) == 1:
             suffix = ''
-        opt = system.minimize_proxy(
-            offset=_displacement, pentol=arguments.pentol,
-            maxiter=arguments.maxiter,
-            logger=logger, kind='ref',
-            verbose=arguments.verbose)
+        opt = system.minimize_proxy(offset=_displacement, logger=logger,
+                                    pentol=arguments.pentol,
+                                    maxiter=arguments.maxiter, kind='ref',
+                                    verbose=arguments.verbose)
         c = opt.active_set
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]

@@ -109,9 +109,8 @@ def test_hardwall_plastic_nonperiodic_disp_control(comm_self):
 
     disp0 = None
     for offset in offsets:
-        sol = system.minimize_proxy(offset=offset,
-                                    initial_displacements=disp0,
-                                    pentol=1e-10,)
+        sol = system.minimize_proxy(offset=offset, initial_displacements=disp0,
+                                    pentol=1e-10)
         assert sol.success
 
 
@@ -156,8 +155,7 @@ def test_hardwall_plastic_nonperiodic_load_control(comm_self):
 
     for external_force in external_forces:
         sol = system.minimize_proxy(external_force=external_force,
-                                    initial_displacements=disp0,
-                                    pentol=1e-10)
+                                    initial_displacements=disp0, pentol=1e-10)
         assert sol.success
         disp0 = system.disp
         offsets.append(system.offset)

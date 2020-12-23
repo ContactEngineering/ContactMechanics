@@ -1,12 +1,12 @@
 Change log for ContactMechanics
 ===============================
 
-v0.90.2 (future)
+v0.90.2 (> 231220)
 ----------------
 
 - API: ConstrainedConjugateGradients, minimize_proxy: 
     changed disp0 to initial_displacements. 
-- API: ConstrainedConjugateGradients, minimize_proxy: 
+- API: ConstrainedConjugateGradients, NonSmooth minimize_proxy: 
     added possibility to directly give initial_forces
                     
 
