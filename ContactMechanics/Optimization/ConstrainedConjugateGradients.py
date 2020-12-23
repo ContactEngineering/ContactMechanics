@@ -40,8 +40,8 @@ from SurfaceTopography import Topography
 
 def constrained_conjugate_gradients(substrate, topography, hardness=None,
                                     external_force=None, offset=None,
-                                    disp0=None,
-                                    forces0=None,
+                                    initial_displacements=None,
+                                    initial_forces=None,
                                     pentol=None, prestol=1e-5,
                                     mixfac=0.1,
                                     maxiter=100000,
@@ -64,27 +64,36 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         Hardness of the substrate. Pressure cannot exceed this value. Can be
         scalar or array (i.e. per pixel) value.
     external_force : float
-        External force. Don't optimize force if None.
+        External force. Constrains the sum of forces to this value.
     offset : float
         Offset of rigid surface. Ignore if external_force is specified.
-    disp0 : array_like
+    initial_displacements : array_like
         Displacement field for initializing the solver. Guess an initial
         value if set to None.
-    u_r : array
-        Array used for initial displacements. A new array is created if
-        omitted.
+    initial_forces: array_like
+        pixel forces field for initializing the solver. Is computed from
+        initial_displacements if none
     pentol : float
         Maximum penetration of contacting regions required for convergence.
+    prestol : float
+        maximum pressure outside the contact region allowed for convergence
     maxiter : float
         Maximum number of iterations.
+    logger: ContactMechanics.Tools.Logger
+        reports status and values at each iteration
+    callback: callable(int iteration, array_link forces, dict d)
+        called each iteration. The dictionary contains additional scalars
+    verbose: bool
+        If True, more scalar quantities are passed to the logger
     Returns
     -------
-    u : array
-        2d-array of displacements.
-    p : array
-        2d-array of pressure.
-    converged : bool
-        True if iteration stopped due to convergence criterion.
+    Optimisation result
+        x: displacements
+        fun: elastic energy
+        jac: forces
+        active_set: points where forces are not constrained to 0 or hardness
+        offset: offset i rigid surface, results from the optimization processes
+           when the external_force is constrained
     """
 
     if substrate.nb_subdomain_grid_pts != substrate.nb_domain_grid_pts:
@@ -132,10 +141,10 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     if offset is None:
         offset = 0
 
-    if disp0 is None:
+    if initial_displacements is None:
         u_r = np.zeros(substrate.nb_subdomain_grid_pts)
     else:
-        u_r = disp0.copy()
+        u_r = initial_displacements.copy()
 
     # slice of the local data of the computation subdomain corresponding to the
     # topography subdomain. It's typically the first half of the computation
@@ -174,10 +183,10 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
     # Compute forces
     # p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real
-    if forces0 is None:
+    if initial_forces is None:
         p_r = substrate.evaluate_force(u_r)
     else:
-        p_r = forces0.copy()
+        p_r = initial_forces.copy()
         u_r = substrate.evaluate_disp(p_r)
 
     result.nfev += 1

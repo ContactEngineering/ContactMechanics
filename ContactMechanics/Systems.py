@@ -509,17 +509,24 @@ class NonSmoothContactSystem(SystemBase):
         problems by encapsulating the use of constrained minimisation.
 
         Parameters:
-        offset     -- determines indentation depth
-        disp0      -- initial guess for surface displacement. If not set, zero
+        -----------
+        offset:
+            determines indentation depth
+        initial_displacements:
+            initial guess for surface displacement. If not set, zero
                       displacement of shape
                       self.substrate.nb_domain_grid_pts is used
-        pentol     -- maximum penetration of contacting regions required for
-                      convergence
-        prestol    -- maximum pressure outside the contact region allowed for
-                      convergence
-        maxiter    -- maximum number of iterations allowed for convergence
-        logger     -- optional logger, to be used with a logger from
-                      PyCo.Tools.Logger
+        initial_forces:
+            initial guess for the forces
+        pentol:
+            maximum penetration of contacting regions required for convergence
+        prestol:
+            maximum pressure outside the contact region allowed for convergence
+        maxiter:
+            maximum number of iterations allowed for convergence
+        logger:
+            optional logger, to be used with a logger from the
+            ContactMechanics.Tools.Logger
         """
         # pylint: disable=arguments-differ
         self.disp = None
