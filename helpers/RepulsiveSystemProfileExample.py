@@ -59,7 +59,7 @@ offset_max = 1e-6
 disp = None
 for offset in np.linspace(0, offset_max, 10):
     print("offset = {}".format(offset))
-    result = system.minimize_proxy(offset, disp0=disp)
+    result = system.minimize_proxy(offset, initial_displacements=disp)
     disp = system.disp
 
 print(result.success)
