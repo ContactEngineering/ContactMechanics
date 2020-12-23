@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.90.2.dev47+gb5c884b documentation</title>
+  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.90.2.dev53+g0cb8af5 documentation</title>
   
 
   
@@ -29,7 +29,6 @@
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
@@ -60,7 +59,7 @@
             
             
               <div class="version">
-                0.90.2.dev47+gb5c884b
+                0.90.2.dev53+g0cb8af5
               </div>
             
           
@@ -206,12 +205,14 @@
 
 <div class="viewcode-block" id="constrained_conjugate_gradients"><a class="viewcode-back" href="../../../source/ContactMechanics.Optimization.html#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients">[docs]</a><span class="k">def</span> <span class="nf">constrained_conjugate_gradients</span><span class="p">(</span><span class="n">substrate</span><span class="p">,</span> <span class="n">topography</span><span class="p">,</span> <span class="n">hardness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                     <span class="n">external_force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                    <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">initial_displacements</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">initial_forces</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                     <span class="n">pentol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prestol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
                                     <span class="n">mixfac</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
                                     <span class="n">maxiter</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
                                     <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                    <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                                    <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Use a constrained conjugate gradient optimization to find the equilibrium</span>
 <span class="sd">    configuration deflection of an elastic manifold. The conjugate gradient</span>
@@ -228,27 +229,36 @@
 <span class="sd">        Hardness of the substrate. Pressure cannot exceed this value. Can be</span>
 <span class="sd">        scalar or array (i.e. per pixel) value.</span>
 <span class="sd">    external_force : float</span>
-<span class="sd">        External force. Don&#39;t optimize force if None.</span>
+<span class="sd">        External force. Constrains the sum of forces to this value.</span>
 <span class="sd">    offset : float</span>
 <span class="sd">        Offset of rigid surface. Ignore if external_force is specified.</span>
-<span class="sd">    disp0 : array_like</span>
+<span class="sd">    initial_displacements : array_like</span>
 <span class="sd">        Displacement field for initializing the solver. Guess an initial</span>
 <span class="sd">        value if set to None.</span>
-<span class="sd">    u_r : array</span>
-<span class="sd">        Array used for initial displacements. A new array is created if</span>
-<span class="sd">        omitted.</span>
+<span class="sd">    initial_forces: array_like</span>
+<span class="sd">        pixel forces field for initializing the solver. Is computed from</span>
+<span class="sd">        initial_displacements if none</span>
 <span class="sd">    pentol : float</span>
 <span class="sd">        Maximum penetration of contacting regions required for convergence.</span>
+<span class="sd">    prestol : float</span>
+<span class="sd">        maximum pressure outside the contact region allowed for convergence</span>
 <span class="sd">    maxiter : float</span>
 <span class="sd">        Maximum number of iterations.</span>
+<span class="sd">    logger: ContactMechanics.Tools.Logger</span>
+<span class="sd">        reports status and values at each iteration</span>
+<span class="sd">    callback: callable(int iteration, array_link forces, dict d)</span>
+<span class="sd">        called each iteration. The dictionary contains additional scalars</span>
+<span class="sd">    verbose: bool</span>
+<span class="sd">        If True, more scalar quantities are passed to the logger</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    u : array</span>
-<span class="sd">        2d-array of displacements.</span>
-<span class="sd">    p : array</span>
-<span class="sd">        2d-array of pressure.</span>
-<span class="sd">    converged : bool</span>
-<span class="sd">        True if iteration stopped due to convergence criterion.</span>
+<span class="sd">    Optimisation result</span>
+<span class="sd">        x: displacements</span>
+<span class="sd">        fun: elastic energy</span>
+<span class="sd">        jac: forces</span>
+<span class="sd">        active_set: points where forces are not constrained to 0 or hardness</span>
+<span class="sd">        offset: offset i rigid surface, results from the optimization processes</span>
+<span class="sd">           when the external_force is constrained</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span> <span class="o">!=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span><span class="p">:</span>
@@ -296,10 +306,10 @@
     <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">if</span> <span class="n">disp0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">initial_displacements</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">u_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">u_r</span> <span class="o">=</span> <span class="n">disp0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">u_r</span> <span class="o">=</span> <span class="n">initial_displacements</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="c1"># slice of the local data of the computation subdomain corresponding to the</span>
     <span class="c1"># topography subdomain. It&#39;s typically the first half of the computation</span>
@@ -338,7 +348,12 @@
 
     <span class="c1"># Compute forces</span>
     <span class="c1"># p_r = -np.fft.ifft2(np.fft.fft2(u_r)/gf_q).real</span>
-    <span class="n">p_r</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">u_r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">initial_forces</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">p_r</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">u_r</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p_r</span> <span class="o">=</span> <span class="n">initial_forces</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">u_r</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="n">p_r</span><span class="p">)</span>
+
     <span class="n">result</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="c1"># Pressure outside the computational region must be zero</span>
     <span class="n">p_r</span><span class="p">[</span><span class="n">pad_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>

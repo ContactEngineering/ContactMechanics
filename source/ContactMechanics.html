@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics package &mdash; ContactMechanics 0.90.2.dev47+gb5c884b documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 0.90.2.dev53+g0cb8af5 documentation</title>
   
 
   
@@ -29,7 +29,6 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -62,7 +61,7 @@
             
             
               <div class="version">
-                0.90.2.dev47+gb5c884b
+                0.90.2.dev53+g0cb8af5
               </div>
             
           
@@ -1028,24 +1027,27 @@ surface_type     –</p>
 <code class="sig-name descname">minimize_proxy</code><span class="sig-paren">(</span><em class="sig-param">solver=&lt;function constrained_conjugate_gradients&gt;</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.minimize_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.minimize_proxy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience function. Eliminates boilerplate code for most minimisation
 problems by encapsulating the use of constrained minimisation.</p>
-<p>Parameters:
-offset     – determines indentation depth
-disp0      – initial guess for surface displacement. If not set, zero</p>
-<blockquote>
-<div><p>displacement of shape
-self.substrate.nb_domain_grid_pts is used</p>
-</div></blockquote>
 <dl class="simple">
-<dt>pentol     – maximum penetration of contacting regions required for</dt><dd><p>convergence</p>
+<dt>offset:</dt><dd><p>determines indentation depth</p>
 </dd>
-<dt>prestol    – maximum pressure outside the contact region allowed for</dt><dd><p>convergence</p>
+<dt>initial_displacements:</dt><dd><dl class="simple">
+<dt>initial guess for surface displacement. If not set, zero</dt><dd><p>displacement of shape
+self.substrate.nb_domain_grid_pts is used</p>
 </dd>
 </dl>
-<p>maxiter    – maximum number of iterations allowed for convergence
-logger     – optional logger, to be used with a logger from</p>
-<blockquote>
-<div><p>PyCo.Tools.Logger</p>
-</div></blockquote>
+</dd>
+<dt>initial_forces:</dt><dd><p>initial guess for the forces</p>
+</dd>
+<dt>pentol:</dt><dd><p>maximum penetration of contacting regions required for convergence</p>
+</dd>
+<dt>prestol:</dt><dd><p>maximum pressure outside the contact region allowed for convergence</p>
+</dd>
+<dt>maxiter:</dt><dd><p>maximum number of iterations allowed for convergence</p>
+</dd>
+<dt>logger:</dt><dd><p>optional logger, to be used with a logger from the
+ContactMechanics.Tools.Logger</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1207,7 +1209,7 @@ if system.is_proxy():</p>
 
 <dl class="py method">
 <dt id="ContactMechanics.Systems.SystemBase.minimize_proxy">
-<code class="sig-name descname">minimize_proxy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">disp0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'L-BFGS-B'</span></em>, <em class="sig-param"><span class="n">gradient</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">lbounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ubounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">disp_scale</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">logger</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#SystemBase.minimize_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Systems.SystemBase.minimize_proxy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">minimize_proxy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">initial_displacements</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'L-BFGS-B'</span></em>, <em class="sig-param"><span class="n">gradient</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">lbounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ubounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">disp_scale</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">logger</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#SystemBase.minimize_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Systems.SystemBase.minimize_proxy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience function. Eliminates boilerplate code for most minimisation
 problems by encapsulating the use of scipy.minimize for common default
 options. In the case of smart proxy systems, this may also encapsulate
@@ -1219,7 +1221,7 @@ offset : float</p>
 <div><p>determines indentation depth</p>
 </div></blockquote>
 <dl>
-<dt>disp0<span class="classifier">(default zero)</span></dt><dd><p>initial guess for displacement field. If
+<dt>initial_displacements<span class="classifier">(default zero)</span></dt><dd><p>initial guess for displacement field. If
 not chosen appropriately, results may be unreliable.</p>
 </dd>
 <dt>method<span class="classifier">string or callable</span></dt><dd><p>(defaults to L-BFGS-B, see scipy documentation).

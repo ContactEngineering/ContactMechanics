@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev47+gb5c884b documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev53+g0cb8af5 documentation</title>
   
 
   
@@ -29,7 +29,6 @@
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
@@ -60,7 +59,7 @@
             
             
               <div class="version">
-                0.90.2.dev47+gb5c884b
+                0.90.2.dev53+g0cb8af5
               </div>
             
           
@@ -395,7 +394,8 @@
         <span class="c1"># substrate.force will still be nonzero within the numerical tolerance</span>
         <span class="c1"># given by the convergence criterion.</span>
 
-<div class="viewcode-block" id="SystemBase.minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="SystemBase.minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                       <span class="n">initial_displacements</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
                        <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lbounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -409,7 +409,7 @@
 <span class="sd">        Parameters:</span>
 <span class="sd">        offset : float</span>
 <span class="sd">                 determines indentation depth</span>
-<span class="sd">        disp0  : (default zero)</span>
+<span class="sd">        initial_displacements  : (default zero)</span>
 <span class="sd">                 initial guess for displacement field. If</span>
 <span class="sd">                 not chosen appropriately, results may be unreliable.</span>
 <span class="sd">        method : string or callable</span>
@@ -458,9 +458,11 @@
 
         <span class="n">fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="n">disp_scale</span><span class="p">,</span>
                              <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">disp0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">disp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
-        <span class="n">disp0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">disp0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">initial_displacements</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">initial_displacements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
+        <span class="n">initial_displacements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span>
+            <span class="n">initial_displacements</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">callback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
 
@@ -477,14 +479,16 @@
         <span class="n">bounded_minimizers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="s1">&#39;TNC&#39;</span><span class="p">,</span> <span class="s1">&#39;SLSQP&#39;</span><span class="p">}</span>
 
         <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">bounded_minimizers</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp0</span><span class="p">,</span>
-                                             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
-                                             <span class="n">bounds</span><span class="o">=</span><span class="n">bnds</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span>
-                                             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
+                <span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">disp_scale</span> <span class="o">*</span> <span class="n">initial_displacements</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
+                <span class="n">bounds</span><span class="o">=</span><span class="n">bnds</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp0</span><span class="p">,</span>
-                                             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
-                                             <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
+                <span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">disp_scale</span> <span class="o">*</span> <span class="n">initial_displacements</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
+                <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_state</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">disp_scale</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span></div>
@@ -675,17 +679,24 @@
 <span class="sd">        problems by encapsulating the use of constrained minimisation.</span>
 
 <span class="sd">        Parameters:</span>
-<span class="sd">        offset     -- determines indentation depth</span>
-<span class="sd">        disp0      -- initial guess for surface displacement. If not set, zero</span>
+<span class="sd">        -----------</span>
+<span class="sd">        offset:</span>
+<span class="sd">            determines indentation depth</span>
+<span class="sd">        initial_displacements:</span>
+<span class="sd">            initial guess for surface displacement. If not set, zero</span>
 <span class="sd">                      displacement of shape</span>
 <span class="sd">                      self.substrate.nb_domain_grid_pts is used</span>
-<span class="sd">        pentol     -- maximum penetration of contacting regions required for</span>
-<span class="sd">                      convergence</span>
-<span class="sd">        prestol    -- maximum pressure outside the contact region allowed for</span>
-<span class="sd">                      convergence</span>
-<span class="sd">        maxiter    -- maximum number of iterations allowed for convergence</span>
-<span class="sd">        logger     -- optional logger, to be used with a logger from</span>
-<span class="sd">                      PyCo.Tools.Logger</span>
+<span class="sd">        initial_forces:</span>
+<span class="sd">            initial guess for the forces</span>
+<span class="sd">        pentol:</span>
+<span class="sd">            maximum penetration of contacting regions required for convergence</span>
+<span class="sd">        prestol:</span>
+<span class="sd">            maximum pressure outside the contact region allowed for convergence</span>
+<span class="sd">        maxiter:</span>
+<span class="sd">            maximum number of iterations allowed for convergence</span>
+<span class="sd">        logger:</span>
+<span class="sd">            optional logger, to be used with a logger from the</span>
+<span class="sd">            ContactMechanics.Tools.Logger</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=arguments-differ</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="kc">None</span>

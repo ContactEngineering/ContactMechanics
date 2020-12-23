@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.Optimization package &mdash; ContactMechanics 0.90.2.dev47+gb5c884b documentation</title>
+  <title>ContactMechanics.Optimization package &mdash; ContactMechanics 0.90.2.dev53+g0cb8af5 documentation</title>
   
 
   
@@ -29,7 +29,6 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -62,7 +61,7 @@
             
             
               <div class="version">
-                0.90.2.dev47+gb5c884b
+                0.90.2.dev53+g0cb8af5
               </div>
             
           
@@ -207,7 +206,7 @@
 I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)</p>
 <dl class="py function">
 <dt id="ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients">
-<code class="sig-prename descclassname">ContactMechanics.Optimization.ConstrainedConjugateGradients.</code><code class="sig-name descname">constrained_conjugate_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">substrate</span></em>, <em class="sig-param"><span class="n">topography</span></em>, <em class="sig-param"><span class="n">hardness</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">external_force</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">disp0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pentol</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prestol</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">mixfac</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">100000</span></em>, <em class="sig-param"><span class="n">logger</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Optimization/ConstrainedConjugateGradients.html#constrained_conjugate_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ContactMechanics.Optimization.ConstrainedConjugateGradients.</code><code class="sig-name descname">constrained_conjugate_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">substrate</span></em>, <em class="sig-param"><span class="n">topography</span></em>, <em class="sig-param"><span class="n">hardness</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">external_force</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_displacements</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_forces</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pentol</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prestol</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">mixfac</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">100000</span></em>, <em class="sig-param"><span class="n">logger</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Optimization/ConstrainedConjugateGradients.html#constrained_conjugate_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use a constrained conjugate gradient optimization to find the equilibrium
 configuration deflection of an elastic manifold. The conjugate gradient
 iteration is reset using the steepest descent direction whenever the
@@ -224,23 +223,33 @@ Method is described in I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>external_force</strong> (<em>float</em>) – External force. Don’t optimize force if None.</p></li>
+<li><p><strong>external_force</strong> (<em>float</em>) – External force. Constrains the sum of forces to this value.</p></li>
 <li><p><strong>offset</strong> (<em>float</em>) – Offset of rigid surface. Ignore if external_force is specified.</p></li>
-<li><p><strong>disp0</strong> (<em>array_like</em>) – Displacement field for initializing the solver. Guess an initial
+<li><p><strong>initial_displacements</strong> (<em>array_like</em>) – Displacement field for initializing the solver. Guess an initial
 value if set to None.</p></li>
-<li><p><strong>u_r</strong> (<em>array</em>) – Array used for initial displacements. A new array is created if
-omitted.</p></li>
+<li><p><strong>initial_forces</strong> (<em>array_like</em>) – pixel forces field for initializing the solver. Is computed from
+initial_displacements if none</p></li>
 <li><p><strong>pentol</strong> (<em>float</em>) – Maximum penetration of contacting regions required for convergence.</p></li>
+<li><p><strong>prestol</strong> (<em>float</em>) – maximum pressure outside the contact region allowed for convergence</p></li>
 <li><p><strong>maxiter</strong> (<em>float</em>) – Maximum number of iterations.</p></li>
+<li><p><strong>logger</strong> (<em>ContactMechanics.Tools.Logger</em>) – reports status and values at each iteration</p></li>
+<li><p><strong>callback</strong> (<em>callable</em><em>(</em><em>int iteration</em><em>, </em><em>array_link forces</em><em>, </em><em>dict d</em><em>)</em>) – called each iteration. The dictionary contains additional scalars</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – If True, more scalar quantities are passed to the logger</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>u</strong> (<em>array</em>) – 2d-array of displacements.</p></li>
-<li><p><strong>p</strong> (<em>array</em>) – 2d-array of pressure.</p></li>
-<li><p><strong>converged</strong> (<em>bool</em>) – True if iteration stopped due to convergence criterion.</p></li>
-</ul>
+<dd class="field-even"><p><p>x: displacements
+fun: elastic energy
+jac: forces
+active_set: points where forces are not constrained to 0 or hardness
+offset: offset i rigid surface, results from the optimization processes</p>
+<blockquote>
+<div><p>when the external_force is constrained</p>
+</div></blockquote>
 </p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optimisation result</p>
 </dd>
 </dl>
 </dd></dl>

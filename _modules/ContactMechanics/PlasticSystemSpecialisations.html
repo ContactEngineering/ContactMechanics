@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ContactMechanics.PlasticSystemSpecialisations &mdash; ContactMechanics 0.90.2.dev47+gb5c884b documentation</title>
+  <title>ContactMechanics.PlasticSystemSpecialisations &mdash; ContactMechanics 0.90.2.dev53+g0cb8af5 documentation</title>
   
 
   
@@ -29,7 +29,6 @@
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
@@ -60,7 +59,7 @@
             
             
               <div class="version">
-                0.90.2.dev47+gb5c884b
+                0.90.2.dev53+g0cb8af5
               </div>
             
           
@@ -230,10 +229,7 @@
         <span class="c1"># Need to convert hardness into force units because the solvers operate</span>
         <span class="c1"># internally with forces, not pressures.</span>
         <span class="n">hardness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">hardness</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">area_per_pt</span>
-        <span class="n">opt</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">minimize_proxy</span><span class="p">(</span>
-            <span class="n">hardness</span><span class="o">=</span><span class="n">hardness</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">minimize_proxy</span><span class="p">(</span><span class="n">hardness</span><span class="o">=</span><span class="n">hardness</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">opt</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
             <span class="n">plastic_mask</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">==</span> <span class="n">hardness</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">plastic_displ</span> <span class="o">+=</span> \
