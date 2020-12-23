@@ -229,7 +229,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         # substrate.force will still be nonzero within the numerical tolerance
         # given by the convergence criterion.
 
-    def minimize_proxy(self, offset=0, initial_displacements=None, method='L-BFGS-B',
+    def minimize_proxy(self, offset=0,
+                       initial_displacements=None, method='L-BFGS-B',
                        gradient=True, lbounds=None, ubounds=None,
                        callback=None,
                        disp_scale=1., logger=None, **kwargs):
@@ -293,8 +294,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
                              logger=logger)
         if initial_displacements is None:
-            initial_displacements = np.zeros(self.substrate.nb_subdomain_grid_pts)
-        initial_displacements = self.shape_minimisation_input(initial_displacements)
+            initial_displacements = np.zeros(
+                self.substrate.nb_subdomain_grid_pts)
+        initial_displacements = self.shape_minimisation_input(
+            initial_displacements)
         if callback is True:
             callback = self.callback(force=gradient)
 
@@ -311,14 +314,16 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         bounded_minimizers = {'L-BFGS-B', 'TNC', 'SLSQP'}
 
         if method in bounded_minimizers:
-            result = scipy.optimize.minimize(fun, x0=disp_scale * initial_displacements,
-                                             method=method, jac=gradient,
-                                             bounds=bnds, callback=callback,
-                                             **kwargs)
+            result = scipy.optimize.minimize(
+                fun, x0=disp_scale * initial_displacements,
+                method=method, jac=gradient,
+                bounds=bnds, callback=callback,
+                **kwargs)
         else:
-            result = scipy.optimize.minimize(fun, x0=disp_scale * initial_displacements,
-                                             method=method, jac=gradient,
-                                             callback=callback, **kwargs)
+            result = scipy.optimize.minimize(
+                fun, x0=disp_scale * initial_displacements,
+                method=method, jac=gradient,
+                callback=callback, **kwargs)
 
         self._update_state(offset, result, gradient, disp_scale)
         return result
