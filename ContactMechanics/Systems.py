@@ -164,9 +164,11 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         functions. Also, if you initial guess has a shape that makes no sense,
         this will tell you before you get caught in debugging scipy-code
 
-        Arguments:
-        in_array -- array with the initial guess. has the intuitive shape you
-                    think it has
+        Parameters:
+        -----------
+        in_array:
+            array with the initial guess. has the intuitive shape you
+            think it has
         """
         if np.prod(self.substrate.nb_subdomain_grid_pts) == in_array.size:
             return in_array.reshape(-1)
@@ -413,7 +415,6 @@ class NonSmoothContactSystem(SystemBase):
 
     @property
     def nb_grid_pts(self):
-        # pylint: disable=missing-docstring
         return self.surface.nb_grid_pts
 
     def compute_normal_force(self):
@@ -460,14 +461,19 @@ class NonSmoothContactSystem(SystemBase):
         that the shape of disp is maintained and lets you set the offset and
         'forces' flag without using scipy's cumbersome argument passing
         interface. Returns a function of only disp
-        Keyword Arguments:
-        offset     -- determines indentation depth
-        disp0      -- unused variable, present only for interface compatibility
-                      with inheriting classes
-        gradient   -- (default False) whether the gradient is supposed to be
-                      used
-        disp_scale -- (default 1.) allows to specify a scaling of the
-                      dislacement before evaluation.
+        Parameters:
+        -----------
+        offset:
+            determines indentation depth
+        disp0:
+            unused variable, present only for interface compatibility
+            with inheriting classes
+        gradient: (default False)
+            whether the gradient is supposed to be
+            used
+        disp_scale:
+            (default 1.) allows to specify a scaling of the
+            dislacement before evaluation.
         """
         # pylint: disable=arguments-differ
         res = self.substrate.nb_domain_grid_pts
