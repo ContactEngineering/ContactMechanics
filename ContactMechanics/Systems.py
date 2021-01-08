@@ -70,7 +70,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
         self.reduction = Reduction(substrate.communicator)
 
-        self.comp_slice = self.substrate.subdomain_slices
+        self.comp_slice = self.substrate.local_topography_subdomain_slices
 
     _proxyclass = False
 
