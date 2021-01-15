@@ -132,22 +132,23 @@ def test_primal_hessian(s):
 
 # TODO: test dual hessian
 
+
 @pytest.mark.parametrize("s", [1., 2.])
-def test_bugnicourt_nonperiodic(s):
+def test_scipy_friendly_interface_nonperiodic(s):
     # TODO: there is an old bug in the nonsmoothcontactsystem objective
-    nx, ny = 256, 256
+    nx, ny = 32, 32
     sx = sy = s
     R = 10.
 
     surface = make_sphere(R, (nx, ny), (sx, sy),
-        centre  = (sx / 2, sy / 2),
-        kind="paraboloid")
-    padded_surface = make_sphere(R, (2 * nx, 2* ny), (2* sx, 2 * sy),
-        centre = (sx / 2, sy / 2),
-        kind="paraboloid")
+                          centre=(sx / 2, sy / 2),
+                          kind="paraboloid")
+    padded_surface = make_sphere(R, (2 * nx, 2 * ny), (2 * sx, 2 * sy),
+                                 centre=(sx / 2, sy / 2),
+                                 kind="paraboloid")
     Es = 50.
     substrate = Solid.FreeFFTElasticHalfSpace((nx, ny), young=Es,
-                                               physical_sizes=(sx, sy))
+                                              physical_sizes=(sx, sy))
 
     system = Solid.Systems.NonSmoothContactSystem(substrate, surface)
 
@@ -155,7 +156,7 @@ def test_bugnicourt_nonperiodic(s):
     lbounds = system._lbounds_from_heights(penetration)
 
     bnds = system._reshape_bounds(lbounds, )
-    init_disp = np.ones(substrate.nb_subdomain_grid_pts) # .flatten()
+    init_disp = np.ones(substrate.nb_subdomain_grid_pts)  # .flatten()
     init_gap = init_disp - padded_surface.heights() - penetration
 
     res = optim.minimize(system.objective(penetration, gradient=True),
@@ -165,21 +166,10 @@ def test_bugnicourt_nonperiodic(s):
                          options=dict(gtol=1e-8, ftol=1e-20))
 
     assert res.success
-    _lbfgsb = res.x.reshape((nx, ny))
+    _lbfgsb = res.x.reshape((2 * nx, 2 * ny))
 
     res = system.minimize_proxy(offset=penetration, pentol=1e-7)
     assert res.success
-    _ccg = system.compute_gap(res.x, penetration)
+    _ccg = res.x
 
-    # fig, (axg, axpl, axpc) = plt.subplots(3, 1)
-    #
-    # plt.colorbar(axpl.pcolormesh(_lbfgsb))
-    # plt.colorbar(axpc.pcolormesh(_ccg))
-    # axg.plot(system.surface.positions()[0][:,0], _lbfgsb[:,ny//2],'x',
-    # label='lbfgsb' )
-    # axg.plot(system.surface.positions()[0][:,0], _ccg[:, ny // 2], '+',
-    # label='ccg')
-    # axg.legend()
-    # plt.show()
-    # fig.tight_layout()
     np.testing.assert_allclose(_lbfgsb, _ccg, atol=1e-6)
