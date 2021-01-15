@@ -453,8 +453,7 @@ class NonSmoothContactSystem(SystemBase):
 
         return (self.energy, self.force)
 
-    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
-                  tol=0):
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -482,8 +481,7 @@ class NonSmoothContactSystem(SystemBase):
                 # pylint: disable=missing-docstring
                 try:
                     self.evaluate(
-                        disp_scale * disp.reshape(res), offset, forces=True,
-                        tol=tol)
+                        disp_scale * disp.reshape(res), offset, forces=True,)
                 except ValueError as err:
                     raise ValueError(
                         "{}: disp.shape: {}, res: {}".format(
@@ -493,8 +491,7 @@ class NonSmoothContactSystem(SystemBase):
             def fun(disp):
                 # pylint: disable=missing-docstring
                 return self.evaluate(
-                    disp_scale * disp.reshape(res), offset, forces=False,
-                    tol=tol)[0]
+                    disp_scale * disp.reshape(res), offset, forces=False,)[0]
 
         return fun
 
