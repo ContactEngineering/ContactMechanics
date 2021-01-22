@@ -4,6 +4,7 @@ Change log for ContactMechanics
 v0.90.2 (> 231220)
 ----------------
 
+- Drop support for Python 3.5
 - API: ConstrainedConjugateGradients, minimize_proxy: 
     changed disp0 to initial_displacements. 
 - API: ConstrainedConjugateGradients, NonSmooth minimize_proxy: 
