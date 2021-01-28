@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.90.2.dev56+g0ca7f59 documentation</title>
+  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.90.2.dev68+ga6f116a documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.90.2.dev56+g0ca7f59
+                0.90.2.dev68+ga6f116a
               </div>
             
           
@@ -202,8 +202,9 @@
 <span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">isnan</span><span class="p">,</span> <span class="n">sqrt</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
 <span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">optim</span>
+
+<span class="kn">from</span> <span class="nn">NuMPI.Tools</span> <span class="k">import</span> <span class="n">Reduction</span>
 
 <span class="kn">from</span> <span class="nn">SurfaceTopography</span> <span class="k">import</span> <span class="n">Topography</span>
 
@@ -273,7 +274,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You should provide a topography object when &quot;</span>
                              <span class="s2">&quot;working with MPI&quot;</span><span class="p">)</span>
 
-    <span class="n">pnp</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">pnp</span>
+    <span class="n">reduction</span> <span class="o">=</span> <span class="n">Reduction</span><span class="p">(</span><span class="n">substrate</span><span class="o">.</span><span class="n">communicator</span><span class="p">)</span>
 
     <span class="c1"># surface is the array holding the data assigned to the processsor</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">topography</span><span class="p">,</span> <span class="s2">&quot;nb_grid_pts&quot;</span><span class="p">):</span>
@@ -296,7 +297,8 @@
         <span class="c1"># sense for nonperiodic calculations, i.e. it is a punch. Then</span>
         <span class="c1"># use the offset to determine the tolerance</span>
         <span class="k">if</span> <span class="n">pentol</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">pentol</span> <span class="o">=</span> <span class="p">(</span><span class="n">offset</span> <span class="o">+</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surface</span><span class="p">[</span><span class="o">...</span><span class="p">])</span> <span class="o">/</span> <span class="n">nb_surface_pts</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+            <span class="n">pentol</span> <span class="o">=</span> <span class="p">(</span><span class="n">offset</span> <span class="o">+</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surface</span><span class="p">[</span><span class="o">...</span><span class="p">])</span> <span class="o">/</span> <span class="n">nb_surface_pts</span><span class="p">)</span> \
+                     <span class="o">/</span> <span class="mi">1000</span>
         <span class="c1"># If we are still zero use an arbitrary value</span>
         <span class="k">if</span> <span class="n">pentol</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">pentol</span> <span class="o">=</span> <span class="mf">1e-3</span>
@@ -340,7 +342,7 @@
         <span class="n">comp_mask</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)][</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">surf_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">surf_mask</span><span class="p">)</span>
     <span class="n">pad_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">comp_mask</span><span class="p">)</span>
-    <span class="n">N_pad</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pad_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">N_pad</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pad_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
                               <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
                               <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
@@ -378,7 +380,7 @@
         <span class="c1"># TODO: maybe np.where(self.interaction.force &lt; 0., 1., 0.)</span>
 
         <span class="c1"># Compute total contact area (area with compressive pressure)</span>
-        <span class="n">A_contact</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">A_contact</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># If a hardness is specified, exclude values that exceed the hardness</span>
         <span class="c1"># from the &quot;contact area&quot;. Note: &quot;contact area&quot; here is the region that</span>
@@ -388,18 +390,18 @@
 
         <span class="c1"># Compute total are treated by the CG optimizer (which exclude flowing)</span>
         <span class="c1"># portions.</span>
-        <span class="n">A_cg</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">A_cg</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Compute gap</span>
         <span class="n">g_r</span> <span class="o">=</span> <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">external_force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="n">A_cg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">offset</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g_r</span><span class="p">[</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]])</span> <span class="o">/</span> <span class="n">A_cg</span>
+                <span class="n">offset</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g_r</span><span class="p">[</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]])</span> <span class="o">/</span> <span class="n">A_cg</span>
         <span class="n">g_r</span> <span class="o">-=</span> <span class="n">offset</span>
 
         <span class="c1"># Compute G = sum(g*g) (over contact area only)</span>
-        <span class="n">G</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">g_r</span> <span class="o">*</span> <span class="n">g_r</span><span class="p">)</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">g_r</span> <span class="o">*</span> <span class="n">g_r</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">delta_str</span> <span class="o">!=</span> <span class="s1">&#39;mix&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">hardness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">A_cg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
             <span class="c1"># t = (g + delta*(G/G_old)*t) inside contact area and 0 outside</span>
@@ -421,9 +423,11 @@
             <span class="k">if</span> <span class="n">A_cg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># tau = -sum(g*t)/sum(r*t) where sum is only over contact</span>
                 <span class="c1"># region</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="n">r_r</span> <span class="o">*</span> <span class="n">t_r</span><span class="p">)</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="n">r_r</span> <span class="o">*</span> <span class="n">t_r</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                    <span class="n">tau</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">g_r</span> <span class="o">*</span> <span class="n">t_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span> <span class="o">/</span> <span class="n">x</span>
+                    <span class="n">tau</span> <span class="o">=</span> \
+                        <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">g_r</span> <span class="o">*</span> <span class="n">t_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span> \
+                        <span class="o">/</span> <span class="n">x</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">G</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -464,25 +468,25 @@
         <span class="c1"># This must be zero.</span>
         <span class="n">pad_pres</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="n">N_pad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">pad_pres</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">pad_mask</span><span class="p">]))</span>
+            <span class="n">pad_pres</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">pad_mask</span><span class="p">]))</span>
 
         <span class="c1"># Find maximum pressure outside contacting region and the deviation</span>
         <span class="c1"># from hardness inside the flowing regions. This should go to zero.</span>
         <span class="n">max_pres</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_tensile</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">max_pres</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">mask_tensile</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_tensile</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">max_pres</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">mask_tensile</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">hardness</span><span class="p">:</span>
-            <span class="n">A_fl</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_flowing</span><span class="p">)</span>
+            <span class="n">A_fl</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_flowing</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">A_fl</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">max_pres</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_pres</span><span class="p">,</span>
-                               <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">mask_flowing</span><span class="p">]</span> <span class="o">+</span> <span class="n">hardness</span><span class="p">))</span>
+                               <span class="o">-</span><span class="n">reduction</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">mask_flowing</span><span class="p">]</span> <span class="o">+</span> <span class="n">hardness</span><span class="p">))</span>
 
         <span class="c1"># Set all tensile stresses to zero</span>
         <span class="n">p_r</span><span class="p">[</span><span class="n">mask_tensile</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="c1"># Adjust pressure</span>
         <span class="k">if</span> <span class="n">external_force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">psum</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
+            <span class="n">psum</span> <span class="o">=</span> <span class="o">-</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">psum</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">p_r</span> <span class="o">*=</span> <span class="n">external_force</span> <span class="o">/</span> <span class="n">psum</span>
             <span class="k">else</span><span class="p">:</span>
@@ -495,7 +499,7 @@
             <span class="n">p_r</span><span class="p">[</span><span class="n">mask_flowing</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">hardness</span>
 
         <span class="k">if</span> <span class="n">delta_str</span> <span class="o">!=</span> <span class="s1">&#39;mix&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nc_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nc_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># The contact area has changed! nc_r contains area that</span>
                 <span class="c1"># penetrate but have zero (or tensile) pressure. They hence</span>
                 <span class="c1"># violate the contact constraint. Update their forces and</span>
@@ -509,14 +513,14 @@
 
         <span class="c1"># Check convergence respective pressure</span>
         <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">psum</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
+        <span class="n">psum</span> <span class="o">=</span> <span class="o">-</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">external_force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">converged</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">psum</span> <span class="o">-</span> <span class="n">external_force</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">prestol</span>
 
         <span class="c1"># Compute new displacements from updated forces</span>
         <span class="c1"># u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real</span>
         <span class="n">new_u_r</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="n">p_r</span><span class="p">)</span>
-        <span class="n">maxdu</span> <span class="o">=</span> <span class="n">pnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">new_u_r</span> <span class="o">-</span> <span class="n">u_r</span><span class="p">))</span>
+        <span class="n">maxdu</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">new_u_r</span> <span class="o">-</span> <span class="n">u_r</span><span class="p">))</span>
         <span class="n">u_r</span> <span class="o">=</span> <span class="n">new_u_r</span>
         <span class="n">result</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -530,13 +534,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">rms_pen</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
         <span class="n">max_pen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span>
-                      <span class="n">pnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span> <span class="o">-</span>
-                                                <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])))</span>
+                      <span class="n">reduction</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span>
+                                                      <span class="n">offset</span> <span class="o">-</span>
+                                                      <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])))</span>
         <span class="n">result</span><span class="o">.</span><span class="n">maxcv</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;max_pen&quot;</span><span class="p">:</span> <span class="n">max_pen</span><span class="p">,</span>
                         <span class="s2">&quot;max_pres&quot;</span><span class="p">:</span> <span class="n">max_pres</span><span class="p">}</span>
 
         <span class="c1"># Elastic energy would be</span>
-        <span class="c1"># e_el = -0.5*pnp.sum(p_r*u_r)</span>
+        <span class="c1"># e_el = -0.5*reduction.sum(p_r*u_r)</span>
 
         <span class="k">if</span> <span class="n">delta_str</span> <span class="o">==</span> <span class="s1">&#39;mix&#39;</span><span class="p">:</span>
             <span class="n">converged</span> <span class="o">=</span> <span class="n">converged</span> <span class="ow">and</span> <span class="n">maxdu</span> <span class="o">&lt;</span> <span class="n">pentol</span> <span class="ow">and</span> \
@@ -549,18 +554,19 @@
         <span class="n">log_headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;frac. area&#39;</span><span class="p">,</span> <span class="s1">&#39;total force&#39;</span><span class="p">,</span>
                        <span class="s1">&#39;offset&#39;</span><span class="p">]</span>
         <span class="n">log_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">delta_str</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="n">A_contact</span><span class="p">,</span>
-                      <span class="n">A_contact</span> <span class="o">/</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">),</span> <span class="n">psum</span><span class="p">,</span>
+                      <span class="n">A_contact</span> <span class="o">/</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">),</span> <span class="n">psum</span><span class="p">,</span>
                       <span class="n">offset</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">hardness</span><span class="p">:</span>
             <span class="n">log_headers</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;plast. area&#39;</span><span class="p">,</span> <span class="s1">&#39;frac.plast. area&#39;</span><span class="p">]</span>
-            <span class="n">log_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">A_fl</span><span class="p">,</span> <span class="n">A_fl</span> <span class="o">/</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)]</span>
+            <span class="n">log_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">A_fl</span><span class="p">,</span> <span class="n">A_fl</span> <span class="o">/</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)]</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">log_headers</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;rms pen.&#39;</span><span class="p">,</span> <span class="s1">&#39;max. pen.&#39;</span><span class="p">,</span> <span class="s1">&#39;max. force&#39;</span><span class="p">,</span>
                             <span class="s1">&#39;max. pad force&#39;</span><span class="p">,</span> <span class="s1">&#39;max. du&#39;</span><span class="p">,</span> <span class="s1">&#39;CG area&#39;</span><span class="p">,</span>
                             <span class="s1">&#39;frac. CG area&#39;</span><span class="p">,</span> <span class="s1">&#39;sum(nc_r)&#39;</span><span class="p">]</span>
             <span class="n">log_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">rms_pen</span><span class="p">,</span> <span class="n">max_pen</span><span class="p">,</span> <span class="n">max_pres</span><span class="p">,</span> <span class="n">pad_pres</span><span class="p">,</span> <span class="n">maxdu</span><span class="p">,</span> <span class="n">A_cg</span><span class="p">,</span>
-                           <span class="n">A_cg</span> <span class="o">/</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">),</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nc_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)]</span>
+                           <span class="n">A_cg</span> <span class="o">/</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">),</span>
+                           <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nc_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)]</span>
             <span class="k">if</span> <span class="n">delta_str</span> <span class="o">==</span> <span class="s1">&#39;mix&#39;</span><span class="p">:</span>
                 <span class="n">log_headers</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;mixfac&#39;</span><span class="p">]</span>
                 <span class="n">log_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">mixfac</span><span class="p">]</span>
@@ -584,7 +590,7 @@
             <span class="n">result</span><span class="o">.</span><span class="n">jac</span> <span class="o">=</span> <span class="o">-</span><span class="n">p_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span>
             <span class="n">result</span><span class="o">.</span><span class="n">active_set</span> <span class="o">=</span> <span class="n">c_r</span>
             <span class="c1"># Compute elastic energy</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="o">-</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
                 <span class="n">p_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span> <span class="o">*</span> <span class="n">u_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)])</span> <span class="o">/</span> <span class="mi">2</span>
             <span class="n">result</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
             <span class="n">result</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
@@ -596,7 +602,7 @@
         <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">area</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">A_contact</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
                      <span class="n">fractional_area</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span>
-                         <span class="n">A_contact</span> <span class="o">/</span> <span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                         <span class="n">A_contact</span> <span class="o">/</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">surf_mask</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
                      <span class="n">rms_penetration</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">rms_pen</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
                      <span class="n">max_penetration</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">max_pen</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
                      <span class="n">max_pressure</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">max_pres</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
@@ -620,7 +626,7 @@
     <span class="n">result</span><span class="o">.</span><span class="n">jac</span> <span class="o">=</span> <span class="o">-</span><span class="n">p_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span>
     <span class="n">result</span><span class="o">.</span><span class="n">active_set</span> <span class="o">=</span> <span class="n">c_r</span>
     <span class="c1"># Compute elastic energy</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="o">-</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="o">-</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
         <span class="p">(</span><span class="n">p_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]</span> <span class="o">*</span> <span class="n">u_r</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)]))</span> <span class="o">/</span> <span class="mi">2</span>
     <span class="n">result</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
     <span class="n">result</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Reached maxiter = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maxiter</span><span class="p">)</span>

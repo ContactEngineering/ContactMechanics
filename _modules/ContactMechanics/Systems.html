@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev56+g0ca7f59 documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev68+ga6f116a documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.90.2.dev56+g0ca7f59
+                0.90.2.dev68+ga6f116a
               </div>
             
           
@@ -203,6 +203,8 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
 
+<span class="kn">from</span> <span class="nn">NuMPI.Tools</span> <span class="k">import</span> <span class="n">Reduction</span>
+
 <span class="kn">import</span> <span class="nn">ContactMechanics</span>
 <span class="kn">import</span> <span class="nn">SurfaceTopography</span>
 <span class="kn">from</span> <span class="nn">ContactMechanics.Optimization</span> <span class="k">import</span> <span class="n">constrained_conjugate_gradients</span>
@@ -236,7 +238,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">pnp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">Reduction</span><span class="p">(</span><span class="n">substrate</span><span class="o">.</span><span class="n">communicator</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">comp_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">local_topography_subdomain_slices</span>
 
@@ -586,14 +588,14 @@
 
 <div class="viewcode-block" id="NonSmoothContactSystem.compute_normal_force"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_normal_force">[docs]</a>    <span class="k">def</span> <span class="nf">compute_normal_force</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;computes and returns the sum of all forces&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.compute_nb_contact_pts"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_nb_contact_pts">[docs]</a>    <span class="k">def</span> <span class="nf">compute_nb_contact_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        compute and return the number of contact points. Note that this is of</span>
 <span class="sd">        no physical interest, as it is a purely numerical artefact</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.compute_contact_coordinates"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_contact_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">compute_contact_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
