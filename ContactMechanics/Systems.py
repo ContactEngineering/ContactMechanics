@@ -38,7 +38,7 @@ import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
 from ContactMechanics.Tools import compare_containers
 
-from NuMPI.Optimization import generic_cg_polonsky
+from NuMPI.Optimization import bugnicourt_cg
 
 
 class IncompatibleFormulationError(Exception):
@@ -593,7 +593,7 @@ class NonSmoothContactSystem(SystemBase):
         hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(-1)
         return hessp
 
-    def primal_minimize_proxy(self, offset, solver=generic_cg_polonsky,
+    def primal_minimize_proxy(self, offset, solver=bugnicourt_cg,
                               **kwargs):
         """
         Convenience function. Eliminates boilerplate code for PRIMAL
@@ -613,7 +613,7 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        result = solver.min_cg(
+        result = solver.constrained_conjugate_gradients(
             self.primal_objective(offset, gradient=True),
             self.primal_hessian_product,
             **kwargs)
@@ -704,7 +704,7 @@ class NonSmoothContactSystem(SystemBase):
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(-1)
 
-    def dual_minimize_proxy(self, offset, solver=generic_cg_polonsky,
+    def dual_minimize_proxy(self, offset, solver=bugnicourt_cg,
                             **kwargs):
         """
         Convenience function. Eliminates boilerplate code for DUAL minimisation
@@ -723,7 +723,7 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        result = solver.min_cg(
+        result = solver.constrained_conjugate_gradients(
             self.dual_objective(offset, gradient=True),
             self.dual_hessian_product,
             **kwargs)
@@ -732,6 +732,5 @@ class NonSmoothContactSystem(SystemBase):
             self.disp = result.jac
             self.force = self.substrate.force = result.x
             self.contact_zone = result.x > 0
-
             self.substrate.check()
         return result
