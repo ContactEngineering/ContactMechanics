@@ -22,11 +22,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 """
 Tests adhesion-free flat punch results
 """
-
-import unittest
 
 import numpy as np
 
@@ -35,65 +34,60 @@ from SurfaceTopography import Topography
 from ContactMechanics import make_system
 
 
-class FlatPunchTest(unittest.TestCase):
-    def setUp(self):
-        # punch radius:
-        self.r_s = 20.0
-        # equivalent Young's modulus
-        self.E_s = 3.56
+def test_constrained_conjugate_gradients():
+    # punch radius:
+    r_s = 20.0
+    # equivalent Young's modulus
+    E_s = 3.56
+    for nx, ny in [(256, 256), (256, 255), (255, 256)]:
+        for disp0, normal_force in [(None, 15), (0.1, None)]:
+            sx = sy = 2.5 * r_s
+            substrate = FreeFFTElasticHalfSpace((nx, ny), E_s, (sx, sy))
+            x_range = np.arange(nx).reshape(-1, 1)
+            y_range = np.arange(ny).reshape(1, -1)
+            r_sq = (sx / nx * (x_range - nx // 2)) ** 2 + \
+                   (sy / ny * (y_range - ny // 2)) ** 2
+            surface = Topography(
+                np.ma.masked_where(r_sq > r_s ** 2, np.zeros([nx, ny])),
+                (sx, sy)
+            )
+            system = make_system(substrate, surface)
+            try:
+                result = system.minimize_proxy(offset=disp0,
+                                               external_force=normal_force,
+                                               pentol=1e-4)
+            except substrate.FreeBoundaryError as err:
+                if False:
+                    import matplotlib.pyplot as plt
+                    fig, ax = plt.subplots()
 
-    def test_constrained_conjugate_gradients(self):
-        for nx, ny in [(256, 256), (256, 255), (255, 256)]:
-            for disp0, normal_force in [(None, 15), (0.1, None)]:
-                sx = sy = 2.5 * self.r_s
-                substrate = FreeFFTElasticHalfSpace((nx, ny), self.E_s,
-                                                    (sx, sy))
-                r_sq = (sx / nx * (np.arange(nx) -
-                                   nx // 2)).reshape(-1, 1) ** 2 + \
-                       (sy / ny * (np.arange(ny) -
-                                   ny // 2)).reshape(1, -1) ** 2
-                surface = Topography(
-                    np.ma.masked_where(r_sq > self.r_s ** 2,
-                                       np.zeros([nx, ny])),
-                    (sx, sy)
-                )
-                system = make_system(substrate, surface)
-                try:
-                    result = system.minimize_proxy(offset=disp0,
-                                                   external_force=normal_force,
-                                                   pentol=1e-4)
-                except substrate.FreeBoundaryError as err:
-                    if False:
-                        import matplotlib.pyplot as plt
-                        fig, ax = plt.subplots()
+                    # ax.pcolormesh(substrate.force /
+                    # surface.area_per_pt,rasterized=True)
+                    plt.colorbar(ax.pcolormesh(surface.heights(),
+                                               rasterized=True))
+                    ax.set_xlabel("")
+                    ax.set_ylabel("")
 
-                        # ax.pcolormesh(substrate.force /
-                        # surface.area_per_pt,rasterized=True)
-                        plt.colorbar(ax.pcolormesh(surface.heights(),
-                                                   rasterized=True))
-                        ax.set_xlabel("")
-                        ax.set_ylabel("")
+                    ax.legend()
 
-                        ax.legend()
+                    fig.tight_layout()
+                    plt.show(block=True)
 
-                        fig.tight_layout()
-                        plt.show(block=True)
+                raise err
+            offset = result.offset
+            forces = -result.jac
+            converged = result.success
 
-                    raise err
-                offset = result.offset
-                forces = -result.jac
-                converged = result.success
+            # Check that calculation has converged
+            assert converged
 
-                # Check that calculation has converged
-                self.assertTrue(converged)
+            # Check that target values have been reached
+            if disp0 is not None:
+                np.testing.assert_almost_equal(offset, disp0)
+            if normal_force is not None:
+                np.testing.assert_almost_equal(-forces.sum(), normal_force)
 
-                # Check that target values have been reached
-                if disp0 is not None:
-                    self.assertAlmostEqual(offset, disp0)
-                if normal_force is not None:
-                    self.assertAlmostEqual(-forces.sum(), normal_force)
-
-                # Check contact stiffness
-                self.assertAlmostEqual(
-                    -forces.sum() / offset / (2 * self.r_s * self.E_s),
-                    1.0, places=2)
+            # Check contact stiffness
+            np.testing.assert_almost_equal(
+                -forces.sum() / offset / (2 * r_s * E_s),
+                1.0, decimal=2)
