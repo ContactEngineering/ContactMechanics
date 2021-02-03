@@ -166,9 +166,11 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         functions. Also, if you initial guess has a shape that makes no sense,
         this will tell you before you get caught in debugging scipy-code
 
-        Arguments:
-        in_array -- array with the initial guess. has the intuitive shape you
-                    think it has
+        Parameters:
+        -----------
+        in_array:
+            array with the initial guess. has the intuitive shape you
+            think it has
         """
         if np.prod(self.substrate.nb_subdomain_grid_pts) == in_array.size:
             return in_array.reshape(-1)
@@ -415,7 +417,6 @@ class NonSmoothContactSystem(SystemBase):
 
     @property
     def nb_grid_pts(self):
-        # pylint: disable=missing-docstring
         return self.surface.nb_grid_pts
 
     def compute_normal_force(self):
@@ -454,22 +455,26 @@ class NonSmoothContactSystem(SystemBase):
 
         return (self.energy, self.force)
 
-    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
-                  tol=0):
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
         that the shape of disp is maintained and lets you set the offset and
         'forces' flag without using scipy's cumbersome argument passing
         interface. Returns a function of only disp
-        Keyword Arguments:
-        offset     -- determines indentation depth
-        disp0      -- unused variable, present only for interface compatibility
-                      with inheriting classes
-        gradient   -- (default False) whether the gradient is supposed to be
-                      used
-        disp_scale -- (default 1.) allows to specify a scaling of the
-                      dislacement before evaluation.
+        Parameters:
+        -----------
+        offset:
+            determines indentation depth
+        disp0:
+            unused variable, present only for interface compatibility
+            with inheriting classes
+        gradient: (default False)
+            whether the gradient is supposed to be
+            used
+        disp_scale:
+            (default 1.) allows to specify a scaling of the
+            dislacement before evaluation.
         """
         # pylint: disable=arguments-differ
         res = self.substrate.nb_domain_grid_pts
@@ -478,8 +483,7 @@ class NonSmoothContactSystem(SystemBase):
                 # pylint: disable=missing-docstring
                 try:
                     self.evaluate(
-                        disp_scale * disp.reshape(res), offset, forces=True,
-                        tol=tol)
+                        disp_scale * disp.reshape(res), offset, forces=True,)
                 except ValueError as err:
                     raise ValueError(
                         "{}: disp.shape: {}, res: {}".format(
@@ -489,8 +493,7 @@ class NonSmoothContactSystem(SystemBase):
             def fun(disp):
                 # pylint: disable=missing-docstring
                 return self.evaluate(
-                    disp_scale * disp.reshape(res), offset, forces=False,
-                    tol=tol)[0]
+                    disp_scale * disp.reshape(res), offset, forces=False,)[0]
 
         return fun
 
@@ -588,7 +591,7 @@ class NonSmoothContactSystem(SystemBase):
 
         """
 
-        res = self.substrate.nb_domain_grid_pts
+        res = self.substrate.nb_subdomain_grid_pts
         if gradient:
             def fun(gap):
                 disp = gap.reshape(res) + self.surface.heights() + offset
@@ -728,3 +731,36 @@ class NonSmoothContactSystem(SystemBase):
         res = self.substrate.nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
+
+    def dual_minimize_proxy(self, offset, solver=generic_cg_polonsky,
+                            **kwargs):
+        """
+        Convenience function. Eliminates boilerplate code for DUAL minimisation
+        problems by encapsulating the use of constrained minimisation.
+
+        Parameters:
+        offset     -- determines indentation depth
+        disp0      -- initial guess for surface displacement. If not set, zero
+                      displacement of shape
+                      self.substrate.nb_domain_grid_pts is used
+        maxiter    -- maximum number of iterations allowed for convergence
+        logger     -- optional logger, to be used with a logger from
+                      PyCo.Tools.Logger
+        """
+        # pylint: disable=arguments-differ
+        self.disp = None
+        self.force = None
+        self.contact_zone = None
+        result = solver.min_cg(
+            self.dual_objective(offset, gradient=True),
+            self.dual_hessian_product,
+            **kwargs)
+        if result.success:
+            self.offset = offset
+            self.disp = result.jac
+            self.force = self.substrate.force = result.x
+            self.contact_zone = result.x > 0
+
+            self.substrate.check()
+        return result
+        return result
