@@ -40,7 +40,7 @@ import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
 from ContactMechanics.Tools import compare_containers
 
-from NuMPI.Optimization import generic_cg_polonsky
+from NuMPI.Optimization import bugnicourt_cg
 
 
 class IncompatibleFormulationError(Exception):
@@ -620,7 +620,7 @@ class NonSmoothContactSystem(SystemBase):
                                                ).reshape(inres)
         return hessp
 
-    def primal_minimize_proxy(self, offset, solver=generic_cg_polonsky,
+    def primal_minimize_proxy(self, offset, solver=bugnicourt_cg,
                               **kwargs):
         """
         Convenience function. Eliminates boilerplate code for PRIMAL
@@ -640,7 +640,7 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        result = solver.min_cg(
+        result = solver.constrained_conjugate_gradients(
             self.primal_objective(offset, gradient=True),
             self.primal_hessian_product,
             **kwargs)
@@ -762,4 +762,5 @@ class NonSmoothContactSystem(SystemBase):
             self.contact_zone = result.x > 0
 
             self.substrate.check()
+        return result
         return result
