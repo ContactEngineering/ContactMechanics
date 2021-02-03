@@ -31,10 +31,9 @@ import sys
 from argparse import ArgumentParser, ArgumentTypeError
 
 import numpy as np
-import PyCo
-from PyCo.Adhesion import HardWall
-from ContactMechanics import (FreeFFTElasticHalfSpace,
-                                   PeriodicFFTElasticHalfSpace)
+
+import ContactMechanics
+from ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
 from SurfaceTopography import read_topography, PlasticTopography
 from ContactMechanics import make_system
 from ContactMechanics.Tools.Logger import Logger, quiet, screen
@@ -47,7 +46,7 @@ nsteps = 20
 
 # Text output
 logger = screen
-versionstr = 'PyCo version: {}'.format(PyCo.__version__)
+versionstr = 'ContactMechanics version: {}'.format(ContactMechanics.__version__)
 logger.pr(versionstr)
 commandline = ' '.join(sys.argv[:])
 
@@ -120,8 +119,8 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
         else:
             disp0 = (disp[i]+disp[i+1])/2
 
-    opt = system.minimize_proxy(offset=disp0, pentol=pentol, maxiter=maxiter, logger=logger,
-                                verbose=arguments.verbose)
+    opt = system.minimize_proxy(offset=disp0, logger=logger, pentol=pentol,
+                                maxiter=maxiter, verbose=arguments.verbose)
     c = opt.active_set
     f = opt.jac
     u = opt.x[:f.shape[0], :f.shape[1]]
@@ -339,6 +338,8 @@ surface = read_topography(arguments.filename, physical_sizes=arguments.physical_
 # and can be unknown, i.e. *None*.
 if arguments.size_unit is not None:
     surface.info['unit'] = arguments.size_unit
+if 'unit' not in surface.info:
+    surface.info['unit'] = 'N/A'
 if arguments.height_fac is not None or arguments.height_unit is not None:
     fac = 1.0
     if arguments.height_fac is not None:
@@ -348,9 +349,8 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
     logger.pr('Rescaling surface heights by {}.'.format(fac))
     surface = surface.scale(fac)
 
-logger.pr('SurfaceTopography has dimension of {} and physical_sizes of {} {}.'.format(surface.nb_grid_pts,
-                                                                               surface.physical_sizes,
-                                                                               surface.info['unit']))
+logger.pr('SurfaceTopography has dimension of {} and physical_sizes of {} {}.'
+          .format(surface.nb_grid_pts, surface.physical_sizes, surface.info['unit']))
 logger.pr('RMS height = {}, RMS slope = {}'.format(surface.rms_height(),
                                                    surface.rms_slope()))
 if arguments.detrend is not None:
@@ -380,12 +380,10 @@ else:
     raise ValueError('Unknown boundary conditions: '
                      '{}'.format(arguments.boundary))
 
-# Hard-wall interaction. This is a dummy object.
-interaction = HardWall()
 # Piece the full system together. In particular the PyCo.System.SystemBase
 # object knows how to optimize the problem. For the hard wall interaction it
 # will always use Polonsky & Keer's constrained conjugate gradient method.
-system = make_system(substrate, interaction, surface)
+system = make_system(substrate, surface)
 
 ###
 
@@ -421,11 +419,12 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         suffix = '.{}'.format(i)
         if len(pressure) == 1:
             suffix = ''
-        opt = system.minimize_proxy(
-            external_force=_pressure*np.prod(surface.physical_sizes),
-            pentol=arguments.pentol,
-            maxiter=arguments.maxiter, logger=logger,
-            verbose=arguments.verbose)
+        opt = system.minimize_proxy(logger=logger,
+                                    external_force=_pressure * np.prod(
+                                        surface.physical_sizes),
+                                    pentol=arguments.pentol,
+                                    maxiter=arguments.maxiter,
+                                    verbose=arguments.verbose)
         c = opt.active_set
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]
@@ -468,11 +467,10 @@ elif arguments.displacement is not None:
         suffix = '.{}'.format(i)
         if len(displacement) == 1:
             suffix = ''
-        opt = system.minimize_proxy(
-            offset=_displacement, pentol=arguments.pentol,
-            maxiter=arguments.maxiter,
-            logger=logger, kind='ref',
-            verbose=arguments.verbose)
+        opt = system.minimize_proxy(offset=_displacement, logger=logger,
+                                    pentol=arguments.pentol,
+                                    maxiter=arguments.maxiter, kind='ref',
+                                    verbose=arguments.verbose)
         c = opt.active_set
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]

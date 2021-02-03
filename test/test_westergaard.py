@@ -121,9 +121,13 @@ def test_lbfgsb_1D(dx, n):
     gap = res.x
     converged = res.success
     assert converged
-    assert \
-        res.message == b"CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL", \
-        res.message
+    if hasattr(res.message, "decode"):
+        decoded_message = res.message.decode()
+    else:
+        decoded_message = res.message
+
+    assert decoded_message == \
+        'CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL'
 
     x = np.arange(n) * s / n
     mean_pressure = np.mean(forces) / substrate.area_per_pt

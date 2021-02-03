@@ -99,7 +99,7 @@ for i, c in zip(range(0, step_size * nd, step_size), ['r', 'g', 'b', 'y']):
     translated_surface1.set_offset(xshift, 0)
 
     # Solve the contact problem for a constant relative displacement (offset).
-    opt = system.minimize_proxy(offset=-0.012, disp0=disp)
+    opt = system.minimize_proxy(offset=-0.012, initial_displacements=disp)
     # Alternative: Solve it with external force as boundary conditions
     # opt = system.minimize_proxy(external_force=0.01, disp0=disp)
     disp = opt.x  # This is the displacement field

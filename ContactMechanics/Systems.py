@@ -33,6 +33,8 @@ import abc
 import numpy as np
 import scipy
 
+from NuMPI.Tools import Reduction
+
 import ContactMechanics
 import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
@@ -68,7 +70,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         self.gap = None
         self.disp = None
 
-        self.pnp = substrate.pnp
+        self.reduction = Reduction(substrate.communicator)
 
         self.comp_slice = self.substrate.local_topography_subdomain_slices
 
@@ -231,7 +233,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         # substrate.force will still be nonzero within the numerical tolerance
         # given by the convergence criterion.
 
-    def minimize_proxy(self, offset=0, disp0=None, method='L-BFGS-B',
+    def minimize_proxy(self, offset=0,
+                       initial_displacements=None, method='L-BFGS-B',
                        gradient=True, lbounds=None, ubounds=None,
                        callback=None,
                        disp_scale=1., logger=None, **kwargs):
@@ -245,7 +248,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         Parameters:
         offset : float
                  determines indentation depth
-        disp0  : (default zero)
+        initial_displacements  : (default zero)
                  initial guess for displacement field. If
                  not chosen appropriately, results may be unreliable.
         method : string or callable
@@ -282,7 +285,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                      evaluation.
         logger :
                  (default None)
-                 log information at every iteration.
+                 log information at every objective evaluation.
         """
 
         if self.substrate.communicator is not None and \
@@ -294,9 +297,11 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
         fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
                              logger=logger)
-        if disp0 is None:
-            disp0 = np.zeros(self.substrate.nb_subdomain_grid_pts)
-        disp0 = self.shape_minimisation_input(disp0)
+        if initial_displacements is None:
+            initial_displacements = np.zeros(
+                self.substrate.nb_subdomain_grid_pts)
+        initial_displacements = self.shape_minimisation_input(
+            initial_displacements)
         if callback is True:
             callback = self.callback(force=gradient)
 
@@ -313,14 +318,16 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         bounded_minimizers = {'L-BFGS-B', 'TNC', 'SLSQP'}
 
         if method in bounded_minimizers:
-            result = scipy.optimize.minimize(fun, x0=disp_scale * disp0,
-                                             method=method, jac=gradient,
-                                             bounds=bnds, callback=callback,
-                                             **kwargs)
+            result = scipy.optimize.minimize(
+                fun, x0=disp_scale * initial_displacements,
+                method=method, jac=gradient,
+                bounds=bnds, callback=callback,
+                **kwargs)
         else:
-            result = scipy.optimize.minimize(fun, x0=disp_scale * disp0,
-                                             method=method, jac=gradient,
-                                             callback=callback, **kwargs)
+            result = scipy.optimize.minimize(
+                fun, x0=disp_scale * initial_displacements,
+                method=method, jac=gradient,
+                callback=callback, **kwargs)
 
         self._update_state(offset, result, gradient, disp_scale)
         return result
@@ -413,14 +420,14 @@ class NonSmoothContactSystem(SystemBase):
 
     def compute_normal_force(self):
         "computes and returns the sum of all forces"
-        return self.pnp.sum(self.substrate.force)
+        return self.reduction.sum(self.substrate.force)
 
     def compute_nb_contact_pts(self):
         """
         compute and return the number of contact points. Note that this is of
         no physical interest, as it is a purely numerical artefact
         """
-        return self.pnp.sum(self.contact_zone)
+        return self.reduction.sum(self.contact_zone)
 
     def compute_contact_coordinates(self):
         """
@@ -487,10 +494,23 @@ class NonSmoothContactSystem(SystemBase):
 
         return fun
 
-    def hessp(self, disp):
-        prod = -self.substrate.evaluate_force(
-            disp.reshape(self.substrate.nb_domain_grid_pts))
-        return prod.reshape(-1)
+    def hessian_product(self, disp):
+        """
+        computes the hessian product for objective
+
+        this is the same then primal_hessian_product
+
+        Parameters:
+        -----------
+        disp: float array
+            array of shape nb_subdomain_grid_pts or a flattened version of it
+
+        Returns:
+        --------
+        hessian product
+
+        """
+        return self.primal_hessian_product(disp)
 
     def minimize_proxy(self, solver=constrained_conjugate_gradients, **kwargs):
         """
@@ -498,17 +518,24 @@ class NonSmoothContactSystem(SystemBase):
         problems by encapsulating the use of constrained minimisation.
 
         Parameters:
-        offset     -- determines indentation depth
-        disp0      -- initial guess for surface displacement. If not set, zero
+        -----------
+        offset:
+            determines indentation depth
+        initial_displacements:
+            initial guess for surface displacement. If not set, zero
                       displacement of shape
                       self.substrate.nb_domain_grid_pts is used
-        pentol     -- maximum penetration of contacting regions required for
-                      convergence
-        prestol    -- maximum pressure outside the contact region allowed for
-                      convergence
-        maxiter    -- maximum number of iterations allowed for convergence
-        logger     -- optional logger, to be used with a logger from
-                      PyCo.Tools.Logger
+        initial_forces:
+            initial guess for the forces
+        pentol:
+            maximum penetration of contacting regions required for convergence
+        prestol:
+            maximum pressure outside the contact region allowed for convergence
+        maxiter:
+            maximum number of iterations allowed for convergence
+        logger:
+            optional logger, to be used with a logger from the
+            ContactMechanics.Tools.Logger
         """
         # pylint: disable=arguments-differ
         self.disp = None
@@ -584,13 +611,10 @@ class NonSmoothContactSystem(SystemBase):
     def primal_hessian_product(self, gap):
         """Returns the hessian product of the primal_objective function.
         """
-        res = self.substrate.nb_domain_grid_pts
-        # TODO: this is not parallelized yet
-
-        # TODO: do all the minimizers want to use 1d arrays ?
-        # If not the reshape(-1) has to be put there depending on the shape of
-        # gap or simple .reshape(gap.shape)
-        hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(-1)
+        inres = gap.shape
+        res = self.substrate.nb_subdomain_grid_pts
+        hessp = -self.substrate.evaluate_force(gap.reshape(res)
+                                               ).reshape(inres)
         return hessp
 
     def primal_minimize_proxy(self, offset, solver=bugnicourt_cg,
@@ -700,37 +724,7 @@ class NonSmoothContactSystem(SystemBase):
     def dual_hessian_product(self, pressure):
         r"""Returns the hessian product of the dual_objective function.
         """
-        res = self.substrate.nb_domain_grid_pts
+        inres = pressure.shape
+        res = self.substrate.nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
-        return hessp.reshape(-1)
-
-    def dual_minimize_proxy(self, offset, solver=bugnicourt_cg,
-                            **kwargs):
-        """
-        Convenience function. Eliminates boilerplate code for DUAL minimisation
-        problems by encapsulating the use of constrained minimisation.
-
-        Parameters:
-        offset     -- determines indentation depth
-        disp0      -- initial guess for surface displacement. If not set, zero
-                      displacement of shape
-                      self.substrate.nb_domain_grid_pts is used
-        maxiter    -- maximum number of iterations allowed for convergence
-        logger     -- optional logger, to be used with a logger from
-                      PyCo.Tools.Logger
-        """
-        # pylint: disable=arguments-differ
-        self.disp = None
-        self.force = None
-        self.contact_zone = None
-        result = solver.constrained_conjugate_gradients(
-            self.dual_objective(offset, gradient=True),
-            self.dual_hessian_product,
-            **kwargs)
-        if result.success:
-            self.offset = offset
-            self.disp = result.jac
-            self.force = self.substrate.force = result.x
-            self.contact_zone = result.x > 0
-            self.substrate.check()
-        return result
+        return hessp.reshape(inres)

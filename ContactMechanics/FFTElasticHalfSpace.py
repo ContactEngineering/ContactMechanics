@@ -803,6 +803,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             potential = self.evaluate_elastic_energy_k_space(force_k, disp_k)
         return potential, force_k
 
+
 class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     """
     Uses the FFT to solve the displacements and stresses in an non-periodic

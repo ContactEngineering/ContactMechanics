@@ -1,8 +1,6 @@
 #
-# Copyright 2018, 2020 Lars Pastewka
-#           2019-2020 Antoine Sanner
-#           2016 km7219@lsdf-28-131.scc.kit.edu
-#           2016 Till Junge
+# Copyright 2016, 2018, 2020 Lars Pastewka
+#           2018, 2020 Antoine Sanner
 #
 # ### MIT license
 #
@@ -24,43 +22,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 """
-Standard program for a repulsive contact sim. The idea is to use this
-to profile and accelerate PyCo
+Tests adhesion-free periodic calculations
 """
 
 import numpy as np
 
-from ContactMechanics import FreeFFTElasticHalfSpace
-from SurfaceTopography.Special import make_sphere
-from ContactMechanics.Factory import make_system
-import sys
-
-#import matplotlib.pyplot as plt
-
-# geometry
-res = int(sys.argv[1])
-print(res)
-size = 65e-6
-radius = 500e-6
+from ContactMechanics import make_system, PeriodicFFTElasticHalfSpace
+from SurfaceTopography.Generation import fourier_synthesis
 
 
-# material
-e_combo = 4e6
+def test_constrained_conjugate_gradients():
+    nb_grid_pts = (512, 512)
+    physical_sizes = (1., 1.)
+    hurst = 0.8
+    rms_slope = 0.1
+    modulus = 1
 
-# system
+    np.random.seed(999)
+    topography = fourier_synthesis(nb_grid_pts, physical_sizes, hurst,
+                                   rms_slope=rms_slope)
 
-surface = make_sphere(radius, (res, res), (size, size))
-system = make_system(substrate, interaction, surface)
-
-
-# minimize
-offset_max = 1e-6
-disp = None
-for offset in np.linspace(0, offset_max, 10):
-    print("offset = {}".format(offset))
-    result = system.minimize_proxy(offset, initial_displacements=disp)
-    disp = system.disp
-
-print(result.success)
-
+    substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, modulus,
+                                            physical_sizes)
+    system = make_system(substrate, topography)
+    system.minimize_proxy(offset=0.1)

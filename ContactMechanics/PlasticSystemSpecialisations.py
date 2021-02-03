@@ -64,10 +64,7 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
         # Need to convert hardness into force units because the solvers operate
         # internally with forces, not pressures.
         hardness = self.surface.hardness * self.surface.area_per_pt
-        opt = super().minimize_proxy(
-            hardness=hardness,
-            **kwargs
-        )
+        opt = super().minimize_proxy(hardness=hardness, **kwargs)
         if opt.success:
             plastic_mask = (self.force == hardness)
             self.surface.plastic_displ += \
