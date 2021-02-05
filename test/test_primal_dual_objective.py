@@ -22,38 +22,43 @@ def test_primal_obj(s):
 
     system = Solid.Systems.NonSmoothContactSystem(substrate, surface)
 
-    offset = 0.005
-    lbounds = np.zeros((nx, ny))
-    bnds = system._reshape_bounds(lbounds, )
+    offset = 0.05
+
     init_gap = np.zeros((nx, ny))  # .flatten()
     disp = init_gap + surface.heights() + offset
 
-    # res = optim.minimize(system.primal_objective(offset, gradient=True),
-    #                      disp,
-    #                      method='L-BFGS-B', jac=True,
-    #                      bounds=bnds,
-    #                      options=dict(gtol=1e-8, ftol=1e-20))
+    res = system.primal_minimize_proxy(offset, init_gap=disp,
+                                       solver='bugnicourt_cg', )
 
-    res = system.primal_minimize_proxy(x0=disp, offset=offset,gtol=1e-8)
     assert res.success
-    _bug = res.x.reshape((nx, ny))
+    CA_bug = res.x.reshape((nx, ny)) == 0  # Contact area
+    force_bug = res.jac
+    gap_bug = res.x
+    gap_bug = gap_bug.reshape((nx, ny))
 
-    res = system.minimize_proxy(offset=offset, pentol=1e-7)
+    res = system.primal_minimize_proxy(offset, init_gap=disp,
+                                       solver='polonsky_keer_cg', )
+
     assert res.success
-    _ccg = system.compute_gap(res.x, offset)
+    CA_pk = res.x.reshape((nx, ny)) == 0  # Contact are
+    force_pk = res.jac
+    gap_pk = res.x
+    gap_pk = gap_pk.reshape((nx, ny))
 
-    # fig, (axg, axpl, axpc) = plt.subplots(3, 1)
-    #
-    # plt.colorbar(axpl.pcolormesh(_lbfgsb))
-    # plt.colorbar(axpc.pcolormesh(_ccg))
-    # axg.plot(system.surface.positions()[0][:,0], _lbfgsb[:,ny//2],'x',
-    # label='lbfgsb' )
-    # axg.plot(system.surface.positions()[0][:,0], _ccg[:, ny // 2], '+',
-    # label='ccg')
-    # axg.legend()
-    # plt.show()
-    # fig.tight_layout()
-    np.testing.assert_allclose(_bug, _ccg, atol=1e-6)
+    res = system.primal_minimize_proxy(offset, init_gap=disp,
+                                       solver='l-bfgs-b', )
+    assert res.success
+    CA_lbfgsb = res.x.reshape((nx, ny)) == 0  # Contact area
+    force_lbfgsb = res.jac
+    gap_lbfgsb = res.x
+    gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
+
+    np.testing.assert_allclose(CA_bug, CA_lbfgsb, atol=1e-3)
+    np.testing.assert_allclose(gap_bug, gap_lbfgsb, atol=1e-3)
+    np.testing.assert_allclose(force_bug, force_lbfgsb, atol=1e-3)
+    np.testing.assert_allclose(CA_pk, CA_lbfgsb, atol=1e-3)
+    np.testing.assert_allclose(gap_pk, gap_lbfgsb, atol=1e-3)
+    np.testing.assert_allclose(force_pk, force_lbfgsb, atol=1e-3)
 
 
 @pytest.mark.parametrize("s", [1., 2.])
@@ -70,35 +75,48 @@ def test_dual_obj(s):
     system = Solid.Systems.NonSmoothContactSystem(substrate, surface)
 
     offset = 0.005
-    lbounds = np.zeros((nx, ny))
-    bnds = system._reshape_bounds(lbounds, )
+
     init_gap = np.zeros((nx, ny))
     disp = init_gap + surface.heights() + offset
-    init_pressure = substrate.evaluate_force(disp)
+    disp[disp < 0] = 0
+    init_force = substrate.evaluate_force(disp)
 
-    # res = optim.minimize(system.dual_objective(offset, gradient=True),
-    #                      init_pressure,
-    #                      method='L-BFGS-B', jac=True,
-    #                      bounds=bnds,
-    #                      options=dict(gtol=1e-8 * system.area_per_pt,
-    #                                   ftol=1e-20))
-    res = system.dual_minimize_proxy(x0=disp, offset=offset, gtol=1e-8)
+    res = system.dual_minimize_proxy(offset, init_force=init_force,
+                                     solver='bugnicourt_cg', )
+
+    assert res.success
+    CA_bug = res.x.reshape((nx, ny)) > 0  # Contact area
+    force_bug = res.x
+    fun = system.dual_objective(offset, gradient=True)
+    gap_bug = fun(res.x)[1]
+    gap_bug = gap_bug.reshape((nx, ny))
+
+    res = system.dual_minimize_proxy(offset, init_force=init_force,
+                                     solver='polonsky_keer_cg', )
+
+    assert res.success
+    CA_pk = res.x.reshape((nx, ny)) > 0  # Contact are
+    force_pk = res.x
+    fun = system.dual_objective(offset, gradient=True)
+    gap_pk = fun(res.x)[1]
+    gap_pk = gap_pk.reshape((nx, ny))
+
+    res = system.dual_minimize_proxy(offset, init_force=init_force,
+                                     solver='l-bfgs-b', )
 
     assert res.success
     CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area
+    force_lbfgsb = res.x
     fun = system.dual_objective(offset, gradient=True)
     gap_lbfgsb = fun(res.x)[1]
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
-    res = system.minimize_proxy(offset=offset, pentol=1e-8)
-    assert res.success
-
-    CA_ccg = res.jac > 0  # Contact area
-    # print("shape of disp_ccg  {}".format(np.shape(res.x)))
-    gap_ccg = system.compute_gap(res.x, offset)
-
-    np.testing.assert_allclose(CA_lbfgsb, CA_ccg, 1e-8)
-    np.testing.assert_allclose(gap_lbfgsb, gap_ccg, atol=1e-8)
+    np.testing.assert_allclose(CA_bug, CA_lbfgsb, atol=1e-5)
+    np.testing.assert_allclose(gap_bug, gap_lbfgsb, atol=1e-5)
+    np.testing.assert_allclose(force_bug, force_lbfgsb, atol=1e-5)
+    np.testing.assert_allclose(CA_pk, CA_lbfgsb, atol=1e-5)
+    np.testing.assert_allclose(gap_pk, gap_lbfgsb, atol=1e-5)
+    np.testing.assert_allclose(force_pk, force_lbfgsb, atol=1e-5)
 
 
 @pytest.mark.parametrize("s", (1., 2.))
@@ -133,7 +151,6 @@ def test_primal_hessian(s):
 
     np.testing.assert_allclose(dgrad_from_hess, dgrad)
 
-# TODO: test dual hessian
 
 @pytest.mark.parametrize("s", (1., 2.))
 def test_dual_hessian(s):
@@ -151,7 +168,7 @@ def test_dual_hessian(s):
 
     system = NonSmoothContactSystem(substrate=substrate, surface=topography)
 
-    obj = system.dual_objective(0, True)
+    obj = system.dual_objective(0)
 
     gaps = np.random.random(size=(nx, ny))
     dgaps = np.random.random(size=(nx, ny))
@@ -165,7 +182,8 @@ def test_dual_hessian(s):
 
     dgrad_from_hess = system.dual_hessian_product(h * dgaps)
 
-    np.testing.assert_allclose(dgrad_from_hess, dgrad)
+    np.testing.assert_allclose(dgrad_from_hess.reshape(dgrad.shape), dgrad)
+
 
 @pytest.mark.parametrize("s", [1., 2.])
 def test_scipy_friendly_interface_nonperiodic(s):

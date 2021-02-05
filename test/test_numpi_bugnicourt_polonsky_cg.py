@@ -3,10 +3,12 @@ import ContactMechanics as Solid
 from NuMPI.Optimization import polonsky_keer, bugnicourt_cg
 import numpy as np
 import scipy.optimize as optim
-import pytest
 
 
-def test_primal_obj():
+# import pytest
+
+
+def test_using_primal_obj():
     nx = ny = 128
     sx, sy = 1., 1.
     R = 10.
@@ -28,23 +30,20 @@ def test_primal_obj():
     init_gap = disp - surface.heights() - offset
 
     # ####################POLONSKY-KEER##############################
-    res = polonsky_keer.min_cg(system.primal_objective(offset, gradient=True),
-        system.primal_hessian_product,
-        x0=init_gap, gtol=gtol)
+    res = polonsky_keer.constrained_conjugate_gradients(
+        system.primal_objective(offset, gradient=True),
+        system.primal_hessian_product, x0=init_gap, gtol=gtol)
 
     assert res.success
-    polonsky = res.x.reshape((nx, ny))
+    polonsky_gap = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
-    res = bugnicourt_cg.constrained_conjugate_gradients(system.primal_objective
-                                                  (offset, gradient=True),
-                                                  system.primal_hessian_product,
-                                                  x0=init_gap,
-                                                  mean_val=None, gtol=gtol)
+    res = bugnicourt_cg.constrained_conjugate_gradients(
+        system.primal_objective(offset, gradient=True),
+        system.primal_hessian_product, x0=init_gap, mean_val=None, gtol=gtol)
     assert res.success
 
-    bugnicourt = res.x.reshape((nx, ny))
-
+    bugnicourt_gap = res.x.reshape((nx, ny))
 
     # #####################LBFGSB#####################################
     res = optim.minimize(system.primal_objective(offset, gradient=True),
@@ -54,22 +53,22 @@ def test_primal_obj():
                          options=dict(gtol=gtol, ftol=1e-20))
 
     assert res.success
-    _lbfgsb = res.x.reshape((nx, ny))
+    lbfgsb_gap = res.x.reshape((nx, ny))
 
-    np.testing.assert_allclose(polonsky, bugnicourt, atol=1e-3)
-    np.testing.assert_allclose(polonsky, _lbfgsb, atol=1e-3)
-    np.testing.assert_allclose(_lbfgsb, bugnicourt, atol=1e-3)
+    np.testing.assert_allclose(polonsky_gap, bugnicourt_gap, atol=1e-3)
+    np.testing.assert_allclose(polonsky_gap, lbfgsb_gap, atol=1e-3)
+    np.testing.assert_allclose(lbfgsb_gap, bugnicourt_gap, atol=1e-3)
 
     # ##########TEST MEAN VALUES#######################################
-    mean_val = np.mean(_lbfgsb)
+    mean_val = np.mean(lbfgsb_gap)
     # ####################POLONSKY-KEER##############################
-    res = polonsky_keer.min_cg(
+    res = polonsky_keer.constrained_conjugate_gradients(
         system.primal_objective(offset, gradient=True),
-        system.primal_hessian_product,
-        init_gap, mean_value=mean_val, gtol=gtol)
+        system.primal_hessian_product, init_gap, gtol=gtol,
+        mean_value=mean_val)
 
     assert res.success
-    polonsky_mean = res.x.reshape((nx, ny))
+    polonsky_gap_mean_cons = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
     bugnicourt_cg.constrained_conjugate_gradients(system.primal_objective
@@ -82,15 +81,15 @@ def test_primal_obj():
                                                   )
     assert res.success
 
-    bugnicourt_mean = res.x.reshape((nx, ny))
+    bugnicourt_gap_mean_cons = res.x.reshape((nx, ny))
 
-    np.testing.assert_allclose(polonsky_mean, _lbfgsb, atol=1e-3)
-    np.testing.assert_allclose(bugnicourt_mean, _lbfgsb, atol=1e-3)
-    np.testing.assert_allclose(_lbfgsb, bugnicourt, atol=1e-3)
-    np.testing.assert_allclose(_lbfgsb, bugnicourt_mean, atol=1e-3)
+    np.testing.assert_allclose(polonsky_gap_mean_cons, lbfgsb_gap, atol=1e-3)
+    np.testing.assert_allclose(bugnicourt_gap_mean_cons, lbfgsb_gap, atol=1e-3)
+    np.testing.assert_allclose(lbfgsb_gap, bugnicourt_gap, atol=1e-3)
+    np.testing.assert_allclose(lbfgsb_gap, bugnicourt_gap_mean_cons, atol=1e-3)
 
 
-def test_dual_obj():
+def test_using_dual_obj():
     nx = ny = 128
     sx, sy = 1., 1.
     R = 10.
@@ -103,7 +102,6 @@ def test_dual_obj():
                                                   physical_sizes=(sx, sy))
 
     system = Solid.Systems.NonSmoothContactSystem(substrate, surface)
-
 
     offset = 0.005
     lbounds = np.zeros((nx, ny))
@@ -121,34 +119,31 @@ def test_dual_obj():
 
     assert res.success
     CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area
-    CA_lbfgsb = CA_lbfgsb.sum()/(nx*ny)
-    _lbfgsb = res.x.reshape((nx, ny))
+    CA_lbfgsb = CA_lbfgsb.sum() / (nx * ny)
+    lbfgsb_force = res.x.reshape((nx, ny))
     fun = system.dual_objective(offset, gradient=True)
     gap_lbfgsb = fun(res.x)[1]
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
     # ###################BUGNICOURT########################################
-    bugnicourt_cg.constrained_conjugate_gradients(system.dual_objective
-                                                  (offset, gradient=True),
-                                                  system.
-                                                  dual_hessian_product,
-                                                  init_pressure,
-                                                  mean_val=None, gtol=gtol)
+    bugnicourt_cg.constrained_conjugate_gradients(
+        system.dual_objective(offset, gradient=True),
+        system.dual_hessian_product, init_pressure, mean_val=None, gtol=gtol)
     assert res.success
 
-    bugnicourt = res.x.reshape((nx, ny))
+    bugnicourt_force = res.x.reshape((nx, ny))
     CA_bugnicourt = res.x.reshape((nx, ny)) > 0  # Contact area
     CA_bugnicourt = CA_bugnicourt.sum() / (nx * ny)
     gap_bugnicourt = fun(res.x)[1]
     gap_bugnicourt = gap_bugnicourt.reshape((nx, ny))
     #
     # # ##################POLONSKY-KEER#####################################
-    res = polonsky_keer.min_cg(
+    res = polonsky_keer.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
-        system.dual_hessian_product,
-        init_pressure,gtol=gtol)
+        system.dual_hessian_product, init_pressure, gtol=gtol)
     assert res.success
 
+    polonsky_force = res.x.reshape((nx, ny))
     CA_polonsky = res.x.reshape((nx, ny)) > 0  # Contact area
     CA_polonsky = CA_polonsky.sum() / (nx * ny)
     gap_polonsky = fun(res.x)[1]
@@ -159,32 +154,31 @@ def test_dual_obj():
     np.testing.assert_allclose(gap_bugnicourt, gap_polonsky, atol=1e-3)
     np.testing.assert_allclose(CA_lbfgsb, CA_polonsky, atol=1e-3)
     np.testing.assert_allclose(CA_lbfgsb, CA_bugnicourt, atol=1e-3)
-    np.testing.assert_allclose(CA_bugnicourt, CA_polonsky, atol=1e-3)
+    np.testing.assert_allclose(bugnicourt_force, polonsky_force, atol=1e-3)
+    np.testing.assert_allclose(lbfgsb_force, polonsky_force, atol=1e-3)
+    np.testing.assert_allclose(lbfgsb_force, bugnicourt_force, atol=1e-3)
+    np.testing.assert_allclose(bugnicourt_force, polonsky_force, atol=1e-3)
 
     # ##########TEST MEAN VALUES#######################################
-    mean_val = np.mean(_lbfgsb)
+    mean_val = np.mean(lbfgsb_force)
     print('mean {}'.format(mean_val))
     # ####################POLONSKY-KEER##############################
-    res = polonsky_keer.min_cg(
+    res = polonsky_keer.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
-        system.dual_hessian_product,
-        init_pressure, mean_value=mean_val, gtol=gtol)
+        system.dual_hessian_product, init_pressure, gtol=gtol,
+        mean_value=mean_val)
 
     assert res.success
     polonsky_mean = res.x.reshape((nx, ny))
 
     # # ####################BUGNICOURT###################################
-    bugnicourt_cg.constrained_conjugate_gradients(system.dual_objective
-                                                  (offset, gradient=True),
-                                                  system.
-                                                  dual_hessian_product,
-                                                  init_pressure,
-                                                  mean_val=mean_val,
-                                                  gtol=gtol)
+    bugnicourt_cg.constrained_conjugate_gradients(
+        system.dual_objective(offset, gradient=True),
+        system.dual_hessian_product, init_pressure, mean_val=mean_val,
+        gtol=gtol)
     assert res.success
 
     bugnicourt_mean = res.x.reshape((nx, ny))
 
-    np.testing.assert_allclose(polonsky_mean, _lbfgsb, atol=1e-3)
-    np.testing.assert_allclose(bugnicourt_mean, _lbfgsb, atol=1e-3)
-
+    np.testing.assert_allclose(polonsky_mean, lbfgsb_force, atol=1e-3)
+    np.testing.assert_allclose(bugnicourt_mean, lbfgsb_force, atol=1e-3)
