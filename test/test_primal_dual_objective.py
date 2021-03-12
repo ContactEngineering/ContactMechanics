@@ -79,16 +79,16 @@ def test_dual_obj(s):
                          init_pressure,
                          method='L-BFGS-B', jac=True,
                          bounds=bnds,
-                         options=dict(gtol=1e-8 * system.area_per_pt,
+                         options=dict(gtol=1e-6 * system.area_per_pt,
                                       ftol=1e-20))
-    assert res.success
+    assert res.success, res.message
     CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area
     fun = system.dual_objective(offset, gradient=True)
     gap_lbfgsb = fun(res.x)[1]
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
     res = system.minimize_proxy(offset=offset, pentol=1e-8)
-    assert res.success
+    assert res.success, res.message
 
     CA_ccg = res.jac > 0  # Contact area
     # print("shape of disp_ccg  {}".format(np.shape(res.x)))
