@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Optimization package &mdash; ContactMechanics 0.90.2.dev68+ga6f116a documentation</title>
+  <title>ContactMechanics.Optimization package &mdash; ContactMechanics 0.90.2.dev75+g24687bc documentation</title>
   
 
   
@@ -32,7 +32,6 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -64,7 +63,7 @@
             
             
               <div class="version">
-                0.90.2.dev68+ga6f116a
+                0.90.2.dev75+g24687bc
               </div>
             
           
@@ -211,7 +210,7 @@
 I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)</p>
 <dl class="py function">
 <dt id="ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients">
-<code class="sig-prename descclassname">ContactMechanics.Optimization.ConstrainedConjugateGradients.</code><code class="sig-name descname">constrained_conjugate_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">substrate</span></em>, <em class="sig-param"><span class="n">topography</span></em>, <em class="sig-param"><span class="n">hardness</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">external_force</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_displacements</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_forces</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pentol</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prestol</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">mixfac</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">100000</span></em>, <em class="sig-param"><span class="n">logger</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Optimization/ConstrainedConjugateGradients.html#constrained_conjugate_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ContactMechanics.Optimization.ConstrainedConjugateGradients.</span></code><code class="sig-name descname"><span class="pre">constrained_conjugate_gradients</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">substrate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topography</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hardness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_displacements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pentol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prestol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixfac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Optimization/ConstrainedConjugateGradients.html#constrained_conjugate_gradients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use a constrained conjugate gradient optimization to find the equilibrium
 configuration deflection of an elastic manifold. The conjugate gradient
 iteration is reset using the steepest descent direction whenever the
