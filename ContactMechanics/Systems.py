@@ -211,9 +211,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
     def _lbounds_from_heights(self, offset):
 
         lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
-        lbounds.mask[self.substrate.topography_subdomain_slices] = False
-        lbounds[self.substrate.topography_subdomain_slices] \
-            = self.surface.heights() + offset
+        lbounds.mask[self.substrate.local_topography_subdomain_slices] = False
+        lbounds[self.substrate.local_topography_subdomain_slices] = self.surface.heights() + offset
 
         lbounds.set_fill_value(-np.inf)
 
