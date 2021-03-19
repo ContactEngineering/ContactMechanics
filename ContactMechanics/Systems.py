@@ -213,9 +213,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
     def _lbounds_from_heights(self, offset):
 
         lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
-        lbounds.mask[self.substrate.topography_subdomain_slices] = False
-        lbounds[self.substrate.topography_subdomain_slices] \
-            = self.surface.heights() + offset
+        lbounds.mask[self.substrate.local_topography_subdomain_slices] = False
+        lbounds[self.substrate.local_topography_subdomain_slices] = self.surface.heights() + offset
 
         lbounds.set_fill_value(-np.inf)
 
@@ -439,7 +438,27 @@ class NonSmoothContactSystem(SystemBase):
         """
         return np.argwhere(self.contact_zone)
 
-    def evaluate(self, disp, offset, pot=True, forces=False):
+    def logger_input(self):
+        """
+        Describes the current state of the system (during minimization)
+
+        Output is suited to be passed to ContactMechanics.Tools.Logger.Logger
+
+        Returns
+        -------
+        headers: list of strings
+        values: list
+        """
+
+        # How to compute the contact area will actually depend on wether it is a primal or dual solver
+        return (['energy',
+                 'substrate force', ],
+                [self.energy,
+                 -self.reduction.sum(self.substrate.force), ])
+
+
+
+    def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement
         field
@@ -455,9 +474,12 @@ class NonSmoothContactSystem(SystemBase):
         else:
             self.force = None
 
+        if logger is not None:
+            logger.st(*self.logger_input())
+
         return (self.energy, self.force)
 
-    def objective(self, offset, disp0=None, gradient=False, disp_scale=1., ):
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1., logger=None):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -479,13 +501,13 @@ class NonSmoothContactSystem(SystemBase):
             dislacement before evaluation.
         """
         # pylint: disable=arguments-differ
-        res = self.substrate.nb_domain_grid_pts
+        res = self.substrate.nb_subdomain_grid_pts
         if gradient:
             def fun(disp):
                 # pylint: disable=missing-docstring
                 try:
                     self.evaluate(
-                        disp_scale * disp.reshape(res), offset, forces=True, )
+                        disp_scale * disp.reshape(res), offset, forces=True, logger=logger)
                 except ValueError as err:
                     raise ValueError(
                         "{}: disp.shape: {}, res: {}".format(
@@ -495,7 +517,7 @@ class NonSmoothContactSystem(SystemBase):
             def fun(disp):
                 # pylint: disable=missing-docstring
                 return self.evaluate(
-                    disp_scale * disp.reshape(res), offset, forces=False, )[0]
+                    disp_scale * disp.reshape(res), offset, forces=False, logger=logger)[0]
 
         return fun
 
