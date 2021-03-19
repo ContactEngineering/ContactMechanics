@@ -55,9 +55,9 @@ def test_bugnicourt_free_system(comm):
     # Parallelized objective
 
     substrate = FreeFFTElasticHalfSpace((nx, ny), young=Es,
-                                              physical_sizes=(sx, sy),
-                                              communicator=comm,
-                                              fft="mpi")
+                                        physical_sizes=(sx, sy),
+                                        communicator=comm,
+                                        fft="mpi")
 
     surface = make_sphere(
         R, (nx, ny), (sx, sy),
@@ -98,3 +98,5 @@ def test_bugnicourt_free_system(comm):
                 .reshape((2 * nx, 2 * ny))[:, ny // 2], label="lbfgsb")
         ax.legend()
         plt.show()
+
+    assert pnp.max(abs(_bug - _lbfgsb[substrate.subdomain_slices])) < 1e-5
