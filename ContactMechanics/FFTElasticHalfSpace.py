@@ -532,8 +532,18 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
     def evaluate_k_disp(self, forces):
         """ Computes the K-space displacement due to a given force array
-        Keyword Arguments:
-        forces   -- a numpy array containing point forces (*not* pressures)
+
+        Parameters
+        __________
+
+        forces : ndarray
+            a numpy array containing point forces (*not* pressures)
+
+        Returns
+        _______
+
+        displacement  :  ndarray
+                        displacement in k-space
         """
         if forces.shape != self.nb_subdomain_grid_pts:
             raise self.Error(
@@ -559,17 +569,24 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     disp.shape, self.nb_subdomain_grid_pts))  # nopep8
         self.real_buffer.array()[...] = disp
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-        return -self.surface_stiffness * \
-            self.fourier_buffer.array() * self.area_per_pt
+        return -self.surface_stiffness * self.fourier_buffer.array() * \
+            self.area_per_pt
 
     def evaluate_k_force_k(self, disp_k):
         """ Computes the K-space forces (*not* pressures) due to a given
-        displacement array.
+        K-space displacement array.
 
-        Parameters:
-        -----------
-        disp_k: complex nd_array
-            a numpy array containing the rfft of point displacements
+        Parameters
+        __________
+
+        disp : ndarray k-space
+            a numpy k-space array containing point displacements
+
+        Returns
+        _______
+
+        force_k : nd array k-sapce forces
+
         """
 
         return -self.surface_stiffness * disp_k * self.area_per_pt
@@ -751,23 +768,31 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             if pot:
                 potential = self.evaluate_elastic_energy(force, disp)
         elif pot:
-            kforce = self.evaluate_k_force(disp)
+            # kforce = self.evaluate_k_force(disp)
             # TODO: OPTIMISATION: here kdisp is computed twice, because it's
             #  needed in kforce
             self.real_buffer.array()[...] = disp
             self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+            dispk = self.fourier_buffer.array()[...].copy()
+            kforce = self.evaluate_k_force_k(dispk)
             potential = self.evaluate_elastic_energy_k_space(
-                kforce, self.fourier_buffer.array())
+                kforce, dispk)
         return potential, force
 
     def evaluate_k(self, disp_k, pot=True, forces=False):
-        """Evaluates the elastic energy and the point forces
-        Keyword Arguments:
-        disp   -- array of distances
-        pot    -- (default True) if true, returns potential energy
-        forces -- (default False) if true, returns forces
+        """Evaluates the elastic energy and the point forces in fourier sapce
+        or k-space or reciprocal space.
+
+        Parameters:
+        -----------
+        disp_k:
+            array of displacements in fourier space
+        pot: bool
+            (default True) if true, returns potential energy
+        forces: bool
+            (default False) if true, returns forces
         """
-        potential = None
+        force_k = potential = None
         if forces:
             force_k = self.evaluate_k_force_k(disp_k)
             if pot:
