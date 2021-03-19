@@ -456,8 +456,6 @@ class NonSmoothContactSystem(SystemBase):
                 [self.energy,
                  -self.reduction.sum(self.substrate.force), ])
 
-
-
     def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement
