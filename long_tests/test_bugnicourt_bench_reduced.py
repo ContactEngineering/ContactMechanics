@@ -1,7 +1,10 @@
-
-# This aims to make a strong test for CG's using the simulation in figure 3 of
-# the Bugnicourt paper but on reduced grid siye  and approx 20% contact area.
-# Note that they use a nonadhesive simulation result to initialize the fields.
+# This aims to make a strong test for CGs using the simulation in figure 3 of
+# the Bugnicourt paper for approx 20% contact area.
+# Note that they use a nonadhesive simulation result to initialize the fields
+# which is not done in this test.
+# Bugnicourt, R., Sainsot, P., Dureisseix, D. et al. FFT-Based Methods for
+# Solving a Rough Adhesive Contact Tribol Lett 66, 29 (2018).
+# https://doi.org/10.1007/s11249-017-0980-z
 
 Es = 1.
 rms_slope = 1.
@@ -26,10 +29,6 @@ def test_bug_bench():
     Es = 1.
     rms_curvature = 1.
     w = 1.
-
-    # this yields for example the systems of unit in bugnicourt equation 42
-
-    # topography
 
     n = 2048
 
@@ -56,7 +55,7 @@ def test_bug_bench():
 
     # Adhesion parameters:
 
-    tabor = 1.5
+    tabor = 3.0
     interaction_length = 1 / tabor # original was 1/tabor.
 
     interaction = Exponential(w, interaction_length)
@@ -70,59 +69,12 @@ def test_bug_bench():
                            young=Es,
                            system_class=BoundedSmoothContactSystem)
 
-    # lazy system initialisation
-    # system = make_system(interaction=interaction,
-    #                      surface=topo,
-    #                      substrate=substrate,
-    #                      young=Es,
-    #                      system_class=BoundedSmoothContactSystem)
-    # substrate = system.substrate
-    # system.substrate.stiffness_q0 = 0.0
-
-
-
-    # TODO: actually use a Nonadhesive contact system
-    nonadh_system = make_system(
-         interaction=Exponential(0, interaction_length),
-         surface=topo,
-         substrate=substrate,
-         system_class=BoundedSmoothContactSystem)
-
-    # nonsmooth_system = Solid.Systems.NonSmoothContactSystem(substrate, topo)
-
-
-
-    print("rms_slope: {}".format(topo.rms_slope()))
-    print("nb pixels in process zone: {}".format(process_zone_size / dx))
-    print("highcut wavelength / process_zone size: "
-          "{}".format(short_cutoff / process_zone_size))
-    print("rms_height / interaction_length: "
-          "{}".format(topo.rms_height() / interaction_length))
-    print("Persson and Tosatti adhesion criterion: ")
-    print("   elastic deformation energy for full contact / work of adhesion: "
-          "{}".format(substrate.evaluate(topo.detrend().heights())[0]
-           / w / np.prod(topo.physical_sizes)))  # ^
-    #            sets the mean to zero, so         |
-    #            that the energy of the q = 0   --
-    #            mode is not taken into
-    #            account
-
-    # P&R equation 10, with kappa_rep = 2, d_rep=4 h'rms / h''rms
-    # (Only valid in the DMT regime, i.e. until the onset of stickiness)
-    # If this value is smaller then 1 the surfaces are sticky and
-    # normal CG's might not work anymore
-    print("P&R stickiness criterion: "
-    "{}".format(topo.rms_slope() * Es * interaction_length / 2 / w *
-    (topo.rms_slope()**2/topo.rms_curvature() / interaction_length)**(2/3)))
-
     print("max height {}".format(np.max(system.surface.heights())))
 
-    # %%
-    # gradient tolerance with respect to a typical pixel force
+
     gtol = 1e-4
 
     disp0 = np.zeros(topo.nb_grid_pts)
-
 
     penetration = 30.0
 

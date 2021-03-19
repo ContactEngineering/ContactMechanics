@@ -42,6 +42,8 @@ from ContactMechanics.Tools import compare_containers
 
 from NuMPI.Optimization import bugnicourt_cg, polonsky_keer
 
+import scipy.optimize as optim
+
 
 class IncompatibleFormulationError(Exception):
     # pylint: disable=missing-docstring
@@ -505,7 +507,7 @@ class NonSmoothContactSystem(SystemBase):
                 # pylint: disable=missing-docstring
                 try:
                     self.evaluate(
-                        disp_scale * disp.reshape(res), offset, forces=True,logger=logger)
+                        disp_scale * disp.reshape(res), offset, forces=True, logger=logger)
                 except ValueError as err:
                     raise ValueError(
                         "{}: disp.shape: {}, res: {}".format(
@@ -515,7 +517,7 @@ class NonSmoothContactSystem(SystemBase):
             def fun(disp):
                 # pylint: disable=missing-docstring
                 return self.evaluate(
-                    disp_scale * disp.reshape(res), offset, forces=False,logger=logger)[0]
+                    disp_scale * disp.reshape(res), offset, forces=False, logger=logger)[0]
 
         return fun
 
@@ -642,40 +644,82 @@ class NonSmoothContactSystem(SystemBase):
                                                ).reshape(inres)
         return hessp
 
-    def primal_minimize_proxy(self, offset, solver=bugnicourt_cg,
-                              **kwargs):
-        """
-        Convenience function. Eliminates boilerplate code for PRIMAL
-        minimisation
-        problems by encapsulating the use of constrained minimisation.
+    def primal_minimize_proxy(self, offset, init_gap=None,
+                              solver='bugnicourt_cg', gtol=1e-8, maxiter=1000):
 
-        Parameters:
-        offset     -- determines indentation depth
-        disp0      -- initial guess for surface displacement. If not set, zero
-                      displacement of shape
-                      self.substrate.nb_domain_grid_pts is used
-        maxiter    -- maximum number of iterations allowed for convergence
-        logger     -- optional logger, to be used with a logger from
-                      PyCo.Tools.Logger
+        """Convenience function. Eliminates boilerplate code for
+        Primal minimisation problem by encapsulating the use of constrained
+        minimisation.
+
+        Parameters
+        __________
+
+        offset     : determines indentation depth
+
+        init_force : initial guess for force.
+
+        solver     : 'bugnicourt_cg', 'polonsky_keer_cg',
+        'l-bfgs-b'
+
+        gtol       : float, optional
+                    Default value : 1e-8
+
+        maxiter    : maximum number of iterations allowed for
+        convergence
+
+        Returns
+        _______
+
+        gap : gap or gardient value
+
+        force   : final force of the system at the solution
+
+        disp    : displacement of the system at the solution
         """
-        # pylint: disable=arguments-differ
+
+        solvers = {'bugnicourt_cg', 'polonsky_keer_cg', 'l-bfgs-b'}
+
+        if solver not in solvers:
+            raise ValueError(
+                'Input correct solver name from {}'.format(solvers))
+
         self.disp = None
         self.force = None
         self.contact_zone = None
-        result = solver.constrained_conjugate_gradients(
-            self.primal_objective(offset, gradient=True),
-            self.primal_hessian_product,
-            **kwargs)
+        self.init_gap = init_gap
+
+        lbounds = np.zeros(self.init_gap.shape)
+        bnds = self._reshape_bounds(lbounds, )
+
+        if solver == 'bugnicourt_cg':
+            result = bugnicourt_cg.constrained_conjugate_gradients(
+                self.primal_objective(offset, gradient=True),
+                self.primal_hessian_product, x0=init_gap, gtol=gtol,
+                maxiter=maxiter)
+        elif solver == 'polonsky_keer_cg':
+            result = polonsky_keer.constrained_conjugate_gradients(
+                self.primal_objective(offset, gradient=True),
+                self.primal_hessian_product, x0=init_gap, gtol=gtol,
+                maxiter=maxiter)
+        elif solver == 'l-bfgs-b':
+            result = optim.minimize(
+                self.primal_objective(offset, gradient=True),
+                self.init_gap,
+                method='L-BFGS-B', jac=True,
+                bounds=bnds,
+                options=dict(gtol=gtol, ftol=1e-20))
+
         if result.success:
             self.offset = offset
-            self.disp = result.x
+            self.gap = result.x
             self.force = self.substrate.force = result.jac
-            self.contact_zone = result.jac > 0
+            self.contact_zone = result.x == 0
+            self.disp = self.gap + offset + self.surface.heights().reshape(
+                self.gap.shape)
 
-            self.substrate.check()
         return result
 
-    def evaluate_dual(self, press, offset, pot=True, forces=False):
+    def evaluate_dual(self, press, offset, forces=False):
         """
         Computes the energies and forces in the system for a given displacement
         field
@@ -691,7 +735,7 @@ class NonSmoothContactSystem(SystemBase):
 
         return (self.energy, self.gradient)
 
-    def dual_objective(self, offset, pot=False, gradient=True):
+    def dual_objective(self, offset, gradient=True):
         r"""Objective function to handle dual objective, i.e. the Legendre
         transformation from displacements as variable to pressures
         (the Lagrange multiplier) as variable.
@@ -754,35 +798,73 @@ class NonSmoothContactSystem(SystemBase):
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
 
-    def dual_minimize_proxy(self, offset, solver=polonsky_keer,
-                            **kwargs):
+    def dual_minimize_proxy(self, offset, init_force=None,
+                            solver='bugnicourt_cg', gtol=1e-8, maxiter=1000):
         """
         Convenience function. Eliminates boilerplate code for DUAL minimisation
         problems by encapsulating the use of constrained minimisation.
 
-        Parameters:
-        offset     -- determines indentation depth
-        disp0      -- initial guess for surface displacement. If not set, zero
-                      displacement of shape
-                      self.substrate.nb_domain_grid_pts is used
-        maxiter    -- maximum number of iterations allowed for convergence
-        logger     -- optional logger, to be used with a logger from
-                      PyCo.Tools.Logger
+        Parameters
+        __________
+
+        offset     : determines indentation depth
+
+        init_force : initial guess for force.
+
+        solver     : 'bugnicourt_cg', 'polonsky_keer_cg', 'l-bfgs-b'
+
+        gtol       : float, optional
+                    Default value : 1e-8
+
+        maxiter    : maximum number of iterations allowed for convergence
+
+        Returns
+        _______
+
+        gap : gap or gardient value
+
+        force   : final force of the system at the solution
+
+        disp    : displacement of the system at the solution
         """
-        # pylint: disable=arguments-differ
+
+        solvers = {'bugnicourt_cg', 'polonsky_keer_cg', 'l-bfgs-b'}
+
+        if solver not in solvers:
+            raise ValueError(
+                'Input correct solver name from {}'.format(solvers))
+
         self.disp = None
         self.force = None
         self.contact_zone = None
-        result = solver.min_cg(
-            self.dual_objective(offset, gradient=True),
-            self.dual_hessian_product,
-            **kwargs)
+        self.init_force = init_force
+
+        lbounds = np.zeros(self.init_force.shape)
+        bnds = self._reshape_bounds(lbounds, )
+
+        if solver == 'bugnicourt_cg':
+            result = bugnicourt_cg.constrained_conjugate_gradients(
+                self.dual_objective(offset, gradient=True),
+                self.dual_hessian_product, x0=init_force, gtol=gtol,
+                maxiter=maxiter)
+        elif solver == 'polonsky_keer_cg':
+            result = polonsky_keer.constrained_conjugate_gradients(
+                self.dual_objective(offset, gradient=True),
+                self.dual_hessian_product, x0=init_force, gtol=gtol,
+                maxiter=maxiter)
+        elif solver == 'l-bfgs-b':
+            result = optim.minimize(self.dual_objective(offset, gradient=True),
+                                    self.init_force,
+                                    method='L-BFGS-B', jac=True,
+                                    bounds=bnds,
+                                    options=dict(gtol=gtol, ftol=1e-20))
+
         if result.success:
             self.offset = offset
-            self.disp = result.jac
+            self.gap = result.jac
             self.force = self.substrate.force = result.x
             self.contact_zone = result.x > 0
+            self.disp = self.gap + offset + self.surface.heights().reshape(
+                self.gap.shape)
 
-            self.substrate.check()
-        return result
         return result
