@@ -94,7 +94,7 @@ def test_dual_obj(s):
     res = system.dual_minimize_proxy(offset, init_force=init_force,
                                      solver='polonsky_keer_cg', )
 
-    assert res.success
+    assert res.success, res.message
     CA_pk = res.x.reshape((nx, ny)) > 0  # Contact are
     force_pk = res.x
     fun = system.dual_objective(offset, gradient=True)
@@ -104,7 +104,7 @@ def test_dual_obj(s):
     res = system.dual_minimize_proxy(offset, init_force=init_force,
                                      solver='l-bfgs-b', )
 
-    assert res.success
+    assert res.success, res.message
     CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area
     force_lbfgsb = res.x
     fun = system.dual_objective(offset, gradient=True)
