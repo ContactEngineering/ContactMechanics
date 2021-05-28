@@ -46,7 +46,8 @@ def test_hard_wall_bearing_area(comm):
     # area geometry
     pnp = Reduction(comm)
     fullsurface = open_topography(
-        os.path.join(FIXTURE_DIR, 'surface1.out')).topography()
+        os.path.join(FIXTURE_DIR, 'surface1.out'))
+    fullsurface = fullsurface.topography(physical_sizes=fullsurface.channels[0].nb_grid_pts)
     nb_domain_grid_pts = fullsurface.nb_grid_pts
     substrate = PeriodicFFTElasticHalfSpace(nb_domain_grid_pts, 1.0, fft='mpi',
                                             communicator=comm)

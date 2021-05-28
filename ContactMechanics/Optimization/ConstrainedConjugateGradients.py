@@ -121,7 +121,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = topography.rms_height() / (
+        pentol = topography.rms_height_from_area() / (
                 10 * np.mean(topography.nb_grid_pts))
         # If pentol is zero, then this is a flat surface. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then

@@ -57,8 +57,8 @@ sx, sy = 1, 1
 surface1 = read_topography('surface1.out', physical_sizes=(sx, sy))
 surface2 = read_topography('surface2.out', physical_sizes=(sx, sy))
 
-print('RMS heights of surfaces = {} {}'.format(surface1.rms_height(),
-                                               surface2.rms_height()))
+print('RMS heights of surfaces = {} {}'.format(surface1.rms_height_from_area(),
+                                               surface2.rms_height_from_area()))
 
 # This is the grid nb_grid_pts of the two surfaces.
 nx, ny = surface1.nb_grid_pts
