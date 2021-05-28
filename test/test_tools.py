@@ -35,10 +35,6 @@ import unittest
 import numpy as np
 
 from ContactMechanics.Tools import evaluate_gradient, mean_err
-from SurfaceTopography import Topography, UniformLineScan, NonuniformLineScan
-from SurfaceTopography.Nonuniform.Detrending import polyfit
-from SurfaceTopography.Uniform.Detrending import tilt_from_height, \
-    shift_and_tilt
 
 import pytest
 from NuMPI import MPI
