@@ -10,6 +10,7 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
                                 reason="tests only serial funcionalities, "
                                        "please execute with pytest")
 
+
 def test_heuristic_pentol():
     # just checks works without bug
 
