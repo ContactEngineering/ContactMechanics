@@ -4,15 +4,18 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Installation &mdash; ContactMechanics 0.90.2.dev82+gea0cb36 documentation</title>
+  <title>Installation &mdash; ContactMechanics 0.90.2.dev91+g5a30fe7 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +32,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -63,7 +67,7 @@
             
             
               <div class="version">
-                0.90.2.dev82+gea0cb36
+                0.90.2.dev91+g5a30fe7
               </div>
             
           
@@ -176,11 +180,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation">
+  <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>You need Python 3 and <a class="reference external" href="http://www.fftw.org/">FFTW3</a> to run ContactMechanics. All Python dependencies can be installed
 automatically by invoking</p>
-<div class="section" id="direct-installation-with-pip">
+<section id="direct-installation-with-pip">
 <h2>Direct installation with pip<a class="headerlink" href="#direct-installation-with-pip" title="Permalink to this headline">¶</a></h2>
 <p>ContactMechanics can be installed by invoking</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m pip  install <span class="o">[</span>--user<span class="o">]</span> git+https://github.com/ComputationalMechanics/ContactMechanics.git
@@ -191,8 +195,8 @@ automatically by invoking</p>
 <p>Note: sometimes <a class="reference external" href="https://gitlab.com/muspectre/muspectre.git">muFFT</a> will not find the FFTW3 installation you expect.
 You can specify the directory where you installed <a class="reference external" href="http://www.fftw.org/">FFTW3</a>
 by setting the environment variable <cite>FFTWDIR</cite> (e.g. to <cite>$USER/.local</cite>).</p>
-</div>
-<div class="section" id="installation-from-source-directory">
+</section>
+<section id="installation-from-source-directory">
 <h2>Installation from source directory<a class="headerlink" href="#installation-from-source-directory" title="Permalink to this headline">¶</a></h2>
 <p>If you cloned the repository. You can install the dependencies with</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m pip install -r requirements.txt
@@ -207,8 +211,8 @@ by setting the environment variable <cite>FFTWDIR</cite> (e.g. to <cite>$USER/.l
 </pre></div>
 </div>
 <p>in the source directoy. The command line parameter <cite>–user</cite> is optional and leads to a local installation in the current user’s <cite>$HOME/.local</cite> directory.</p>
-</div>
-<div class="section" id="installation-problems-with-lapack-and-openblas">
+</section>
+<section id="installation-problems-with-lapack-and-openblas">
 <h2>Installation problems with LAPACK and OpenBLAS<a class="headerlink" href="#installation-problems-with-lapack-and-openblas" title="Permalink to this headline">¶</a></h2>
 <p><cite>bicubic.cpp</cite> is linked with <cite>lapack</cite>, that is already available as a dependency of <cite>numpy</cite>.
 If during build, <cite>setup.py</cite> fails to link to one of the lapack implementations
@@ -224,13 +228,13 @@ provided by <cite>numpy</cite>, as often experienced on macOS, try providing fol
 </div>
 <p>where the paths have probably to be adapted to your particular installation method.
 Here <a class="reference external" href="https://www.openblas.net/">OpenBLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> was installed via <a class="reference external" href="https://brew.sh/">Homebrew</a>.</p>
-</div>
-<div class="section" id="updating-contactmechanics">
+</section>
+<section id="updating-contactmechanics">
 <h2>Updating ContactMechanics<a class="headerlink" href="#updating-contactmechanics" title="Permalink to this headline">¶</a></h2>
 <p>If you update ContactMechanics (whether with pip or <cite>git pull</cite> if you cloned the repository),  you may need to
 uninstall <cite>NuMPI</cite>, <cite>muSpectre</cite> and or <cite>runtests</cite>, so that the newest version of them will be installed.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

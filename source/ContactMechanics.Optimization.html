@@ -4,15 +4,18 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Optimization package &mdash; ContactMechanics 0.90.2.dev82+gea0cb36 documentation</title>
+  <title>ContactMechanics.Optimization package &mdash; ContactMechanics 0.90.2.dev91+g5a30fe7 documentation</title>
   
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +32,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -63,7 +67,7 @@
             
             
               <div class="version">
-                0.90.2.dev82+gea0cb36
+                0.90.2.dev91+g5a30fe7
               </div>
             
           
@@ -199,18 +203,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="contactmechanics-optimization-package">
+  <section id="contactmechanics-optimization-package">
 <h1>ContactMechanics.Optimization package<a class="headerlink" href="#contactmechanics-optimization-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="submodules">
+<section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-ContactMechanics.Optimization.ConstrainedConjugateGradients">
+</section>
+<section id="module-ContactMechanics.Optimization.ConstrainedConjugateGradients">
 <span id="contactmechanics-optimization-constrainedconjugategradients-module"></span><h2>ContactMechanics.Optimization.ConstrainedConjugateGradients module<a class="headerlink" href="#module-ContactMechanics.Optimization.ConstrainedConjugateGradients" title="Permalink to this headline">¶</a></h2>
 <p>Implementation of the constrained conjugate gradient algorithm as described in
 I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)</p>
 <dl class="py function">
-<dt id="ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.Optimization.ConstrainedConjugateGradients.</span></code><code class="sig-name descname"><span class="pre">constrained_conjugate_gradients</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">substrate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topography</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hardness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_displacements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pentol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prestol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixfac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Optimization/ConstrainedConjugateGradients.html#constrained_conjugate_gradients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.Optimization.ConstrainedConjugateGradients.</span></span><span class="sig-name descname"><span class="pre">constrained_conjugate_gradients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">substrate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topography</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hardness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_displacements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pentol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prestol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixfac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Optimization/ConstrainedConjugateGradients.html#constrained_conjugate_gradients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use a constrained conjugate gradient optimization to find the equilibrium
 configuration deflection of an elastic manifold. The conjugate gradient
 iteration is reset using the steepest descent direction whenever the
@@ -258,12 +262,12 @@ offset: offset i rigid surface, results from the optimization processes</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="module-ContactMechanics.Optimization">
+</section>
+<section id="module-ContactMechanics.Optimization">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ContactMechanics.Optimization" title="Permalink to this headline">¶</a></h2>
 <p>Optimization algorithms</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

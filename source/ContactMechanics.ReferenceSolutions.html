@@ -4,15 +4,18 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.ReferenceSolutions package &mdash; ContactMechanics 0.90.2.dev82+gea0cb36 documentation</title>
+  <title>ContactMechanics.ReferenceSolutions package &mdash; ContactMechanics 0.90.2.dev91+g5a30fe7 documentation</title>
   
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,10 +32,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -64,7 +68,7 @@
             
             
               <div class="version">
-                0.90.2.dev82+gea0cb36
+                0.90.2.dev91+g5a30fe7
               </div>
             
           
@@ -209,28 +213,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="contactmechanics-referencesolutions-package">
+  <section id="contactmechanics-referencesolutions-package">
 <h1>ContactMechanics.ReferenceSolutions package<a class="headerlink" href="#contactmechanics-referencesolutions-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="submodules">
+<section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="contactmechanics-referencesolutions-cone-module">
+</section>
+<section id="contactmechanics-referencesolutions-cone-module">
 <h2>ContactMechanics.ReferenceSolutions.Cone module<a class="headerlink" href="#contactmechanics-referencesolutions-cone-module" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-ContactMechanics.ReferenceSolutions.GreenwoodTripp">
+</section>
+<section id="module-ContactMechanics.ReferenceSolutions.GreenwoodTripp">
 <span id="contactmechanics-referencesolutions-greenwoodtripp-module"></span><h2>ContactMechanics.ReferenceSolutions.GreenwoodTripp module<a class="headerlink" href="#module-ContactMechanics.ReferenceSolutions.GreenwoodTripp" title="Permalink to this headline">¶</a></h2>
 <p>Greenwood-Tripp model for the contact of rough spheres</p>
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.Fn">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</span></code><code class="sig-name descname"><span class="pre">Fn</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">h</span></em>, <em class="sig-param"><span class="pre">n</span></em>, <em class="sig-param"><span class="pre">phi=&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#Fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp.Fn" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.Fn">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</span></span><span class="sig-name descname"><span class="pre">Fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">h</span></em>, <em class="sig-param"><span class="pre">n</span></em>, <em class="sig-param"><span class="pre">phi=&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#Fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp.Fn" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p><span class="math notranslate nohighlight">\(\int_h^\infty (s-h)^n \phi(s) ds\)</span></p>
 </div></blockquote>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.GreenwoodTripp">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</span></code><code class="sig-name descname"><span class="pre">GreenwoodTripp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">μ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhomax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#GreenwoodTripp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp.GreenwoodTripp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.GreenwoodTripp">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</span></span><span class="sig-name descname"><span class="pre">GreenwoodTripp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">μ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhomax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#GreenwoodTripp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp.GreenwoodTripp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Greenwood-Tripp solution for the contact of rough spheres.
 See: Greenwood, Tripp, J. Appl. Mech. 34, 153 (1967)
 Symbols correspond to notation in this paper.</p>
@@ -262,25 +266,25 @@ the contact modulus.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.s">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</span></code><code class="sig-name descname"><span class="pre">s</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ξ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ξ1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ξ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#s"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp.s" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.s">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</span></span><span class="sig-name descname"><span class="pre">s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ξ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ξ1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ξ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#s"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp.s" title="Permalink to this definition">¶</a></dt>
 <dd><div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}2/\pi*E(ξ)+(ξ^2-1)*K(ξ) \text{     if  } ξ&lt;=1\\2/\pi*ξ*E(1/ξ) \text{     if  } ξ&gt;1\end{aligned}\end{align} \]</div>
 <p>Asymptotic cases are approximated by the asymptotic expressions.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.">
-<span id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.ξ"></span><code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</span></code><code class="sig-name descname"><span class="pre">ξ</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#ξ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp." title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.">
+<span id="ContactMechanics.ReferenceSolutions.GreenwoodTripp.ξ"></span><span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.GreenwoodTripp.</span></span><span class="sig-name descname"><span class="pre">ξ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/GreenwoodTripp.html#ξ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.GreenwoodTripp." title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</div>
-<div class="section" id="module-ContactMechanics.ReferenceSolutions.Hertz">
+</section>
+<section id="module-ContactMechanics.ReferenceSolutions.Hertz">
 <span id="contactmechanics-referencesolutions-hertz-module"></span><h2>ContactMechanics.ReferenceSolutions.Hertz module<a class="headerlink" href="#module-ContactMechanics.ReferenceSolutions.Hertz" title="Permalink to this headline">¶</a></h2>
 <p>Helper tools for PyCo</p>
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.centerline_stress">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">centerline_stress</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#centerline_stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.centerline_stress" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.centerline_stress">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">centerline_stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#centerline_stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.centerline_stress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given distance from the center of the sphere, contact radius and Poisson
 number contact, compute the stress at the surface.</p>
 <dl class="field-list simple">
@@ -302,8 +306,8 @@ radius a).</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.elastic_energy">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">elastic_energy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#elastic_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.elastic_energy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.elastic_energy">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">elastic_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#elastic_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.elastic_energy" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -323,8 +327,8 @@ number nu.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.max_pressure__penetration">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">max_pressure__penetration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#max_pressure__penetration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.max_pressure__penetration" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.max_pressure__penetration">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">max_pressure__penetration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#max_pressure__penetration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.max_pressure__penetration" title="Permalink to this definition">¶</a></dt>
 <dd><p>when R and Es is not specified, delta is supposed to be in units of R
 and p0 in units of Es
 :param delta:
@@ -344,8 +348,8 @@ and p0 in units of Es
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.normal_load">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">normal_load</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#normal_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.normal_load" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.normal_load">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">normal_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#normal_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.normal_load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given rigid Body Penetration, sphere radius and contact modulus compute
 normal load.</p>
 <dl class="field-list simple">
@@ -368,8 +372,8 @@ number nu.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.penetration">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">penetration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#penetration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.penetration" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.penetration">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">penetration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#penetration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.penetration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given normal load, sphere radius and contact modulus compute rigid body
 penetration.</p>
 <dl class="field-list simple">
@@ -392,8 +396,8 @@ number nu.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.radius_and_pressure">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">radius_and_pressure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#radius_and_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.radius_and_pressure" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.radius_and_pressure">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">radius_and_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#radius_and_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.radius_and_pressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given normal load, sphere radius and contact modulus compute contact radius
 and peak pressure.</p>
 <dl class="field-list simple">
@@ -416,8 +420,8 @@ number nu.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.stress">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">stress</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.stress" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.stress">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.stress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return components of the stress tensor in the interior of the Hertz solid.
 This is the solution given by: M.T. Huber, Ann. Phys. 319, 153 (1904)</p>
 <p>Note that the stress tensor at any point in the solid has the form below in
@@ -459,8 +463,8 @@ p0).</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.stress_Cartesian">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">stress_Cartesian</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#stress_Cartesian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.stress_Cartesian" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.stress_Cartesian">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">stress_Cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#stress_Cartesian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.stress_Cartesian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return components of the stress tensor in the interior of solid due to
 normal Hertz loading.
 This is the solution given by:
@@ -484,8 +488,8 @@ G.M. Hamilton, Proc. Instn. Mech. Engrs. 197C, 53-59 (1983)</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.stress_for_tangential_loading">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">stress_for_tangential_loading</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#stress_for_tangential_loading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.stress_for_tangential_loading" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.stress_for_tangential_loading">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">stress_for_tangential_loading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#stress_for_tangential_loading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.stress_for_tangential_loading" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return components of the stress tensor in the interior of solid due to
 tangential (Hertz) loading.
 This is the solution given by:
@@ -509,8 +513,8 @@ G.M. Hamilton, Proc. Instn. Mech. Engrs. 197C, 53-59 (1983)</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.surface_displacements">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">surface_displacements</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#surface_displacements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.surface_displacements" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.surface_displacements">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">surface_displacements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#surface_displacements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.surface_displacements" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the displacements at the surface due to an indenting sphere.
 See: K.L. Johnson, Contact Mechanics, p. 61</p>
 <dl class="field-list simple">
@@ -529,8 +533,8 @@ contact radius).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Hertz.surface_stress">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></code><code class="sig-name descname"><span class="pre">surface_stress</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#surface_stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.surface_stress" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Hertz.surface_stress">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Hertz.</span></span><span class="sig-name descname"><span class="pre">surface_stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poisson</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Hertz.html#surface_stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Hertz.surface_stress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given distance from the center of the sphere, contact radius and Poisson
 number contact, compute the stress at the surface.</p>
 <dl class="field-list simple">
@@ -552,8 +556,8 @@ radius a).</p></li>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="module-ContactMechanics.ReferenceSolutions.Westergaard">
+</section>
+<section id="module-ContactMechanics.ReferenceSolutions.Westergaard">
 <span id="contactmechanics-referencesolutions-westergaard-module"></span><h2>ContactMechanics.ReferenceSolutions.Westergaard module<a class="headerlink" href="#module-ContactMechanics.ReferenceSolutions.Westergaard" title="Permalink to this headline">¶</a></h2>
 <p>Westergaard solution for partial contact of a sinusoidal periodic
 indenter.
@@ -561,7 +565,7 @@ See: H.M. Westergaard, Trans. ASME, J. Appl. Mech. 6, 49 (1939)</p>
 <p>The indenter geometry is</p>
 <div class="math notranslate nohighlight">
 \[2 h sin^2(\pi x / \lambda)\]</div>
-<div class="section" id="nommenclature">
+<section id="nommenclature">
 <h3>Nommenclature:<a class="headerlink" href="#nommenclature" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(E^*\)</span>: contact modulus</p></li>
@@ -571,8 +575,8 @@ is <span class="math notranslate nohighlight">\(2h\)</span></p></li>
 <li><p><span class="math notranslate nohighlight">\(a\)</span>: half contact width, “contact radius”</p></li>
 </ul>
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Westergaard.contact_radius">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></code><code class="sig-name descname"><span class="pre">contact_radius</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean_pressure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#contact_radius"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.contact_radius" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Westergaard.contact_radius">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></span><span class="sig-name descname"><span class="pre">contact_radius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean_pressure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#contact_radius"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.contact_radius" title="Permalink to this definition">¶</a></dt>
 <dd><p>Johnson, K. L.
 International Journal of Solids and Structures 32, 423–430 (1995)</p>
 <p>Equation (4)</p>
@@ -590,8 +594,8 @@ International Journal of Solids and Structures 32, 423–430 (1995)</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Westergaard.displacements">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></code><code class="sig-name descname"><span class="pre">displacements</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#displacements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.displacements" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Westergaard.displacements">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></span><span class="sig-name descname"><span class="pre">displacements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#displacements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.displacements" title="Permalink to this definition">¶</a></dt>
 <dd><p>Displacements u in units of 2h, the geometry is
 <span class="math notranslate nohighlight">\(2h sin^2(pi x / lambda)\)</span></p>
 <dl class="field-list simple">
@@ -622,8 +626,8 @@ International Journal of Solids and Structures 32, 423–430 (1995)</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></code><code class="sig-name descname"><span class="pre">elastic_energy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean_pressure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#elastic_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></span><span class="sig-name descname"><span class="pre">elastic_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean_pressure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#elastic_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>elastic energy along the equilibrium curve</p>
 <p>formula for the JKR contact but with  alpha = 0</p>
 <dl class="field-list simple">
@@ -641,8 +645,8 @@ International Journal of Solids and Structures 32, 423–430 (1995)</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy_a">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></code><code class="sig-name descname"><span class="pre">elastic_energy_a</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#elastic_energy_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy_a" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy_a">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></span><span class="sig-name descname"><span class="pre">elastic_energy_a</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#elastic_energy_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.elastic_energy_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>elastic energy in dependence of a
 along the equilibrium curve</p>
 <dl class="field-list simple">
@@ -660,8 +664,8 @@ along the equilibrium curve</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Westergaard.gap">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></code><code class="sig-name descname"><span class="pre">gap</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#gap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.gap" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Westergaard.gap">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></span><span class="sig-name descname"><span class="pre">gap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#gap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.gap" title="Permalink to this definition">¶</a></dt>
 <dd><p>gap g in units of 2h, the geometry is <span class="math notranslate nohighlight">\(2h sin^2(pi x / lambda)\)</span></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -680,8 +684,8 @@ along the equilibrium curve</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Westergaard.mean_displacement">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></code><code class="sig-name descname"><span class="pre">mean_displacement</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#mean_displacement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.mean_displacement" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Westergaard.mean_displacement">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></span><span class="sig-name descname"><span class="pre">mean_displacement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#mean_displacement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.mean_displacement" title="Permalink to this definition">¶</a></dt>
 <dd><p>mean gap would be 1 / 2 + mean displacement</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -704,8 +708,8 @@ along the equilibrium curve</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="ContactMechanics.ReferenceSolutions.Westergaard.mean_pressure">
-<code class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></code><code class="sig-name descname"><span class="pre">mean_pressure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contact_radius</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#mean_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.mean_pressure" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ContactMechanics.ReferenceSolutions.Westergaard.mean_pressure">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.ReferenceSolutions.Westergaard.</span></span><span class="sig-name descname"><span class="pre">mean_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contact_radius</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/ReferenceSolutions/Westergaard.html#mean_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.ReferenceSolutions.Westergaard.mean_pressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Johnson, K. L.
 International Journal of Solids and Structures 32, 423–430 (1995)</p>
 <p>Equation (4)</p>
@@ -722,13 +726,13 @@ International Journal of Solids and Structures 32, 423–430 (1995)</p>
 </dl>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="module-ContactMechanics.ReferenceSolutions">
+</section>
+</section>
+<section id="module-ContactMechanics.ReferenceSolutions">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ContactMechanics.ReferenceSolutions" title="Permalink to this headline">¶</a></h2>
 <p>Analytical or semi-analytical reference solutions</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

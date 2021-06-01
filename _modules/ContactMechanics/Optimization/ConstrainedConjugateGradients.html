@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.90.2.dev82+gea0cb36 documentation</title>
+  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.90.2.dev91+g5a30fe7 documentation</title>
   
 
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
@@ -61,7 +64,7 @@
             
             
               <div class="version">
-                0.90.2.dev82+gea0cb36
+                0.90.2.dev91+g5a30fe7
               </div>
             
           
@@ -290,7 +293,7 @@
         <span class="c1"># Heuristics for the possible tolerance on penetration.</span>
         <span class="c1"># This is necessary because numbers can vary greatly</span>
         <span class="c1"># depending on the system of units.</span>
-        <span class="n">pentol</span> <span class="o">=</span> <span class="n">topography</span><span class="o">.</span><span class="n">rms_height</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span>
+        <span class="n">pentol</span> <span class="o">=</span> <span class="n">topography</span><span class="o">.</span><span class="n">rms_height_from_area</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span>
                 <span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">))</span>
         <span class="c1"># If pentol is zero, then this is a flat surface. This only makes</span>
         <span class="c1"># sense for nonperiodic calculations, i.e. it is a punch. Then</span>
