@@ -349,8 +349,8 @@ def constrained_conjugate_gradients(substrate, topography,
 # Read the topography from file.
 topography = read_topography('surface1.out', physical_sizes=(sx, sy))
 
-print('RMS height of topography = {}'.format(topography.rms_height()))
-print('RMS slope of topography = {}'.format(topography.rms_slope()))
+print('RMS height of topography = {}'.format(topography.rms_height_from_area()))
+print('RMS slope of topography = {}'.format(topography.rms_gradient()))
 
 # This is the grid nb_grid_pts of the topography.
 nx, ny = topography.nb_grid_pts
