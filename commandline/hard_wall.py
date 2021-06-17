@@ -351,12 +351,12 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
 
 logger.pr('SurfaceTopography has dimension of {} and physical_sizes of {} {}.'
           .format(surface.nb_grid_pts, surface.physical_sizes, surface.info['unit']))
-logger.pr('RMS height = {}, RMS slope = {}'.format(surface.rms_height(),
-                                                   surface.rms_slope()))
+logger.pr('RMS height = {}, RMS gradient = {}'.format(surface.rms_height_from_area(),
+                                                   surface.rms_gradient()))
 if arguments.detrend is not None:
     surface = surface.detrend(detrend_mode=arguments.detrend)
-    logger.pr('After detrending: RMS height = {}, RMS slope = {}' \
-              .format(surface.rms_height(), surface.rms_slope()))
+    logger.pr('After detrending: RMS height = {}, RMS gradient = {}' \
+              .format(surface.rms_height_from_area(), surface.rms_gradient()))
 
 if arguments.hardness is not None:
     surface = PlasticTopography(surface, arguments.hardness)

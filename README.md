@@ -22,12 +22,12 @@ Build status
 
 The following badge should say _build passing_. This means that all automated tests completed successfully for the master branch.
 
-[![Build Status](https://travis-ci.org/ComputationalMechanics/ContactMechanics.svg?branch=master)](https://travis-ci.org/github/ComputationalMechanics/ContactMechanics)
+[![Build Status](https://travis-ci.org/ContactEngineering/ContactMechanics.svg?branch=master)](https://travis-ci.org/github/ContactEngineering/ContactMechanics)
 
 Documentation
 -------------
 
-[Sphinx](https://www.sphinx-doc.org/)-generated documentation can be found [here](https://computationalmechanics.github.io/ContactMechanics/).
+[Sphinx](https://www.sphinx-doc.org/)-generated documentation can be found [here](https://contactengineering.github.io/ContactMechanics/).
 
 Dependencies
 ------------
