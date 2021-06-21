@@ -21,7 +21,7 @@ from ContactMechanics.Tools.Logger import screen, Logger
 import scipy.optimize as optim
 import ContactMechanics as Solid
 np.random.seed(0)
-from NuMPI.Optimization import bugnicourt_cg
+from NuMPI.Optimization import ccg_without_restart
 
 
 def test_bug_bench():
@@ -101,7 +101,7 @@ def test_bug_bench():
     mean_val_lbfgs = np.mean(sol.x)
 
 
-    res = bugnicourt_cg.constrained_conjugate_gradients(
+    res = ccg_without_restart.constrained_conjugate_gradients(
         system.primal_objective(penetration, gradient=True),
         system.primal_hessian_product,
         x0=init_gap, mean_val=None,

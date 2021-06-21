@@ -1,7 +1,7 @@
 
 
 import numpy as np
-from NuMPI.Optimization import bugnicourt_cg
+from NuMPI.Optimization import ccg_without_restart
 from NuMPI.Tools import Reduction
 from SurfaceTopography import make_sphere
 
@@ -68,7 +68,7 @@ def test_bugnicourt_free_system(comm):
 
     system = NonSmoothContactSystem(substrate, surface)
     lbounds_parallel = system._lbounds_from_heights(penetration)
-    res = bugnicourt_cg.constrained_conjugate_gradients(
+    res = ccg_without_restart.constrained_conjugate_gradients(
         system.objective(penetration, gradient=True, logger=screen),
         # We also test that the logger and the postprocessing involved work properly in parallel
         system.hessian_product,

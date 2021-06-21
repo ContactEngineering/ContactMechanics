@@ -1,6 +1,6 @@
 from SurfaceTopography import make_sphere
 import ContactMechanics as Solid
-from NuMPI.Optimization import polonsky_keer, bugnicourt_cg
+from NuMPI.Optimization import polonsky_keer, ccg_without_restart
 import numpy as np
 import scipy.optimize as optim
 
@@ -38,7 +38,7 @@ def test_using_primal_obj():
     polonsky_gap = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
-    res = bugnicourt_cg.constrained_conjugate_gradients(
+    res = ccg_without_restart.constrained_conjugate_gradients(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product, x0=init_gap, mean_val=None, gtol=gtol)
     assert res.success
@@ -71,7 +71,7 @@ def test_using_primal_obj():
     polonsky_gap_mean_cons = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
-    bugnicourt_cg.constrained_conjugate_gradients(system.primal_objective
+    ccg_without_restart.constrained_conjugate_gradients(system.primal_objective
                                                   (offset, gradient=True),
                                                   system.
                                                   primal_hessian_product,
@@ -126,7 +126,7 @@ def test_using_dual_obj():
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
     # ###################BUGNICOURT########################################
-    bugnicourt_cg.constrained_conjugate_gradients(
+    ccg_without_restart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, mean_val=None, gtol=gtol)
     assert res.success
@@ -172,7 +172,7 @@ def test_using_dual_obj():
     polonsky_mean = res.x.reshape((nx, ny))
 
     # # ####################BUGNICOURT###################################
-    bugnicourt_cg.constrained_conjugate_gradients(
+    ccg_without_restart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, mean_val=mean_val,
         gtol=gtol)

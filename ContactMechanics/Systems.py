@@ -40,7 +40,7 @@ import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
 from ContactMechanics.Tools import compare_containers
 
-from NuMPI.Optimization import bugnicourt_cg, polonsky_keer
+from NuMPI.Optimization import ccg_without_restart, polonsky_keer
 
 import scipy.optimize as optim
 
@@ -643,7 +643,7 @@ class NonSmoothContactSystem(SystemBase):
         return hessp
 
     def primal_minimize_proxy(self, offset, init_gap=None,
-                              solver='bugnicourt_cg', gtol=1e-8, maxiter=1000):
+                              solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
 
         """Convenience function. Eliminates boilerplate code for
         Primal minimisation problem by encapsulating the use of constrained
@@ -656,7 +656,7 @@ class NonSmoothContactSystem(SystemBase):
 
         init_force : initial guess for force.
 
-        solver     : 'bugnicourt_cg', 'polonsky_keer_cg',
+        solver     : 'ccg_without_restart', 'ccg_with_restart',
         'l-bfgs-b'
 
         gtol       : float, optional
@@ -675,7 +675,7 @@ class NonSmoothContactSystem(SystemBase):
         disp    : displacement of the system at the solution
         """
 
-        solvers = {'bugnicourt_cg', 'polonsky_keer_cg', 'l-bfgs-b'}
+        solvers = {'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'}
 
         if solver not in solvers:
             raise ValueError(
@@ -689,12 +689,12 @@ class NonSmoothContactSystem(SystemBase):
         lbounds = np.zeros(self.init_gap.shape)
         bnds = self._reshape_bounds(lbounds, )
 
-        if solver == 'bugnicourt_cg':
-            result = bugnicourt_cg.constrained_conjugate_gradients(
+        if solver == 'ccg_without_restart':
+            result = ccg_without_restart.constrained_conjugate_gradients(
                 self.primal_objective(offset, gradient=True),
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
-        elif solver == 'polonsky_keer_cg':
+        elif solver == 'ccg_with_restart':
             result = polonsky_keer.constrained_conjugate_gradients(
                 self.primal_objective(offset, gradient=True),
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
@@ -797,7 +797,7 @@ class NonSmoothContactSystem(SystemBase):
         return hessp.reshape(inres)
 
     def dual_minimize_proxy(self, offset, init_force=None,
-                            solver='bugnicourt_cg', gtol=1e-8, maxiter=1000):
+                            solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
         """
         Convenience function. Eliminates boilerplate code for DUAL minimisation
         problems by encapsulating the use of constrained minimisation.
@@ -809,7 +809,7 @@ class NonSmoothContactSystem(SystemBase):
 
         init_force : initial guess for force.
 
-        solver     : 'bugnicourt_cg', 'polonsky_keer_cg', 'l-bfgs-b'
+        solver     : 'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'
 
         gtol       : float, optional
                     Default value : 1e-8
@@ -826,7 +826,7 @@ class NonSmoothContactSystem(SystemBase):
         disp    : displacement of the system at the solution
         """
 
-        solvers = {'bugnicourt_cg', 'polonsky_keer_cg', 'l-bfgs-b'}
+        solvers = {'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'}
 
         if solver not in solvers:
             raise ValueError(
@@ -840,12 +840,12 @@ class NonSmoothContactSystem(SystemBase):
         lbounds = np.zeros(self.init_force.shape)
         bnds = self._reshape_bounds(lbounds, )
 
-        if solver == 'bugnicourt_cg':
-            result = bugnicourt_cg.constrained_conjugate_gradients(
+        if solver == 'ccg_without_restart':
+            result = ccg_without_restart.constrained_conjugate_gradients(
                 self.dual_objective(offset, gradient=True),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
-        elif solver == 'polonsky_keer_cg':
+        elif solver == 'ccg_with_restart':
             result = polonsky_keer.constrained_conjugate_gradients(
                 self.dual_objective(offset, gradient=True),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,

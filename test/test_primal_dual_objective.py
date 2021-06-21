@@ -28,7 +28,7 @@ def test_primal_obj(s):
     disp = init_gap + surface.heights() + offset
 
     res = system.primal_minimize_proxy(offset, init_gap=disp,
-                                       solver='bugnicourt_cg', )
+                                       solver='ccg_without_restart', )
 
     assert res.success
     CA_bug = res.x.reshape((nx, ny)) == 0  # Contact area
@@ -37,7 +37,7 @@ def test_primal_obj(s):
     gap_bug = gap_bug.reshape((nx, ny))
 
     res = system.primal_minimize_proxy(offset, init_gap=disp,
-                                       solver='polonsky_keer_cg', )
+                                       solver='ccg_with_restart', )
 
     assert res.success
     CA_pk = res.x.reshape((nx, ny)) == 0  # Contact are
@@ -82,7 +82,7 @@ def test_dual_obj(s):
     init_force = substrate.evaluate_force(disp)
 
     res = system.dual_minimize_proxy(offset, init_force=init_force,
-                                     solver='bugnicourt_cg', )
+                                     solver='ccg_without_restart', )
 
     assert res.success
     CA_bug = res.x.reshape((nx, ny)) > 0  # Contact area
@@ -92,7 +92,7 @@ def test_dual_obj(s):
     gap_bug = gap_bug.reshape((nx, ny))
 
     res = system.dual_minimize_proxy(offset, init_force=init_force,
-                                     solver='polonsky_keer_cg', )
+                                     solver='ccg_with_restart', )
 
     assert res.success, res.message
     CA_pk = res.x.reshape((nx, ny)) > 0  # Contact are

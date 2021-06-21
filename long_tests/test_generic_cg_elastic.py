@@ -2,7 +2,7 @@ from SurfaceTopography import make_sphere
 import ContactMechanics as Solid
 import numpy as np
 import scipy.optimize as optim
-from NuMPI.Optimization import bugnicourt_cg, polonsky_keer
+from NuMPI.Optimization import ccg_without_restart, polonsky_keer
 
 
 def test_primal_obj():
@@ -34,7 +34,7 @@ def test_primal_obj():
     polonsky_gap = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
-    res = bugnicourt_cg.constrained_conjugate_gradients(system.primal_objective
+    res = ccg_without_restart.constrained_conjugate_gradients(system.primal_objective
                                                         (offset,
                                                          gradient=True),
                                                         system.primal_hessian_product,
@@ -71,7 +71,7 @@ def test_primal_obj():
     polonsky_gap_mean_cons = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
-    bugnicourt_cg.constrained_conjugate_gradients(system.primal_objective
+    ccg_without_restart.constrained_conjugate_gradients(system.primal_objective
                                                   (offset, gradient=True),
                                                   system.
                                                   primal_hessian_product,
@@ -130,7 +130,7 @@ def test_dual_obj():
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
     # ###################BUGNICOURT########################################
-    bugnicourt_cg.constrained_conjugate_gradients(
+    ccg_without_restart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.
             dual_hessian_product,
@@ -177,7 +177,7 @@ def test_dual_obj():
     polonsky_force_mean_cons = res.x.reshape((nx, ny))
 
     # # ####################BUGNICOURT###################################
-    bugnicourt_cg.constrained_conjugate_gradients(
+    ccg_without_restart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.
             dual_hessian_product,
