@@ -638,8 +638,7 @@ class NonSmoothContactSystem(SystemBase):
         """
         inres = gap.shape
         res = self.substrate.nb_subdomain_grid_pts
-        hessp = -self.substrate.evaluate_force(gap.reshape(res)
-                                               ).reshape(inres)
+        hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(inres)
         return hessp
 
     def primal_minimize_proxy(self, offset, init_gap=None,
