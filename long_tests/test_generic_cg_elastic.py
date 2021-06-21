@@ -2,7 +2,7 @@ from SurfaceTopography import make_sphere
 import ContactMechanics as Solid
 import numpy as np
 import scipy.optimize as optim
-from NuMPI.Optimization import ccg_without_restart, polonsky_keer
+from NuMPI.Optimization import ccg_without_restart, ccg_with_restart
 
 
 def test_primal_obj():
@@ -26,7 +26,7 @@ def test_primal_obj():
     init_gap = disp - surface.heights() - offset
 
     # ####################POLONSKY-KEER##############################
-    res = polonsky_keer.constrained_conjugate_gradients(
+    res = ccg_with_restart.constrained_conjugate_gradients(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product, x0=init_gap, gtol=gtol)
 
@@ -62,7 +62,7 @@ def test_primal_obj():
     # ##########TEST MEAN VALUES#######################################
     mean_val = np.mean(lbfgsb_gap)
     # ####################POLONSKY-KEER##############################
-    res = polonsky_keer.constrained_conjugate_gradients(
+    res = ccg_with_restart.constrained_conjugate_gradients(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product, init_gap, gtol=gtol,
         mean_value=mean_val)
@@ -144,7 +144,7 @@ def test_dual_obj():
     gap_bugnicourt = gap_bugnicourt.reshape((nx, ny))
 
     # # ##################POLONSKY-KEER#####################################
-    res = polonsky_keer.constrained_conjugate_gradients(
+    res = ccg_with_restart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, gtol=gtol)
     assert res.success
@@ -168,7 +168,7 @@ def test_dual_obj():
     mean_val = np.mean(lbfgsb_force)
     # print('mean {}'.format(mean_val))
     # ####################POLONSKY-KEER##############################
-    res = polonsky_keer.constrained_conjugate_gradients(
+    res = ccg_with_restart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, gtol=gtol,
         mean_value=mean_val)

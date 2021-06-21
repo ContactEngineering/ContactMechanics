@@ -40,7 +40,7 @@ import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
 from ContactMechanics.Tools import compare_containers
 
-from NuMPI.Optimization import ccg_without_restart, polonsky_keer
+from NuMPI.Optimization import ccg_without_restart, ccg_with_restart
 
 import scipy.optimize as optim
 
@@ -695,7 +695,7 @@ class NonSmoothContactSystem(SystemBase):
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'ccg_with_restart':
-            result = polonsky_keer.constrained_conjugate_gradients(
+            result = ccg_with_restart.constrained_conjugate_gradients(
                 self.primal_objective(offset, gradient=True),
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
@@ -846,7 +846,7 @@ class NonSmoothContactSystem(SystemBase):
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'ccg_with_restart':
-            result = polonsky_keer.constrained_conjugate_gradients(
+            result = ccg_with_restart.constrained_conjugate_gradients(
                 self.dual_objective(offset, gradient=True),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
