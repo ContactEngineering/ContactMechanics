@@ -14,7 +14,7 @@ import scipy.optimize as optim
 from ContactMechanics.Tools.Logger import screen
 
 
-def test_bugnicourt_free_system(comm):
+def test_ccg_without_restart_free_system(comm):
     pnp = Reduction(comm)
 
     nx, ny = 9, 9
