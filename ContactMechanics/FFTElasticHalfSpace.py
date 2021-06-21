@@ -775,8 +775,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             self.fftengine.fft(self.real_buffer, self.fourier_buffer)
             dispk = self.fourier_buffer.array()[...].copy()
             kforce = self.evaluate_k_force_k(dispk)
-            potential = self.evaluate_elastic_energy_k_space(
-                kforce, dispk)
+            potential = self.evaluate_elastic_energy_k_space(kforce, dispk)
         return potential, force
 
     def evaluate_k(self, disp_k, pot=True, forces=False):
