@@ -645,7 +645,7 @@ class NonSmoothContactSystem(SystemBase):
                               solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
 
         """Convenience function. Eliminates boilerplate code for
-        Primal minimisation problem by encapsulating the use of constrained
+        Primal minimisation problem (gap as variable) by encapsulating the use of constrained
         minimisation.
 
         Parameters
@@ -798,7 +798,7 @@ class NonSmoothContactSystem(SystemBase):
     def dual_minimize_proxy(self, offset, init_force=None,
                             solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
         """
-        Convenience function. Eliminates boilerplate code for DUAL minimisation
+        Convenience function. Eliminates boilerplate code for DUAL minimisation (pixel forces as variables)
         problems by encapsulating the use of constrained minimisation.
 
         Parameters
