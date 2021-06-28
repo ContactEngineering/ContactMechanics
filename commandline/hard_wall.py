@@ -152,20 +152,20 @@ def dump(txt, surface, u, f, offset=0):
     fractional_area = area/np.prod(surface.nb_grid_pts)
     area *= surface.area_per_pt
     if substrate.young == 1:
-        header = ['mean elastic ({})'.format(surface.info['unit']),
-                  'mean rigid ({})'.format(surface.info['unit']),
-                  'mean gap ({})'.format(surface.info['unit']),
-                  'load (E* {}^2)'.format(surface.info['unit']),
+        header = ['mean elastic ({})'.format(surface.unit),
+                  'mean rigid ({})'.format(surface.unit),
+                  'mean gap ({})'.format(surface.unit),
+                  'load (E* {}^2)'.format(surface.unit),
                   'mean pressure (E*)',
-                  'area ({}^2)'.format(surface.info['unit']),
+                  'area ({}^2)'.format(surface.unit),
                   'fractional area']
     else:
-        header = ['mean elastic ({})'.format(surface.info['unit']),
-                  'mean rigid ({})'.format(surface.info['unit']),
-                  'mean gap ({})'.format(surface.info['unit']),
-                  'load ([Units of E*] {}^2)'.format(surface.info['unit']),
+        header = ['mean elastic ({})'.format(surface.unit),
+                  'mean rigid ({})'.format(surface.unit),
+                  'mean gap ({})'.format(surface.unit),
+                  'load ([Units of E*] {}^2)'.format(surface.unit),
                   'mean pressure ([Units of E*])',
-                  'area ({}^2)'.format(surface.info['unit']),
+                  'area ({}^2)'.format(surface.unit),
                   'fractional area']
     data = [mean_elastic, mean_rigid, mean_elastic-mean_rigid, load,
             mean_pressure, area, fractional_area]
@@ -201,11 +201,11 @@ def save_pressure(fn, surface, substrate, pressure, macro=None):
                unitstr)
 
 def save_gap(fn, surface, gap, macro=None):
-    if surface.info['unit'] is None:
+    if surface.unit is None:
         unitstr = 'No unit information available.'
     else:
         unitstr = 'Gap values follow, they are reported in units of ' \
-                  '{}.'.format(surface.info['unit'])
+                  '{}.'.format(surface.unit)
     macrostr = ''
     if macro is not None:
         macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
@@ -337,20 +337,20 @@ surface = read_topography(arguments.filename, physical_sizes=arguments.physical_
 # i.e. the nb_grid_pts of the surface just open_topography. Size is returned by surface.physical_sizes
 # and can be unknown, i.e. *None*.
 if arguments.size_unit is not None:
-    surface.info['unit'] = arguments.size_unit
-if 'unit' not in surface.info:
-    surface.info['unit'] = 'N/A'
+    surface.unit = arguments.size_unit
+#if 'unit' not in surface.info:
+#    surface.unit = 'N/A'
 if arguments.height_fac is not None or arguments.height_unit is not None:
     fac = 1.0
     if arguments.height_fac is not None:
         fac *= arguments.height_fac
     if arguments.height_unit is not None:
-        fac *= unit_to_meters[arguments.height_unit]/unit_to_meters[surface.info['unit']]
+        fac *= unit_to_meters[arguments.height_unit]/unit_to_meters[surface.unit]
     logger.pr('Rescaling surface heights by {}.'.format(fac))
     surface = surface.scale(fac)
 
 logger.pr('SurfaceTopography has dimension of {} and physical_sizes of {} {}.'
-          .format(surface.nb_grid_pts, surface.physical_sizes, surface.info['unit']))
+          .format(surface.nb_grid_pts, surface.physical_sizes, surface.unit))
 logger.pr('RMS height = {}, RMS gradient = {}'.format(surface.rms_height_from_area(),
                                                    surface.rms_gradient()))
 if arguments.detrend is not None:

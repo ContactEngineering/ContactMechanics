@@ -58,6 +58,6 @@ setup(
         'numpy>=1.11.0',
         'NuMPI>=0.1.2',
         'muFFT>=0.10.0',
-        'SurfaceTopography>=0.90.0'
+        'SurfaceTopography>=0.95.0'
     ]
 )
