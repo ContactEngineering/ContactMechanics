@@ -606,10 +606,12 @@ class NonSmoothContactSystem(SystemBase):
         _____
 
         Objective:
+
         .. math ::
-            min_u f = 1/2u_i*K_{ij}*u_j \\
+
+            \min_u f(u) = 1/2 u_i K_{ij} u_j \\
             \\
-            gradient = K_{ij}*u_j which is, Force. \\
+            \nabla f = K_{ij} u_j \ \ \ \text{which is the Force.} \\
 
         """
 
@@ -760,12 +762,11 @@ class NonSmoothContactSystem(SystemBase):
 
         .. math ::
 
-            min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j -
-            \lambda_i h_i \\
+            \min_\lambda \ q(\lambda) = \frac{1}{2}\lambda_i  K^{-1}_{ij} \lambda_j - \lambda_i h_i \\
             \\
-            gradient = K^{-1}_{ij}*\lambda_j - h_i \hspace{0.1cm}
+            \nabla q = K^{-1}_{ij} \lambda_j - h_i \hspace{0.1cm}
             \text{which is,} \\
-            gap = displacement - height \\
+            \text{gap} = \text{displacement} - \text{height} \\
 
         """
 

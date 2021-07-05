@@ -100,7 +100,7 @@ hermitian symmetry, extra care has to be taken when performing the sum.
 muFFT fourier transform:
 ------------------------
 
-fft and ifft never applies the normalisation factor, meaning that you will need
+`fft` and `ifft` never applies the normalisation factor, meaning that you will need
 to multiply `ifft(fft)` by `1 / np.prod(nb_grid_pts) = fftengine.normalisation`)
 in order to have a roundtrip.
 
@@ -110,9 +110,9 @@ muFFT vs. np.fft:
 Normalisation:
 ---------------
 
-np.fft.rfft <--> fftengine.fft
+`np.fft.rfft` <--> `fftengine.fft`
 
-np.fft.irfft <--> fftengine.ifft * fftengine.normalisation
+`np.fft.irfft` <--> `fftengine.ifft * fftengine.normalisation`
 
 
 2D FFT:
@@ -121,11 +121,11 @@ np.fft.irfft <--> fftengine.ifft * fftengine.normalisation
 numpy by default transforms the last index first.
 
 muFFT the first
-
+```
 real_buffer.array()[..] = a
 fftengine.fft(real_buffer, fourier_buffer)
 fourier_buffer <--> np.rfft2(a.T).T <--> np.fft.rfft2(a, axes=(1,0))
-
+```
 # FIXME: @pastewka: I expected the fourier array to be transposed, so there is a
 #                   wrapper swapping the indexes and the array
 #                   is transposed in memory ?
@@ -730,8 +730,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         
             E_{el} &= - \frac{1}{2} \sum_{ij} u_{ij} f_{ij}  
 
-                   &= - \frac{1}{2} \frac{1}{n_x n_y} \sum_{kl} \tilde u{kl} \overline{\tilde f_{kl}} 
-        (:math:`\tilde f_{ij} = - \tilde K_{ijkl} u`)
+                   &= - \frac{1}{2} \frac{1}{n_x n_y} \sum_{kl} \tilde u_{kl} \overline{\tilde f_{kl}} 
+        (:math:`\tilde f_{ij} = - \tilde K_{ijkl} \tilde u_{kl}`)
         
         In a parallelized code kforces and kdisp contain only the slice 
         attributed to this processor
