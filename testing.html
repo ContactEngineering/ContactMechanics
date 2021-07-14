@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Testing &mdash; ContactMechanics 0.90.2.dev91+g5a30fe7 documentation</title>
+  <title>Testing &mdash; ContactMechanics 0.90.2.dev93+g699e4a8 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.90.2.dev91+g5a30fe7
+                0.90.2.dev93+g699e4a8
               </div>
             
           
@@ -92,14 +92,15 @@
               
             
             
-              <p class="caption"><span class="caption-text">Notes</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#linter">Linter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to ContactMechanics</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Package Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="source/ContactMechanics.html">ContactMechanics package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
@@ -189,6 +190,28 @@
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">--xterm</span></code>: one window per processor</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">--xterm</span> <span class="pre">--pdb</span></code>: debugging</p></li>
+</ul>
+</section>
+<section id="linter">
+<h1>Linter<a class="headerlink" href="#linter" title="Permalink to this headline">¶</a></h1>
+<p>CI will check the code using the <code class="code docutils literal notranslate"><span class="pre">flake8</span></code> linter.</p>
+<p>Before pushing, make sure to run the tests also with the linter activated:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest --flake8
+</pre></div>
+</div>
+<p>To run only the linter and not the tests:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest --flake8 -m flake8
+</pre></div>
+</div>
+<p>To check a file individually:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m flake8 --max-complexity <span class="m">10</span>
+</pre></div>
+</div>
+<p>You can configure this as <cite>Preferences-&gt;Tools-&gt;External Tools</cite> in Pycharm:</p>
+<ul class="simple">
+<li><p>set <cite>Program</cite> to <code class="code docutils literal notranslate"><span class="pre">$PyInterpreterDirectory$/python3</span></code></p></li>
+<li><p>set <cite>Arguments</cite> to <code class="code docutils literal notranslate"><span class="pre">-m</span> <span class="pre">flake8</span> <span class="pre">--max-complexity</span> <span class="pre">10</span> <span class="pre">$FilePath$</span></code></p></li>
+<li><p>set <cite>Working Directory</cite> to <code class="code docutils literal notranslate"><span class="pre">$ProjectFileDir$</span></code></p></li>
 </ul>
 </section>
 
