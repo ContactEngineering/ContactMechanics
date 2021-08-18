@@ -30,6 +30,11 @@ Documentation
 
 [Sphinx](https://www.sphinx-doc.org/)-generated documentation can be found [here](https://contactengineering.github.io/ContactMechanics/).
 
+Installation
+------------
+
+Quick install with: `python3 -m pip install ContactMechanics`
+
 Dependencies
 ------------
 
