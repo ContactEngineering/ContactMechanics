@@ -11,6 +11,7 @@ The methods that are implemented in this code are described in various papers:
     - [Pastewka, Sharp, Robbins, Phys. Rev. B 86, 075459 (2012)](https://doi.org/10.1103/PhysRevB.86.075459)
 - Decoupling of images for non-periodic calculation with the FFT.
     - Hockney, Methods Comput. Phys. 9, 135 (1970)
+    - [Liu, Wang, Liu, Wear 243, 101 (2000)](https://doi.org/10.1016/S0043-1648(00)00427-0)
     - [Pastewka, Robbins, Appl. Phys. Lett. 108, 221601 (2016)](https://doi.org/10.1063/1.4950802)
 - Fast solution of nonadhesive, hard-wall interactions.
     - [Polonsky, Keer, Wear 231, 206 (1999)](https://doi.org/10.1016/S0043-1648(99)00113-1)
