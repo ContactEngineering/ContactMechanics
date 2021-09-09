@@ -1,0 +1,496 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>ContactMechanics.ReferenceSolutions.Cone &mdash; ContactMechanics 0.90.2.dev175+g6db2e8e documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> ContactMechanics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90.2.dev175+g6db2e8e
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../testing.html#linter">Linter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ContactMechanics</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>ContactMechanics.ReferenceSolutions.Cone</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ContactMechanics.ReferenceSolutions.Cone</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2020 Lars Pastewka</span>
+<span class="c1">#           2020 Antoine Sanner</span>
+<span class="c1">#           2019 Lintao Fang</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+
+<span class="kn">from</span> <span class="nn">ContactMechanics</span> <span class="k">import</span> <span class="n">FreeFFTElasticHalfSpace</span>
+<span class="kn">from</span> <span class="nn">SurfaceTopography</span> <span class="k">import</span> <span class="n">Topography</span>
+<span class="kn">from</span> <span class="nn">ContactMechanics</span> <span class="k">import</span> <span class="n">make_system</span>
+
+
+<div class="viewcode-block" id="load_and_mean_pressure"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Cone.load_and_mean_pressure">[docs]</a><span class="k">def</span> <span class="nf">load_and_mean_pressure</span><span class="p">(</span><span class="n">alpha</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reference:</span>
+<span class="sd">    K.L. Johnson, Contact Mechanics, Cambridge University Press.</span>
+<span class="sd">    Chapter 5, page 112, fig(a)&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        half of Cone angle</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Ratio_ExternalForece : float</span>
+<span class="sd">        External Force / (Young&#39;s module * contact area) --&gt; F/(E*A)</span>
+
+<span class="sd">    Ratio_Mean_Pressure : float</span>
+<span class="sd">        Mean Pressure / Young&#39;s module --&gt; P/E</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">alpha</span>
+    <span class="n">Ratio_ExternalForece</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">Ratio_Mean_Pressure</span> <span class="o">=</span> <span class="n">Ratio_ExternalForece</span>
+    <span class="k">return</span> <span class="n">Ratio_ExternalForece</span><span class="p">,</span> <span class="n">Ratio_Mean_Pressure</span></div>
+
+
+<div class="viewcode-block" id="contact_radius_and_area"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Cone.contact_radius_and_area">[docs]</a><span class="k">def</span> <span class="nf">contact_radius_and_area</span><span class="p">(</span><span class="n">alpha</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reference:</span>
+<span class="sd">    K.L. Johnson, Contact Mechanics, Cambridge University Press.</span>
+<span class="sd">    Chapter 5, page 112, fig(a)&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        half of Cone angle</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Ratio_contact_radius : float</span>
+<span class="sd">        Contact Radius / penetration  --&gt;  R/D</span>
+
+<span class="sd">    Ratio_Area : float</span>
+<span class="sd">        Contact Area / Penetration**2  --&gt;  A/D**2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">alpha</span>
+    <span class="n">Ratio_contact_radius</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">beta</span><span class="p">))</span>
+    <span class="n">Ratio_Area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">Ratio_contact_radius</span>
+    <span class="k">return</span> <span class="n">Ratio_contact_radius</span><span class="p">,</span> <span class="n">Ratio_Area</span></div>
+
+
+<div class="viewcode-block" id="deformation"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Cone.deformation">[docs]</a><span class="k">def</span> <span class="nf">deformation</span><span class="p">(</span><span class="n">penetration</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reference:</span>
+<span class="sd">    K.L. Johnson, Contact Mechanics, Cambridge University Press.</span>
+<span class="sd">    Chapter 5, page 112, fig(a)&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    penetration : float</span>
+<span class="sd">        Radius / Penetration --&gt; R / P</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        half of Cone angle</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Ratio_Deformation : float</span>
+<span class="sd">      Ratio Deformation --&gt; Deformation / Penetration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">alpha</span>
+    <span class="n">Ratio_contact_radius</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">beta</span><span class="p">))</span>
+    <span class="n">Ratio_Deformation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">penetration</span><span class="p">)</span>
+
+    <span class="n">R_scale_0</span> <span class="o">=</span> <span class="p">(</span><span class="n">penetration</span> <span class="o">&lt;=</span> <span class="n">Ratio_contact_radius</span><span class="p">)</span>
+    <span class="n">Ratio_Deformation</span><span class="p">[</span><span class="n">R_scale_0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">penetration</span><span class="p">[</span><span class="n">R_scale_0</span><span class="p">])</span> <span class="o">-</span>
+                                    <span class="n">penetration</span><span class="p">[</span><span class="n">R_scale_0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+                                               <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="n">R_scale_1</span> <span class="o">=</span> <span class="p">(</span><span class="n">penetration</span> <span class="o">==</span> <span class="n">Ratio_contact_radius</span><span class="p">)</span>
+    <span class="n">Ratio_Deformation</span><span class="p">[</span><span class="n">R_scale_1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="n">R_scale_2</span> <span class="o">=</span> <span class="p">(</span><span class="n">penetration</span> <span class="o">&gt;=</span> <span class="n">Ratio_contact_radius</span><span class="p">)</span>
+    <span class="n">Ratio_Deformation</span><span class="p">[</span><span class="n">R_scale_2</span><span class="p">]</span> <span class="o">=</span> \
+        <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">Ratio_contact_radius</span> <span class="o">/</span> <span class="n">penetration</span><span class="p">[</span><span class="n">R_scale_2</span><span class="p">])</span> <span class="o">-</span>
+             <span class="n">penetration</span><span class="p">[</span><span class="n">R_scale_2</span><span class="p">]</span> <span class="o">/</span> <span class="n">Ratio_contact_radius</span> <span class="o">+</span>
+             <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">penetration</span><span class="p">[</span><span class="n">R_scale_2</span><span class="p">]</span> <span class="o">/</span> <span class="n">Ratio_contact_radius</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span>
+                     <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="k">return</span> <span class="n">Ratio_Deformation</span></div>
+
+
+<div class="viewcode-block" id="pressure"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.Cone.pressure">[docs]</a><span class="k">def</span> <span class="nf">pressure</span><span class="p">(</span><span class="n">mean_pressure</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reference:</span>
+<span class="sd">    K.L. Johnson, Contact Mechanics, Cambridge University Press.</span>
+<span class="sd">    Chapter 5, page 112, fig(a)&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mean_pressure : float</span>
+<span class="sd">         Ratio of Pressure and Mean Pressure --&gt; Pressure / Mean Pressure</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        half of cone angle</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Ratio_Pressure : float</span>
+<span class="sd">       Ratio Pressure / Mean Pressure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Ratio_Pressure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">mean_pressure</span><span class="p">)</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">alpha</span>
+    <span class="n">Ratio_contact_radius</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">beta</span><span class="p">))</span>  <span class="c1"># Contact Radius / Penetration</span>
+    <span class="n">R_scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">mean_pressure</span> <span class="o">&lt;=</span> <span class="n">Ratio_contact_radius</span><span class="p">)</span>
+    <span class="n">Ratio_Pressure</span><span class="p">[</span><span class="n">R_scale</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccosh</span><span class="p">(</span>
+        <span class="n">Ratio_contact_radius</span> <span class="o">/</span> <span class="n">mean_pressure</span><span class="p">[</span><span class="n">R_scale</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">Ratio_Pressure</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span>
+
+    <span class="n">sx</span> <span class="o">=</span> <span class="mf">0.005</span>  <span class="c1"># mm</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="mf">0.005</span>  <span class="c1"># mm</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sx</span> <span class="o">/</span> <span class="n">nx</span> <span class="o">-</span> <span class="n">sx</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sy</span> <span class="o">/</span> <span class="n">ny</span> <span class="o">-</span> <span class="n">sy</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">topography</span> <span class="o">=</span> <span class="n">Topography</span><span class="p">(</span><span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">,</span>
+                            <span class="n">physical_sizes</span><span class="o">=</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">))</span>
+    <span class="n">Max_Height</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">heights</span><span class="p">())</span>
+
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">topography</span><span class="o">.</span><span class="n">heights</span><span class="p">()),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;heights&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x (mm)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;y (mm)&quot;</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">topography</span><span class="o">.</span><span class="n">heights</span><span class="p">()[:,</span> <span class="n">ny</span> <span class="o">//</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;the max height is </span><span class="si">{0:.6f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Max_Height</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x (mm)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;heights (mm)&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Defining Young&#39;s Module/ MPa</span>
+    <span class="n">Es</span> <span class="o">=</span> <span class="mi">500</span>  <span class="c1"># compress module</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span>  <span class="c1"># poisson ratio</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">Es</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">v</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Young&#39;s module</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span>
+    <span class="c1"># Establishing PeriodicFFTElasticHalfSpace</span>
+    <span class="n">substrate</span> <span class="o">=</span> <span class="n">FreeFFTElasticHalfSpace</span><span class="p">(</span><span class="n">nb_grid_pts</span><span class="o">=</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">),</span> <span class="n">young</span><span class="o">=</span><span class="n">Es</span><span class="p">,</span>
+                                        <span class="n">physical_sizes</span><span class="o">=</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">))</span>
+    <span class="c1"># Establishing Interaction</span>
+    <span class="n">system</span> <span class="o">=</span> <span class="n">make_system</span><span class="p">(</span><span class="n">substrate</span><span class="p">,</span> <span class="n">topography</span><span class="p">)</span>
+
+    <span class="n">penetration</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Exter_load</span><span class="p">,</span> <span class="n">F_External_load</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="n">Max_Pressure</span><span class="p">,</span> <span class="n">F_Max_Pressure</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="n">Contact_Area</span><span class="p">,</span> <span class="n">F_Contact_Area</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">Times</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="n">unit_depth</span> <span class="o">=</span> <span class="n">Max_Height</span> <span class="o">/</span> <span class="mi">10</span>
+        <span class="n">penetration</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unit_depth</span> <span class="o">*</span> <span class="n">Times</span><span class="p">)</span>
+        <span class="c1"># based on PyCo</span>
+        <span class="n">sol</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">minimize_proxy</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">sol</span><span class="o">.</span><span class="n">success</span>
+        <span class="n">Contact_Area</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">system</span><span class="o">.</span><span class="n">compute_contact_area</span><span class="p">())</span>  <span class="c1"># compute contact area by PyCo</span>
+
+        <span class="n">Exter_load</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">system</span><span class="o">.</span><span class="n">compute_normal_force</span><span class="p">())</span>  <span class="c1"># compute external load by PyCo</span>
+
+        <span class="n">DEformation</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span>
+            <span class="n">system</span><span class="o">.</span><span class="n">force</span><span class="p">)</span>  <span class="c1"># make deformation positive by PyCo</span>
+
+        <span class="n">Max_Pressure</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span>
+            <span class="n">system</span><span class="o">.</span><span class="n">force</span> <span class="o">/</span> <span class="n">system</span><span class="o">.</span><span class="n">area_per_pt</span><span class="p">))</span>  <span class="c1"># compute Max pressure by PyCo</span>
+
+        <span class="c1"># based on Formulars</span>
+        <span class="c1"># Contact Radius and Area Computation</span>
+        <span class="n">Ratio_contact_radius</span><span class="p">,</span> <span class="n">Ratio_Area</span> <span class="o">=</span> <span class="n">contact_radius_and_area</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">contact_radius</span> <span class="o">=</span> <span class="n">Ratio_contact_radius</span> <span class="o">*</span> <span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]</span>
+        <span class="n">Area</span> <span class="o">=</span> <span class="n">Ratio_Area</span> <span class="o">*</span> <span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">F_Contact_Area</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Area</span><span class="p">)</span>
+
+        <span class="c1"># External Load and Mean Pressure Computation</span>
+        <span class="n">Ratio_External_load</span><span class="p">,</span> <span class="n">Ratio_Mean_pressure</span> <span class="o">=</span> <span class="n">load_and_mean_pressure</span><span class="p">(</span>
+            <span class="n">alpha</span><span class="p">)</span>
+        <span class="n">External_load</span> <span class="o">=</span> <span class="n">Ratio_External_load</span> <span class="o">*</span> <span class="n">E</span> <span class="o">*</span> <span class="n">Area</span>
+        <span class="n">Mean_pressure</span> <span class="o">=</span> <span class="n">Ratio_Mean_pressure</span> <span class="o">*</span> <span class="n">E</span>
+        <span class="n">F_External_load</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">External_load</span><span class="p">)</span>
+
+        <span class="c1"># Deformation Computation</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">Deformation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">deformation</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">alpha</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Ratio</span> <span class="o">=</span> <span class="n">R</span> <span class="o">/</span> <span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]</span>
+            <span class="n">Deformation</span> <span class="o">=</span> <span class="n">deformation</span><span class="p">(</span><span class="n">Ratio</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]</span>
+
+        <span class="c1"># Pressure Computation</span>
+        <span class="k">if</span> <span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">Pressure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pressure</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">alpha</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Ratio</span> <span class="o">=</span> <span class="n">R</span> <span class="o">/</span> <span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]</span>
+            <span class="n">Pressure</span> <span class="o">=</span> <span class="n">pressure</span><span class="p">(</span><span class="n">Ratio</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">Mean_pressure</span>
+        <span class="n">F_Max_Pressure</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Pressure</span><span class="p">))</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">ax3D1</span><span class="p">,</span> <span class="n">ax3D2</span><span class="p">,</span> <span class="n">ax3D3</span><span class="p">,</span> <span class="n">ax3D4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">221</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span>
+            <span class="mi">222</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">223</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">224</span><span class="p">)</span>
+
+        <span class="n">pcm</span> <span class="o">=</span> <span class="n">ax3D1</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">system</span><span class="o">.</span><span class="n">force</span> <span class="o">/</span> <span class="n">system</span><span class="o">.</span><span class="n">area_per_pt</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pcm</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax3D1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pressure (MPa)&quot;</span><span class="p">)</span>
+        <span class="n">ax3D1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+            <span class="s2">&quot;PyCo--Moving Dis=</span><span class="si">{0:.6f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]))</span>
+        <span class="n">ax3D1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+        <span class="n">pcm</span> <span class="o">=</span> <span class="n">ax3D2</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Pressure</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pcm</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax3D2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pressure (MPa)&quot;</span><span class="p">)</span>
+        <span class="n">ax3D2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+            <span class="s2">&quot;Formular--Moving Dis=</span><span class="si">{0:.6f}</span><span class="s2">mm&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">penetration</span><span class="p">[</span><span class="n">Times</span><span class="p">]))</span>
+        <span class="n">ax3D2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">Cro_Section</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ny</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">ny</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ny</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">//</span> <span class="mi">4</span><span class="p">]:</span>
+            <span class="n">P</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax3D3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">Cro_Section</span><span class="p">],</span>
+                            <span class="n">system</span><span class="o">.</span><span class="n">force</span><span class="p">[:,</span> <span class="n">Cro_Section</span><span class="p">]</span> <span class="o">/</span> <span class="n">system</span><span class="o">.</span><span class="n">area_per_pt</span><span class="p">,</span>
+                            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;PyCo&#39;</span><span class="p">)</span>
+            <span class="n">F_P</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax3D3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">Cro_Section</span><span class="p">],</span> <span class="n">Pressure</span><span class="p">[:,</span> <span class="n">Cro_Section</span><span class="p">],</span>
+                              <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Formular&#39;</span><span class="p">)</span>
+            <span class="n">ax3D3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Pressure (MPa)&#39;</span><span class="p">)</span>
+            <span class="n">ax3D1</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">Cro_Section</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">P</span><span class="o">.</span><span class="n">get_color</span><span class="p">())</span>
+            <span class="n">ax3D2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">Cro_Section</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">F_P</span><span class="o">.</span><span class="n">get_color</span><span class="p">())</span>
+
+            <span class="n">D</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax3D4</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">Cro_Section</span><span class="p">],</span> <span class="n">DEformation</span><span class="p">[:,</span> <span class="n">Cro_Section</span><span class="p">],</span>
+                            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;PyCo&#39;</span><span class="p">)</span>
+            <span class="n">F_D</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax3D4</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">Cro_Section</span><span class="p">],</span> <span class="n">Deformation</span><span class="p">[:,</span> <span class="n">Cro_Section</span><span class="p">],</span>
+                              <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Formular&#39;</span><span class="p">)</span>
+            <span class="n">ax3D4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Deformation (mm)&#39;</span><span class="p">)</span>
+            <span class="n">ax3D1</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">Cro_Section</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">D</span><span class="o">.</span><span class="n">get_color</span><span class="p">())</span>
+            <span class="n">ax3D2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">Cro_Section</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">F_D</span><span class="o">.</span><span class="n">get_color</span><span class="p">())</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2015-2020 The Authors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

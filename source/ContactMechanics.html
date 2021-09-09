@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics package &mdash; ContactMechanics 0.90.2.dev93+g699e4a8 documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 0.90.2.dev175+g6db2e8e documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.90.2.dev93+g699e4a8
+                0.90.2.dev175+g6db2e8e
               </div>
             
           
@@ -228,7 +228,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html#contactmechanics-referencesolutions-cone-module">ContactMechanics.ReferenceSolutions.Cone module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html#module-ContactMechanics.ReferenceSolutions.Cone">ContactMechanics.ReferenceSolutions.Cone module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html#module-ContactMechanics.ReferenceSolutions.GreenwoodTripp">ContactMechanics.ReferenceSolutions.GreenwoodTripp module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html#module-ContactMechanics.ReferenceSolutions.Hertz">ContactMechanics.ReferenceSolutions.Hertz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.ReferenceSolutions.html#module-ContactMechanics.ReferenceSolutions.Westergaard">ContactMechanics.ReferenceSolutions.Westergaard module</a><ul>
@@ -298,7 +298,7 @@ hermitian symmetry, extra care has to be taken when performing the sum.</p>
 </section>
 <section id="mufft-fourier-transform">
 <h3>muFFT fourier transform:<a class="headerlink" href="#mufft-fourier-transform" title="Permalink to this headline">¶</a></h3>
-<p>fft and ifft never applies the normalisation factor, meaning that you will need
+<p><cite>fft</cite> and <cite>ifft</cite> never applies the normalisation factor, meaning that you will need
 to multiply <cite>ifft(fft)</cite> by <cite>1 / np.prod(nb_grid_pts) = fftengine.normalisation</cite>)
 in order to have a roundtrip.</p>
 </section>
@@ -307,17 +307,19 @@ in order to have a roundtrip.</p>
 </section>
 <section id="normalisation">
 <h3>Normalisation:<a class="headerlink" href="#normalisation" title="Permalink to this headline">¶</a></h3>
-<p>np.fft.rfft &lt;–&gt; fftengine.fft</p>
-<p>np.fft.irfft &lt;–&gt; fftengine.ifft * fftengine.normalisation</p>
+<p><cite>np.fft.rfft</cite> &lt;–&gt; <cite>fftengine.fft</cite></p>
+<p><cite>np.fft.irfft</cite> &lt;–&gt; <cite>fftengine.ifft * fftengine.normalisation</cite></p>
 </section>
 <section id="d-fft">
 <h3>2D FFT:<a class="headerlink" href="#d-fft" title="Permalink to this headline">¶</a></h3>
 <p>numpy by default transforms the last index first.</p>
-<p>muFFT the first</p>
-<p>real_buffer.array()[..] = a
-fftengine.fft(real_buffer, fourier_buffer)
-fourier_buffer &lt;–&gt; np.rfft2(a.T).T &lt;–&gt; np.fft.rfft2(a, axes=(1,0))</p>
-<p># FIXME: &#64;pastewka: I expected the fourier array to be transposed, so there is a
+<p>muFFT the first
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">real_buffer.array()[..]</span> <span class="pre">=</span> <span class="pre">a</span>
+<span class="pre">fftengine.fft(real_buffer,</span> <span class="pre">fourier_buffer)</span>
+<span class="pre">fourier_buffer</span> <span class="pre">&lt;--&gt;</span> <span class="pre">np.rfft2(a.T).T</span> <span class="pre">&lt;--&gt;</span> <span class="pre">np.fft.rfft2(a,</span> <span class="pre">axes=(1,0))</span>
+<span class="pre">`</span></code>
+# FIXME: &#64;pastewka: I expected the fourier array to be transposed, so there is a
 #                   wrapper swapping the indexes and the array
 #                   is transposed in memory ?</p>
 <dl class="py class">
@@ -494,8 +496,8 @@ disp   – array of displacements</p>
 <dd><p>Computes the Energy due to forces and displacements using their Fourier
 representation.</p>
 <div class="math notranslate nohighlight">
-\[ \begin{align}\begin{aligned}E_{el} &amp;= - \frac{1}{2} \sum_{ij} u_{ij} f_{ij}\\       &amp;= - \frac{1}{2} \frac{1}{n_x n_y} \sum_{kl} \tilde u{kl} \overline{\tilde f_{kl}}\end{aligned}\end{align} \]</div>
-<p>(<span class="math notranslate nohighlight">\(\tilde f_{ij} = - \tilde K_{ijkl} u\)</span>)</p>
+\[ \begin{align}\begin{aligned}E_{el} &amp;= - \frac{1}{2} \sum_{ij} u_{ij} f_{ij}\\       &amp;= - \frac{1}{2} \frac{1}{n_x n_y} \sum_{kl} \tilde u_{kl} \overline{\tilde f_{kl}}\end{aligned}\end{align} \]</div>
+<p>(<span class="math notranslate nohighlight">\(\tilde f_{ij} = - \tilde K_{ijkl} \tilde u_{kl}\)</span>)</p>
 <p>In a parallelized code kforces and kdisp contain only the slice
 attributed to this processor</p>
 <dl class="field-list simple">
@@ -528,19 +530,33 @@ disp   – a numpy array containing point displacements</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k">
 <span class="sig-name descname"><span class="pre">evaluate_k</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disp_k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/FFTElasticHalfSpace.html#PeriodicFFTElasticHalfSpace.evaluate_k"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluates the elastic energy and the point forces
-Keyword Arguments:
-disp   – array of distances
-pot    – (default True) if true, returns potential energy
-forces – (default False) if true, returns forces</p>
+<dd><p>Evaluates the elastic energy and the point forces in fourier sapce
+or k-space or reciprocal space.</p>
+<dl class="simple">
+<dt>disp_k:</dt><dd><p>array of displacements in fourier space</p>
+</dd>
+<dt>pot: bool</dt><dd><p>(default True) if true, returns potential energy</p>
+</dd>
+<dt>forces: bool</dt><dd><p>(default False) if true, returns forces</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_disp">
 <span class="sig-name descname"><span class="pre">evaluate_k_disp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forces</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/FFTElasticHalfSpace.html#PeriodicFFTElasticHalfSpace.evaluate_k_disp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_disp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the K-space displacement due to a given force array
-Keyword Arguments:
-forces   – a numpy array containing point forces (<em>not</em> pressures)</p>
+<dd><p>Computes the K-space displacement due to a given force array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>forces</strong> (<em>ndarray</em>) – a numpy array containing point forces (<em>not</em> pressures)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>displacement</strong> – displacement in k-space</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -556,9 +572,16 @@ disp   – a numpy array containing point displacements</p>
 <dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force_k">
 <span class="sig-name descname"><span class="pre">evaluate_k_force_k</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disp_k</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/FFTElasticHalfSpace.html#PeriodicFFTElasticHalfSpace.evaluate_k_force_k"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force_k" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the K-space forces (<em>not</em> pressures) due to a given
-displacement array.</p>
-<dl class="simple">
-<dt>disp_k: complex nd_array</dt><dd><p>a numpy array containing the rfft of point displacements</p>
+K-space displacement array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>disp</strong> (<em>ndarray k-space</em>) – a numpy k-space array containing point displacements</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>force_k</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nd array k-sapce forces</p>
 </dd>
 </dl>
 </dd></dl>
@@ -963,8 +986,34 @@ no physical interest, as it is a purely numerical artefact</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy">
+<span class="sig-name descname"><span class="pre">dual_minimize_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccg_without_restart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.dual_minimize_proxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function. Eliminates boilerplate code for DUAL minimisation (pixel forces as variables)
+problems by encapsulating the use of constrained minimisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offset</strong> (<em>determines indentation depth</em>) – </p></li>
+<li><p><strong>init_force</strong> (<em>initial guess for force.</em>) – </p></li>
+<li><p><strong>solver</strong> (<em>'ccg_without_restart'</em><em>, </em><em>'ccg_with_restart'</em><em>, </em><em>'l-bfgs-b'</em>) – </p></li>
+<li><p><strong>gtol</strong> (<em>float</em><em>, </em><em>optional</em>) – Default value : 1e-8</p></li>
+<li><p><strong>maxiter</strong> (<em>maximum number of iterations allowed for convergence</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>gap</strong> (<em>gap or gardient value</em>)</p></li>
+<li><p><strong>force</strong> (<em>final force of the system at the solution</em>)</p></li>
+<li><p><strong>disp</strong> (<em>displacement of the system at the solution</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.dual_objective">
-<span class="sig-name descname"><span class="pre">dual_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.dual_objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">dual_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.dual_objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="Permalink to this definition">¶</a></dt>
 <dd><p>Objective function to handle dual objective, i.e. the Legendre
 transformation from displacements as variable to pressures
 (the Lagrange multiplier) as variable.</p>
@@ -988,24 +1037,23 @@ transformation from displacements as variable to pressures
 <p class="rubric">Notes</p>
 <p>Objective:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j -
-\lambda_i h_i \\
+\[\begin{split}\min_\lambda \ q(\lambda) = \frac{1}{2}\lambda_i  K^{-1}_{ij} \lambda_j - \lambda_i h_i \\
 \\
-gradient = K^{-1}_{ij}*\lambda_j - h_i \hspace{0.1cm}
+\nabla q = K^{-1}_{ij} \lambda_j - h_i \hspace{0.1cm}
 \text{which is,} \\
-gap = displacement - height \\\end{split}\]</div>
+\text{gap} = \text{displacement} - \text{height} \\\end{split}\]</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the energies and forces in the system for a given displacement
 field</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">
-<span class="sig-name descname"><span class="pre">evaluate_dual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">press</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.evaluate_dual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">evaluate_dual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">press</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.evaluate_dual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the energies and forces in the system for a given displacement
 field</p>
 </dd></dl>
@@ -1030,6 +1078,22 @@ surface_type     –</p>
 </dd>
 </dl>
 <p>hessian product</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.logger_input">
+<span class="sig-name descname"><span class="pre">logger_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.logger_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.logger_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describes the current state of the system (during minimization)</p>
+<p>Output is suited to be passed to ContactMechanics.Tools.Logger.Logger</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>headers</strong> (<em>list of strings</em>)</p></li>
+<li><p><strong>values</strong> (<em>list</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1068,22 +1132,27 @@ ContactMechanics.Tools.Logger</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.objective">
-<span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disp0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disp_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.objective" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disp0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disp_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.objective" title="Permalink to this definition">¶</a></dt>
 <dd><p>This helper method exposes a scipy.optimize-friendly interface to the
 evaluate() method. Use this for optimization purposes, it makes sure
 that the shape of disp is maintained and lets you set the offset and
 ‘forces’ flag without using scipy’s cumbersome argument passing
 interface. Returns a function of only disp
-Keyword Arguments:
-offset     – determines indentation depth
-disp0      – unused variable, present only for interface compatibility</p>
+Parameters:
+———–
+offset:</p>
 <blockquote>
-<div><p>with inheriting classes</p>
+<div><p>determines indentation depth</p>
 </div></blockquote>
 <dl class="simple">
-<dt>gradient   – (default False) whether the gradient is supposed to be</dt><dd><p>used</p>
+<dt>disp0:</dt><dd><p>unused variable, present only for interface compatibility
+with inheriting classes</p>
 </dd>
-<dt>disp_scale – (default 1.) allows to specify a scaling of the</dt><dd><p>dislacement before evaluation.</p>
+<dt>gradient: (default False)</dt><dd><p>whether the gradient is supposed to be
+used</p>
+</dd>
+<dt>disp_scale:</dt><dd><p>(default 1.) allows to specify a scaling of the
+dislacement before evaluation.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1095,8 +1164,37 @@ disp0      – unused variable, present only for interface compatibility</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy">
+<span class="sig-name descname"><span class="pre">primal_minimize_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccg_without_restart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.primal_minimize_proxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function. Eliminates boilerplate code for
+Primal minimisation problem (gap as variable) by encapsulating the use of constrained
+minimisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offset</strong> (<em>determines indentation depth</em>) – </p></li>
+<li><p><strong>init_force</strong> (<em>initial guess for force.</em>) – </p></li>
+<li><p><strong>solver</strong> (<em>'ccg_without_restart'</em><em>, </em><em>'ccg_with_restart'</em><em>,</em>) – </p></li>
+<li><p><strong>'l-bfgs-b'</strong> – </p></li>
+<li><p><strong>gtol</strong> (<em>float</em><em>, </em><em>optional</em>) – Default value : 1e-8</p></li>
+<li><p><strong>maxiter</strong> (<em>maximum number of iterations allowed for</em>) – </p></li>
+<li><p><strong>convergence</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>gap</strong> (<em>gap or gardient value</em>)</p></li>
+<li><p><strong>force</strong> (<em>final force of the system at the solution</em>)</p></li>
+<li><p><strong>disp</strong> (<em>displacement of the system at the solution</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.primal_objective">
-<span class="sig-name descname"><span class="pre">primal_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.primal_objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">primal_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Systems.html#NonSmoothContactSystem.primal_objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective" title="Permalink to this definition">¶</a></dt>
 <dd><p>To solve the primal objective using gap as the variable.
 Can be fed directly to standard solvers ex: scipy solvers etc
 and returns the elastic energy and it’s gradient (negative of
@@ -1119,13 +1217,11 @@ the forces) as a function of the gap.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Objective:
-.. math</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">min_u</span> <span class="n">f</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="n">u_i</span><span class="o">*</span><span class="n">K_</span><span class="p">{</span><span class="n">ij</span><span class="p">}</span><span class="o">*</span><span class="n">u_j</span> \\
+<p>Objective:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\min_u f(u) = 1/2 u_i K_{ij} u_j \\
 \\
-<span class="n">gradient</span> <span class="o">=</span> <span class="n">K_</span><span class="p">{</span><span class="n">ij</span><span class="p">}</span><span class="o">*</span><span class="n">u_j</span> <span class="n">which</span> <span class="ow">is</span><span class="p">,</span> <span class="n">Force</span><span class="o">.</span> \\
-</pre></div>
-</div>
+\nabla f = K_{ij} u_j \ \ \ \text{which is the Force.} \\\end{split}\]</div>
 </dd></dl>
 
 </dd></dl>
@@ -1320,11 +1416,11 @@ systems, or increased as with augmented-lagrangian-type issues). Use
 the output of this function as argument x0 for scipy minimisation
 functions. Also, if you initial guess has a shape that makes no sense,
 this will tell you before you get caught in debugging scipy-code</p>
-<p>Arguments:
-in_array – array with the initial guess. has the intuitive shape you</p>
-<blockquote>
-<div><p>think it has</p>
-</div></blockquote>
+<dl class="simple">
+<dt>in_array:</dt><dd><p>array with the initial guess. has the intuitive shape you
+think it has</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

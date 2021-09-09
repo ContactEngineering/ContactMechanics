@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 0.90.2.dev93+g699e4a8 documentation</title>
+  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 0.90.2.dev175+g6db2e8e documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.90.2.dev93+g699e4a8
+                0.90.2.dev175+g6db2e8e
               </div>
             
           
@@ -273,7 +273,7 @@
 <span class="sd">muFFT fourier transform:</span>
 <span class="sd">------------------------</span>
 
-<span class="sd">fft and ifft never applies the normalisation factor, meaning that you will need</span>
+<span class="sd">`fft` and `ifft` never applies the normalisation factor, meaning that you will need</span>
 <span class="sd">to multiply `ifft(fft)` by `1 / np.prod(nb_grid_pts) = fftengine.normalisation`)</span>
 <span class="sd">in order to have a roundtrip.</span>
 
@@ -283,9 +283,9 @@
 <span class="sd">Normalisation:</span>
 <span class="sd">---------------</span>
 
-<span class="sd">np.fft.rfft &lt;--&gt; fftengine.fft</span>
+<span class="sd">`np.fft.rfft` &lt;--&gt; `fftengine.fft`</span>
 
-<span class="sd">np.fft.irfft &lt;--&gt; fftengine.ifft * fftengine.normalisation</span>
+<span class="sd">`np.fft.irfft` &lt;--&gt; `fftengine.ifft * fftengine.normalisation`</span>
 
 
 <span class="sd">2D FFT:</span>
@@ -294,11 +294,11 @@
 <span class="sd">numpy by default transforms the last index first.</span>
 
 <span class="sd">muFFT the first</span>
-
+<span class="sd">```</span>
 <span class="sd">real_buffer.array()[..] = a</span>
 <span class="sd">fftengine.fft(real_buffer, fourier_buffer)</span>
 <span class="sd">fourier_buffer &lt;--&gt; np.rfft2(a.T).T &lt;--&gt; np.fft.rfft2(a, axes=(1,0))</span>
-
+<span class="sd">```</span>
 <span class="sd"># FIXME: @pastewka: I expected the fourier array to be transposed, so there is a</span>
 <span class="sd">#                   wrapper swapping the indexes and the array</span>
 <span class="sd">#                   is transposed in memory ?</span>
@@ -705,8 +705,18 @@
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k_disp"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_disp">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k_disp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Computes the K-space displacement due to a given force array</span>
-<span class="sd">        Keyword Arguments:</span>
-<span class="sd">        forces   -- a numpy array containing point forces (*not* pressures)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        __________</span>
+
+<span class="sd">        forces : ndarray</span>
+<span class="sd">            a numpy array containing point forces (*not* pressures)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        _______</span>
+
+<span class="sd">        displacement  :  ndarray</span>
+<span class="sd">                        displacement in k-space</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">forces</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
@@ -732,17 +742,24 @@
                     <span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">))</span>  <span class="c1"># nopep8</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">real_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">disp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_buffer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="p">)</span>
-        <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">surface_stiffness</span> <span class="o">*</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
+        <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">surface_stiffness</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()</span> <span class="o">*</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k_force_k"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force_k">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k_force_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp_k</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Computes the K-space forces (*not* pressures) due to a given</span>
-<span class="sd">        displacement array.</span>
+<span class="sd">        K-space displacement array.</span>
 
-<span class="sd">        Parameters:</span>
-<span class="sd">        -----------</span>
-<span class="sd">        disp_k: complex nd_array</span>
-<span class="sd">            a numpy array containing the rfft of point displacements</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        __________</span>
+
+<span class="sd">        disp : ndarray k-space</span>
+<span class="sd">            a numpy k-space array containing point displacements</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        _______</span>
+
+<span class="sd">        force_k : nd array k-sapce forces</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">surface_stiffness</span> <span class="o">*</span> <span class="n">disp_k</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
@@ -886,8 +903,8 @@
 <span class="sd">        </span>
 <span class="sd">            E_{el} &amp;= - \frac{1}{2} \sum_{ij} u_{ij} f_{ij}  </span>
 
-<span class="sd">                   &amp;= - \frac{1}{2} \frac{1}{n_x n_y} \sum_{kl} \tilde u{kl} \overline{\tilde f_{kl}} </span>
-<span class="sd">        (:math:`\tilde f_{ij} = - \tilde K_{ijkl} u`)</span>
+<span class="sd">                   &amp;= - \frac{1}{2} \frac{1}{n_x n_y} \sum_{kl} \tilde u_{kl} \overline{\tilde f_{kl}} </span>
+<span class="sd">        (:math:`\tilde f_{ij} = - \tilde K_{ijkl} \tilde u_{kl}`)</span>
 <span class="sd">        </span>
 <span class="sd">        In a parallelized code kforces and kdisp contain only the slice </span>
 <span class="sd">        attributed to this processor</span>
@@ -924,23 +941,30 @@
             <span class="k">if</span> <span class="n">pot</span><span class="p">:</span>
                 <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_elastic_energy</span><span class="p">(</span><span class="n">force</span><span class="p">,</span> <span class="n">disp</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pot</span><span class="p">:</span>
-            <span class="n">kforce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_k_force</span><span class="p">(</span><span class="n">disp</span><span class="p">)</span>
+            <span class="c1"># kforce = self.evaluate_k_force(disp)</span>
             <span class="c1"># TODO: OPTIMISATION: here kdisp is computed twice, because it&#39;s</span>
             <span class="c1">#  needed in kforce</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">real_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">disp</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_buffer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="p">)</span>
-            <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_elastic_energy_k_space</span><span class="p">(</span>
-                <span class="n">kforce</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
+            <span class="n">dispk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()[</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">kforce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_k_force_k</span><span class="p">(</span><span class="n">dispk</span><span class="p">)</span>
+            <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_elastic_energy_k_space</span><span class="p">(</span><span class="n">kforce</span><span class="p">,</span> <span class="n">dispk</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">potential</span><span class="p">,</span> <span class="n">force</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp_k</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Evaluates the elastic energy and the point forces</span>
-<span class="sd">        Keyword Arguments:</span>
-<span class="sd">        disp   -- array of distances</span>
-<span class="sd">        pot    -- (default True) if true, returns potential energy</span>
-<span class="sd">        forces -- (default False) if true, returns forces</span>
+        <span class="sd">&quot;&quot;&quot;Evaluates the elastic energy and the point forces in fourier sapce</span>
+<span class="sd">        or k-space or reciprocal space.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        disp_k:</span>
+<span class="sd">            array of displacements in fourier space</span>
+<span class="sd">        pot: bool</span>
+<span class="sd">            (default True) if true, returns potential energy</span>
+<span class="sd">        forces: bool</span>
+<span class="sd">            (default False) if true, returns forces</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">potential</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">force_k</span> <span class="o">=</span> <span class="n">potential</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">forces</span><span class="p">:</span>
             <span class="n">force_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_k_force_k</span><span class="p">(</span><span class="n">disp_k</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">pot</span><span class="p">:</span>

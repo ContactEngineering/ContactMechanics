@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev93+g699e4a8 documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.90.2.dev175+g6db2e8e documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.90.2.dev93+g699e4a8
+                0.90.2.dev175+g6db2e8e
               </div>
             
           
@@ -213,6 +213,10 @@
 <span class="kn">from</span> <span class="nn">ContactMechanics.Optimization</span> <span class="k">import</span> <span class="n">constrained_conjugate_gradients</span>
 <span class="kn">from</span> <span class="nn">ContactMechanics.Tools</span> <span class="k">import</span> <span class="n">compare_containers</span>
 
+<span class="kn">from</span> <span class="nn">NuMPI.Optimization</span> <span class="k">import</span> <span class="n">ccg_without_restart</span><span class="p">,</span> <span class="n">ccg_with_restart</span>
+
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">optim</span>
+
 
 <div class="viewcode-block" id="IncompatibleFormulationError"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.IncompatibleFormulationError">[docs]</a><span class="k">class</span> <span class="nc">IncompatibleFormulationError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="c1"># pylint: disable=missing-docstring</span>
@@ -337,9 +341,11 @@
 <span class="sd">        functions. Also, if you initial guess has a shape that makes no sense,</span>
 <span class="sd">        this will tell you before you get caught in debugging scipy-code</span>
 
-<span class="sd">        Arguments:</span>
-<span class="sd">        in_array -- array with the initial guess. has the intuitive shape you</span>
-<span class="sd">                    think it has</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        in_array:</span>
+<span class="sd">            array with the initial guess. has the intuitive shape you</span>
+<span class="sd">            think it has</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span> <span class="o">==</span> <span class="n">in_array</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">in_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
@@ -380,9 +386,8 @@
     <span class="k">def</span> <span class="nf">_lbounds_from_heights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
 
         <span class="n">lbounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
-        <span class="n">lbounds</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">topography_subdomain_slices</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">lbounds</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">topography_subdomain_slices</span><span class="p">]</span> \
-            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="n">lbounds</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">local_topography_subdomain_slices</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">lbounds</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">local_topography_subdomain_slices</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span>
 
         <span class="n">lbounds</span><span class="o">.</span><span class="n">set_fill_value</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
 
@@ -586,7 +591,6 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nb_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=missing-docstring</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">nb_grid_pts</span>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.compute_normal_force"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_normal_force">[docs]</a>    <span class="k">def</span> <span class="nf">compute_normal_force</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -607,7 +611,25 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NonSmoothContactSystem.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="NonSmoothContactSystem.logger_input"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.logger_input">[docs]</a>    <span class="k">def</span> <span class="nf">logger_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Describes the current state of the system (during minimization)</span>
+
+<span class="sd">        Output is suited to be passed to ContactMechanics.Tools.Logger.Logger</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        headers: list of strings</span>
+<span class="sd">        values: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># How to compute the contact area will actually depend on wether it is a primal or dual solver</span>
+        <span class="k">return</span> <span class="p">([</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;substrate force&#39;</span><span class="p">,</span> <span class="p">],</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+                 <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">),</span> <span class="p">])</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the energies and forces in the system for a given displacement</span>
 <span class="sd">        field</span>
@@ -623,34 +645,40 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">st</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">logger_input</span><span class="p">())</span>
+
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NonSmoothContactSystem.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.objective">[docs]</a>    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
-                  <span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="NonSmoothContactSystem.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.objective">[docs]</a>    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This helper method exposes a scipy.optimize-friendly interface to the</span>
 <span class="sd">        evaluate() method. Use this for optimization purposes, it makes sure</span>
 <span class="sd">        that the shape of disp is maintained and lets you set the offset and</span>
 <span class="sd">        &#39;forces&#39; flag without using scipy&#39;s cumbersome argument passing</span>
 <span class="sd">        interface. Returns a function of only disp</span>
-<span class="sd">        Keyword Arguments:</span>
-<span class="sd">        offset     -- determines indentation depth</span>
-<span class="sd">        disp0      -- unused variable, present only for interface compatibility</span>
-<span class="sd">                      with inheriting classes</span>
-<span class="sd">        gradient   -- (default False) whether the gradient is supposed to be</span>
-<span class="sd">                      used</span>
-<span class="sd">        disp_scale -- (default 1.) allows to specify a scaling of the</span>
-<span class="sd">                      dislacement before evaluation.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        offset:</span>
+<span class="sd">            determines indentation depth</span>
+<span class="sd">        disp0:</span>
+<span class="sd">            unused variable, present only for interface compatibility</span>
+<span class="sd">            with inheriting classes</span>
+<span class="sd">        gradient: (default False)</span>
+<span class="sd">            whether the gradient is supposed to be</span>
+<span class="sd">            used</span>
+<span class="sd">        disp_scale:</span>
+<span class="sd">            (default 1.) allows to specify a scaling of the</span>
+<span class="sd">            dislacement before evaluation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=arguments-differ</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
         <span class="k">if</span> <span class="n">gradient</span><span class="p">:</span>
             <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">disp</span><span class="p">):</span>
                 <span class="c1"># pylint: disable=missing-docstring</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
-                        <span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                        <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+                        <span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                         <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: disp.shape: </span><span class="si">{}</span><span class="s2">, res: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -660,8 +688,7 @@
             <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">disp</span><span class="p">):</span>
                 <span class="c1"># pylint: disable=missing-docstring</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
-                    <span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">fun</span></div>
 
@@ -725,7 +752,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">result</span></div>
 
-<div class="viewcode-block" id="NonSmoothContactSystem.primal_objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective">[docs]</a>    <span class="k">def</span> <span class="nf">primal_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="NonSmoothContactSystem.primal_objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective">[docs]</a>    <span class="k">def</span> <span class="nf">primal_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;To solve the primal objective using gap as the variable.</span>
 <span class="sd">        Can be fed directly to standard solvers ex: scipy solvers etc</span>
 <span class="sd">        and returns the elastic energy and it&#39;s gradient (negative of</span>
@@ -752,14 +779,16 @@
 <span class="sd">        _____</span>
 
 <span class="sd">        Objective:</span>
+
 <span class="sd">        .. math ::</span>
-<span class="sd">            min_u f = 1/2u_i*K_{ij}*u_j \\</span>
+
+<span class="sd">            \min_u f(u) = 1/2 u_i K_{ij} u_j \\</span>
 <span class="sd">            \\</span>
-<span class="sd">            gradient = K_{ij}*u_j which is, Force. \\</span>
+<span class="sd">            \nabla f = K_{ij} u_j \ \ \ \text{which is the Force.} \\</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_domain_grid_pts</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
         <span class="k">if</span> <span class="n">gradient</span><span class="p">:</span>
             <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">gap</span><span class="p">):</span>
                 <span class="n">disp</span> <span class="o">=</span> <span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span>
@@ -784,11 +813,85 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inres</span> <span class="o">=</span> <span class="n">gap</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
-        <span class="n">hessp</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-                                               <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inres</span><span class="p">)</span>
+        <span class="n">hessp</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_force</span><span class="p">(</span><span class="n">gap</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inres</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">hessp</span></div>
 
-<div class="viewcode-block" id="NonSmoothContactSystem.evaluate_dual"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_dual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">press</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="NonSmoothContactSystem.primal_minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">primal_minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">init_gap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;ccg_without_restart&#39;</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Convenience function. Eliminates boilerplate code for</span>
+<span class="sd">        Primal minimisation problem (gap as variable) by encapsulating the use of constrained</span>
+<span class="sd">        minimisation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        __________</span>
+
+<span class="sd">        offset     : determines indentation depth</span>
+
+<span class="sd">        init_force : initial guess for force.</span>
+
+<span class="sd">        solver     : &#39;ccg_without_restart&#39;, &#39;ccg_with_restart&#39;,</span>
+<span class="sd">        &#39;l-bfgs-b&#39;</span>
+
+<span class="sd">        gtol       : float, optional</span>
+<span class="sd">                    Default value : 1e-8</span>
+
+<span class="sd">        maxiter    : maximum number of iterations allowed for</span>
+<span class="sd">        convergence</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        _______</span>
+
+<span class="sd">        gap : gap or gardient value</span>
+
+<span class="sd">        force   : final force of the system at the solution</span>
+
+<span class="sd">        disp    : displacement of the system at the solution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">solvers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ccg_without_restart&#39;</span><span class="p">,</span> <span class="s1">&#39;ccg_with_restart&#39;</span><span class="p">,</span> <span class="s1">&#39;l-bfgs-b&#39;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">solver</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">solvers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;Input correct solver name from </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solvers</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_gap</span> <span class="o">=</span> <span class="n">init_gap</span>
+
+        <span class="n">lbounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_gap</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">bnds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_bounds</span><span class="p">(</span><span class="n">lbounds</span><span class="p">,</span> <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">solver</span> <span class="o">==</span> <span class="s1">&#39;ccg_without_restart&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ccg_without_restart</span><span class="o">.</span><span class="n">constrained_conjugate_gradients</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">primal_objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">primal_hessian_product</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">init_gap</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="n">gtol</span><span class="p">,</span>
+                <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s1">&#39;ccg_with_restart&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ccg_with_restart</span><span class="o">.</span><span class="n">constrained_conjugate_gradients</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">primal_objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">primal_hessian_product</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">init_gap</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="n">gtol</span><span class="p">,</span>
+                <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s1">&#39;l-bfgs-b&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">primal_objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">init_gap</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">bounds</span><span class="o">=</span><span class="n">bnds</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">gtol</span><span class="o">=</span><span class="n">gtol</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">jac</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">+</span> <span class="n">offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gap</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.evaluate_dual"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_dual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">press</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the energies and forces in the system for a given displacement</span>
 <span class="sd">        field</span>
@@ -804,7 +907,7 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NonSmoothContactSystem.dual_objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective">[docs]</a>    <span class="k">def</span> <span class="nf">dual_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="NonSmoothContactSystem.dual_objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective">[docs]</a>    <span class="k">def</span> <span class="nf">dual_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Objective function to handle dual objective, i.e. the Legendre</span>
 <span class="sd">        transformation from displacements as variable to pressures</span>
 <span class="sd">        (the Lagrange multiplier) as variable.</span>
@@ -832,12 +935,11 @@
 
 <span class="sd">        .. math ::</span>
 
-<span class="sd">            min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j -</span>
-<span class="sd">            \lambda_i h_i \\</span>
+<span class="sd">            \min_\lambda \ q(\lambda) = \frac{1}{2}\lambda_i  K^{-1}_{ij} \lambda_j - \lambda_i h_i \\</span>
 <span class="sd">            \\</span>
-<span class="sd">            gradient = K^{-1}_{ij}*\lambda_j - h_i \hspace{0.1cm}</span>
+<span class="sd">            \nabla q = K^{-1}_{ij} \lambda_j - h_i \hspace{0.1cm}</span>
 <span class="sd">            \text{which is,} \\</span>
-<span class="sd">            gap = displacement - height \\</span>
+<span class="sd">            \text{gap} = \text{displacement} - \text{height} \\</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -865,7 +967,77 @@
         <span class="n">inres</span> <span class="o">=</span> <span class="n">pressure</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
         <span class="n">hessp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">evaluate_disp</span><span class="p">(</span><span class="o">-</span><span class="n">pressure</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">hessp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inres</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">hessp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inres</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NonSmoothContactSystem.dual_minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">dual_minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">init_force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;ccg_without_restart&#39;</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convenience function. Eliminates boilerplate code for DUAL minimisation (pixel forces as variables)</span>
+<span class="sd">        problems by encapsulating the use of constrained minimisation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        __________</span>
+
+<span class="sd">        offset     : determines indentation depth</span>
+
+<span class="sd">        init_force : initial guess for force.</span>
+
+<span class="sd">        solver     : &#39;ccg_without_restart&#39;, &#39;ccg_with_restart&#39;, &#39;l-bfgs-b&#39;</span>
+
+<span class="sd">        gtol       : float, optional</span>
+<span class="sd">                    Default value : 1e-8</span>
+
+<span class="sd">        maxiter    : maximum number of iterations allowed for convergence</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        _______</span>
+
+<span class="sd">        gap : gap or gardient value</span>
+
+<span class="sd">        force   : final force of the system at the solution</span>
+
+<span class="sd">        disp    : displacement of the system at the solution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">solvers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ccg_without_restart&#39;</span><span class="p">,</span> <span class="s1">&#39;ccg_with_restart&#39;</span><span class="p">,</span> <span class="s1">&#39;l-bfgs-b&#39;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">solver</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">solvers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;Input correct solver name from </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solvers</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_force</span> <span class="o">=</span> <span class="n">init_force</span>
+
+        <span class="n">lbounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_force</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">bnds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_bounds</span><span class="p">(</span><span class="n">lbounds</span><span class="p">,</span> <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">solver</span> <span class="o">==</span> <span class="s1">&#39;ccg_without_restart&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ccg_without_restart</span><span class="o">.</span><span class="n">constrained_conjugate_gradients</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dual_objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dual_hessian_product</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">init_force</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="n">gtol</span><span class="p">,</span>
+                <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s1">&#39;ccg_with_restart&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ccg_with_restart</span><span class="o">.</span><span class="n">constrained_conjugate_gradients</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dual_objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dual_hessian_product</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">init_force</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="n">gtol</span><span class="p">,</span>
+                <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s1">&#39;l-bfgs-b&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dual_objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">init_force</span><span class="p">,</span>
+                                    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">bounds</span><span class="o">=</span><span class="n">bnds</span><span class="p">,</span>
+                                    <span class="n">options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">gtol</span><span class="o">=</span><span class="n">gtol</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">jac</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">+</span> <span class="n">offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gap</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div></div>
 </pre></div>
 
            </div>
