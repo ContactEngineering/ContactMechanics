@@ -1,7 +1,7 @@
 Change log for ContactMechanics
 ===============================
 
-v0.90.2 (> 231220)
+v0.91.0 (9Sep21)
 ----------------
 
 - Drop support for Python 3.5
@@ -9,7 +9,9 @@ v0.90.2 (> 231220)
     changed disp0 to initial_displacements. 
 - API: ConstrainedConjugateGradients, NonSmooth minimize_proxy: 
     added possibility to directly give initial_forces
-                    
+- ENH: Generalized dual objectives
+- ENH: Warmstarting constrained conjugate gradients with initial forces
+- BUG: Fixed 1D elastic half space
 
 v0.90.1 (23Jul20)
 -----------------
