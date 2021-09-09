@@ -40,6 +40,10 @@ import SurfaceTopography
 from ContactMechanics.Optimization import constrained_conjugate_gradients
 from ContactMechanics.Tools import compare_containers
 
+from NuMPI.Optimization import ccg_without_restart, ccg_with_restart
+
+import scipy.optimize as optim
+
 
 class IncompatibleFormulationError(Exception):
     # pylint: disable=missing-docstring
@@ -164,9 +168,11 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         functions. Also, if you initial guess has a shape that makes no sense,
         this will tell you before you get caught in debugging scipy-code
 
-        Arguments:
-        in_array -- array with the initial guess. has the intuitive shape you
-                    think it has
+        Parameters:
+        -----------
+        in_array:
+            array with the initial guess. has the intuitive shape you
+            think it has
         """
         if np.prod(self.substrate.nb_subdomain_grid_pts) == in_array.size:
             return in_array.reshape(-1)
@@ -207,9 +213,8 @@ class SystemBase(object, metaclass=abc.ABCMeta):
     def _lbounds_from_heights(self, offset):
 
         lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
-        lbounds.mask[self.substrate.topography_subdomain_slices] = False
-        lbounds[self.substrate.topography_subdomain_slices] \
-            = self.surface.heights() + offset
+        lbounds.mask[self.substrate.local_topography_subdomain_slices] = False
+        lbounds[self.substrate.local_topography_subdomain_slices] = self.surface.heights() + offset
 
         lbounds.set_fill_value(-np.inf)
 
@@ -413,7 +418,6 @@ class NonSmoothContactSystem(SystemBase):
 
     @property
     def nb_grid_pts(self):
-        # pylint: disable=missing-docstring
         return self.surface.nb_grid_pts
 
     def compute_normal_force(self):
@@ -434,7 +438,25 @@ class NonSmoothContactSystem(SystemBase):
         """
         return np.argwhere(self.contact_zone)
 
-    def evaluate(self, disp, offset, pot=True, forces=False):
+    def logger_input(self):
+        """
+        Describes the current state of the system (during minimization)
+
+        Output is suited to be passed to ContactMechanics.Tools.Logger.Logger
+
+        Returns
+        -------
+        headers: list of strings
+        values: list
+        """
+
+        # How to compute the contact area will actually depend on wether it is a primal or dual solver
+        return (['energy',
+                 'substrate force', ],
+                [self.energy,
+                 -self.reduction.sum(self.substrate.force), ])
+
+    def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement
         field
@@ -450,34 +472,40 @@ class NonSmoothContactSystem(SystemBase):
         else:
             self.force = None
 
+        if logger is not None:
+            logger.st(*self.logger_input())
+
         return (self.energy, self.force)
 
-    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
-                  tol=0):
+    def objective(self, offset, disp0=None, gradient=False, disp_scale=1., logger=None):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
         that the shape of disp is maintained and lets you set the offset and
         'forces' flag without using scipy's cumbersome argument passing
         interface. Returns a function of only disp
-        Keyword Arguments:
-        offset     -- determines indentation depth
-        disp0      -- unused variable, present only for interface compatibility
-                      with inheriting classes
-        gradient   -- (default False) whether the gradient is supposed to be
-                      used
-        disp_scale -- (default 1.) allows to specify a scaling of the
-                      dislacement before evaluation.
+        Parameters:
+        -----------
+        offset:
+            determines indentation depth
+        disp0:
+            unused variable, present only for interface compatibility
+            with inheriting classes
+        gradient: (default False)
+            whether the gradient is supposed to be
+            used
+        disp_scale:
+            (default 1.) allows to specify a scaling of the
+            dislacement before evaluation.
         """
         # pylint: disable=arguments-differ
-        res = self.substrate.nb_domain_grid_pts
+        res = self.substrate.nb_subdomain_grid_pts
         if gradient:
             def fun(disp):
                 # pylint: disable=missing-docstring
                 try:
                     self.evaluate(
-                        disp_scale * disp.reshape(res), offset, forces=True,
-                        tol=tol)
+                        disp_scale * disp.reshape(res), offset, forces=True, logger=logger)
                 except ValueError as err:
                     raise ValueError(
                         "{}: disp.shape: {}, res: {}".format(
@@ -487,8 +515,7 @@ class NonSmoothContactSystem(SystemBase):
             def fun(disp):
                 # pylint: disable=missing-docstring
                 return self.evaluate(
-                    disp_scale * disp.reshape(res), offset, forces=False,
-                    tol=tol)[0]
+                    disp_scale * disp.reshape(res), offset, forces=False, logger=logger)[0]
 
         return fun
 
@@ -552,7 +579,7 @@ class NonSmoothContactSystem(SystemBase):
             self.substrate.check()
         return result
 
-    def primal_objective(self, offset, pot=False, gradient=True):
+    def primal_objective(self, offset, gradient=True):
         r"""To solve the primal objective using gap as the variable.
         Can be fed directly to standard solvers ex: scipy solvers etc
         and returns the elastic energy and it's gradient (negative of
@@ -579,14 +606,16 @@ class NonSmoothContactSystem(SystemBase):
         _____
 
         Objective:
+
         .. math ::
-            min_u f = 1/2u_i*K_{ij}*u_j \\
+
+            \min_u f(u) = 1/2 u_i K_{ij} u_j \\
             \\
-            gradient = K_{ij}*u_j which is, Force. \\
+            \nabla f = K_{ij} u_j \ \ \ \text{which is the Force.} \\
 
         """
 
-        res = self.substrate.nb_domain_grid_pts
+        res = self.substrate.nb_subdomain_grid_pts
         if gradient:
             def fun(gap):
                 disp = gap.reshape(res) + self.surface.heights() + offset
@@ -611,11 +640,85 @@ class NonSmoothContactSystem(SystemBase):
         """
         inres = gap.shape
         res = self.substrate.nb_subdomain_grid_pts
-        hessp = -self.substrate.evaluate_force(gap.reshape(res)
-                                               ).reshape(inres)
+        hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(inres)
         return hessp
 
-    def evaluate_dual(self, press, offset, pot=True, forces=False):
+    def primal_minimize_proxy(self, offset, init_gap=None,
+                              solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
+
+        """Convenience function. Eliminates boilerplate code for
+        Primal minimisation problem (gap as variable) by encapsulating the use of constrained
+        minimisation.
+
+        Parameters
+        __________
+
+        offset     : determines indentation depth
+
+        init_force : initial guess for force.
+
+        solver     : 'ccg_without_restart', 'ccg_with_restart',
+        'l-bfgs-b'
+
+        gtol       : float, optional
+                    Default value : 1e-8
+
+        maxiter    : maximum number of iterations allowed for
+        convergence
+
+        Returns
+        _______
+
+        gap : gap or gardient value
+
+        force   : final force of the system at the solution
+
+        disp    : displacement of the system at the solution
+        """
+
+        solvers = {'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'}
+
+        if solver not in solvers:
+            raise ValueError(
+                'Input correct solver name from {}'.format(solvers))
+
+        self.disp = None
+        self.force = None
+        self.contact_zone = None
+        self.init_gap = init_gap
+
+        lbounds = np.zeros(self.init_gap.shape)
+        bnds = self._reshape_bounds(lbounds, )
+
+        if solver == 'ccg_without_restart':
+            result = ccg_without_restart.constrained_conjugate_gradients(
+                self.primal_objective(offset, gradient=True),
+                self.primal_hessian_product, x0=init_gap, gtol=gtol,
+                maxiter=maxiter)
+        elif solver == 'ccg_with_restart':
+            result = ccg_with_restart.constrained_conjugate_gradients(
+                self.primal_objective(offset, gradient=True),
+                self.primal_hessian_product, x0=init_gap, gtol=gtol,
+                maxiter=maxiter)
+        elif solver == 'l-bfgs-b':
+            result = optim.minimize(
+                self.primal_objective(offset, gradient=True),
+                self.init_gap,
+                method='L-BFGS-B', jac=True,
+                bounds=bnds,
+                options=dict(gtol=gtol, ftol=1e-20))
+
+        if result.success:
+            self.offset = offset
+            self.gap = result.x
+            self.force = self.substrate.force = result.jac
+            self.contact_zone = result.x == 0
+            self.disp = self.gap + offset + self.surface.heights().reshape(
+                self.gap.shape)
+
+        return result
+
+    def evaluate_dual(self, press, offset, forces=False):
         """
         Computes the energies and forces in the system for a given displacement
         field
@@ -631,7 +734,7 @@ class NonSmoothContactSystem(SystemBase):
 
         return (self.energy, self.gradient)
 
-    def dual_objective(self, offset, pot=False, gradient=True):
+    def dual_objective(self, offset, gradient=True):
         r"""Objective function to handle dual objective, i.e. the Legendre
         transformation from displacements as variable to pressures
         (the Lagrange multiplier) as variable.
@@ -659,12 +762,11 @@ class NonSmoothContactSystem(SystemBase):
 
         .. math ::
 
-            min_\lambda q(\lambda) = 1/2\lambda_i*K^{-1}_{ij}*\lambda_j -
-            \lambda_i h_i \\
+            \min_\lambda \ q(\lambda) = \frac{1}{2}\lambda_i  K^{-1}_{ij} \lambda_j - \lambda_i h_i \\
             \\
-            gradient = K^{-1}_{ij}*\lambda_j - h_i \hspace{0.1cm}
+            \nabla q = K^{-1}_{ij} \lambda_j - h_i \hspace{0.1cm}
             \text{which is,} \\
-            gap = displacement - height \\
+            \text{gap} = \text{displacement} - \text{height} \\
 
         """
 
@@ -693,3 +795,73 @@ class NonSmoothContactSystem(SystemBase):
         res = self.substrate.nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
+
+    def dual_minimize_proxy(self, offset, init_force=None,
+                            solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
+        """
+        Convenience function. Eliminates boilerplate code for DUAL minimisation (pixel forces as variables)
+        problems by encapsulating the use of constrained minimisation.
+
+        Parameters
+        __________
+
+        offset     : determines indentation depth
+
+        init_force : initial guess for force.
+
+        solver     : 'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'
+
+        gtol       : float, optional
+                    Default value : 1e-8
+
+        maxiter    : maximum number of iterations allowed for convergence
+
+        Returns
+        _______
+
+        gap : gap or gardient value
+
+        force   : final force of the system at the solution
+
+        disp    : displacement of the system at the solution
+        """
+
+        solvers = {'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'}
+
+        if solver not in solvers:
+            raise ValueError(
+                'Input correct solver name from {}'.format(solvers))
+
+        self.disp = None
+        self.force = None
+        self.contact_zone = None
+        self.init_force = init_force
+
+        lbounds = np.zeros(self.init_force.shape)
+        bnds = self._reshape_bounds(lbounds, )
+
+        if solver == 'ccg_without_restart':
+            result = ccg_without_restart.constrained_conjugate_gradients(
+                self.dual_objective(offset, gradient=True),
+                self.dual_hessian_product, x0=init_force, gtol=gtol,
+                maxiter=maxiter)
+        elif solver == 'ccg_with_restart':
+            result = ccg_with_restart.constrained_conjugate_gradients(
+                self.dual_objective(offset, gradient=True),
+                self.dual_hessian_product, x0=init_force, gtol=gtol,
+                maxiter=maxiter)
+        elif solver == 'l-bfgs-b':
+            result = optim.minimize(self.dual_objective(offset, gradient=True),
+                                    self.init_force,
+                                    method='L-BFGS-B', jac=True,
+                                    bounds=bnds,
+                                    options=dict(gtol=gtol, ftol=1e-20))
+
+        if result.success:
+            self.offset = offset
+            self.gap = result.jac
+            self.force = self.substrate.force = result.x
+            self.contact_zone = result.x > 0
+            self.disp = self.gap + offset + self.surface.heights().reshape(self.gap.shape)
+
+        return result

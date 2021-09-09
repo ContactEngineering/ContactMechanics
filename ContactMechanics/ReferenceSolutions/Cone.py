@@ -27,7 +27,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from PyCo.Adhesion import HardWall
+
 from ContactMechanics import FreeFFTElasticHalfSpace
 from SurfaceTopography import Topography
 from ContactMechanics import make_system
@@ -185,9 +185,8 @@ if __name__ == '__main__':
     # Establishing PeriodicFFTElasticHalfSpace
     substrate = FreeFFTElasticHalfSpace(nb_grid_pts=(nx, ny), young=Es,
                                         physical_sizes=(sx, sy))
-    interaction = HardWall()
     # Establishing Interaction
-    system = make_system(substrate, interaction, topography)
+    system = make_system(substrate, topography)
 
     penetration = []
     Exter_load, F_External_load = [], []
