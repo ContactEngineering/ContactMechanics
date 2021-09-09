@@ -1,9 +1,17 @@
 Change log for ContactMechanics
 ===============================
 
-v0.90.2 (> 231220)
-----------------
 
+
+v0.90.2 (23Jun21)
+-------------------
+
+- DOC: example file for the use of NuMPI's CCGs 
+- TST: testing the NuMPI CCGs on nonadhesive primal and dual contact problems
+- ENH: use NuMPI CCG also on nonperiodic problem
+- ENH: parallelize the primal (gap as variable) objective
+- BUG: repair 1D periodic substrate
+- ENH: minimize proxy for primal (minimize wrt. gap) and dual (minimize wrt. pressure) formulation 
 - Drop support for Python 3.5
 - API: ConstrainedConjugateGradients, minimize_proxy: 
     changed disp0 to initial_displacements. 

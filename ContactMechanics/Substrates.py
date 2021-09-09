@@ -122,6 +122,7 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
     def __init__(self):
         self.energy = None
         self.force = None
+        self.force_k = None
 
     def __repr__(self):
         dims = 'x', 'y', 'z'
@@ -129,7 +130,7 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
                              dim, size, nb_grid_pts in zip(dims, self.size,
                                                            self.nb_grid_pts))
         return "{0.dim}-dimensional halfspace '{0.name}', " \
-               "physical_sizes(nb_grid_pts) in  {1}, E' = {0.young}"\
+               "physical_sizes(nb_grid_pts) in  {1}, E' = {0.young}" \
             .format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):
