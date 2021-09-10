@@ -1,9 +1,7 @@
 Change log for ContactMechanics
 ===============================
 
-
-
-v0.90.2 (23Jun21)
+v0.91.0 (9Sep21)
 -------------------
 
 - DOC: example file for the use of NuMPI's CCGs 
@@ -17,7 +15,6 @@ v0.90.2 (23Jun21)
     changed disp0 to initial_displacements. 
 - API: ConstrainedConjugateGradients, NonSmooth minimize_proxy: 
     added possibility to directly give initial_forces
-                    
 
 v0.90.1 (23Jul20)
 -----------------
