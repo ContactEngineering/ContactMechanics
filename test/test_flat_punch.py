@@ -35,6 +35,7 @@ from ContactMechanics import make_system
 
 import pytest
 
+
 @pytest.mark.parametrize("nx", [255, 256])
 @pytest.mark.parametrize("ny", [255, 256])
 @pytest.mark.parametrize("disp0, normal_force", [(None, 15), (0.1, None)])
