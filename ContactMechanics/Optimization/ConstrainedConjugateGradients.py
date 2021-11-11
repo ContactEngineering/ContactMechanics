@@ -133,9 +133,6 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         if pentol == 0:
             pentol = 1e-3
 
-    surf_mask = np.ma.getmask(
-        surface)  # TODO: Test behaviour with masked arrays.
-
     if logger is not None:
         logger.pr('maxiter = {0}'.format(maxiter))
         logger.pr('pentol = {0}'.format(pentol))
