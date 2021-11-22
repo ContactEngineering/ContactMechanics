@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.91.1.dev3+g50c3e16 documentation</title>
+  <title>ContactMechanics.Optimization.ConstrainedConjugateGradients &mdash; ContactMechanics 0.91.1.dev15+geaa08a5 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -27,7 +27,7 @@
             <a href="../../../index.html" class="icon icon-home"> ContactMechanics
           </a>
               <div class="version">
-                0.91.1.dev3+g50c3e16
+                0.91.1.dev15+geaa08a5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -215,9 +215,6 @@
         <span class="k">if</span> <span class="n">pentol</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">pentol</span> <span class="o">=</span> <span class="mf">1e-3</span>
 
-    <span class="n">surf_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmask</span><span class="p">(</span>
-        <span class="n">surface</span><span class="p">)</span>  <span class="c1"># TODO: Test behaviour with masked arrays.</span>
-
     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">pr</span><span class="p">(</span><span class="s1">&#39;maxiter = </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maxiter</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">pr</span><span class="p">(</span><span class="s1">&#39;pentol = </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pentol</span><span class="p">))</span>
@@ -253,10 +250,13 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">comp_mask</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">comp_slice</span><span class="p">)][</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">surf_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">surf_mask</span><span class="p">)</span>
+
+    <span class="n">masked_surface</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">])</span>
+
     <span class="n">pad_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">comp_mask</span><span class="p">)</span>
     <span class="n">N_pad</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pad_mask</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
-                              <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
+    <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">masked_surface</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
+                              <span class="n">masked_surface</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
                               <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])</span>
 
     <span class="n">result</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">OptimizeResult</span><span class="p">()</span>
@@ -305,7 +305,7 @@
         <span class="n">A_cg</span> <span class="o">=</span> <span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c_r</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Compute gap</span>
-        <span class="n">g_r</span> <span class="o">=</span> <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span>
+        <span class="n">g_r</span> <span class="o">=</span> <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">masked_surface</span>
         <span class="k">if</span> <span class="n">external_force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="n">A_cg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -446,7 +446,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">rms_pen</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
         <span class="n">max_pen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span>
-                      <span class="n">reduction</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">surface</span><span class="p">[</span><span class="n">surf_mask</span><span class="p">]</span> <span class="o">+</span>
+                      <span class="n">reduction</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">c_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">masked_surface</span> <span class="o">+</span>
                                                       <span class="n">offset</span> <span class="o">-</span>
                                                       <span class="n">u_r</span><span class="p">[</span><span class="n">comp_mask</span><span class="p">])))</span>
         <span class="n">result</span><span class="o">.</span><span class="n">maxcv</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;max_pen&quot;</span><span class="p">:</span> <span class="n">max_pen</span><span class="p">,</span>
