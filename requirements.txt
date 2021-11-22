@@ -14,4 +14,4 @@ setuptools_scm>=3.5.0
 muFFT>=0.10.0
 runtests>=0.0.28
 SurfaceTopography>=0.93.0
-NuMPI>=0.2.0
+NuMPI>=0.3.0
