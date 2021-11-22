@@ -4,14 +4,6 @@ ContactMechanics.Tools package
 Submodules
 ----------
 
-ContactMechanics.Tools.ContactAreaAnalysis module
--------------------------------------------------
-
-.. automodule:: ContactMechanics.Tools.ContactAreaAnalysis
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 ContactMechanics.Tools.Logger module
 ------------------------------------
 
