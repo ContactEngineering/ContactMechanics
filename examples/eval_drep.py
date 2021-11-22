@@ -27,8 +27,8 @@ import sys
 
 import numpy as np
 
+from SurfaceTopography.Uniform.GeometryAnalysis import assign_segment_numbers_area
 from ContactMechanics.IO.NetCDF import NetCDFContainer
-from ContactMechanics.Tools.ContactAreaAnalysis import assign_segment_numbers
 
 nc = NetCDFContainer(sys.argv[1])
 frame = nc[int(sys.argv[2])]
@@ -37,7 +37,7 @@ f = frame.forces
 c = f > 1e-6
 
 # Identify individual segments
-ns, s = assign_segment_numbers(c)
+ns, s = assign_segment_numbers_area(c)
 assert s.max() == ns
 
 # Get segment length
