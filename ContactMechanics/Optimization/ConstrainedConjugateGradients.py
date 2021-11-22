@@ -133,9 +133,6 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         if pentol == 0:
             pentol = 1e-3
 
-    surf_mask = np.ma.getmask(
-        surface)  # TODO: Test behaviour with masked arrays.
-
     if logger is not None:
         logger.pr('maxiter = {0}'.format(maxiter))
         logger.pr('pentol = {0}'.format(pentol))
@@ -171,10 +168,13 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     else:
         comp_mask[tuple(comp_slice)][surf_mask] = False
         surf_mask = np.logical_not(surf_mask)
+
+    masked_surface = np.asarray(surface[surf_mask])
+
     pad_mask = np.logical_not(comp_mask)
     N_pad = reduction.sum(pad_mask * 1)
-    u_r[comp_mask] = np.where(u_r[comp_mask] < surface[surf_mask] + offset,
-                              surface[surf_mask] + offset,
+    u_r[comp_mask] = np.where(u_r[comp_mask] < masked_surface + offset,
+                              masked_surface + offset,
                               u_r[comp_mask])
 
     result = optim.OptimizeResult()
@@ -223,7 +223,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         A_cg = reduction.sum(c_r * 1)
 
         # Compute gap
-        g_r = u_r[comp_mask] - surface[surf_mask]
+        g_r = u_r[comp_mask] - masked_surface
         if external_force is not None:
             offset = 0
             if A_cg > 0:
@@ -364,7 +364,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         else:
             rms_pen = sqrt(G)
         max_pen = max(0.0,
-                      reduction.max(c_r[comp_mask] * (surface[surf_mask] +
+                      reduction.max(c_r[comp_mask] * (masked_surface +
                                                       offset -
                                                       u_r[comp_mask])))
         result.maxcv = {"max_pen": max_pen,

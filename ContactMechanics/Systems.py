@@ -59,11 +59,15 @@ class SystemBase(object, metaclass=abc.ABCMeta):
     "Base class for contact systems"
 
     def __init__(self, substrate, surface):
-        """ Represents a contact problem
-        Keyword Arguments:
-        substrate   -- An instance of HalfSpace. Defines the solid mechanics in
-                       the substrate
-        surface     -- An instance of SurfaceTopography, defines the profile.
+        """
+        Represents a contact problem
+
+        Parameters:
+        -----------
+        substrate: ContactMechanics.Substrate
+            Defines the solid mechanics inthe substrate
+        surface: SurfaceTopography.Topography
+            Defines the profile.
         """
         self.substrate = substrate
         self.area_per_pt = self.substrate.area_per_pt

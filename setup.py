@@ -55,7 +55,7 @@ setup(
         'setuptools_scm>=3.5.0'
     ],
     install_requires=[
-        'numpy>=1.11.0',
+        'numpy>=1.16.3',
         'NuMPI>=0.3.0',
         'muFFT>=0.18.1',
         'SurfaceTopography>=0.100.1'

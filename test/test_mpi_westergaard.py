@@ -81,8 +81,7 @@ def test_constrained_conjugate_gradients(comm,):
                 _pressure(x / sx, mean_pressure=sx * mean_pressure / E_s)
 
             # symetrize the Profile
-            analytical_pressures[1:] = analytical_pressures[1:] \
-                + analytical_pressures[:0:-1]
+            analytical_pressures[1:] = analytical_pressures[1:] + analytical_pressures[:0:-1]
 
             if False:
                 offset = result.offset
