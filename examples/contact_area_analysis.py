@@ -27,14 +27,14 @@ x, y = np.mgrid[:nx, :ny]
 
 fig, ax = plt.subplots()
 ax.imshow(contacting_points.T, cmap="Greys")
-iper = CAA.inner_perimeter(contacting_points, stencil=CAA.nn_stencil)
+iper = CAA.inner_perimeter_area(contacting_points, True, stencil=CAA.nn_stencil)
 ax.plot(x[iper], y[iper], ".r", label="inner_perimeter, nn")
-iper = CAA.inner_perimeter(contacting_points, stencil=CAA.nnn_stencil)
+iper = CAA.inner_perimeter_area(contacting_points, True, stencil=CAA.nnn_stencil)
 ax.plot(x[iper], y[iper], "xr", label="inner_perimeter, nnn")
 
-oper = CAA.outer_perimeter(contacting_points, stencil=CAA.nn_stencil)
+oper = CAA.outer_perimeter_area(contacting_points, True, stencil=CAA.nn_stencil)
 ax.plot(x[oper], y[oper], "ob", mfc="none", label="outer_perimeter, nn")
-oper = CAA.outer_perimeter(contacting_points, stencil=CAA.nnn_stencil)
+oper = CAA.outer_perimeter_area(contacting_points, True, stencil=CAA.nnn_stencil)
 ax.plot(x[oper], y[oper], "+b", label="outer_perimeter, nnn")
 
 ax.legend()
