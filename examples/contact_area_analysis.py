@@ -1,7 +1,7 @@
 import numpy as np
 import io
 import matplotlib.pyplot as plt
-import ContactMechanics.Tools.ContactAreaAnalysis as CAA
+import SurfaceTopography.Uniform.GeometryAnalysis as CAA
 
 with io.StringIO(
         """

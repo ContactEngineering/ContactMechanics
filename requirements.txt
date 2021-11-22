@@ -11,7 +11,7 @@ sphinx_rtd_theme
 pytest>=4
 pytest-flake8
 setuptools_scm>=3.5.0
-muFFT>=0.10.0
+muFFT>=0.18.1
 runtests>=0.0.28
-SurfaceTopography>=0.93.0
-NuMPI>=0.1.6
+SurfaceTopography>=0.100.1
+NuMPI>=0.3.0
