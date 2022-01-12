@@ -51,13 +51,14 @@ def scan_with_rigid_sphere(topography, radius):
         left = np.searchsorted(positions, x - radius)
         right = np.searchsorted(positions, x + radius)
 
-        import matplotlib.pyplot as plt
-        plt.figure()
-        x, h = t.positions_and_heights()
-        plt.plot(x, h, 'k-')
-        plt.plot(x, scanned_h, 'r-')
-        plt.savefig('test.pdf')
+        # import matplotlib.pyplot as plt
+        # plt.figure()
+        # plt.plot(positions[left:right], heights[left:right], 'k-')
+        # plt.plot(positions[left:right], - np.sqrt(radius ** 2 - (positions[left:right] - x) ** 2), 'k--')
+        # plt.plot(positions[left:right], - np.sqrt(radius ** 2 - (positions[left:right] - x) ** 2) - heights[left:right], 'r-')
+        # plt.show()
 
-        scanned_heights += [np.min(heights[left:right] + np.sqrt(radius ** 2 - (positions[left:right] - x) ** 2))]
+        scanned_heights += [
+            np.max(heights[left:right] + np.sqrt(radius ** 2 - (positions[left:right] - x) ** 2) - radius)]
 
     return np.array(scanned_heights)

@@ -22,6 +22,7 @@
 # SOFTWARE.
 #
 
+import numpy as np
 import pytest
 
 from SurfaceTopography.Generation import fourier_synthesis
@@ -29,19 +30,24 @@ from SurfaceTopography.Generation import fourier_synthesis
 from ContactMechanics.ScanningProbe import scan_with_rigid_sphere
 
 
-def test_scan_1d_with_rigid_sphere():
+def test_scan_1d_with_rigid_sphere(plot=False):
     t = fourier_synthesis((1024,), (1,), 0.8, rms_slope=0.1)
-    scanned_h = scan_with_rigid_sphere(t, 0.1)
+    h = t.heights()
+    scanned_h = scan_with_rigid_sphere(t, 0.3)
 
-    import matplotlib.pyplot as plt
-    plt.figure()
-    x, h = t.positions_and_heights()
-    plt.plot(x, h, 'k-')
-    plt.plot(x, scanned_h, 'r-')
-    plt.savefig('test.pdf')
+    # Simply check that the scanned surface is above the original one
+    assert (scanned_h - h).min() > -1e-16  # a little bit of tolerance
+
+    if plot:
+        import matplotlib.pyplot as plt
+        plt.figure()
+        x, h = t.positions_and_heights()
+        plt.plot(x, h, 'k-')
+        plt.plot(x, scanned_h, 'r-')
+        plt.show()
 
 
 def test_scan_2d_with_rigid_sphere():
     t = fourier_synthesis((1024, 1024), (1, 1), 0.8, rms_slope=0.1)
     with pytest.raises(ValueError):
-        scan_with_rigid_sphere(t, 1.0)
+        scan_with_rigid_sphere(t, 0.1)
