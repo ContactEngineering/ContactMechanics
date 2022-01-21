@@ -22,7 +22,6 @@
 # SOFTWARE.
 #
 
-import numpy as np
 import pytest
 
 from SurfaceTopography.Generation import fourier_synthesis

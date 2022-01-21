@@ -55,7 +55,8 @@ def scan_with_rigid_sphere(topography, radius):
         # plt.figure()
         # plt.plot(positions[left:right], heights[left:right], 'k-')
         # plt.plot(positions[left:right], - np.sqrt(radius ** 2 - (positions[left:right] - x) ** 2), 'k--')
-        # plt.plot(positions[left:right], - np.sqrt(radius ** 2 - (positions[left:right] - x) ** 2) - heights[left:right], 'r-')
+        # plt.plot(positions[left:right],
+        #          - np.sqrt(radius ** 2 - (positions[left:right] - x) ** 2) - heights[left:right], 'r-')
         # plt.show()
 
         scanned_heights += [
