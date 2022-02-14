@@ -1,6 +1,11 @@
 Change log for ContactMechanics
 ===============================
 
+v0.92.0 (not yet released)
+--------------------------
+
+- ENH: Emulation of scanning probe images
+
 v0.91.0 (9Sep21)
 -------------------
 
