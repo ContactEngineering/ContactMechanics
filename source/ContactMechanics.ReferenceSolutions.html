@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.ReferenceSolutions package &mdash; ContactMechanics 0.91.1.dev15+geaa08a5 documentation</title>
+  <title>ContactMechanics.ReferenceSolutions package &mdash; ContactMechanics 0.91.1.dev21+g8a3d900 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -15,11 +15,11 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ContactMechanics.Tools package" href="ContactMechanics.Tools.html" />
+    <link rel="next" title="ContactMechanics.ScanningProbe package" href="ContactMechanics.ScanningProbe.html" />
     <link rel="prev" title="ContactMechanics.Optimization package" href="ContactMechanics.Optimization.html" /> 
 </head>
 
@@ -31,7 +31,7 @@
             <a href="../index.html" class="icon icon-home"> ContactMechanics
           </a>
               <div class="version">
-                0.91.1.dev15+geaa08a5
+                0.91.1.dev21+g8a3d900
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -65,6 +65,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-ContactMechanics.ReferenceSolutions">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="ContactMechanics.ScanningProbe.html">ContactMechanics.ScanningProbe package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
 </ul>
 </li>
@@ -308,11 +309,8 @@ radius a).</p></li>
 number nu.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Elastic energy</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Elastic energy</p>
 </dd>
 </dl>
 </dd></dl>
@@ -329,11 +327,8 @@ and p0 in units of Es
 :param Es:
 :type Es: contact modulus</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>max pressure p0</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>max pressure p0</p>
 </dd>
 </dl>
 </dd></dl>
@@ -575,11 +570,8 @@ International Journal of Solids and Structures 32, 423–430 (1995)</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>mean_pressure</strong> (<em>float</em><em>, </em><em>array_like</em>) – mean pressure in units of <span class="math notranslate nohighlight">\(\pi E^* h / \lambda\)</span></p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>contact radius in units of <span class="math notranslate nohighlight">\(\lambda\)</span></p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>contact radius in units of <span class="math notranslate nohighlight">\(\lambda\)</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -596,11 +588,8 @@ International Journal of Solids and Structures 32, 423–430 (1995)</p>
 <li><p><strong>a</strong> (<em>float</em>) – half contact length in units of lambda</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Displacents u in units of 2h</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Displacents u in units of 2h</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -665,11 +654,8 @@ along the equilibrium curve</p>
 <li><p><strong>a</strong> (<em>float</em>) – half contact length in units of lambda</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Displacents u in units of 2h</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Displacents u in units of 2h</p>
 </dd>
 </dl>
 </dd></dl>
@@ -682,11 +668,8 @@ along the equilibrium curve</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>a</strong> (<em>float</em><em> or </em><em>np.array</em>) – half contactwidth in units of the wavelength lambda</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>mean displacement in units of 2 h</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>mean displacement in units of 2 h</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -730,7 +713,7 @@ International Journal of Solids and Structures 32, 423–430 (1995)</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="ContactMechanics.Optimization.html" class="btn btn-neutral float-left" title="ContactMechanics.Optimization package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ContactMechanics.Tools.html" class="btn btn-neutral float-right" title="ContactMechanics.Tools package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ContactMechanics.ScanningProbe.html" class="btn btn-neutral float-right" title="ContactMechanics.ScanningProbe package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
