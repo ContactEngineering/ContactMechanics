@@ -139,7 +139,7 @@ def test_hardwall_plastic_nonperiodic_load_control(comm_self):
                                  communicator=comm_self
                                  )
 
-    external_forces = [0.02]
+    external_forces = [0.02, 0.06, 0.12]
 
     offsets = []
     plastic_areas = []
@@ -162,3 +162,5 @@ def test_hardwall_plastic_nonperiodic_load_control(comm_self):
         offsets.append(system.offset)
         plastic_areas.append(system.surface.plastic_area)
         contact_areas.append(system.compute_contact_area())
+
+        assert np.max(system.force / system.area_per_pt) < hardness
