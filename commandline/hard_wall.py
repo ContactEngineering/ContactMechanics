@@ -35,7 +35,7 @@ import numpy as np
 
 import ContactMechanics
 from ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
-from SurfaceTopography import read_topography, PlasticTopography, open_topography
+from SurfaceTopography import PlasticTopography, open_topography
 from ContactMechanics import make_system, make_plastic_system
 from ContactMechanics.Tools.Logger import Logger, quiet, screen
 from ContactMechanics.IO.NetCDF import NetCDFContainer
@@ -51,8 +51,11 @@ versionstr = 'ContactMechanics version: {}'.format(ContactMechanics.__version__)
 logger.pr(versionstr)
 commandline = ' '.join(sys.argv[:])
 
-unit_to_meters = {'A': 1e-10, 'nm': 1e-9, 'µm': 1e-6, 'mm': 1e-3, 'm': 1.0,
-                  'unknown': 1.0}
+unit_to_meters = {
+    'A': 1e-10, 'nm': 1e-9, 'µm': 1e-6, 'mm': 1e-3, 'm': 1.0,
+    'unknown': 1.0
+    }
+
 
 ###
 
@@ -110,15 +113,15 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
 
         disp0 = -middle
     elif step == 1:
-        disp0 = -top+0.01*(top-middle)
+        disp0 = -top + 0.01 * (top - middle)
     else:
-        ref_area = np.log10(np.array(area+1/np.prod(surface.nb_grid_pts)))
-        darea = np.append(ref_area[1:]-ref_area[:-1], -ref_area[-1])
+        ref_area = np.log10(np.array(area + 1 / np.prod(surface.nb_grid_pts)))
+        darea = np.append(ref_area[1:] - ref_area[:-1], -ref_area[-1])
         i = np.argmax(darea)
-        if i == step-1:
-            disp0 = bot+2*(disp[-1]-bot)
+        if i == step - 1:
+            disp0 = bot + 2 * (disp[-1] - bot)
         else:
-            disp0 = (disp[i]+disp[i+1])/2
+            disp0 = (disp[i] + disp[i + 1]) / 2
 
     opt = system.minimize_proxy(offset=disp0, logger=logger, pentol=pentol,
                                 maxiter=maxiter, verbose=arguments.verbose)
@@ -126,31 +129,31 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
     f = opt.jac
     u = opt.x[:f.shape[0], :f.shape[1]]
     disp = np.append(disp, [disp0])
-    gap = np.append(gap, [np.mean(u)-middle-disp0])
-    current_load = f.sum()/np.prod(surface.physical_sizes)
+    gap = np.append(gap, [np.mean(u) - middle - disp0])
+    current_load = f.sum() / np.prod(surface.physical_sizes)
     load = np.append(load, [current_load])
-    current_area = (f>0).sum()/np.prod(surface.nb_grid_pts)
+    current_area = (f > 0).sum() / np.prod(surface.nb_grid_pts)
     area = np.append(area, [current_area])
     converged = np.append(converged, np.array([opt.success], dtype=bool))
-    logger.pr('disp = {}, area = {}, load = {}, converged = {}' \
-        .format(disp0, current_area, current_load, opt.success))
+    logger.pr('disp = {}, area = {}, load = {}, converged = {}'
+              .format(disp0, current_area, current_load, opt.success))
 
     # Sort by area
     disp, gap, load, area, converged = np.transpose(sorted(zip(disp, gap, load,
                                                                area, converged),
-                                                    key=lambda x: x[3]))
+                                                           key=lambda x: x[3]))
     converged = np.array(converged, dtype=bool)
 
-    return c, u, f, disp0, current_load, current_area, \
-        (disp, gap, load, area, converged)
+    return c, u, f, disp0, current_load, current_area, (disp, gap, load, area, converged)
+
 
 def dump(txt, surface, u, f, offset=0):
     mean_elastic = np.mean(u)
-    mean_rigid = np.mean(surface[...])+offset
+    mean_rigid = np.mean(surface[...]) + offset
     load = f.sum()
-    mean_pressure = load/np.prod(surface.physical_sizes)
-    area = (f>0).sum()
-    fractional_area = area/np.prod(surface.nb_grid_pts)
+    mean_pressure = load / np.prod(surface.physical_sizes)
+    area = (f > 0).sum()
+    fractional_area = area / np.prod(surface.nb_grid_pts)
     area *= surface.area_per_pt
     if substrate.young == 1:
         header = ['mean elastic ({})'.format(surface.info['unit']),
@@ -168,10 +171,11 @@ def dump(txt, surface, u, f, offset=0):
                   'mean pressure ([Units of E*])',
                   'area ({}^2)'.format(surface.info['unit']),
                   'fractional area']
-    data = [mean_elastic, mean_rigid, mean_elastic-mean_rigid, load,
+    data = [mean_elastic, mean_rigid, mean_elastic - mean_rigid, load,
             mean_pressure, area, fractional_area]
     txt.st(header, data)
     return zip(header, data)
+
 
 def dump_nc(container):
     if container is not None:
@@ -182,12 +186,14 @@ def dump_nc(container):
         frame.load = load
         frame.area = area
 
+
 def save_contact(fn, surface, substrate, pressure, macro=None):
     macrostr = ''
     if macro is not None:
         macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
-    np.savetxt(fn, pressure, fmt='%i', header=versionstr+'\n'+commandline+'\n'+macrostr+
+    np.savetxt(fn, pressure, fmt='%i', header=versionstr + '\n' + commandline + '\n' + macrostr +
                'Contact map follows. Values are boolean.')
+
 
 def save_pressure(fn, surface, substrate, pressure, macro=None):
     if substrate.young == 1:
@@ -198,8 +204,8 @@ def save_pressure(fn, surface, substrate, pressure, macro=None):
     macrostr = ''
     if macro is not None:
         macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
-    np.savetxt(fn, pressure, header=versionstr+'\n'+commandline+'\n'+macrostr+
-               unitstr)
+    np.savetxt(fn, pressure, header=versionstr + '\n' + commandline + '\n' + macrostr + unitstr)
+
 
 def save_gap(fn, surface, gap, macro=None):
     if surface.info['unit'] is None:
@@ -210,10 +216,10 @@ def save_gap(fn, surface, gap, macro=None):
     macrostr = ''
     if macro is not None:
         macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
-    np.savetxt(fn, gap, header=versionstr+'\n'+commandline+'\n'+macrostr+
-                               unitstr)
+    np.savetxt(fn, gap, header=versionstr + '\n' + commandline + '\n' + macrostr + unitstr)
 
-### Parse command line arguments
+
+# Parse command line arguments
 
 def tuple2(s):
     try:
@@ -221,6 +227,7 @@ def tuple2(s):
         return x, y
     except:
         raise ArgumentTypeError('Size must be sx,sy')
+
 
 parser = ArgumentParser(description='Run a contact mechanics calculation with'
                                     'a hard-wall interaction using Polonsky & '
@@ -353,17 +360,17 @@ if arguments.height_fac is not None or arguments.height_unit is not None:
     if arguments.height_fac is not None:
         fac *= arguments.height_fac
     if arguments.height_unit is not None:
-        fac *= unit_to_meters[arguments.height_unit]/unit_to_meters[surface.info['unit']]
+        fac *= unit_to_meters[arguments.height_unit] / unit_to_meters[surface.info['unit']]
     logger.pr('Rescaling surface heights by {}.'.format(fac))
     surface = surface.scale(fac)
 
 logger.pr('SurfaceTopography has dimension of {} and physical_sizes of {} {}.'
           .format(surface.nb_grid_pts, surface.physical_sizes, surface.info['unit']))
 logger.pr('RMS height = {}, RMS gradient = {}'.format(surface.rms_height_from_area(),
-                                                   surface.rms_gradient()))
+                                                      surface.rms_gradient()))
 if arguments.detrend is not None:
     surface = surface.detrend(detrend_mode=arguments.detrend)
-    logger.pr('After detrending: RMS height = {}, RMS gradient = {}' \
+    logger.pr('After detrending: RMS height = {}, RMS gradient = {}'
               .format(surface.rms_height_from_area(), surface.rms_gradient()))
 
 if arguments.hardness is not None:
@@ -381,7 +388,7 @@ elif arguments.boundary == 'nonperiodic':
                          'nonperiodic boundaries.')
     substrate = FreeFFTElasticHalfSpace(
         surface.nb_grid_pts,
-        arguments.modulus/(1-arguments.poisson**2),
+        arguments.modulus / (1 - arguments.poisson ** 2),
         surface.physical_sizes
         )
 else:
@@ -443,23 +450,23 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         logger.pr('pressure = {} ({})'.format(f.sum() / np.prod(surface.physical_sizes),
                                               _pressure))
         logger.pr('energy = {}'.format(opt.fun))
-        logger.pr('fractional contact area = {}' \
-            .format((f>0).sum()/np.prod(surface.nb_grid_pts)))
+        logger.pr('fractional contact area = {}'
+                  .format((f > 0).sum() / np.prod(surface.nb_grid_pts)))
 
-        area = (f>0).sum()/np.prod(surface.nb_grid_pts)
+        area = (f > 0).sum() / np.prod(surface.nb_grid_pts)
         load = _pressure
         disp0 = opt.offset
         dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
 
         if arguments.contact_fn is not None:
-            save_contact(arguments.contact_fn+suffix, surface, substrate, c, macro=macro)
+            save_contact(arguments.contact_fn + suffix, surface, substrate, c, macro=macro)
         if arguments.pressure_fn is not None:
-            save_pressure(arguments.pressure_fn+suffix, surface, substrate, f/surface.area_per_pt, macro=macro)
+            save_pressure(arguments.pressure_fn + suffix, surface, substrate, f / surface.area_per_pt, macro=macro)
         if arguments.displ_fn is not None:
-            save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
+            save_gap(arguments.displ_fn + suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
-            save_gap(arguments.gap_fn+suffix, surface, u-surface[...]-opt.offset, macro=macro)
+            save_gap(arguments.gap_fn + suffix, surface, u - surface[...] - opt.offset, macro=macro)
 
 elif arguments.displacement is not None:
     # Run computation for a linear range of displacements
@@ -491,20 +498,20 @@ elif arguments.displacement is not None:
         logger.pr('displacement = {} ({})'.format(opt.offset, _displacement))
         logger.pr('pressure = {}'.format(f.sum() / np.prod(surface.physical_sizes)))
         logger.pr('energy = {}'.format(opt.fun))
-        logger.pr('fractional contact area = {}' \
-            .format((f>0).sum()/np.prod(surface.nb_grid_pts)))
+        logger.pr('fractional contact area = {}'
+                  .format((f > 0).sum() / np.prod(surface.nb_grid_pts)))
 
         dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
 
         if arguments.contact_fn is not None:
-            save_contact(arguments.contact_fn+suffix, surface, substrate, c, macro=macro)
+            save_contact(arguments.contact_fn + suffix, surface, substrate, c, macro=macro)
         if arguments.pressure_fn is not None:
-            save_pressure(arguments.pressure_fn+suffix, surface, substrate, f/surface.area_per_pt, macro=macro)
+            save_pressure(arguments.pressure_fn + suffix, surface, substrate, f / surface.area_per_pt, macro=macro)
         if arguments.displ_fn is not None:
-            save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
+            save_gap(arguments.displ_fn + suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
-            save_gap(arguments.gap_fn+suffix, surface, u-surface[...]-opt.offset, macro=macro)
+            save_gap(arguments.gap_fn + suffix, surface, u - surface[...] - opt.offset, macro=macro)
 
 else:
     # Run computation automatically such that area is equally spaced on
@@ -528,13 +535,13 @@ else:
         macro = dump(txt, surface, u, f, disp0)
 
         if arguments.contact_fn is not None:
-            save_contact(arguments.contact_fn+suffix, surface, substrate, c, macro=macro)
+            save_contact(arguments.contact_fn + suffix, surface, substrate, c, macro=macro)
         if arguments.pressure_fn is not None:
-            save_pressure(arguments.pressure_fn+suffix, surface, substrate, f/surface.area_per_pt, macro=macro)
+            save_pressure(arguments.pressure_fn + suffix, surface, substrate, f / surface.area_per_pt, macro=macro)
         if arguments.displ_fn is not None:
-            save_gap(arguments.displ_fn+suffix, surface, u, macro=macro)
+            save_gap(arguments.displ_fn + suffix, surface, u, macro=macro)
         if arguments.gap_fn is not None:
-            save_gap(arguments.gap_fn+suffix, surface,  u-surface[...]-disp0, macro=macro)
+            save_gap(arguments.gap_fn + suffix, surface, u - surface[...] - disp0, macro=macro)
 
 if container is not None:
     container.close()

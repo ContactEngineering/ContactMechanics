@@ -4,8 +4,9 @@ import subprocess
 
 from NuMPI.IO.NetCDF import NCStructuredGrid
 from SurfaceTopography import Topography
-import os
+
 import pytest
+
 
 @pytest.fixture(scope="session")
 def tmp_dir(tmp_path_factory):
@@ -24,7 +25,6 @@ def test_hardwall_plastic(env, tmp_dir):
     topography = Topography(- np.sqrt(x ** 2 + y ** 2) * 0.05,
                             physical_sizes=(sx, sy))
 
-
     topo_fn = f'{tmp_dir}/sphere.nc'
 
     # Save file
@@ -37,7 +37,7 @@ def test_hardwall_plastic(env, tmp_dir):
 
     call_command = ["hard_wall.py"]
     call_args = [topo_fn,
-                "--hardness", str(hardness),
+                 "--hardness", str(hardness),
                  "--modulus", str(Es),
                  "--pressure", f"{0.02 / (sx * sy)},{0.12 / (sx * sy)},3",
                  "--netcdf-fn", nc_fn,
@@ -45,7 +45,7 @@ def test_hardwall_plastic(env, tmp_dir):
 
     call = call_command + call_args
     print(" ".join(call))
-    #r = subprocess.run(call, env=env,)
+    # r = subprocess.run(call, env=env,)
     assert subprocess.check_call(call, env=env) == 0
     # print(os.listdir(tmp_dir))
     nc = NCStructuredGrid(nc_fn)
