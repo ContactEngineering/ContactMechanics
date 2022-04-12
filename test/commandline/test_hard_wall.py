@@ -1,11 +1,14 @@
 
 import numpy as np
 import subprocess
-
+from NuMPI import MPI
 from NuMPI.IO.NetCDF import NCStructuredGrid
 from SurfaceTopography import Topography
-
 import pytest
+
+pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
+                                reason="tests only serial funcionalities, "
+                                       "please execute with pytest")
 
 
 @pytest.fixture(scope="session")
