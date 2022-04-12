@@ -79,9 +79,10 @@ def file_format_examples():
     return os.path.join(os.path.dirname(os.path.realpath(__file__)),
                         'file_format_examples')
 
+
 @pytest.fixture(scope="session")
 def env():
     env = os.environ.copy()
     env["PATH"] = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-                        'commandline') + ":" + env["PATH"]
+                               'commandline') + ":" + env["PATH"]
     return env
