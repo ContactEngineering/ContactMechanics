@@ -446,6 +446,9 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         logger.pr('fractional contact area = {}' \
             .format((f>0).sum()/np.prod(surface.nb_grid_pts)))
 
+        area = (f>0).sum()/np.prod(surface.nb_grid_pts)
+        load = _pressure
+        disp0 = opt.offset
         dump_nc(container)
         macro = dump(txt, surface, u, f, opt.offset)
 
