@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # Copyright 2016, 2020 Lars Pastewka
 #           2019-2020 Antoine Sanner
@@ -34,8 +35,8 @@ import numpy as np
 
 import ContactMechanics
 from ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
-from SurfaceTopography import read_topography, PlasticTopography
-from ContactMechanics import make_system
+from SurfaceTopography import read_topography, PlasticTopography, open_topography
+from ContactMechanics import make_system, make_plastic_system
 from ContactMechanics.Tools.Logger import Logger, quiet, screen
 from ContactMechanics.IO.NetCDF import NetCDFContainer
 
@@ -332,14 +333,21 @@ logger.pr('netcdf-fn = {}'.format(arguments.netcdf_fn))
 
 # Read a surface topography from a text file. Returns a SurfaceTopography.SurfaceTopography
 # object.
-surface = read_topography(arguments.filename, physical_sizes=arguments.physical_sizes)
+reader = open_topography(arguments.filename)
+
 # Set the *physical* physical_sizes of the surface. We here set it to equal the shape,
 # i.e. the nb_grid_pts of the surface just open_topography. Size is returned by surface.physical_sizes
 # and can be unknown, i.e. *None*.
-if arguments.size_unit is not None:
-    surface.info['unit'] = arguments.size_unit
-if 'unit' not in surface.info:
-    surface.info['unit'] = 'N/A'
+unit = None
+if arguments.size_unit is not None:  # overrides the unit
+    unit = arguments.size_unit
+    if reader.default_channel.unit is not None:
+        logger.pr(f"overriding topography file unit {reader.default_channel.unit} with {unit}")
+elif reader.default_channel.unit is None:
+    unit = 'N/A'
+
+surface = reader.topography(physical_sizes=arguments.physical_sizes, unit=unit)
+
 if arguments.height_fac is not None or arguments.height_unit is not None:
     fac = 1.0
     if arguments.height_fac is not None:
@@ -383,7 +391,10 @@ else:
 # Piece the full system together. In particular the PyCo.System.SystemBase
 # object knows how to optimize the problem. For the hard wall interaction it
 # will always use Polonsky & Keer's constrained conjugate gradient method.
-system = make_system(substrate, surface)
+if arguments.hardness is not None:
+    system = make_plastic_system(substrate, surface)
+else:
+    system = make_system(substrate, surface)
 
 ###
 
@@ -404,7 +415,7 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         if len(pressure) == 1:
             pressure = [float(pressure[0])]
         elif len(pressure) == 3:
-            pressure = np.linspace(*[float(x) for x in pressure])
+            pressure = np.linspace(float(pressure[0]), float(pressure[1]), int(pressure[2]))
         else:
             print('Please specify either single pressure value or 3-tuple for '
                   'pressure range.')
