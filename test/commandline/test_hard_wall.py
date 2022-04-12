@@ -1,6 +1,8 @@
 
 import numpy as np
 import subprocess
+
+from NuMPI.IO.NetCDF import NCStructuredGrid
 from SurfaceTopography import Topography
 import os
 import pytest
@@ -31,18 +33,29 @@ def test_hardwall_plastic(env, tmp_dir):
     Es = 230000  # MPa
     hardness = 6000  # MPa
 
-    max_pressure = 0.12
+    nc_fn = f'{tmp_dir}/output.nc'
 
     call_command = ["hard_wall.py"]
     call_args = [topo_fn,
                 "--hardness", str(hardness),
                  "--modulus", str(Es),
-                 "--pressure", f"{0.02 / (sx * sy)},{0.12 / (sx * sy)},3"
+                 "--pressure", f"{0.02 / (sx * sy)},{0.12 / (sx * sy)},3",
+                 "--netcdf-fn", nc_fn,
                  ]
 
     call = call_command + call_args
     print(" ".join(call))
-
+    #r = subprocess.run(call, env=env,)
     assert subprocess.check_call(call, env=env) == 0
+    # print(os.listdir(tmp_dir))
+    nc = NCStructuredGrid(nc_fn)
 
+    # import matplotlib.pyplot as plt
 
+    for i in range(len(nc)):
+        pressures = nc[i].forces / topography.area_per_pt
+        assert (pressures <= hardness).all()
+        # plt.figure()
+        # plt.hist(pressures.reshape(-1))
+        # plt.axvline(hardness)
+        # plt.show(block=True)
