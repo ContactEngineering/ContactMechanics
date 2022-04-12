@@ -1,10 +1,14 @@
 Change log for ContactMechanics
 ===============================
 
-v0.92.0 (not yet released)
+v0.92.0 (12Apr22)
 --------------------------
 
+- BUG: hard_wall.py under pressure control was not working anymore 
+- BUG: hardness was ignored in hard_wall (closes #59)
+- TST: test hard_wall.py with pytest
 - ENH: Emulation of scanning probe images
+- DOC: repaired example notebooks
 
 v0.91.0 (9Sep21)
 -------------------
