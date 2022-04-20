@@ -101,16 +101,14 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # check that a topography instance is provided and not only a numpy
         # array
         if not hasattr(topography, "nb_grid_pts"):
-            raise ValueError("You should provide a topography object when "
-                             "working with MPI")
+            raise ValueError("You should provide a topography object when working with MPI")
 
     reduction = Reduction(substrate.communicator)
 
     # surface is the array holding the data assigned to the processsor
     if not hasattr(topography, "nb_grid_pts"):
         surface = topography
-        topography = Topography(surface,
-                                physical_sizes=substrate.physical_sizes)
+        topography = Topography(surface, physical_sizes=substrate.physical_sizes)
     else:
         surface = topography.heights()  # Local data
 
@@ -121,14 +119,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # Heuristics for the possible tolerance on penetration.
         # This is necessary because numbers can vary greatly
         # depending on the system of units.
-        pentol = topography.rms_height_from_area() / (
-                10 * np.mean(topography.nb_grid_pts))
+        pentol = topography.rms_height_from_area() / (10 * np.mean(topography.nb_grid_pts))
         # If pentol is zero, then this is a flat surface. This only makes
         # sense for nonperiodic calculations, i.e. it is a punch. Then
         # use the offset to determine the tolerance
         if pentol == 0:
-            pentol = (offset + reduction.sum(surface[...]) / nb_surface_pts) \
-                     / 1000
+            pentol = (offset + reduction.sum(surface[...]) / nb_surface_pts) / 1000
         # If we are still zero use an arbitrary value
         if pentol == 0:
             pentol = 1e-3
@@ -154,10 +150,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         substrate.nb_subdomain_grid_pts[i])))
                   for i in range(substrate.dim)]
     if substrate.dim not in (1, 2):
-        raise Exception(
-            ("Constrained conjugate gradient currently only implemented for 1 "
-             "or 2 dimensions (Your substrate has {}.).").format(
-                substrate.dim))
+        raise Exception(f'Constrained conjugate gradient currently only implemented for 1 or 2 dimensions (Your '
+                        f'substrate has {substrate.dim}.).')
 
     comp_mask = np.zeros(substrate.nb_subdomain_grid_pts, dtype=bool)
     comp_mask[tuple(comp_slice)] = True
@@ -173,9 +167,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
     pad_mask = np.logical_not(comp_mask)
     N_pad = reduction.sum(pad_mask * 1)
-    u_r[comp_mask] = np.where(u_r[comp_mask] < masked_surface + offset,
-                              masked_surface + offset,
-                              u_r[comp_mask])
+    u_r[comp_mask] = np.where(u_r[comp_mask] < masked_surface + offset, masked_surface + offset, u_r[comp_mask])
 
     result = optim.OptimizeResult()
     result.nfev = 0
@@ -207,7 +199,6 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
         # Reset contact area (area that feels compressive stress)
         c_r = p_r < 0.0
-        # TODO: maybe np.where(self.interaction.force < 0., 1., 0.)
 
         # Compute total contact area (area with compressive pressure)
         A_contact = reduction.sum(c_r * 1)
@@ -236,8 +227,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         if delta_str != 'mix' and not (hardness is not None and A_cg == 0):
             # t = (g + delta*(G/G_old)*t) inside contact area and 0 outside
             if delta > 0 and G_old > 0:
-                t_r[comp_mask] = c_r[comp_mask] * (
-                        g_r + delta * (G / G_old) * t_r[comp_mask])
+                t_r[comp_mask] = c_r[comp_mask] * (g_r + delta * (G / G_old) * t_r[comp_mask])
             else:
                 t_r[comp_mask] = c_r[comp_mask] * g_r
 
@@ -255,9 +245,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                 # region
                 x = -reduction.sum(c_r * r_r * t_r)
                 if x > 0.0:
-                    tau = \
-                        reduction.sum(c_r[comp_mask] * g_r * t_r[comp_mask]) \
-                        / x
+                    tau = reduction.sum(c_r[comp_mask] * g_r * t_r[comp_mask]) / x
                 else:
                     G = 0.0
 
@@ -272,16 +260,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                 delta_str = 'mix'
 
             # Mix pressure
-            # p_r[comp_mask] = (1-mixfac)*p_r[comp_mask] + \
-            #                 mixfac*np.where(g_r < 0.0,
-            #                                 -hardness*np.ones_like(g_r),
-            #                                 np.zeros_like(g_r))
-            # Evolve pressure in direction of energy gradient
-            # p_r[comp_mask] += mixfac*(u_r[comp_mask] + g_r)
-            p_r[comp_mask] = (1 - mixfac) * p_r[
-                comp_mask] - mixfac * hardness * (g_r < 0.0)
+            p_r[comp_mask] = (1 - mixfac) * p_r[comp_mask] - mixfac * hardness * (g_r < 0.0)
             mixfac *= 0.5
-            # p_r[comp_mask] = -hardness*(g_r < 0.0)
 
         # Find area with tensile stress and negative gap
         # (i.e. penetration of the two surfaces)
@@ -374,7 +354,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # e_el = -0.5*reduction.sum(p_r*u_r)
 
         if delta_str == 'mix':
-            #converged = converged and maxdu < pentol and \
+            # converged = converged and maxdu < pentol and \
             #            max_pres < prestol and pad_pres < prestol
             converged = False
         else:
