@@ -107,9 +107,8 @@ def _contact_calculation(system, offset=None, external_force=None, history=None,
 
     contacting_points_xy = force_xy > 0
 
-    return displacement_xy, gap_xy, pressure_xy, contacting_points_xy, \
-           opt.offset, mean_load, total_contact_area, \
-           (mean_displacements, mean_gaps, mean_pressures, total_contact_areas, converged)
+    return displacement_xy, gap_xy, pressure_xy, contacting_points_xy, opt.offset, mean_load, total_contact_area, \
+        (mean_displacements, mean_gaps, mean_pressures, total_contact_areas, converged)
 
 
 def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimizer_kwargs={}):
@@ -168,12 +167,6 @@ def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimize
         step = len(mean_displacements)
 
     if step == 0:
-        mean_displacements = []
-        mean_gaps = []
-        mean_pressures = []
-        total_contact_areas = []
-        converged = np.array([], dtype=bool)
-
         mean_displacement = -middle
     elif step == 1:
         mean_displacement = -top + 0.01 * (top - middle)
@@ -240,12 +233,12 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
         substrate = 'periodic' if self.is_periodic else 'nonperiodic'
 
     if self.is_periodic != (substrate == 'periodic'):
-        alert_message = f'Topography is '
+        alert_message = 'Topography is '
         if self.is_periodic:
             alert_message += 'periodic, but the analysis is configured for free boundaries.'
         else:
             alert_message += 'not periodic, but the analysis is configured for periodic boundaries.'
-        _log.warning(alert_message + " The user should have been informed in the UI.")
+        _log.warning(alert_message)
 
     #
     # Check whether either pressures or nsteps is given, but not both
@@ -302,19 +295,19 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
     history = None
     for i in range(nsteps):
         if offsets is not None:
-            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, \
-            mean_displacement, mean_pressure, total_contact_area, history = \
-                _contact_calculation(system, offset=offsets[i], history=history, pentol=pentol, maxiter=maxiter,
-                                     optimizer_kwargs=optimizer_kwargs)
+            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure, \
+                total_contact_area, history = _contact_calculation(
+                    system, offset=offsets[i], history=history, pentol=pentol, maxiter=maxiter,
+                    optimizer_kwargs=optimizer_kwargs)
         elif pressures is not None:
-            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, \
-            mean_displacement, mean_pressure, total_contact_area, history = \
-                _contact_calculation(system, external_force=pressures[i] * force_conv, history=history, pentol=pentol,
-                                     maxiter=maxiter, optimizer_kwargs=optimizer_kwargs)
+            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure, \
+                total_contact_area, history = _contact_calculation(
+                    system, external_force=pressures[i] * force_conv, history=history, pentol=pentol, maxiter=maxiter,
+                    optimizer_kwargs=optimizer_kwargs)
         else:
-            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, \
-            mean_displacement, mean_pressure, total_contact_area, history = \
-                _next_contact_step(system, history=history, pentol=pentol, maxiter=maxiter, optimizer_kwargs=optimizer_kwargs)
+            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure, \
+                total_contact_area, history = _next_contact_step(
+                    system, history=history, pentol=pentol, maxiter=maxiter, optimizer_kwargs=optimizer_kwargs)
 
         # Report results via callback
         if callback is not None:

@@ -36,7 +36,6 @@ from ContactMechanics import PeriodicFFTElasticHalfSpace
 from ContactMechanics.PlasticSystemSpecialisations import \
     PlasticNonSmoothContactSystem
 from ContactMechanics.Factory import make_plastic_system
-from ContactMechanics.Tools.Logger import screen
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
