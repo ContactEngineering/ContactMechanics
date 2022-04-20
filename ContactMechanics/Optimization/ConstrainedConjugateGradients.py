@@ -374,8 +374,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # e_el = -0.5*reduction.sum(p_r*u_r)
 
         if delta_str == 'mix':
-            converged = converged and maxdu < pentol and \
-                        max_pres < prestol and pad_pres < prestol
+            #converged = converged and maxdu < pentol and \
+            #            max_pres < prestol and pad_pres < prestol
+            converged = False
         else:
             converged = converged and rms_pen < pentol and \
                         max_pen < pentol and maxdu < pentol and \
