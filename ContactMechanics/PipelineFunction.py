@@ -28,7 +28,6 @@ import numpy as np
 
 from SurfaceTopography import PlasticTopography
 from SurfaceTopography.HeightContainer import UniformTopographyInterface
-from SurfaceTopography.Support import doi
 
 from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
 from .Factory import make_system, make_plastic_system
