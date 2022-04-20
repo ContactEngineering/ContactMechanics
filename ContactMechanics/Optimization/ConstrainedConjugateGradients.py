@@ -253,7 +253,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         else:
             # The CG area can vanish if this is a plastic calculation. In that
             # case we need to use the gap to decide which regions contact. All
-            # contact area should then be the hardness value. We use simple
+            # contact area should then be the hardness value. We use a simple
             # relaxation algorithm to converge the contact area in that case.
 
             if delta_str != 'mixconv':
@@ -271,8 +271,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # but gap is positive
         if hardness is not None:
             mask_flowing = p_r <= -hardness
-            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing[comp_mask],
-                                                      g_r > 0.0))
+            nc_r = np.logical_or(nc_r, np.logical_and(mask_flowing[comp_mask], g_r > 0.0))
 
         # For nonperiodic calculations: Find maximum pressure in pad region.
         # This must be zero.
@@ -288,8 +287,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         if hardness:
             A_fl = reduction.sum(mask_flowing)
             if A_fl > 0:
-                max_pres = max(max_pres,
-                               -reduction.min(p_r[mask_flowing] + hardness))
+                max_pres = max(max_pres, -reduction.min(p_r[mask_flowing] + hardness))
 
         # Set all tensile stresses to zero
         p_r[mask_tensile] = 0.0
@@ -343,10 +341,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             rms_pen = sqrt(G / A_cg)
         else:
             rms_pen = sqrt(G)
-        max_pen = max(0.0,
-                      reduction.max(c_r[comp_mask] * (masked_surface +
-                                                      offset -
-                                                      u_r[comp_mask])))
+        max_pen = max(0.0, reduction.max(c_r[comp_mask] * (masked_surface + offset - u_r[comp_mask])))
         result.maxcv = {"max_pen": max_pen,
                         "max_pres": max_pres}
 
@@ -354,12 +349,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # e_el = -0.5*reduction.sum(p_r*u_r)
 
         if delta_str == 'mix':
-            # converged = converged and maxdu < pentol and \
-            #            max_pres < prestol and pad_pres < prestol
-            converged = False
+            converged = converged and maxdu < pentol and max_pres < prestol and pad_pres < prestol
         else:
-            converged = converged and rms_pen < pentol and \
-                        max_pen < pentol and maxdu < pentol and \
+            converged = converged and rms_pen < pentol and max_pen < pentol and maxdu < pentol and \
                         max_pres < prestol and pad_pres < prestol
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
