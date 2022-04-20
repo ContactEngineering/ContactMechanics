@@ -77,9 +77,7 @@ def _contact_calculation(system, offset=None, external_force=None, history=None,
     heights = topography.heights()
 
     # Find max, min and mean heights
-    top = np.max(heights)
     middle = np.mean(heights)
-    bot = np.min(heights)
 
     if history is None:
         mean_displacements = []
@@ -144,8 +142,16 @@ def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimize
         Optional arguments passed on to the optimizer. (Default: {})
     """
 
+    # Get topography object from contact system
     topography = system.surface
-    substrate = system.substrate
+
+    try:
+        # Reset plastic displacement if this is a plastic calculation. We need to do this because the individual steps
+        # are not in order, i.e. the contact is not continuously formed or lifted. Each calculation needs to compute
+        # a fresh plastic displacement.
+        topography.plastic_displ = np.zeros_like(topography.plastic_displ)
+    except AttributeError:
+        pass
 
     # Get the profile as a numpy array
     heights = topography.heights()

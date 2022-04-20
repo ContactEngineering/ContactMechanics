@@ -29,12 +29,14 @@ from scipy.optimize import bisect
 
 from NuMPI.Tools.Reduction import Reduction
 
-from ContactMechanics import PeriodicFFTElasticHalfSpace
 from SurfaceTopography import open_topography, PlasticTopography
+from SurfaceTopography import Topography, read_published_container
+
+from ContactMechanics import PeriodicFFTElasticHalfSpace
 from ContactMechanics.PlasticSystemSpecialisations import \
     PlasticNonSmoothContactSystem
 from ContactMechanics.Factory import make_plastic_system
-from SurfaceTopography import Topography
+from ContactMechanics.Tools.Logger import screen
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -164,3 +166,23 @@ def test_hardwall_plastic_nonperiodic_load_control(comm_self):
         contact_areas.append(system.compute_contact_area())
 
         assert np.max(system.force / system.area_per_pt) < hardness
+
+
+def test_automatic_offsets(comm_self):
+    c, = read_published_container('https://contact.engineering/go/867nv')
+    t = c[2]
+    assert t.info['name'] == '500x500_random.txt'
+
+    def check_result(displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure,
+                     total_contact_area):
+        if total_contact_area > 0:
+            assert np.any((t.heights() + mean_displacement) > 0)  # Check that there should be contact
+            np.testing.assert_array_less(0.0, displacement_xy)
+        else:
+            np.testing.assert_array_less(t.heights() + mean_displacement, 0)  # Check that there should be no contact
+            np.testing.assert_array_almost_equal(displacement_xy, 0.0)
+
+    # Elastic
+    t.contact_mechanics(nsteps=10, callback=check_result)
+    # Plastic (should reset plasticity before every step, otherwise above idiot check will fail)
+    t.contact_mechanics(nsteps=10, hardness=0.05, callback=check_result)
