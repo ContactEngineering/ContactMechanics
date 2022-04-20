@@ -37,8 +37,11 @@ import scipy.optimize as optim
 from NuMPI.Tools import Reduction
 
 from SurfaceTopography import Topography
+from SurfaceTopography.Support import doi
 
 
+@doi('10.1016/S0043-1648(99)00113-1'  # Polonsky & Keer
+     )
 def constrained_conjugate_gradients(substrate, topography, hardness=None,
                                     external_force=None, offset=None,
                                     initial_displacements=None,
@@ -96,6 +99,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         offset: offset i rigid surface, results from the optimization processes
            when the external_force is constrained
     """
+
+    @doi('10.1016/j.triboint.2005.11.008',  # Almqvist et al.
+         '10.1038/s41467-018-02981-y'  # Weber et al.
+         )
+    def register_plastic_doi():
+        pass
 
     if substrate.nb_subdomain_grid_pts != substrate.nb_domain_grid_pts:
         # check that a topography instance is provided and not only a numpy
@@ -207,6 +216,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # from the "contact area". Note: "contact area" here is the region that
         # is optimized by the CG iteration.
         if hardness is not None:
+            register_plastic_doi()
             c_r = np.logical_and(c_r, p_r > -hardness)
 
         # Compute total are treated by the CG optimizer (which exclude flowing)

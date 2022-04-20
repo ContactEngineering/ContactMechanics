@@ -187,7 +187,6 @@ def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimize
                                 optimizer_kwargs=optimizer_kwargs)
 
 
-@doi('10.1115/1.2833523', '10.1016/S0043-1648(99)00113-1')
 def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures=None, hardness=None, maxiter=100,
                       callback=None, optimizer_kwargs={}):
     """

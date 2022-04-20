@@ -137,6 +137,8 @@ from collections import namedtuple
 
 import numpy as np
 
+from SurfaceTopography.Support import doi
+
 from .Substrates import ElasticSubstrate
 
 from muFFT import FFT
@@ -156,6 +158,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     name = "periodic_fft_elastic_halfspace"
     _periodic = True
 
+    @doi('10.1115/1.2833523',  # Stanley & Kato
+         '10.1103/PhysRevB.74.075420',  # Campana & Müser
+         '10.1103/PhysRevB.86.075459'  # Pastewka, Sharp, Robbins
+         )
     def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi,
                  stiffness_q0=None, thickness=None, poisson=0.0,
                  superclass=True, fft="serial", communicator=None):
@@ -821,6 +827,10 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     name = "free_fft_elastic_halfspace"
     _periodic = False
 
+    @doi('Hockney, Methods Comput. Phys. 9, 135 (1970)',  # Hockney 1970
+         '10.1016/S0043-1648(00)00427-0',  # Liu, Wang, Liu 2000
+         '10.1063/1.4950802'  # Pastewka & Robbins 2016
+         )
     def __init__(self, nb_grid_pts, young, physical_sizes=2 * np.pi,
                  fft="serial", communicator=None, check_boundaries=False):
         """

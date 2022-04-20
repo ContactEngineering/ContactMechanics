@@ -182,6 +182,30 @@ def test_automatic_offsets(comm_self):
             np.testing.assert_array_almost_equal(displacement_xy, 0.0)
 
     # Elastic
-    t.contact_mechanics(nsteps=10, callback=check_result)
+    dois = set()
+    t.contact_mechanics(nsteps=10, callback=check_result, dois=dois)
+    print(dois)
+    assert dois == {
+        '10.1115/1.2833523',  # Stanley & Kato
+        '10.1103/PhysRevB.74.075420',  # Campana, Müser
+        '10.1103/PhysRevB.86.075459',  # Pastewka, Sharp, Robbins
+        '10.1016/S0043-1648(99)00113-1',  # Polonsky, Keer
+        'Hockney, Methods Comput. Phys. 9, 135 (1970)',
+        '10.1016/S0043-1648(00)00427-0',  # Liu, Wang, Liu 200
+        '10.1063/1.4950802'  # Pastewka, Robbins 2016
+    }
+
     # Plastic (should reset plasticity before every step, otherwise above idiot check will fail)
-    t.contact_mechanics(nsteps=10, hardness=0.05, callback=check_result)
+    dois = set()
+    t.contact_mechanics(nsteps=10, hardness=0.05, callback=check_result, dois=dois)
+    assert dois == {
+        '10.1115/1.2833523',  # Stanley & Kato
+        '10.1103/PhysRevB.74.075420',  # Campana, Müser
+        '10.1103/PhysRevB.86.075459',  # Pastewka, Sharp, Robbins
+        '10.1016/S0043-1648(99)00113-1',  # Polonsky, Keer
+        'Hockney, Methods Comput. Phys. 9, 135 (1970)',
+        '10.1016/S0043-1648(00)00427-0',  # Liu, Wang, Liu 200
+        '10.1063/1.4950802',  # Pastewka, Robbins 2016
+        '10.1016/j.triboint.2005.11.008',  # Almqvist et al. 2007
+        '10.1038/s41467-018-02981-y'  # Weber et al. 2018
+    }
