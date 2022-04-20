@@ -1,8 +1,17 @@
 Change log for ContactMechanics
 ===============================
 
+v1.0.0 (not yet released)
+-------------------------
+
+- ENH: Pipeline function for contact calculations (#44, #65)
+- ENH: Report bibliography (#52)
+- MAINT: Removed buffer copy (#39)
+- MAINT: Remove `disp_scale` (#29)
+- MAINT: Don't override substrate forces after optimization (#38)
+
 v0.92.0 (12Apr22)
---------------------------
+-----------------
 
 - BUG: hard_wall.py under pressure control was not working anymore 
 - BUG: hardness was ignored in hard_wall (closes #59)
@@ -11,7 +20,7 @@ v0.92.0 (12Apr22)
 - DOC: repaired example notebooks
 
 v0.91.0 (9Sep21)
--------------------
+----------------
 
 - DOC: example file for the use of NuMPI's CCGs 
 - TST: testing the NuMPI CCGs on nonadhesive primal and dual contact problems
