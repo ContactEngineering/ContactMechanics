@@ -187,7 +187,7 @@ def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimize
 
 
 def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures=None, hardness=None, maxiter=100,
-                      callback=None, optimizer_kwargs={}):
+                      results_callback=None, optimizer_kwargs={}):
     """
     Carry out an automated contact mechanics calculations. The pipeline
     function return thermodynamic data (averages over the contact area,
@@ -218,7 +218,7 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
         (Default: None)
     maxiter : int, optional
         Maximum number of interations. (Default: 100)
-    callback : func, optional
+    results_callback : func, optional
         Callback function receiving displacement, pressure, etc. fields.
         (Default: None)
     optimizer_kwargs : dict, optional
@@ -323,9 +323,9 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
                     system, history=history, pentol=pentol, maxiter=maxiter, optimizer_kwargs=optimizer_kwargs)
 
         # Report results via callback
-        if callback is not None:
-            callback(displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure,
-                     total_contact_area)
+        if results_callback is not None:
+            results_callback(displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement,
+                             mean_pressure, total_contact_area)
 
     mean_displacement, mean_gap, mean_pressure, total_contact_area, converged = history
 
