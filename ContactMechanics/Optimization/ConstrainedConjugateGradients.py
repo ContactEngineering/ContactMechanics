@@ -203,6 +203,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     t_r = np.zeros_like(u_r)
 
     tau = 0.0
+    current_mixfac = mixfac
     for it in range(1, maxiter + 1):
         result.nit = it
 
@@ -260,18 +261,19 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                     G = 0.0
 
             p_r += tau * c_r * t_r
+
+            current_mixfac = mixfac
         else:
             # The CG area can vanish if this is a plastic calculation. In that
             # case we need to use the gap to decide which regions contact. All
             # contact area should then be the hardness value. We use a simple
             # relaxation algorithm to converge the contact area in that case.
 
-            if delta_str != 'mixconv':
-                delta_str = 'mix'
+            delta_str = 'mix'
 
             # Mix pressure
-            p_r[comp_mask] = (1 - mixfac) * p_r[comp_mask] - mixfac * hardness * (g_r < 0.0)
-            mixfac *= 0.5
+            p_r[comp_mask] = (1 - current_mixfac) * p_r[comp_mask] - current_mixfac * hardness * (g_r < 0.0)
+            current_mixfac *= 0.5
 
         # Find area with tensile stress and negative gap
         # (i.e. penetration of the two surfaces)
@@ -364,34 +366,29 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             converged = converged and rms_pen < pentol and max_pen < pentol and maxdu < pentol and \
                         max_pres < prestol and pad_pres < prestol
 
-        log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
-                       'offset']
-        log_values = [delta_str, it, A_contact,
-                      A_contact / reduction.sum(surf_mask * 1), psum,
-                      offset]
+        log_headers = ['status', 'it', 'area', 'frac. area', 'total force', 'offset']
+        log_values = [delta_str, it, A_contact, A_contact / reduction.sum(surf_mask * 1), psum, offset]
 
         if hardness:
             log_headers += ['plast. area', 'frac.plast. area']
             log_values += [A_fl, A_fl / reduction.sum(surf_mask * 1)]
         if verbose:
-            log_headers += ['rms pen.', 'max. pen.', 'max. force',
-                            'max. pad force', 'max. du', 'CG area',
+            log_headers += ['rms pen.', 'max. pen.', 'max. force', 'max. pad force', 'max. du', 'CG area',
                             'frac. CG area', 'sum(nc_r)']
-            log_values += [rms_pen, max_pen, max_pres, pad_pres, maxdu, A_cg,
-                           A_cg / reduction.sum(surf_mask * 1),
+            log_values += [rms_pen, max_pen, max_pres, pad_pres, maxdu, A_cg, A_cg / reduction.sum(surf_mask * 1),
                            reduction.sum(nc_r * 1)]
             if delta_str == 'mix':
                 log_headers += ['mixfac']
-                log_values += [mixfac]
+                log_values += [current_mixfac]
             else:
                 log_headers += ['tau']
                 log_values += [tau]
 
-        if converged and delta_str == 'mix':
-            delta_str = 'mixconv'
-            log_values[0] = delta_str
-            mixfac = 0.5
-        elif converged:
+#        if converged and delta_str == 'mix':
+#            delta_str = 'mixconv'
+#            log_values[0] = delta_str
+#            current_mixfac = mixfac
+        if converged:
             if logger is not None:
                 log_values[0] = 'CONVERGED'
                 logger.st(log_headers, log_values, force_print=True)
