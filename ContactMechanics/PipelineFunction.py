@@ -189,7 +189,12 @@ def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimize
 def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures=None, hardness=None, maxiter=100,
                       callback=None, optimizer_kwargs={}):
     """
-    Carry out an automated contact mechanics calculations.
+    Carry out an automated contact mechanics calculations. The pipeline
+    function return thermodynamic data (averages over the contact area,
+    e.g. the total force or the total area). Spatially resolved data
+    (pressure maps, displacement maps, etc.) are passed to the callback
+    function. If this data is reqired, the callback function needs to take
+    care of analyzing or storing it.
 
     Parameters
     ----------
@@ -221,7 +226,17 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
 
     Returns
     -------
-
+    mean_pressure : np.ndarray
+        Array with mean pressure for each calculation step.
+    total_contact_area : np.ndarray
+        Array with total area for each calculation step.
+    mean_displacement : np.ndarray
+        Array with mean displacement for each calculation step.
+    mean_gap : np.ndarray
+        Array with mean gap for each calculation step.
+    converged : np.ndarray
+        Convergence information for each calculation step. Unconverged
+        results are still returned but should be interpreted with care.
     """
 
     #
