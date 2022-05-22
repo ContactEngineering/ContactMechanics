@@ -71,16 +71,16 @@ def test_hard_wall_bearing_area(comm):
             pass
 
     result = system.minimize_proxy(offset=offset, callback=cb)
-    assert result.success
+    assert result.success, 'Minimization should succeed'
     c = result.jac > 0.0
     ncontact = pnp.sum(c)
-    assert plastic_surface.plastic_area == ncontact * surface.area_per_pt
+    assert plastic_surface.plastic_area == ncontact * surface.area_per_pt, 'The full contact should be plastic'
     bearing_area = bisect(
         lambda x: pnp.sum((surface.heights() > x)) - ncontact,
         -0.03, 0.03)
     cba = surface.heights() > bearing_area
     # print(comm.Get_rank())
-    assert pnp.sum(np.logical_not(c == cba)) < 25
+    assert pnp.sum(np.logical_not(c == cba)) < 25, 'Contact area is not identical to the bearing area'
 
 
 def test_hardwall_plastic_nonperiodic_disp_control(comm_self):
@@ -113,7 +113,7 @@ def test_hardwall_plastic_nonperiodic_disp_control(comm_self):
     for offset in offsets:
         sol = system.minimize_proxy(offset=offset, initial_displacements=disp0,
                                     pentol=1e-10)
-        assert sol.success
+        assert sol.success, 'Minimization did not succeed'
 
 
 def test_hardwall_plastic_nonperiodic_load_control(comm_self):
@@ -158,24 +158,24 @@ def test_hardwall_plastic_nonperiodic_load_control(comm_self):
     for external_force in external_forces:
         sol = system.minimize_proxy(external_force=external_force,
                                     initial_displacements=disp0, pentol=1e-10)
-        assert sol.success
+        assert sol.success, 'Minimization did not succeed'
         disp0 = system.disp
         offsets.append(system.offset)
         plastic_areas.append(system.surface.plastic_area)
         contact_areas.append(system.compute_contact_area())
 
-        assert np.max(system.force / system.area_per_pt) < hardness
+        assert np.max(system.force / system.area_per_pt) < hardness, 'Maximmum force exceeded hardnees'
 
 
 def test_automatic_offsets(comm_self):
     c, = read_published_container('https://contact.engineering/go/867nv')
     t = c[2]
-    assert t.info['name'] == '500x500_random.txt'
+    assert t.info['name'] == '500x500_random.txt', 'Topography has wrong name'
 
     def check_result(displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure,
                      total_contact_area):
         if total_contact_area > 0:
-            assert np.any((t.heights() + mean_displacement) > 0)  # Check that there should be contact
+            assert np.any((t.heights() + mean_displacement) > 0), 'Contact area should be zero but is not'
             np.testing.assert_array_less(0.0, displacement_xy)
         else:
             np.testing.assert_array_less(t.heights() + mean_displacement, 0)  # Check that there should be no contact
@@ -184,7 +184,6 @@ def test_automatic_offsets(comm_self):
     # Elastic
     dois = set()
     t.contact_mechanics(nsteps=10, callback=check_result, dois=dois)
-    print(dois)
     assert dois == {
         '10.1115/1.2833523',  # Stanley & Kato
         '10.1103/PhysRevB.74.075420',  # Campana, Müser
@@ -193,7 +192,7 @@ def test_automatic_offsets(comm_self):
         'Hockney, Methods Comput. Phys. 9, 135 (1970)',
         '10.1016/S0043-1648(00)00427-0',  # Liu, Wang, Liu 200
         '10.1063/1.4950802'  # Pastewka, Robbins 2016
-    }
+    }, 'Contact mechanics calculation returned wrong list of references'
 
     # Plastic (should reset plasticity before every step, otherwise above idiot check will fail)
     dois = set()
@@ -208,4 +207,4 @@ def test_automatic_offsets(comm_self):
         '10.1063/1.4950802',  # Pastewka, Robbins 2016
         '10.1016/j.triboint.2005.11.008',  # Almqvist et al. 2007
         '10.1038/s41467-018-02981-y'  # Weber et al. 2018
-    }
+    }, 'Contact mechanics calculation returned wrong list of references'
