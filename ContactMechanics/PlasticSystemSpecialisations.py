@@ -66,9 +66,5 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
         hardness = self.surface.hardness * self.surface.area_per_pt
         opt = super().minimize_proxy(hardness=hardness, **kwargs)
         if opt.success:
-            plastic_mask = (self.force == hardness)
-            self.surface.plastic_displ += \
-                np.where(plastic_mask,
-                         self.compute_gap(self.disp, self.offset), 0.)
-
+            self.surface.plastic_displ += np.where(opt.plastic, self.compute_gap(self.disp, self.offset), 0.)
         return opt

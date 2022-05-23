@@ -65,22 +65,19 @@ def test_hard_wall_bearing_area(comm):
     offset = -0.002
     if comm.rank == 0:
         def cb(it, p_r, d):
-            print("{0}: area = {1}".format(it, d["area"]))
+            #print("{0}: area = {1}".format(it, d["area"]))
+            pass
     else:
         def cb(it, p_r, d):
             pass
 
-    result = system.minimize_proxy(offset=offset, callback=cb)
-    assert result.success, 'Minimization should succeed'
-    c = result.jac > 0.0
-    ncontact = pnp.sum(c)
-    assert plastic_surface.plastic_area == ncontact * surface.area_per_pt, 'The full contact should be plastic'
-    bearing_area = bisect(
-        lambda x: pnp.sum((surface.heights() > x)) - ncontact,
-        -0.03, 0.03)
+    result = system.minimize_proxy(offset=offset, callback=cb, maxiter=1000)
+    assert result.success, 'Minimization did not succeed'
+    ncontact = pnp.sum(result.active_set)
+    bearing_area = bisect(lambda x: pnp.sum((surface.heights() > x)) - ncontact, -0.03, 0.03)
     cba = surface.heights() > bearing_area
-    # print(comm.Get_rank())
-    assert pnp.sum(np.logical_not(c == cba)) < 25, 'Contact area is not identical to the bearing area'
+    assert plastic_surface.plastic_area == ncontact * surface.area_per_pt, 'The full contact should be plastic'
+    assert pnp.sum(np.logical_not(result.active_set == cba)) < 25, 'Contact area is not identical to the bearing area'
 
 
 def test_hardwall_plastic_nonperiodic_disp_control(comm_self):
