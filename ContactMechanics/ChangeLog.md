@@ -1,9 +1,10 @@
 Change log for ContactMechanics
 ===============================
 
-v1.0.0 (not yet released)
--------------------------
+v0.93.0 (24May22)
+-----------------
 
+- ENH: Improved algorithm for pure plastic calculations (#68)
 - ENH: Pipeline function for contact calculations (#44, #65)
 - ENH: Report bibliography (#52)
 - MAINT: Removed buffer copy (#39)
