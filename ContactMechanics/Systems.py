@@ -846,7 +846,7 @@ class NonSmoothContactSystem(SystemBase):
         if result.success:
             self.offset = offset
             self.gap = result.jac
-            self.force = result.x
+            self.force = self.substrate.force = result.x
             self.contact_zone = result.x > 0
             self.disp = self.gap + offset + self.surface.heights().reshape(self.gap.shape)
 
