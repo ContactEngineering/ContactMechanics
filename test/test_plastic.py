@@ -65,7 +65,7 @@ def test_hard_wall_bearing_area(comm):
     offset = -0.002
     if comm.rank == 0:
         def cb(it, p_r, d):
-            #print("{0}: area = {1}".format(it, d["area"]))
+            # print("{0}: area = {1}".format(it, d["area"]))
             pass
     else:
         def cb(it, p_r, d):
