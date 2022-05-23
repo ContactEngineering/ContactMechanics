@@ -531,23 +531,22 @@ class NonSmoothContactSystem(SystemBase):
 
         Parameters:
         -----------
-        offset:
+        offset : float
             determines indentation depth
-        initial_displacements:
+        initial_displacements : array_like
             initial guess for surface displacement. If not set, zero
                       displacement of shape
                       self.substrate.nb_domain_grid_pts is used
-        initial_forces:
+        initial_forces : array_like
             initial guess for the forces
-        pentol:
-            maximum penetration of contacting regions required for convergence
-        prestol:
-            maximum pressure outside the contact region allowed for convergence
-        maxiter:
-            maximum number of iterations allowed for convergence
-        logger:
-            optional logger, to be used with a logger from the
-            ContactMechanics.Tools.Logger
+        pentol : float
+            Maximum penetration of contacting regions required for convergence.
+        forcetol : float
+            Maximum force outside the contact region allowed for convergence.
+        maxiter : int
+            Maximum number of iterations allowed for convergence.
+        logger : :obj:`ContactMechanics.Tools.Logger`
+            Reports status and values at each iteration.
         """
         # pylint: disable=arguments-differ
         self.disp = None

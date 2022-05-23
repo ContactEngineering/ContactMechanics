@@ -55,7 +55,7 @@ def constrained_conjugate_gradients(substrate, topography,
                                     offset=None,
                                     disp0=None,
                                     pentol=None,
-                                    prestol=1e-5,
+                                    forcetol=1e-5,
                                     maxiter=100000,
                                     logger=None,
                                     callback=None,
@@ -227,9 +227,9 @@ def constrained_conjugate_gradients(substrate, topography,
 
         # Adjust pressure
         if external_force is not None:
-            psum = -np.sum(p_r[comp_mask])
-            if psum != 0:
-                p_r *= external_force / psum
+            total_force = -np.sum(p_r[comp_mask])
+            if total_force != 0:
+                p_r *= external_force / total_force
             else:
                 p_r = -external_force / np.prod(
                     topography.shape) * np.ones_like(p_r)
@@ -249,9 +249,9 @@ def constrained_conjugate_gradients(substrate, topography,
 
         # Check convergence respective pressure
         converged = True
-        psum = -np.sum(p_r[comp_mask])
+        total_force = -np.sum(p_r[comp_mask])
         if external_force is not None:
-            converged = abs(psum - external_force) < prestol
+            converged = abs(total_force - external_force) < forcetol
 
         # Compute new displacements from updated forces
         # u_r = -np.fft.ifft2(gf_q*np.fft.fft2(p_r)).real
@@ -279,12 +279,12 @@ def constrained_conjugate_gradients(substrate, topography,
         # e_el = -0.5*np.sum(p_r*u_r)
 
         converged = converged and rms_pen < pentol and \
-            max_pen < pentol and maxdu < pentol and \
-            max_pres < prestol and pad_pres < prestol
+                    max_pen < pentol and maxdu < pentol and \
+                    max_pres < forcetol and pad_pres < forcetol
 
         log_headers = ['status', 'it', 'area', 'frac. area', 'total force',
                        'offset']
-        log_values = [delta_str, it, A_cg, A_cg / surf_mask.sum(), psum,
+        log_values = [delta_str, it, A_cg, A_cg / surf_mask.sum(), total_force,
                       offset]
 
         if verbose:
@@ -321,7 +321,7 @@ def constrained_conjugate_gradients(substrate, topography,
                      max_pressure=np.float64(max_pres).item(),
                      pad_pressure=np.float64(pad_pres).item(),
                      penetration_tol=np.float64(pentol).item(),
-                     pressure_tol=np.float64(prestol)).item()
+                     pressure_tol=np.float64(forcetol)).item()
             callback(it, p_r, d)
 
         if np.isnan(G) or np.isnan(rms_pen):

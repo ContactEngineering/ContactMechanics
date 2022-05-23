@@ -7,8 +7,10 @@ v1.0.0 (not yet released)
 - ENH: Pipeline function for contact calculations (#44, #65)
 - ENH: Report bibliography (#52)
 - MAINT: Removed buffer copy (#39)
-- MAINT: Remove `disp_scale` (#29)
+- MAINT: Removed `disp_scale` (#29)
 - MAINT: Don't override substrate forces after optimization (#38)
+- MAINT: Renamed `prestol` to `forcetol` force consistent naming
+  (addressed aspects of #28)
 
 v0.92.0 (12Apr22)
 -----------------
