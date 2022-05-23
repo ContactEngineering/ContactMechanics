@@ -239,8 +239,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # portions).
         A_cg = reduction.sum(c_r * 1)
 
-        #if delta_str != 'mix' and not (hardness is not None and A_cg == 0):
-        if hardness is not None and A_cg == 0:
+        if hardness is None or A_cg > 0:
             # Compute gap and adjust offset (if at constant external force)
             g_r = u_r[comp_mask] - masked_surface
             if external_force is not None:
@@ -439,8 +438,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             result.jac = -f_r[tuple(comp_slice)]
             result.active_set = c_r
             if hardness is not None:
-                result.plastic = c_r
-                result.plastic[comp_mask] = g_r < 0.0
+                plastic = np.zeros_like(c_r)
+                plastic[comp_mask] = g_r < 0.0
+                result.plastic = plastic[tuple(comp_slice)]
             if delta_str == 'mix':
                 result.active_set[comp_mask] = g_r < 0.0
             # Compute elastic energy
