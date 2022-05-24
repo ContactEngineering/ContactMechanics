@@ -52,7 +52,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                                     forcetol=1e-5,
                                     thermotol=1e-6,
                                     mixfac=0.1,
-                                    mixdecfac=0.9,
+                                    mixdecfac=0.95,
                                     minmixsteps=10,
                                     maxiter=100000,
                                     logger=quiet,
@@ -320,11 +320,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
             # Mix force
             c_r[comp_mask] = g_r < 0.0
-            total_force = -reduction.sum(f_r)
-            if total_force != 0:
-                f_r = (1 - current_mixfac) * external_force / total_force * f_r - current_mixfac * hardness * c_r
-            else:
-                f_r = - hardness * c_r
+            f_r = (1 - current_mixfac) * f_r - current_mixfac * hardness * c_r
 
             # Decrease mixfac
             current_mixfac *= mixdecfac
@@ -417,7 +413,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # Check for change in total force (only at constant offset)
         converged = True
         total_force = -reduction.sum(f_r[comp_mask])
-        if external_force is None and last_total_force is not None:
+        if external_force is not None:
+            converged = converged and abs((total_force - external_force) / total_force) < thermotol
+        elif last_total_force is not None:
             converged = converged and abs((total_force - last_total_force) / total_force) < thermotol
         last_total_force = total_force
 
