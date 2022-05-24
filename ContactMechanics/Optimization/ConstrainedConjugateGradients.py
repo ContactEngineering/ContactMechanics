@@ -53,6 +53,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                                     thermotol=1e-6,
                                     mixfac=0.1,
                                     mixdecfac=0.9,
+                                    minmixsteps=10,
                                     maxiter=100000,
                                     logger=quiet,
                                     callback=None,
@@ -100,6 +101,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     mixdecfac : float, optional
         Mixing factor is multiplied with this factor after every step.
         (Default: 0.9)
+    minmixsteps : int, optional
+        Minimum number of mixing steps. (Default: 10)
     maxiter : float, optional
         Maximum number of iterations.
     logger : :obj:`ContactMechanics.Tools.Logger`, optional
@@ -222,7 +225,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     t_r = np.zeros_like(u_r)
 
     tau = 0.0
+
     current_mixfac = mixfac
+    mixsteps = 0
 
     last_max_height = None
     last_total_force = None
@@ -252,7 +257,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # area, i.e. an area where the pressure is between 0 and the hardness.
         # We here use the heuristic criterion that this should be more than 1%
         # of the overall contact area. In all other cases we mix.
-        if hardness is None or (A_contact > 0 and A_cg / A_contact > 0.01):
+        if hardness is None or (A_contact > 0 and A_cg / A_contact > 0.01 and mixsteps <= 0):
             if delta_str == 'mix':
                 delta_str = 'sd'  # If the last step was mixing, this is now steepest descent
 
@@ -299,7 +304,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             # relaxation algorithm to converge the contact area in that case.
 
             # We are now 'mixing'
-            delta_str = 'mix'
+            if delta_str != 'mix':
+                mixsteps = minmixsteps
+                delta_str = 'mix'
 
             # Compute gap and adjust offset (if at constant external force)
             g_r = u_r[comp_mask] - masked_surface
@@ -313,13 +320,18 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
             # Mix force
             c_r[comp_mask] = g_r < 0.0
-            f_r = (1 - current_mixfac) * f_r - current_mixfac * hardness * c_r
+            total_force = -reduction.sum(f_r)
+            if total_force != 0:
+                f_r = (1 - current_mixfac) * external_force / total_force * f_r - current_mixfac * hardness * c_r
+            else:
+                f_r = - hardness * c_r
 
             # Decrease mixfac
             current_mixfac *= mixdecfac
 
-            # Reset CG
-            G = 0
+            # Count number of mixing steps
+            if mixsteps > 0:
+                mixsteps -= 1
 
         # Find area with tensile stress and negative gap
         # (i.e. penetration of the two surfaces)
@@ -379,12 +391,6 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                 delta = 1
                 delta_str = 'cg'
 
-        # Check convergence respective force
-        converged = True
-        total_force = -reduction.sum(f_r[comp_mask])
-        if external_force is not None:
-            converged = abs(total_force - external_force) < forcetol
-
         # Compute new displacements from updated forces
         # u_r = -np.fft.ifft2(gf_q*np.fft.fft2(f_r)).real
         new_u_r = substrate.evaluate_disp(f_r)
@@ -409,6 +415,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # e_el = -0.5*reduction.sum(f_r*u_r)
 
         # Check for change in total force (only at constant offset)
+        converged = True
+        total_force = -reduction.sum(f_r[comp_mask])
         if external_force is None and last_total_force is not None:
             converged = converged and abs((total_force - last_total_force) / total_force) < thermotol
         last_total_force = total_force
