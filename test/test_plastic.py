@@ -129,13 +129,11 @@ def test_hardwall_plastic_nonperiodic_load_control(comm_self):
 
     Es = 230000  # MPa
     hardness = 6000  # MPa
-    system = make_plastic_system(substrate="free",
-                                 surface=PlasticTopography(
-                                     topography=topography,
-                                     hardness=hardness),
-                                 young=Es,
-                                 communicator=comm_self
-                                 )
+    system = make_plastic_system(
+        substrate="free",
+        surface=PlasticTopography(topography=topography, hardness=hardness),
+        young=Es,
+        communicator=comm_self)
 
     external_forces = [0.02, 0.06, 0.12]
 
@@ -153,8 +151,11 @@ def test_hardwall_plastic_nonperiodic_load_control(comm_self):
     disp0 = np.where(disp0 > 0, disp0, 0)
 
     for external_force in external_forces:
-        sol = system.minimize_proxy(external_force=external_force,
-                                    initial_displacements=disp0, pentol=1e-10)
+        sol = system.minimize_proxy(
+            external_force=external_force,
+            initial_displacements=disp0,
+            pentol=1e-10,
+            maxiter=100)
         assert sol.success, 'Minimization did not succeed'
         disp0 = system.disp
         offsets.append(system.offset)

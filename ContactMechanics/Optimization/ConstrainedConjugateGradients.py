@@ -52,6 +52,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
                                     forcetol=1e-5,
                                     thermotol=1e-6,
                                     mixfac=0.1,
+                                    mixdecfac=0.9,
                                     maxiter=100000,
                                     logger=quiet,
                                     callback=None,
@@ -72,35 +73,42 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         Elastic manifold.
     topography : SurfaceTopography object
         Height profile of the rigid counterbody
-    hardness : array_like
+    hardness : array_like, optional
         Hardness of the substrate. Force cannot exceed this value. Can be
         scalar or array (i.e. per pixel) value.
-    external_force : float
+    external_force : float, optional
         External force. Constrains the sum of forces to this value.
-    offset : float
+    offset : float, optional
         Offset of rigid surface. Ignore if external_force is specified.
-    initial_displacements : array_like
+    initial_displacements : array_like, optional
         Displacement field for initializing the solver. Guess an initial
         value if set to None.
-    initial_forces : array_like
+    initial_forces : array_like, optional
         pixel forces field for initializing the solver. Is computed from
         initial_displacements if none
-    pentol : float
+    pentol : float, optional
         Maximum penetration of contacting regions required for convergence.
-    forcetol : float
+    forcetol : float, optional
         Maximum force outside the contact region allowed for convergence.
-    thermotol : float
+    thermotol : float, optional
         Maximum *relative* change in thermodynamic control property (total
         force at constant displacement or displacement at constant force)
         during convergence.
-    maxiter : float
+    mixfac : float, optional
+        Mixing factor for simple overrelaxaton (only used for certain plastic
+        calculations). (Default: 0.1)
+    mixdecfac : float, optional
+        Mixing factor is multiplied with this factor after every step.
+        (Default: 0.9)
+    maxiter : float, optional
         Maximum number of iterations.
-    logger : :obj:`ContactMechanics.Tools.Logger`
+    logger : :obj:`ContactMechanics.Tools.Logger`, optional
         Reports status and values at each iteration.
-    callback : callable(int iteration, array_link forces, dict d)
+    callback : callable(int iteration, array_link forces, dict d), optional
         Called each iteration. The dictionary contains additional scalars.
-    verbose : bool
+    verbose : bool, optional
         If True, more scalar quantities are passed to the logger.
+
     Returns
     -------
     Optimisation result
@@ -239,7 +247,15 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # portions).
         A_cg = reduction.sum(c_r * 1)
 
-        if hardness is None or A_cg > 0:
+        # We now decide if we do a Polonsky-Keer (sd/cg) step or a mixing step.
+        # The Polonsky-Keer step is only possible if we have a "cg" controlled
+        # area, i.e. an area where the pressure is between 0 and the hardness.
+        # We here use the heuristic criterion that this should be more than 1%
+        # of the overall contact area. In all other cases we mix.
+        if hardness is None or (A_contact > 0 and A_cg / A_contact > 0.01):
+            if delta_str == 'mix':
+                delta_str = 'sd'  # If the last step was mixing, this is now steepest descent
+
             # Compute gap and adjust offset (if at constant external force)
             g_r = u_r[comp_mask] - masked_surface
             if external_force is not None:
@@ -300,11 +316,10 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             f_r = (1 - current_mixfac) * f_r - current_mixfac * hardness * c_r
 
             # Decrease mixfac
-            current_mixfac *= 0.9
+            current_mixfac *= mixdecfac
 
             # Reset CG
             G = 0
-            delta = 0
 
         # Find area with tensile stress and negative gap
         # (i.e. penetration of the two surfaces)
@@ -349,7 +364,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         if hardness is not None:
             f_r[mask_flowing] = -hardness
 
-        if delta_str != 'mix':
+        if delta_str == 'mix':
+            delta = 0
+        else:
             if reduction.sum(nc_r * 1) > 0:
                 # The contact area has changed! nc_r contains area that
                 # penetrate but have zero (or tensile) force. They hence
@@ -409,8 +426,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             converged = converged and rms_pen < pentol and max_pen < pentol and maxdu < pentol and \
                         max_pres < forcetol and pad_pres < forcetol
 
-        log_headers = ['status', 'it', 'area', 'frac. area', 'total force', 'offset']
-        log_values = [delta_str, it, A_contact, A_contact / reduction.sum(surf_mask * 1), total_force, offset]
+        log_headers = ['status', 'it', 'area', 'frac. area', 'cg area', 'total force', 'offset']
+        log_values = [delta_str, it, A_contact, A_contact / reduction.sum(surf_mask * 1), A_cg, total_force, offset]
 
         if hardness:
             log_headers += ['plast. area', 'frac.plast. area']
