@@ -10,7 +10,6 @@ v0.93.0 (24May22)
 - ENH: Report bibliography (#52)
 - MAINT: Removed buffer copy (#39)
 - MAINT: Removed `disp_scale` (#29)
-- MAINT: Don't override substrate forces after optimization (#38)
 - MAINT: Renamed `prestol` to `forcetol` force consistent naming
   (addressed aspects of #28)
 
