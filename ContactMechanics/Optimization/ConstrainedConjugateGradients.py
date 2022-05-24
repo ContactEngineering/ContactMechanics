@@ -374,6 +374,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
         if delta_str == 'mix':
             delta = 0
+            G = 0
         else:
             if reduction.sum(nc_r * 1) > 0:
                 # The contact area has changed! nc_r contains area that
