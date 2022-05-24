@@ -181,7 +181,7 @@ def test_automatic_offsets(comm_self):
 
     # Elastic
     dois = set()
-    t.contact_mechanics(nsteps=10, callback=check_result, dois=dois)
+    t.contact_mechanics(nsteps=10, results_callback=check_result, dois=dois)
     assert dois == {
         '10.1115/1.2833523',  # Stanley & Kato
         '10.1103/PhysRevB.74.075420',  # Campana, Müser
