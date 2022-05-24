@@ -194,7 +194,7 @@ def test_automatic_offsets(comm_self):
 
     # Plastic (should reset plasticity before every step, otherwise above idiot check will fail)
     dois = set()
-    t.contact_mechanics(nsteps=10, hardness=0.05, callback=check_result, dois=dois)
+    t.contact_mechanics(nsteps=10, hardness=0.05, results_callback=check_result, dois=dois)
     assert dois == {
         '10.1115/1.2833523',  # Stanley & Kato
         '10.1103/PhysRevB.74.075420',  # Campana, Müser
