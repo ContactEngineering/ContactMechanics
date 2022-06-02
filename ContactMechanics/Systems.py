@@ -198,18 +198,18 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             return in_array.reshape(self.substrate.nb_subdomain_grid_pts)
         raise IncompatibleResolutionError()
 
-    def _reshape_bounds(self, lbounds=None, ubounds=None, disp_scale=1.):
+    def _reshape_bounds(self, lbounds=None, ubounds=None):
         bnds = None
         if lbounds is not None and ubounds is not None:
-            ubounds = disp_scale * self.shape_minimisation_input(ubounds)
-            lbounds = disp_scale * self.shape_minimisation_input(lbounds)
+            ubounds = self.shape_minimisation_input(ubounds)
+            lbounds = self.shape_minimisation_input(lbounds)
             bnds = tuple(zip(lbounds.tolist(), ubounds.tolist()))
         elif lbounds is not None:
-            lbounds = disp_scale * self.shape_minimisation_input(lbounds)
+            lbounds = self.shape_minimisation_input(lbounds)
             bnds = tuple(
                 zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
         elif ubounds is not None:
-            ubounds = disp_scale * self.shape_minimisation_input(ubounds)
+            ubounds = self.shape_minimisation_input(ubounds)
             bnds = tuple(
                 zip([None for i in range(len(ubounds))], ubounds.tolist()))
         return bnds
@@ -224,9 +224,9 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
         return lbounds
 
-    def _update_state(self, offset, result, gradient=True, disp_scale=1.):
+    def _update_state(self, offset, result, gradient=True):
         self.offset = offset
-        self.disp = self.shape_minimisation_output(result.x * disp_scale)
+        self.disp = self.shape_minimisation_output(result.x)
         self.evaluate(self.disp, offset, forces=gradient)
         result.x = self.shape_minimisation_output(result.x)
         result.jac = self.shape_minimisation_output(result.jac)
@@ -244,7 +244,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                        initial_displacements=None, method='L-BFGS-B',
                        gradient=True, lbounds=None, ubounds=None,
                        callback=None,
-                       disp_scale=1., logger=None, **kwargs):
+                       logger=None, **kwargs):
         """
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of scipy.minimize for common default
@@ -286,10 +286,6 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                     displacement vector. Instead of a callable, it can be set
                     to 'True', in which case the system's default callback
                     function is called.
-        disp_scale : float
-                     (default 1.)
-                     allows to specify a scaling of the displacement before
-                     evaluation.
         logger :
                  (default None)
                  log information at every objective evaluation.
@@ -302,13 +298,10 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                              "and {0}.objective directly"
                              .format(self.__class__.__name__))
 
-        fun = self.objective(offset, gradient=gradient, disp_scale=disp_scale,
-                             logger=logger)
+        fun = self.objective(offset, gradient=gradient, logger=logger)
         if initial_displacements is None:
-            initial_displacements = np.zeros(
-                self.substrate.nb_subdomain_grid_pts)
-        initial_displacements = self.shape_minimisation_input(
-            initial_displacements)
+            initial_displacements = np.zeros(self.substrate.nb_subdomain_grid_pts)
+        initial_displacements = self.shape_minimisation_input(initial_displacements)
         if callback is True:
             callback = self.callback(force=gradient)
 
@@ -319,29 +312,28 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             else:
                 raise ValueError
 
-        bnds = self._reshape_bounds(lbounds, ubounds, disp_scale=disp_scale)
+        bnds = self._reshape_bounds(lbounds, ubounds)
 
         # Scipy minimizers that accept bounds
         bounded_minimizers = {'L-BFGS-B', 'TNC', 'SLSQP'}
 
         if method in bounded_minimizers:
             result = scipy.optimize.minimize(
-                fun, x0=disp_scale * initial_displacements,
+                fun, x0=initial_displacements,
                 method=method, jac=gradient,
                 bounds=bnds, callback=callback,
                 **kwargs)
         else:
             result = scipy.optimize.minimize(
-                fun, x0=disp_scale * initial_displacements,
+                fun, x0=initial_displacements,
                 method=method, jac=gradient,
                 callback=callback, **kwargs)
 
-        self._update_state(offset, result, gradient, disp_scale)
+        self._update_state(offset, result, gradient)
         return result
 
     @abc.abstractmethod
-    def objective(self, offset, disp0=None, gradient=False, disp_scale=1.,
-                  logger=None):
+    def objective(self, offset, disp0=None, gradient=False, logger=None):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -355,8 +347,6 @@ class SystemBase(object, metaclass=abc.ABCMeta):
                       system subclasses
         gradient   -- (default False) whether the gradient is supposed to be
                       used
-        disp_scale -- (default 1.) allows to specify a scaling of the
-                      dislacement before evaluation.
         logger     -- (default None) log information at every iteration.
         """
         raise NotImplementedError()
@@ -481,7 +471,7 @@ class NonSmoothContactSystem(SystemBase):
 
         return (self.energy, self.force)
 
-    def objective(self, offset, disp0=None, gradient=False, disp_scale=1., logger=None):
+    def objective(self, offset, disp0=None, gradient=False, logger=None):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
         evaluate() method. Use this for optimization purposes, it makes sure
@@ -498,9 +488,6 @@ class NonSmoothContactSystem(SystemBase):
         gradient: (default False)
             whether the gradient is supposed to be
             used
-        disp_scale:
-            (default 1.) allows to specify a scaling of the
-            dislacement before evaluation.
         """
         # pylint: disable=arguments-differ
         res = self.substrate.nb_subdomain_grid_pts
@@ -508,18 +495,14 @@ class NonSmoothContactSystem(SystemBase):
             def fun(disp):
                 # pylint: disable=missing-docstring
                 try:
-                    self.evaluate(
-                        disp_scale * disp.reshape(res), offset, forces=True, logger=logger)
+                    self.evaluate(disp.reshape(res), offset, forces=True, logger=logger)
                 except ValueError as err:
-                    raise ValueError(
-                        "{}: disp.shape: {}, res: {}".format(
-                            err, disp.shape, res))
-                return (self.energy, -self.force.reshape(-1) * disp_scale)
+                    raise ValueError("{}: disp.shape: {}, res: {}".format(err, disp.shape, res))
+                return (self.energy, -self.force.reshape(-1))
         else:
             def fun(disp):
                 # pylint: disable=missing-docstring
-                return self.evaluate(
-                    disp_scale * disp.reshape(res), offset, forces=False, logger=logger)[0]
+                return self.evaluate(disp.reshape(res), offset, forces=False, logger=logger)[0]
 
         return fun
 
@@ -548,23 +531,22 @@ class NonSmoothContactSystem(SystemBase):
 
         Parameters:
         -----------
-        offset:
+        offset : float
             determines indentation depth
-        initial_displacements:
+        initial_displacements : array_like
             initial guess for surface displacement. If not set, zero
                       displacement of shape
                       self.substrate.nb_domain_grid_pts is used
-        initial_forces:
+        initial_forces : array_like
             initial guess for the forces
-        pentol:
-            maximum penetration of contacting regions required for convergence
-        prestol:
-            maximum pressure outside the contact region allowed for convergence
-        maxiter:
-            maximum number of iterations allowed for convergence
-        logger:
-            optional logger, to be used with a logger from the
-            ContactMechanics.Tools.Logger
+        pentol : float
+            Maximum penetration of contacting regions required for convergence.
+        forcetol : float
+            Maximum force outside the contact region allowed for convergence.
+        maxiter : int
+            Maximum number of iterations allowed for convergence.
+        logger : :obj:`ContactMechanics.Tools.Logger`
+            Reports status and values at each iteration.
         """
         # pylint: disable=arguments-differ
         self.disp = None

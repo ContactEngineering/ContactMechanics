@@ -28,14 +28,12 @@
 Implements a convenient Factory function for Contact System creation
 """
 
-from ContactMechanics.Systems import NonSmoothContactSystem
-from ContactMechanics.PlasticSystemSpecialisations import \
-    PlasticNonSmoothContactSystem
-
-from ContactMechanics import PeriodicFFTElasticHalfSpace
-from ContactMechanics import FreeFFTElasticHalfSpace
 from SurfaceTopography import open_topography
 from SurfaceTopography.IO import ReaderBase
+
+from .PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
+from .Systems import NonSmoothContactSystem
+from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
 
 from NuMPI import MPI
 

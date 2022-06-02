@@ -1,8 +1,20 @@
 Change log for ContactMechanics
 ===============================
 
+v0.93.0 (24May22)
+-----------------
+
+- API: `callback` argument of optimizer was renamed to `results_callback`
+- ENH: Improved algorithm for pure plastic calculations (#68)
+- ENH: Pipeline function for contact calculations (#44, #65)
+- ENH: Report bibliography (#52)
+- MAINT: Removed buffer copy (#39)
+- MAINT: Removed `disp_scale` (#29)
+- MAINT: Renamed `prestol` to `forcetol` force consistent naming
+  (addressed aspects of #28)
+
 v0.92.0 (12Apr22)
---------------------------
+-----------------
 
 - BUG: hard_wall.py under pressure control was not working anymore 
 - BUG: hardness was ignored in hard_wall (closes #59)
@@ -11,7 +23,7 @@ v0.92.0 (12Apr22)
 - DOC: repaired example notebooks
 
 v0.91.0 (9Sep21)
--------------------
+----------------
 
 - DOC: example file for the use of NuMPI's CCGs 
 - TST: testing the NuMPI CCGs on nonadhesive primal and dual contact problems

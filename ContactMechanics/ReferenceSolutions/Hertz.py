@@ -27,8 +27,6 @@
 Helper tools for PyCo
 """
 
-from __future__ import division
-
 import math
 
 import numpy as np

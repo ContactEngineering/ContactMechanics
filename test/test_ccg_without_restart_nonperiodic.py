@@ -11,8 +11,6 @@ from NuMPI import MPI
 
 import scipy.optimize as optim
 
-from ContactMechanics.Tools.Logger import screen
-
 
 def test_ccg_without_restart_free_system(comm):
     pnp = Reduction(comm)
@@ -69,7 +67,7 @@ def test_ccg_without_restart_free_system(comm):
     system = NonSmoothContactSystem(substrate, surface)
     lbounds_parallel = system._lbounds_from_heights(penetration)
     res = ccg_without_restart.constrained_conjugate_gradients(
-        system.objective(penetration, gradient=True, logger=screen),
+        system.objective(penetration, gradient=True),
         # We also test that the logger and the postprocessing involved work properly in parallel
         system.hessian_product,
         init_disp[substrate.subdomain_slices].reshape(-1),

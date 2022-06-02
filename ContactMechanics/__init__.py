@@ -28,10 +28,10 @@
 Defines all solid mechanics model used in PyCo
 """
 
+import ContactMechanics.PipelineFunction  # noqa: F401
 from .Substrates import Substrate, ElasticSubstrate, \
     PlasticSubstrate  # noqa: F401
-from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace  # noqa: F401
-from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace  # noqa: F401
+from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace  # noqa: F401
 from .Factory import make_system, make_plastic_system  # noqa: F401
 
 try:

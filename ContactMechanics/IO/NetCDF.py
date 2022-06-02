@@ -27,8 +27,6 @@ Output surface topography and contact deformation to a structured NetCDF
 database.
 """
 
-from __future__ import print_function
-
 import numbers
 from math import sqrt
 

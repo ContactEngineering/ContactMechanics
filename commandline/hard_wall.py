@@ -437,21 +437,20 @@ if arguments.pressure is not None or arguments.pressure_from_fn is not None:
         suffix = '.{}'.format(i)
         if len(pressure) == 1:
             suffix = ''
+        external_force = _pressure * np.prod(surface.physical_sizes)
+        logger.pr(f'external_force = {external_force}')
         opt = system.minimize_proxy(logger=logger,
-                                    external_force=_pressure * np.prod(
-                                        surface.physical_sizes),
+                                    external_force=external_force,
                                     pentol=arguments.pentol,
                                     maxiter=arguments.maxiter,
                                     verbose=arguments.verbose)
         c = opt.active_set
         f = opt.jac
         u = opt.x[:f.shape[0], :f.shape[1]]
-        logger.pr('displacement = {}'.format(opt.offset))
-        logger.pr('pressure = {} ({})'.format(f.sum() / np.prod(surface.physical_sizes),
-                                              _pressure))
-        logger.pr('energy = {}'.format(opt.fun))
-        logger.pr('fractional contact area = {}'
-                  .format((f > 0).sum() / np.prod(surface.nb_grid_pts)))
+        logger.pr(f'displacement = {opt.offset}')
+        logger.pr(f'pressure = {f.sum() / np.prod(surface.physical_sizes)} ({_pressure})')
+        logger.pr(f'energy = {opt.fun}')
+        logger.pr(f'fractional contact area = {(f > 0).sum() / np.prod(surface.nb_grid_pts)}')
 
         area = (f > 0).sum() / np.prod(surface.nb_grid_pts)
         load = _pressure

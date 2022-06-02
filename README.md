@@ -16,6 +16,7 @@ The methods that are implemented in this code are described in various papers:
 - Fast solution of nonadhesive, hard-wall interactions.
     - [Polonsky, Keer, Wear 231, 206 (1999)](https://doi.org/10.1016/S0043-1648(99)00113-1)
 - Contact plasticity.
+    - [Almqvist, Sahlin, Larsson, Glavatskih, Tribol. Int. 40, 574 (2007)](https://doi.org/10.1016/j.triboint.2005.11.008) 
     - [Weber, Suhina, Junge, Pastewka, Brouwer, Bonn, Nature Comm. 9, 888 (2018)](https://doi.org/10.1038/s41467-018-02981-y)
 
 Build status
