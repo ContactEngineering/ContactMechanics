@@ -2,7 +2,7 @@ Installation
 ============
 
 You need Python 3 and all dependencies of SurfaceTopography_ to install ContactMechanics.
-More details on the installation of dependencies are provided in SurfaceTopography's `installation instructions <https://contactengineering.github.io/SurfaceTopography/installation.html>`.
+More details on the installation of dependencies are provided in SurfaceTopography's `installation instructions <https://contactengineering.github.io/SurfaceTopography/installation.html>`_.
 
 
 Direct installation with pip
