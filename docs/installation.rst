@@ -12,7 +12,7 @@ ContactMechanics can be installed by invoking
 
 .. code-block:: bash
 
-    python3 -m pip  install [--user] git+https://github.com/ComputationalMechanics/ContactMechanics.git
+    python3 -m pip  install [--user] ContactMechanics
 
 
 Updating ContactMechanics
