@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contributing to ContactMechanics &mdash; ContactMechanics 0.92.0 documentation</title>
+  <title>Contributing to ContactMechanics &mdash; ContactMechanics 0.93.1.dev2+gc8133e1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> ContactMechanics
           </a>
               <div class="version">
-                0.92.0
+                0.93.1.dev2+gc8133e1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -96,9 +97,9 @@
            <div itemprop="articleBody">
              
   <section id="contributing-to-contactmechanics">
-<span id="contributing"></span><h1>Contributing to ContactMechanics<a class="headerlink" href="#contributing-to-contactmechanics" title="Permalink to this headline"></a></h1>
+<span id="contributing"></span><h1>Contributing to ContactMechanics<a class="headerlink" href="#contributing-to-contactmechanics" title="Permalink to this heading"></a></h1>
 <section id="development">
-<h2>Development<a class="headerlink" href="#development" title="Permalink to this headline"></a></h2>
+<h2>Development<a class="headerlink" href="#development" title="Permalink to this heading"></a></h2>
 <p>To use the code without installing it, e.g. for development purposes, use the <cite>env.sh</cite> script to set the environment:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span> /path/to/PyCo/env.sh <span class="o">[</span>python3<span class="o">]</span>
 </pre></div>
@@ -110,7 +111,7 @@
 <p>whenever any of the Cython (.pyx) sources are modified.</p>
 </section>
 <section id="code-style">
-<h2>Code style<a class="headerlink" href="#code-style" title="Permalink to this headline"></a></h2>
+<h2>Code style<a class="headerlink" href="#code-style" title="Permalink to this heading"></a></h2>
 <p>Always follow <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP-8</a>.
 Documentation strings must follow the
 <a class="reference external" href="https://numpydoc.readthedocs.io/">numpydoc</a> standard.</p>
@@ -119,14 +120,14 @@ a parameter after a symbol (e.g. <cite>lambda</cite>) but rather say that it is
 (e.g. <cite>large_wavelength_cutoff</cite>).</p>
 </section>
 <section id="development-branches">
-<h2>Development branches<a class="headerlink" href="#development-branches" title="Permalink to this headline"></a></h2>
+<h2>Development branches<a class="headerlink" href="#development-branches" title="Permalink to this heading"></a></h2>
 <p>New features should be developed always in its own branch. When creating your own branch,
 please suffix that branch by the year of creation on a description of what is contains.
 For example, if you are working on an implementation for line scans and you started that
 work in 2018, the branch could be called “18_line_scans”.</p>
 </section>
 <section id="commits">
-<h2>Commits<a class="headerlink" href="#commits" title="Permalink to this headline"></a></h2>
+<h2>Commits<a class="headerlink" href="#commits" title="Permalink to this heading"></a></h2>
 <p>Prepend you commits with a shortcut indicating the type of changes they contain:</p>
 <ul class="simple">
 <li><p>ENH: Enhancement (e.g. a new feature)</p></li>
@@ -146,13 +147,13 @@ work in 2018, the branch could be called “18_line_scans”.</p>
 </ul>
 </section>
 <section id="authors">
-<h2>Authors<a class="headerlink" href="#authors" title="Permalink to this headline"></a></h2>
+<h2>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h2>
 <p>Add yourself to the AUTHORS file using the email address that you are using for your
 commits. We use this information to automatically generate copyright statements for
 all files from the commit log.</p>
 </section>
 <section id="writing-tests">
-<h2>Writing tests<a class="headerlink" href="#writing-tests" title="Permalink to this headline"></a></h2>
+<h2>Writing tests<a class="headerlink" href="#writing-tests" title="Permalink to this heading"></a></h2>
 <p>Older tests are written using the <cite>unittest</cite> syntax. We now use <cite>pytest</cite> (that
 understands almost all unittest syntaxes), because it is compatible with the
 parallel test runner <a class="reference external" href="https://github.com/bccp/runtests">runtests</a>.</p>
@@ -169,7 +170,7 @@ and/or is incompatible with <cite>runtests</cite> (<cite>unittest</cite>), inclu
 <p>The file will executed in a run with <cite>pytest</cite> and not with a (parallel) run with
 <cite>python3 run-tests.py</cite></p>
 <section id="mpi-tests">
-<h3>MPI Tests<a class="headerlink" href="#mpi-tests" title="Permalink to this headline"></a></h3>
+<h3>MPI Tests<a class="headerlink" href="#mpi-tests" title="Permalink to this heading"></a></h3>
 <p>In order to vary the number of processors used in the tests, you should always
 explictely use the communicator defined as fixture in <cite>test/conftest.py</cite> instead
 of <cite>MPI.COMM_WORLD</cite>.</p>
@@ -206,7 +207,7 @@ one test.</p>
 </div>
 </section>
 <section id="debug-plots-in-the-tests">
-<h3>Debug plots in the tests<a class="headerlink" href="#debug-plots-in-the-tests" title="Permalink to this headline"></a></h3>
+<h3>Debug plots in the tests<a class="headerlink" href="#debug-plots-in-the-tests" title="Permalink to this heading"></a></h3>
 <p>Often when you develop your test you need to plot and print things to see what
 happens. It is a good idea to let the plots ready for use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
@@ -219,7 +220,7 @@ happens. It is a good idea to let the plots ready for use:</p>
 </section>
 </section>
 <section id="compiling-the-documentation">
-<h2>Compiling the documentation<a class="headerlink" href="#compiling-the-documentation" title="Permalink to this headline"></a></h2>
+<h2>Compiling the documentation<a class="headerlink" href="#compiling-the-documentation" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>After changes to the ContactMechanics source, you have to build again: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build</span></code></p></li>
 <li><p>Navigate into the docs folder: <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">docs/</span></code></p></li>

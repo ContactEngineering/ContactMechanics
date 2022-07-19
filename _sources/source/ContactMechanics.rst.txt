@@ -33,6 +33,14 @@ ContactMechanics.Factory module
    :undoc-members:
    :show-inheritance:
 
+ContactMechanics.PipelineFunction module
+----------------------------------------
+
+.. automodule:: ContactMechanics.PipelineFunction
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ContactMechanics.PlasticSystemSpecialisations module
 ----------------------------------------------------
 

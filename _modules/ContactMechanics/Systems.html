@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.92.0 documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 0.93.1.dev2+gc8133e1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,6 +13,7 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -27,7 +28,7 @@
             <a href="../../index.html" class="icon icon-home"> ContactMechanics
           </a>
               <div class="version">
-                0.92.0
+                0.93.1.dev2+gc8133e1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -280,18 +281,18 @@
             <span class="k">return</span> <span class="n">in_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">IncompatibleResolutionError</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">_reshape_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lbounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_reshape_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lbounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubounds</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">bnds</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">lbounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ubounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ubounds</span> <span class="o">=</span> <span class="n">disp_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">ubounds</span><span class="p">)</span>
-            <span class="n">lbounds</span> <span class="o">=</span> <span class="n">disp_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">lbounds</span><span class="p">)</span>
+            <span class="n">ubounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">ubounds</span><span class="p">)</span>
+            <span class="n">lbounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">lbounds</span><span class="p">)</span>
             <span class="n">bnds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">lbounds</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">ubounds</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
         <span class="k">elif</span> <span class="n">lbounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">lbounds</span> <span class="o">=</span> <span class="n">disp_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">lbounds</span><span class="p">)</span>
+            <span class="n">lbounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">lbounds</span><span class="p">)</span>
             <span class="n">bnds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
                 <span class="nb">zip</span><span class="p">(</span><span class="n">lbounds</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lbounds</span><span class="p">))]))</span>
         <span class="k">elif</span> <span class="n">ubounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ubounds</span> <span class="o">=</span> <span class="n">disp_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">ubounds</span><span class="p">)</span>
+            <span class="n">ubounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">ubounds</span><span class="p">)</span>
             <span class="n">bnds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
                 <span class="nb">zip</span><span class="p">([</span><span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ubounds</span><span class="p">))],</span> <span class="n">ubounds</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
         <span class="k">return</span> <span class="n">bnds</span>
@@ -306,9 +307,9 @@
 
         <span class="k">return</span> <span class="n">lbounds</span>
 
-    <span class="k">def</span> <span class="nf">_update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">disp_scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
         <span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
         <span class="n">result</span><span class="o">.</span><span class="n">jac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">jac</span><span class="p">)</span>
@@ -326,7 +327,7 @@
                        <span class="n">initial_displacements</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
                        <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lbounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                       <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                       <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convenience function. Eliminates boilerplate code for most minimisation</span>
 <span class="sd">        problems by encapsulating the use of scipy.minimize for common default</span>
@@ -368,10 +369,6 @@
 <span class="sd">                    displacement vector. Instead of a callable, it can be set</span>
 <span class="sd">                    to &#39;True&#39;, in which case the system&#39;s default callback</span>
 <span class="sd">                    function is called.</span>
-<span class="sd">        disp_scale : float</span>
-<span class="sd">                     (default 1.)</span>
-<span class="sd">                     allows to specify a scaling of the displacement before</span>
-<span class="sd">                     evaluation.</span>
 <span class="sd">        logger :</span>
 <span class="sd">                 (default None)</span>
 <span class="sd">                 log information at every objective evaluation.</span>
@@ -384,13 +381,10 @@
                              <span class="s2">&quot;and </span><span class="si">{0}</span><span class="s2">.objective directly&quot;</span>
                              <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
 
-        <span class="n">fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="n">disp_scale</span><span class="p">,</span>
-                             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+        <span class="n">fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">initial_displacements</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">initial_displacements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
-        <span class="n">initial_displacements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span>
-            <span class="n">initial_displacements</span><span class="p">)</span>
+            <span class="n">initial_displacements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
+        <span class="n">initial_displacements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="n">initial_displacements</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">callback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
 
@@ -401,29 +395,28 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span>
 
-        <span class="n">bnds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_bounds</span><span class="p">(</span><span class="n">lbounds</span><span class="p">,</span> <span class="n">ubounds</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="n">disp_scale</span><span class="p">)</span>
+        <span class="n">bnds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_bounds</span><span class="p">(</span><span class="n">lbounds</span><span class="p">,</span> <span class="n">ubounds</span><span class="p">)</span>
 
         <span class="c1"># Scipy minimizers that accept bounds</span>
         <span class="n">bounded_minimizers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="s1">&#39;TNC&#39;</span><span class="p">,</span> <span class="s1">&#39;SLSQP&#39;</span><span class="p">}</span>
 
         <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">bounded_minimizers</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
-                <span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">disp_scale</span> <span class="o">*</span> <span class="n">initial_displacements</span><span class="p">,</span>
+                <span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">initial_displacements</span><span class="p">,</span>
                 <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
                 <span class="n">bounds</span><span class="o">=</span><span class="n">bnds</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
-                <span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">disp_scale</span> <span class="o">*</span> <span class="n">initial_displacements</span><span class="p">,</span>
+                <span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">initial_displacements</span><span class="p">,</span>
                 <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
                 <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_state</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">disp_scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_state</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gradient</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span></div>
 
 <div class="viewcode-block" id="SystemBase.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.objective">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
-                  <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This helper method exposes a scipy.optimize-friendly interface to the</span>
 <span class="sd">        evaluate() method. Use this for optimization purposes, it makes sure</span>
@@ -437,8 +430,6 @@
 <span class="sd">                      system subclasses</span>
 <span class="sd">        gradient   -- (default False) whether the gradient is supposed to be</span>
 <span class="sd">                      used</span>
-<span class="sd">        disp_scale -- (default 1.) allows to specify a scaling of the</span>
-<span class="sd">                      dislacement before evaluation.</span>
 <span class="sd">        logger     -- (default None) log information at every iteration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
@@ -563,7 +554,7 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NonSmoothContactSystem.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.objective">[docs]</a>    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">disp_scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="NonSmoothContactSystem.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.objective">[docs]</a>    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This helper method exposes a scipy.optimize-friendly interface to the</span>
 <span class="sd">        evaluate() method. Use this for optimization purposes, it makes sure</span>
@@ -580,9 +571,6 @@
 <span class="sd">        gradient: (default False)</span>
 <span class="sd">            whether the gradient is supposed to be</span>
 <span class="sd">            used</span>
-<span class="sd">        disp_scale:</span>
-<span class="sd">            (default 1.) allows to specify a scaling of the</span>
-<span class="sd">            dislacement before evaluation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=arguments-differ</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
@@ -590,18 +578,14 @@
             <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">disp</span><span class="p">):</span>
                 <span class="c1"># pylint: disable=missing-docstring</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
-                        <span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: disp.shape: </span><span class="si">{}</span><span class="s2">, res: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">err</span><span class="p">,</span> <span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
-                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">disp_scale</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: disp.shape: </span><span class="si">{}</span><span class="s2">, res: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">disp</span><span class="p">):</span>
                 <span class="c1"># pylint: disable=missing-docstring</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
-                    <span class="n">disp_scale</span> <span class="o">*</span> <span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">disp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">),</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">fun</span></div>
 
@@ -630,23 +614,22 @@
 
 <span class="sd">        Parameters:</span>
 <span class="sd">        -----------</span>
-<span class="sd">        offset:</span>
+<span class="sd">        offset : float</span>
 <span class="sd">            determines indentation depth</span>
-<span class="sd">        initial_displacements:</span>
+<span class="sd">        initial_displacements : array_like</span>
 <span class="sd">            initial guess for surface displacement. If not set, zero</span>
 <span class="sd">                      displacement of shape</span>
 <span class="sd">                      self.substrate.nb_domain_grid_pts is used</span>
-<span class="sd">        initial_forces:</span>
+<span class="sd">        initial_forces : array_like</span>
 <span class="sd">            initial guess for the forces</span>
-<span class="sd">        pentol:</span>
-<span class="sd">            maximum penetration of contacting regions required for convergence</span>
-<span class="sd">        prestol:</span>
-<span class="sd">            maximum pressure outside the contact region allowed for convergence</span>
-<span class="sd">        maxiter:</span>
-<span class="sd">            maximum number of iterations allowed for convergence</span>
-<span class="sd">        logger:</span>
-<span class="sd">            optional logger, to be used with a logger from the</span>
-<span class="sd">            ContactMechanics.Tools.Logger</span>
+<span class="sd">        pentol : float</span>
+<span class="sd">            Maximum penetration of contacting regions required for convergence.</span>
+<span class="sd">        forcetol : float</span>
+<span class="sd">            Maximum force outside the contact region allowed for convergence.</span>
+<span class="sd">        maxiter : int</span>
+<span class="sd">            Maximum number of iterations allowed for convergence.</span>
+<span class="sd">        logger : :obj:`ContactMechanics.Tools.Logger`</span>
+<span class="sd">            Reports status and values at each iteration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=arguments-differ</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="kc">None</span>

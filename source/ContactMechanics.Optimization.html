@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.Optimization package &mdash; ContactMechanics 0.92.0 documentation</title>
+  <title>ContactMechanics.Optimization package &mdash; ContactMechanics 0.93.1.dev2+gc8133e1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -30,7 +31,7 @@
             <a href="../index.html" class="icon icon-home"> ContactMechanics
           </a>
               <div class="version">
-                0.92.0
+                0.93.1.dev2+gc8133e1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -68,6 +69,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.FFTElasticHalfSpace">ContactMechanics.FFTElasticHalfSpace module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.Factory">ContactMechanics.Factory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.PipelineFunction">ContactMechanics.PipelineFunction module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.PlasticSystemSpecialisations">ContactMechanics.PlasticSystemSpecialisations module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.Substrates">ContactMechanics.Substrates module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.html#module-ContactMechanics.Systems">ContactMechanics.Systems module</a></li>
@@ -112,67 +114,17 @@
            <div itemprop="articleBody">
              
   <section id="contactmechanics-optimization-package">
-<h1>ContactMechanics.Optimization package<a class="headerlink" href="#contactmechanics-optimization-package" title="Permalink to this headline"></a></h1>
+<h1>ContactMechanics.Optimization package<a class="headerlink" href="#contactmechanics-optimization-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
 <section id="module-ContactMechanics.Optimization.ConstrainedConjugateGradients">
-<span id="contactmechanics-optimization-constrainedconjugategradients-module"></span><h2>ContactMechanics.Optimization.ConstrainedConjugateGradients module<a class="headerlink" href="#module-ContactMechanics.Optimization.ConstrainedConjugateGradients" title="Permalink to this headline"></a></h2>
+<span id="contactmechanics-optimization-constrainedconjugategradients-module"></span><h2>ContactMechanics.Optimization.ConstrainedConjugateGradients module<a class="headerlink" href="#module-ContactMechanics.Optimization.ConstrainedConjugateGradients" title="Permalink to this heading"></a></h2>
 <p>Implementation of the constrained conjugate gradient algorithm as described in
 I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients">
-<span class="sig-prename descclassname"><span class="pre">ContactMechanics.Optimization.ConstrainedConjugateGradients.</span></span><span class="sig-name descname"><span class="pre">constrained_conjugate_gradients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">substrate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topography</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hardness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_displacements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pentol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prestol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixfac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Optimization/ConstrainedConjugateGradients.html#constrained_conjugate_gradients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Optimization.ConstrainedConjugateGradients.constrained_conjugate_gradients" title="Permalink to this definition"></a></dt>
-<dd><p>Use a constrained conjugate gradient optimization to find the equilibrium
-configuration deflection of an elastic manifold. The conjugate gradient
-iteration is reset using the steepest descent direction whenever the
-contact area changes.
-Method is described in I.A. Polonsky, L.M. Keer, Wear 231, 206 (1999)
-:param substrate: Elastic manifold.
-:type substrate: elastic manifold
-:param topography: Height profile of the rigid counterbody
-:type topography: SurfaceTopography object
-:param hardness: Hardness of the substrate. Pressure cannot exceed this value. Can be</p>
-<blockquote>
-<div><p>scalar or array (i.e. per pixel) value.</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>external_force</strong> (<em>float</em>) – External force. Constrains the sum of forces to this value.</p></li>
-<li><p><strong>offset</strong> (<em>float</em>) – Offset of rigid surface. Ignore if external_force is specified.</p></li>
-<li><p><strong>initial_displacements</strong> (<em>array_like</em>) – Displacement field for initializing the solver. Guess an initial
-value if set to None.</p></li>
-<li><p><strong>initial_forces</strong> (<em>array_like</em>) – pixel forces field for initializing the solver. Is computed from
-initial_displacements if none</p></li>
-<li><p><strong>pentol</strong> (<em>float</em>) – Maximum penetration of contacting regions required for convergence.</p></li>
-<li><p><strong>prestol</strong> (<em>float</em>) – maximum pressure outside the contact region allowed for convergence</p></li>
-<li><p><strong>maxiter</strong> (<em>float</em>) – Maximum number of iterations.</p></li>
-<li><p><strong>logger</strong> (<em>ContactMechanics.Tools.Logger</em>) – reports status and values at each iteration</p></li>
-<li><p><strong>callback</strong> (<em>callable</em><em>(</em><em>int iteration</em><em>, </em><em>array_link forces</em><em>, </em><em>dict d</em><em>)</em>) – called each iteration. The dictionary contains additional scalars</p></li>
-<li><p><strong>verbose</strong> (<em>bool</em>) – If True, more scalar quantities are passed to the logger</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>x: displacements
-fun: elastic energy
-jac: forces
-active_set: points where forces are not constrained to 0 or hardness
-offset: offset i rigid surface, results from the optimization processes</p>
-<blockquote>
-<div><p>when the external_force is constrained</p>
-</div></blockquote>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optimisation result</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <section id="module-ContactMechanics.Optimization">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ContactMechanics.Optimization" title="Permalink to this headline"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ContactMechanics.Optimization" title="Permalink to this heading"></a></h2>
 <p>Optimization algorithms</p>
 </section>
 </section>

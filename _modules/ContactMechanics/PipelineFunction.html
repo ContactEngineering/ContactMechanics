@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContactMechanics.PipelineFunction &mdash; ContactMechanics 0.93.1.dev2+gc8133e1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> ContactMechanics
+          </a>
+              <div class="version">
+                0.93.1.dev2+gc8133e1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../testing.html#linter">Linter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to ContactMechanics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.html">ContactMechanics package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.GreensFunctions.html">ContactMechanics.GreensFunctions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.IO.html">ContactMechanics.IO package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.Optimization.html">ContactMechanics.Optimization package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.ReferenceSolutions.html">ContactMechanics.ReferenceSolutions package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ContactMechanics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>ContactMechanics.PipelineFunction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ContactMechanics.PipelineFunction</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2022 Lars Pastewka</span>
+<span class="c1">#</span>
+<span class="c1"># ### MIT license</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">SurfaceTopography</span> <span class="k">import</span> <span class="n">PlasticTopography</span>
+<span class="kn">from</span> <span class="nn">SurfaceTopography.HeightContainer</span> <span class="k">import</span> <span class="n">UniformTopographyInterface</span>
+
+<span class="kn">from</span> <span class="nn">.FFTElasticHalfSpace</span> <span class="k">import</span> <span class="n">PeriodicFFTElasticHalfSpace</span><span class="p">,</span> <span class="n">FreeFFTElasticHalfSpace</span>
+<span class="kn">from</span> <span class="nn">.Factory</span> <span class="k">import</span> <span class="n">make_system</span><span class="p">,</span> <span class="n">make_plastic_system</span>
+
+<span class="n">_log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_contact_calculation</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">external_force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a full contact calculation at a given external load.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    system : ContactMechanics.Systems.SystemBase</span>
+<span class="sd">        The contact mechanical system.</span>
+<span class="sd">    offset : float, optional</span>
+<span class="sd">        Offset between the two surfaces. (Default: None)</span>
+<span class="sd">    external_force : float, optional</span>
+<span class="sd">        The force pushing the surfaces together. (Default: None)</span>
+<span class="sd">    history : tuple</span>
+<span class="sd">        History returned by past calls to next_step</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    displacements : numpy.ndarray</span>
+<span class="sd">        Current surface displacement field.</span>
+<span class="sd">    forces : numpy.ndarray</span>
+<span class="sd">        Current surface pressure field.</span>
+<span class="sd">    displacement : float</span>
+<span class="sd">        Current displacement of the rigid surface</span>
+<span class="sd">    load : float</span>
+<span class="sd">        Current load.</span>
+<span class="sd">    area : float</span>
+<span class="sd">        Current fractional contact area.</span>
+<span class="sd">    history : tuple</span>
+<span class="sd">        History of contact calculations.</span>
+<span class="sd">    optimizer_kwargs : dict, optional</span>
+<span class="sd">        Optional arguments passed on to the optimizer. (Default: {})</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">topography</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">surface</span>
+    <span class="n">substrate</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">substrate</span>
+
+    <span class="c1"># Get the profile as a numpy array</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="n">topography</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span>
+
+    <span class="c1"># Find max, min and mean heights</span>
+    <span class="n">middle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">history</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mean_displacements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">mean_gaps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">mean_pressures</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">total_contact_areas</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">converged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mean_displacements</span><span class="p">,</span> <span class="n">mean_gaps</span><span class="p">,</span> <span class="n">mean_pressures</span><span class="p">,</span> <span class="n">total_contact_areas</span><span class="p">,</span> <span class="n">converged</span> <span class="o">=</span> <span class="n">history</span>
+
+    <span class="n">opt</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">minimize_proxy</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span> <span class="n">external_force</span><span class="o">=</span><span class="n">external_force</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="n">pentol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
+                                <span class="o">**</span><span class="n">optimizer_kwargs</span><span class="p">)</span>
+    <span class="n">force_xy</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">jac</span>
+    <span class="n">displacement_xy</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">x</span><span class="p">[:</span><span class="n">force_xy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:</span><span class="n">force_xy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">mean_displacements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_displacements</span><span class="p">,</span> <span class="p">[</span><span class="n">opt</span><span class="o">.</span><span class="n">offset</span><span class="p">])</span>
+    <span class="n">mean_gaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_gaps</span><span class="p">,</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">displacement_xy</span><span class="p">)</span> <span class="o">-</span> <span class="n">middle</span> <span class="o">-</span> <span class="n">opt</span><span class="o">.</span><span class="n">offset</span><span class="p">])</span>
+    <span class="n">mean_load</span> <span class="o">=</span> <span class="n">force_xy</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">)</span>
+    <span class="n">mean_pressures</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_pressures</span><span class="p">,</span> <span class="p">[</span><span class="n">mean_load</span><span class="p">])</span>
+    <span class="n">total_contact_area</span> <span class="o">=</span> <span class="p">(</span><span class="n">force_xy</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">)</span>
+    <span class="n">total_contact_areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_contact_areas</span><span class="p">,</span> <span class="p">[</span><span class="n">total_contact_area</span><span class="p">])</span>
+    <span class="n">converged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">converged</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">opt</span><span class="o">.</span><span class="n">success</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
+
+    <span class="n">area_per_pt</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">area_per_pt</span>
+    <span class="n">pressure_xy</span> <span class="o">=</span> <span class="n">force_xy</span> <span class="o">/</span> <span class="n">area_per_pt</span>
+    <span class="n">gap_xy</span> <span class="o">=</span> <span class="n">displacement_xy</span> <span class="o">-</span> <span class="n">topography</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">-</span> <span class="n">opt</span><span class="o">.</span><span class="n">offset</span>
+    <span class="n">gap_xy</span><span class="p">[</span><span class="n">gap_xy</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">contacting_points_xy</span> <span class="o">=</span> <span class="n">force_xy</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">displacement_xy</span><span class="p">,</span> <span class="n">gap_xy</span><span class="p">,</span> <span class="n">pressure_xy</span><span class="p">,</span> <span class="n">contacting_points_xy</span><span class="p">,</span> <span class="n">opt</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="n">mean_load</span><span class="p">,</span> <span class="n">total_contact_area</span><span class="p">,</span> \
+        <span class="p">(</span><span class="n">mean_displacements</span><span class="p">,</span> <span class="n">mean_gaps</span><span class="p">,</span> <span class="n">mean_pressures</span><span class="p">,</span> <span class="n">total_contact_areas</span><span class="p">,</span> <span class="n">converged</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_next_contact_step</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a full contact calculation. Try to guess displacement such that areas</span>
+<span class="sd">    are equally spaced on a log scale.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    system : ContactMechanics.Systems.SystemBase</span>
+<span class="sd">        The contact mechanical system.</span>
+<span class="sd">    history : tuple</span>
+<span class="sd">        History returned by past calls to next_step</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    displacements : numpy.ndarray</span>
+<span class="sd">        Current surface displacement field.</span>
+<span class="sd">    forces : numpy.ndarray</span>
+<span class="sd">        Current surface pressure field.</span>
+<span class="sd">    displacement : float</span>
+<span class="sd">        Current displacement of the rigid surface</span>
+<span class="sd">    load : float</span>
+<span class="sd">        Current load.</span>
+<span class="sd">    area : float</span>
+<span class="sd">        Current fractional contact area.</span>
+<span class="sd">    history : tuple</span>
+<span class="sd">        History of contact calculations.</span>
+<span class="sd">    optimizer_kwargs : dict, optional</span>
+<span class="sd">        Optional arguments passed on to the optimizer. (Default: {})</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get topography object from contact system</span>
+    <span class="n">topography</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">surface</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Reset plastic displacement if this is a plastic calculation. We need to do this because the individual steps</span>
+        <span class="c1"># are not in order, i.e. the contact is not continuously formed or lifted. Each calculation needs to compute</span>
+        <span class="c1"># a fresh plastic displacement.</span>
+        <span class="n">topography</span><span class="o">.</span><span class="n">plastic_displ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">plastic_displ</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Get the profile as a numpy array</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="n">topography</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span>
+
+    <span class="c1"># Find max, min and mean heights</span>
+    <span class="n">top</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span>
+    <span class="n">middle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span>
+    <span class="n">bot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">history</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mean_displacements</span><span class="p">,</span> <span class="n">mean_gaps</span><span class="p">,</span> <span class="n">mean_pressures</span><span class="p">,</span> <span class="n">total_contact_areas</span><span class="p">,</span> <span class="n">converged</span> <span class="o">=</span> <span class="n">history</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mean_displacements</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">mean_displacement</span> <span class="o">=</span> <span class="o">-</span><span class="n">middle</span>
+    <span class="k">elif</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">mean_displacement</span> <span class="o">=</span> <span class="o">-</span><span class="n">top</span> <span class="o">+</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="n">top</span> <span class="o">-</span> <span class="n">middle</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Intermediate sort by area</span>
+        <span class="n">sorted_disp</span><span class="p">,</span> <span class="n">sorted_area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span>
+            <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">mean_displacements</span><span class="p">,</span> <span class="n">total_contact_areas</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="n">ref_area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sorted_area</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">)))</span>
+        <span class="n">darea</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ref_area</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">ref_area</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">ref_area</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">darea</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mean_displacement</span> <span class="o">=</span> <span class="n">bot</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">sorted_disp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bot</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mean_displacement</span> <span class="o">=</span> <span class="p">(</span><span class="n">sorted_disp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">sorted_disp</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">_contact_calculation</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">mean_displacement</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="n">pentol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="n">history</span><span class="p">,</span>
+                                <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="n">optimizer_kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="contact_mechanics"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.PipelineFunction.contact_mechanics">[docs]</a><span class="k">def</span> <span class="nf">contact_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substrate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offsets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressures</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hardness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                      <span class="n">results_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Carry out an automated contact mechanics calculations. The pipeline</span>
+<span class="sd">    function return thermodynamic data (averages over the contact area,</span>
+<span class="sd">    e.g. the total force or the total area). Spatially resolved data</span>
+<span class="sd">    (pressure maps, displacement maps, etc.) are passed to the callback</span>
+<span class="sd">    function. If this data is reqired, the callback function needs to take</span>
+<span class="sd">    care of analyzing or storing it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self : :obj:`SurfaceTopography.UniformTopographyInterface`</span>
+<span class="sd">        Topography on which to carry out the contact calculation.</span>
+<span class="sd">    substrate : str, optional</span>
+<span class="sd">        Specifies whether substrate should be &#39;periodic&#39; or &#39;nonperiodic&#39;. If</span>
+<span class="sd">        set to None, it will be chosen according to whether the topography is</span>
+<span class="sd">        periodic or nonperiodic.</span>
+<span class="sd">        (Default: None)</span>
+<span class="sd">    nsteps : int, optional</span>
+<span class="sd">        Number of contact steps. (Default: 10)</span>
+<span class="sd">    offsets : list of floats, optional</span>
+<span class="sd">        List with offsets. Can only be set if `nsteps` and `pressures` is</span>
+<span class="sd">        set to None. (Default: None)</span>
+<span class="sd">    pressures : list of floats, optional</span>
+<span class="sd">        List with pressures in units of E*. Can only be set if `nsteps` and</span>
+<span class="sd">        `offsets` is set to None. (Default: None)</span>
+<span class="sd">    hardness : float, optional</span>
+<span class="sd">        Hardness in units of E*. Calculation is fully elastic if set to None.</span>
+<span class="sd">        (Default: None)</span>
+<span class="sd">    maxiter : int, optional</span>
+<span class="sd">        Maximum number of interations. (Default: 100)</span>
+<span class="sd">    results_callback : func, optional</span>
+<span class="sd">        Callback function receiving displacement, pressure, etc. fields.</span>
+<span class="sd">        (Default: None)</span>
+<span class="sd">    optimizer_kwargs : dict, optional</span>
+<span class="sd">        Optional arguments passed on to the optimizer. (Default: {})</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mean_pressure : np.ndarray</span>
+<span class="sd">        Array with mean pressure for each calculation step.</span>
+<span class="sd">    total_contact_area : np.ndarray</span>
+<span class="sd">        Array with total area for each calculation step.</span>
+<span class="sd">    mean_displacement : np.ndarray</span>
+<span class="sd">        Array with mean displacement for each calculation step.</span>
+<span class="sd">    mean_gap : np.ndarray</span>
+<span class="sd">        Array with mean gap for each calculation step.</span>
+<span class="sd">    converged : np.ndarray</span>
+<span class="sd">        Convergence information for each calculation step. Unconverged</span>
+<span class="sd">        results are still returned but should be interpreted with care.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Choose substrate from &#39;is_periodic&#39; flag, if not given</span>
+    <span class="c1">#</span>
+    <span class="k">if</span> <span class="n">substrate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">substrate</span> <span class="o">=</span> <span class="s1">&#39;periodic&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_periodic</span> <span class="k">else</span> <span class="s1">&#39;nonperiodic&#39;</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_periodic</span> <span class="o">!=</span> <span class="p">(</span><span class="n">substrate</span> <span class="o">==</span> <span class="s1">&#39;periodic&#39;</span><span class="p">):</span>
+        <span class="n">alert_message</span> <span class="o">=</span> <span class="s1">&#39;Topography is &#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_periodic</span><span class="p">:</span>
+            <span class="n">alert_message</span> <span class="o">+=</span> <span class="s1">&#39;periodic, but the analysis is configured for free boundaries.&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alert_message</span> <span class="o">+=</span> <span class="s1">&#39;not periodic, but the analysis is configured for periodic boundaries.&#39;</span>
+        <span class="n">_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">alert_message</span><span class="p">)</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Check whether either pressures or nsteps is given, but not both</span>
+    <span class="c1">#</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">nsteps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">offsets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pressures</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either `nsteps`, `offsets` or `pressures` must be given for a contact mechanics calculation.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">nsteps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">offsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pressures</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All of `nsteps`, `offsets` and `pressures` are given. There can only be one.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">nsteps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">offsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both of `nsteps` and `offsets` are given. Please specify only one.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">nsteps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pressures</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both of `nsteps` and `pressures` are given. Please specify only one.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">offsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pressures</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both of `offsets` and `pressures` are given. Please specify only one.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Conversion of force units</span>
+    <span class="n">force_conv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">)</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Some constants</span>
+    <span class="c1">#</span>
+    <span class="n">min_pentol</span> <span class="o">=</span> <span class="mf">1e-12</span>  <span class="c1"># lower bound for the penetration tolerance</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">hardness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hardness</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">topography</span> <span class="o">=</span> <span class="n">PlasticTopography</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hardness</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">topography</span> <span class="o">=</span> <span class="bp">self</span>
+
+    <span class="n">half_space_factory</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">periodic</span><span class="o">=</span><span class="n">PeriodicFFTElasticHalfSpace</span><span class="p">,</span>
+                              <span class="n">nonperiodic</span><span class="o">=</span><span class="n">FreeFFTElasticHalfSpace</span><span class="p">)</span>
+
+    <span class="n">half_space_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">substrate</span> <span class="o">=</span> <span class="n">half_space_factory</span><span class="p">[</span><span class="n">substrate</span><span class="p">](</span><span class="n">topography</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">topography</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">,</span>
+                                              <span class="o">**</span><span class="n">half_space_kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">hardness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hardness</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">system</span> <span class="o">=</span> <span class="n">make_plastic_system</span><span class="p">(</span><span class="n">substrate</span><span class="p">,</span> <span class="n">topography</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">system</span> <span class="o">=</span> <span class="n">make_system</span><span class="p">(</span><span class="n">substrate</span><span class="p">,</span> <span class="n">topography</span><span class="p">)</span>
+
+    <span class="c1"># Heuristics for the possible tolerance on penetration.</span>
+    <span class="c1"># This is necessary because numbers can vary greatly</span>
+    <span class="c1"># depending on the system of units.</span>
+    <span class="n">rms_height</span> <span class="o">=</span> <span class="n">topography</span><span class="o">.</span><span class="n">rms_height_from_area</span><span class="p">()</span>
+    <span class="n">pentol</span> <span class="o">=</span> <span class="n">rms_height</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">topography</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">))</span>
+    <span class="n">pentol</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">pentol</span><span class="p">,</span> <span class="n">min_pentol</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pressures</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pressures</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">offsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">offsets</span><span class="p">)</span>
+
+    <span class="n">history</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsteps</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">offsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">displacement_xy</span><span class="p">,</span> <span class="n">gap_xy</span><span class="p">,</span> <span class="n">pressure_xy</span><span class="p">,</span> <span class="n">contacting_points_xy</span><span class="p">,</span> <span class="n">mean_displacement</span><span class="p">,</span> <span class="n">mean_pressure</span><span class="p">,</span> \
+                <span class="n">total_contact_area</span><span class="p">,</span> <span class="n">history</span> <span class="o">=</span> <span class="n">_contact_calculation</span><span class="p">(</span>
+                    <span class="n">system</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">history</span><span class="o">=</span><span class="n">history</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="n">pentol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
+                    <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="n">optimizer_kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">pressures</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">displacement_xy</span><span class="p">,</span> <span class="n">gap_xy</span><span class="p">,</span> <span class="n">pressure_xy</span><span class="p">,</span> <span class="n">contacting_points_xy</span><span class="p">,</span> <span class="n">mean_displacement</span><span class="p">,</span> <span class="n">mean_pressure</span><span class="p">,</span> \
+                <span class="n">total_contact_area</span><span class="p">,</span> <span class="n">history</span> <span class="o">=</span> <span class="n">_contact_calculation</span><span class="p">(</span>
+                    <span class="n">system</span><span class="p">,</span> <span class="n">external_force</span><span class="o">=</span><span class="n">pressures</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">force_conv</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="n">history</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="n">pentol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
+                    <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="n">optimizer_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">displacement_xy</span><span class="p">,</span> <span class="n">gap_xy</span><span class="p">,</span> <span class="n">pressure_xy</span><span class="p">,</span> <span class="n">contacting_points_xy</span><span class="p">,</span> <span class="n">mean_displacement</span><span class="p">,</span> <span class="n">mean_pressure</span><span class="p">,</span> \
+                <span class="n">total_contact_area</span><span class="p">,</span> <span class="n">history</span> <span class="o">=</span> <span class="n">_next_contact_step</span><span class="p">(</span>
+                    <span class="n">system</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="n">history</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="n">pentol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span> <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="n">optimizer_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Report results via callback</span>
+        <span class="k">if</span> <span class="n">results_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results_callback</span><span class="p">(</span><span class="n">displacement_xy</span><span class="p">,</span> <span class="n">gap_xy</span><span class="p">,</span> <span class="n">pressure_xy</span><span class="p">,</span> <span class="n">contacting_points_xy</span><span class="p">,</span> <span class="n">mean_displacement</span><span class="p">,</span>
+                             <span class="n">mean_pressure</span><span class="p">,</span> <span class="n">total_contact_area</span><span class="p">)</span>
+
+    <span class="n">mean_displacement</span><span class="p">,</span> <span class="n">mean_gap</span><span class="p">,</span> <span class="n">mean_pressure</span><span class="p">,</span> <span class="n">total_contact_area</span><span class="p">,</span> <span class="n">converged</span> <span class="o">=</span> <span class="n">history</span>
+
+    <span class="n">mean_pressure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_pressure</span><span class="p">)</span>
+    <span class="n">total_contact_area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">total_contact_area</span><span class="p">)</span>
+    <span class="n">mean_displacement</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_displacement</span><span class="p">)</span>
+    <span class="n">mean_gap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_gap</span><span class="p">)</span>
+    <span class="n">converged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">converged</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mean_pressure</span><span class="p">,</span> <span class="n">total_contact_area</span><span class="p">,</span> <span class="n">mean_displacement</span><span class="p">,</span> <span class="n">mean_gap</span><span class="p">,</span> <span class="n">converged</span></div>
+
+
+<span class="c1"># Register analysis functions from this module</span>
+<span class="n">UniformTopographyInterface</span><span class="o">.</span><span class="n">register_function</span><span class="p">(</span><span class="s1">&#39;contact_mechanics&#39;</span><span class="p">,</span> <span class="n">contact_mechanics</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2020 The Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

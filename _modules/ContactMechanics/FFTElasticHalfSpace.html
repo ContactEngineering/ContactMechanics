@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 0.92.0 documentation</title>
+  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 0.93.1.dev2+gc8133e1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,6 +13,7 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -27,7 +28,7 @@
             <a href="../../index.html" class="icon icon-home"> ContactMechanics
           </a>
               <div class="version">
-                0.92.0
+                0.93.1.dev2+gc8133e1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -219,6 +220,8 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+<span class="kn">from</span> <span class="nn">SurfaceTopography.Support</span> <span class="k">import</span> <span class="n">doi</span>
+
 <span class="kn">from</span> <span class="nn">.Substrates</span> <span class="k">import</span> <span class="n">ElasticSubstrate</span>
 
 <span class="kn">from</span> <span class="nn">muFFT</span> <span class="k">import</span> <span class="n">FFT</span>
@@ -238,6 +241,10 @@
     <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;periodic_fft_elastic_halfspace&quot;</span>
     <span class="n">_periodic</span> <span class="o">=</span> <span class="kc">True</span>
 
+    <span class="nd">@doi</span><span class="p">(</span><span class="s1">&#39;10.1115/1.2833523&#39;</span><span class="p">,</span>  <span class="c1"># Stanley &amp; Kato</span>
+         <span class="s1">&#39;10.1103/PhysRevB.74.075420&#39;</span><span class="p">,</span>  <span class="c1"># Campana &amp; Müser</span>
+         <span class="s1">&#39;10.1103/PhysRevB.86.075459&#39;</span>  <span class="c1"># Pastewka, Sharp, Robbins</span>
+         <span class="p">)</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
                  <span class="n">stiffness_q0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">superclass</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -855,7 +862,7 @@
             <span class="c1">#  needed in kforce</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">real_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">disp</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_buffer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="p">)</span>
-            <span class="n">dispk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()[</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">dispk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()[</span><span class="o">...</span><span class="p">]</span>
             <span class="n">kforce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_k_force_k</span><span class="p">(</span><span class="n">dispk</span><span class="p">)</span>
             <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_elastic_energy_k_space</span><span class="p">(</span><span class="n">kforce</span><span class="p">,</span> <span class="n">dispk</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">potential</span><span class="p">,</span> <span class="n">force</span></div>
@@ -903,6 +910,10 @@
     <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;free_fft_elastic_halfspace&quot;</span>
     <span class="n">_periodic</span> <span class="o">=</span> <span class="kc">False</span>
 
+    <span class="nd">@doi</span><span class="p">(</span><span class="s1">&#39;Hockney, Methods Comput. Phys. 9, 135 (1970)&#39;</span><span class="p">,</span>  <span class="c1"># Hockney 1970</span>
+         <span class="s1">&#39;10.1016/S0043-1648(00)00427-0&#39;</span><span class="p">,</span>  <span class="c1"># Liu, Wang, Liu 2000</span>
+         <span class="s1">&#39;10.1063/1.4950802&#39;</span>  <span class="c1"># Pastewka &amp; Robbins 2016</span>
+         <span class="p">)</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
                  <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
