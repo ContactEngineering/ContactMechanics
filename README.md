@@ -36,6 +36,9 @@ Installation
 
 Quick install with: `python3 -m pip install ContactMechanics`
 
+[Running contact mechanics simulations](examples/easy_hardwall_simulation.ipynb)
+--------------------------------------------------------------------------------
+
 Dependencies
 ------------
 
