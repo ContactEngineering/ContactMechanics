@@ -43,7 +43,7 @@ fourier transform:
 .. math ::
 
     \tilde h_{op} =
-    \sum_{mn} h_{mn} e^{i x_{mn} q_{op}}
+    \sum_{mn} h_{mn} e^{-i x_{mn} q_{op}}
 
 corresponding `np.fft.rfft` and `fftengine.fft`
 
