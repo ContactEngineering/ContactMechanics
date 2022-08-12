@@ -47,4 +47,4 @@ jobs:
     - name: Test with pytest
       run: |
         python3 .check_netcdf_capabilities.py ${{ matrix.mpi }}
-        if [ "${{ matrix.mpi }}" == "yes" ]; then python3 run-tests.py --no-build --verbose --full-trace; else python3 -m pytest --flake8 --verbose --full-trace -s; fi
+        if [ "${{ matrix.mpi }}" == "yes" ]; then python3 run-tests.py --no-build --verbose --full-trace; else python3 -m pytest --verbose --full-trace -s; fi
