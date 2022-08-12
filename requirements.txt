@@ -8,8 +8,6 @@ netCDF4>=1.5.3
 h5py
 sphinx>=1.8.2
 sphinx_rtd_theme
-pytest>=4
-pytest-flake8
 setuptools_scm>=3.5.0
 muFFT>=0.18.1
 runtests>=0.0.28
