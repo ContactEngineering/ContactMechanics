@@ -37,6 +37,7 @@ jobs:
         if [ "${{ matrix.mpi }}" == "yes" ]; then CC=mpicc python3 -m pip install -v --force-reinstall --no-binary mpi4py mpi4py==${{ matrix.mpi4py-version }}; fi
         python3 -m pip install -r requirements.txt --no-binary setuptools_scm --no-binary numpy
         if [ "${{ matrix.mpi }}" == "yes" ]; then NETCDF4_DIR=/usr/lib/x86_64-linux-gnu/netcdf/pnetcdf CC=mpicc python3 -m pip install --force-reinstall -v --no-binary netCDF4 netCDF4==${{ matrix.netcdf4-python-version }}; fi
+        python3 -m pip install pytest
         python3 -m pip list
 
     - name: Build extension module
@@ -47,4 +48,4 @@ jobs:
     - name: Test with pytest
       run: |
         python3 .check_netcdf_capabilities.py ${{ matrix.mpi }}
-        if [ "${{ matrix.mpi }}" == "yes" ]; then python3 run-tests.py --no-build --verbose --full-trace; else python3 -m pytest --flake8 --verbose --full-trace -s; fi
+        if [ "${{ matrix.mpi }}" == "yes" ]; then python3 run-tests.py --no-build --verbose --full-trace; else python3 -m pytest --verbose --full-trace -s; fi
