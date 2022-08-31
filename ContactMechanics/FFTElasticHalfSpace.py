@@ -43,18 +43,18 @@ fourier transform:
 .. math ::
 
     \tilde h_{op} =
-    \sum_{mn} h_{mn} e^{i x_{mn} q_{op}}
+    \sum_{mn} h_{mn} e^{-i x_{mn} q_{op}}
 
 corresponding `np.fft.rfft` and `fftengine.fft`
 
-fourier space input fields are assumed to be linked to the realspace field thru
+fourier space input fields are assumed to be linked to the realspace field through
 this fourier transform.
 
 fourier inverse transform:
 
 .. math ::
 
-    \tilde h_{mn} = \frac{1}{n_x n_y}
+    h_{mn} = \frac{1}{n_x n_y}
     \sum_{op} \tilde h_{op} e^{i x_{mn} q_{op}}
 
 corresponding `np.fft.irfft` and `fftengine.fft * fftengine.normalisation`

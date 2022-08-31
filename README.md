@@ -24,7 +24,7 @@ Build status
 
 The following badge should say _build passing_. This means that all automated tests completed successfully for the master branch.
 
-[![Build Status](https://travis-ci.org/ContactEngineering/ContactMechanics.svg?branch=master)](https://travis-ci.org/github/ContactEngineering/ContactMechanics)
+[![Build Status](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/tests.yml/badge.svg)](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/tests.yml?query=branch%3Amaster)
 
 Documentation
 -------------
