@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 1.0.1.dev9+g255c8a5 documentation</title>
+  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 1.0.1.dev18+gb8063ed documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <a href="../../index.html" class="icon icon-home"> ContactMechanics
           </a>
               <div class="version">
-                1.0.1.dev9+g255c8a5
+                1.0.1.dev18+gb8063ed
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -126,18 +126,18 @@
 <span class="sd">.. math ::</span>
 
 <span class="sd">    \tilde h_{op} =</span>
-<span class="sd">    \sum_{mn} h_{mn} e^{i x_{mn} q_{op}}</span>
+<span class="sd">    \sum_{mn} h_{mn} e^{-i x_{mn} q_{op}}</span>
 
 <span class="sd">corresponding `np.fft.rfft` and `fftengine.fft`</span>
 
-<span class="sd">fourier space input fields are assumed to be linked to the realspace field thru</span>
+<span class="sd">fourier space input fields are assumed to be linked to the realspace field through</span>
 <span class="sd">this fourier transform.</span>
 
 <span class="sd">fourier inverse transform:</span>
 
 <span class="sd">.. math ::</span>
 
-<span class="sd">    \tilde h_{mn} = \frac{1}{n_x n_y}</span>
+<span class="sd">    h_{mn} = \frac{1}{n_x n_y}</span>
 <span class="sd">    \sum_{op} \tilde h_{op} e^{i x_{mn} q_{op}}</span>
 
 <span class="sd">corresponding `np.fft.irfft` and `fftengine.fft * fftengine.normalisation`</span>

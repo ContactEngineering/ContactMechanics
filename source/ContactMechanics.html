@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics package &mdash; ContactMechanics 1.0.1.dev9+g255c8a5 documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 1.0.1.dev18+gb8063ed documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> ContactMechanics
           </a>
               <div class="version">
-                1.0.1.dev9+g255c8a5
+                1.0.1.dev18+gb8063ed
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -179,13 +179,13 @@ one has to divide by <span class="math notranslate nohighlight">\(n_x n_y\)</spa
 <p>fourier transform:</p>
 <div class="math notranslate nohighlight">
 \[\tilde h_{op} =
-\sum_{mn} h_{mn} e^{i x_{mn} q_{op}}\]</div>
+\sum_{mn} h_{mn} e^{-i x_{mn} q_{op}}\]</div>
 <p>corresponding <cite>np.fft.rfft</cite> and <cite>fftengine.fft</cite></p>
-<p>fourier space input fields are assumed to be linked to the realspace field thru
+<p>fourier space input fields are assumed to be linked to the realspace field through
 this fourier transform.</p>
 <p>fourier inverse transform:</p>
 <div class="math notranslate nohighlight">
-\[\tilde h_{mn} = \frac{1}{n_x n_y}
+\[h_{mn} = \frac{1}{n_x n_y}
 \sum_{op} \tilde h_{op} e^{i x_{mn} q_{op}}\]</div>
 <p>corresponding <cite>np.fft.irfft</cite> and <cite>fftengine.fft * fftengine.normalisation</cite></p>
 <p>Note that this is different from the definition in
