@@ -32,17 +32,14 @@ import abc
 
 import numpy as np
 import scipy
-
-from NuMPI.Tools import Reduction
-
-import ContactMechanics
-import SurfaceTopography
-from ContactMechanics.Optimization import constrained_conjugate_gradients
-from ContactMechanics.Tools import compare_containers
+import scipy.optimize as optim
 
 from NuMPI.Optimization import ccg_without_restart, ccg_with_restart
+from NuMPI.Tools import Reduction
 
-import scipy.optimize as optim
+import SurfaceTopography
+from .Optimization import constrained_conjugate_gradients
+from .Tools import compare_containers
 
 
 class IncompatibleFormulationError(Exception):
