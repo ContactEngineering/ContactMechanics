@@ -27,8 +27,10 @@ def test_ccg_without_restart_free_system(comm):
                           kind="paraboloid", communicator=MPI.COMM_SELF)
 
     substrate = FreeFFTElasticHalfSpace(
-        (nx, ny), young=Es,
-        physical_sizes=(sx, sy), communicator=MPI.COMM_SELF)
+        (nx, ny),
+        young=Es,
+        physical_sizes=(sx, sy),
+        communicator=MPI.COMM_SELF)
 
     system = NonSmoothContactSystem(substrate, surface)
 
@@ -41,8 +43,8 @@ def test_ccg_without_restart_free_system(comm):
     bounded = init_disp < lbounds
     init_disp[bounded.filled(False)] = lbounds[bounded.filled(False)]
 
-    res = optim.minimize(system.objective(penetration, gradient=True,),
-                         init_disp,
+    res = optim.minimize(system.objective(penetration, gradient=True),
+                         init_disp.ravel(),
                          method='L-BFGS-B', jac=True,
                          bounds=bnds,
                          options=dict(gtol=1e-13, ftol=1e-20))
@@ -52,10 +54,12 @@ def test_ccg_without_restart_free_system(comm):
 
     # Parallelized objective
 
-    substrate = FreeFFTElasticHalfSpace((nx, ny), young=Es,
-                                        physical_sizes=(sx, sy),
-                                        communicator=comm,
-                                        fft="mpi")
+    substrate = FreeFFTElasticHalfSpace(
+        (nx, ny),
+        young=Es,
+        physical_sizes=(sx, sy),
+        communicator=comm,
+        fft="mpi")
 
     surface = make_sphere(
         R, (nx, ny), (sx, sy),
@@ -78,7 +82,6 @@ def test_ccg_without_restart_free_system(comm):
     )
     assert res.success
 
-    print(res.nit)
     _bug = res.x.reshape(substrate.nb_subdomain_grid_pts)
 
     if False:

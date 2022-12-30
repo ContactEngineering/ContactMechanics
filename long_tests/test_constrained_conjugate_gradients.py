@@ -26,7 +26,7 @@ def test_primal_obj():
 
     offset = 0.005
     lbounds = np.zeros((nx, ny))
-    bnds = system._reshape_bounds(lbounds, )
+    bnds = system._reshape_bounds(lbounds)
     disp = np.zeros((nx, ny))
     init_gap = disp - surface.heights() - offset
 
@@ -39,23 +39,23 @@ def test_primal_obj():
     polonsky_gap = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
-    res = ccg_without_restart.constrained_conjugate_gradients(system.primal_objective
-                                                        (offset,
-                                                         gradient=True),
-                                                        system.primal_hessian_product,
-                                                        x0=init_gap,
-                                                        mean_val=None,
-                                                        gtol=gtol)
+    res = ccg_without_restart.constrained_conjugate_gradients(
+        system.primal_objective(offset, gradient=True),
+        system.primal_hessian_product,
+        x0=init_gap,
+        mean_val=None,
+        gtol=gtol)
     assert res.success
 
     bugnicourt_gap = res.x.reshape((nx, ny))
 
     # #####################LBFGSB#####################################
-    res = optim.minimize(system.primal_objective(offset, gradient=True),
-                         init_gap,
-                         method='L-BFGS-B', jac=True,
-                         bounds=bnds,
-                         options=dict(gtol=gtol, ftol=1e-20))
+    res = optim.minimize(
+        system.primal_objective(offset, gradient=True),
+        init_gap.ravel(),
+        method='L-BFGS-B', jac=True,
+        bounds=bnds,
+        options=dict(gtol=gtol, ftol=1e-20))
 
     assert res.success
     lbfgsb_gap = res.x.reshape((nx, ny))
@@ -105,12 +105,8 @@ def test_dual_obj():
     Es = 50.
     substrate = Solid.PeriodicFFTElasticHalfSpace((nx, ny), young=Es,
                                                   physical_sizes=(sx, sy))
-    substrate_2 = Solid.PeriodicFFTElasticHalfSpace((nx, ny), young=Es,
-                                                    physical_sizes=(sx, sy),
-                                                    stiffness_q0=0.0)
 
     system = Solid.Systems.NonSmoothContactSystem(substrate, surface)
-    system_2 = Solid.Systems.NonSmoothContactSystem(substrate_2, surface, )
 
     offset = 0.005
     lbounds = np.zeros((nx, ny))
@@ -121,7 +117,7 @@ def test_dual_obj():
 
     # ####################LBFGSB########################################
     res = optim.minimize(system.dual_objective(offset, gradient=True),
-                         init_pressure,
+                         init_pressure.ravel(),
                          method='L-BFGS-B', jac=True,
                          bounds=bnds,
                          options=dict(gtol=gtol, ftol=1e-20))

@@ -682,7 +682,7 @@ class NonSmoothContactSystem(SystemBase):
         elif solver == 'l-bfgs-b':
             result = optim.minimize(
                 self.primal_objective(offset, gradient=True),
-                self.init_gap,
+                self.init_gap.ravel(),
                 method='L-BFGS-B', jac=True,
                 bounds=bnds,
                 options=dict(gtol=gtol, ftol=1e-20))
@@ -830,7 +830,7 @@ class NonSmoothContactSystem(SystemBase):
                 maxiter=maxiter)
         elif solver == 'l-bfgs-b':
             result = optim.minimize(self.dual_objective(offset, gradient=True),
-                                    self.init_force,
+                                    self.init_force.ravel(),
                                     method='L-BFGS-B', jac=True,
                                     bounds=bnds,
                                     options=dict(gtol=gtol, ftol=1e-20))
