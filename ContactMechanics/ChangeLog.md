@@ -5,6 +5,7 @@ v1.1 (not yet released)
 -----------------------
 
 - BUILD: Changed build/packaging from setuptools to flit
+- MAINT: Compatibility with optimizers of scipy 1.93
 
 v1.0 (23Jul22)
 --------------
