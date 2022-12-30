@@ -28,7 +28,8 @@ jobs:
           python3-venv
         python3 -m venv ../venv
         source ../venv/bin/activate
-        pip install build
+        python3 -m pip install --upgrade pip
+        python3 -m pip install build
 
     - name: Build package
       run: |
@@ -38,12 +39,12 @@ jobs:
     - name: Install extension module
       run: |
         source ../venv/bin/activate
-        pip install dist/*.whl
+        python3 -m pip install dist/*.whl
 
     - name: Install sphinx
       run: |
         source ../venv/bin/activate
-        pip install sphinx sphinx_rtd_theme
+        python3 -m pip install sphinx sphinx_rtd_theme
 
     - name: Build documentation
       run: |
