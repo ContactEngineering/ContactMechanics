@@ -38,6 +38,7 @@ from NuMPI.Optimization import ccg_without_restart, ccg_with_restart
 from NuMPI.Tools import Reduction
 
 import SurfaceTopography
+from .FFTElasticHalfSpace import ElasticSubstrate
 from .Optimization import constrained_conjugate_gradients
 from .Tools import compare_containers
 
@@ -399,8 +400,7 @@ class NonSmoothContactSystem(SystemBase):
         """
         is_ok = True
         # any type of substrate formulation should do
-        is_ok &= issubclass(substrate_type,
-                            ContactMechanics.ElasticSubstrate)
+        is_ok &= issubclass(substrate_type, ElasticSubstrate)
 
         # any surface should do
         is_ok &= issubclass(surface_type,

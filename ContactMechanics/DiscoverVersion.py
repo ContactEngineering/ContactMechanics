@@ -37,7 +37,6 @@
 # - If we install from a source tarball, we need to parse PKG-INFO manually.
 #
 
-import re
 import subprocess
 
 
@@ -81,9 +80,3 @@ def get_version_from_git():
         version += '.dirty'
 
     return version
-
-
-try:
-    version = get_version_from_git()
-except CannotDiscoverVersion:
-    version = get_version_from_pkg_info()

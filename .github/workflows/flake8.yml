@@ -29,7 +29,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update -qy
-        sudo apt-get install -y python3-dev python3-pip meson ninja-build
+        sudo apt-get install -y python3-pip
 
     - name: Build extension module
       run: |

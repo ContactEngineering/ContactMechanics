@@ -21,11 +21,8 @@ jobs:
       run: |
         sudo apt-get update -qy
         sudo apt-get install -y \
-          python3-dev \
           python3-pip \
-          python3-venv \
-          meson \
-          ninja-build
+          python3-venv
         python3 -m venv ../venv
         source ../venv/bin/activate
         pip install build
@@ -33,12 +30,12 @@ jobs:
     - name: Build package
       run: |
         source ../venv/bin/activate
-        python3 -m build . -s
+        python3 -m build .
 
     - name: Install extension module
       run: |
         source ../venv/bin/activate
-        pip install dist/*.tar.gz
+        pip install dist/*.whl
 
     - name: Install sphinx
       run: |
