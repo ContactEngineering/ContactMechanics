@@ -599,19 +599,15 @@ class NonSmoothContactSystem(SystemBase):
         res = self.substrate.nb_subdomain_grid_pts
         if gradient:
             def fun(gap):
-                print('fun')
-                print(gap.shape)
                 disp = gap.reshape(res) + self.surface.heights() + offset
                 try:
                     self.evaluate(
                         disp.reshape(res), offset, forces=True)
                 except ValueError as err:
                     raise ValueError("{}: gap.shape: {}, res: {}".format(err, gap.shape, res))
-                print(self.energy, self.force.shape)
                 return self.energy, -self.force.ravel()
         else:
             def fun(gap):
-                print(gap.shape)
                 disp = gap.reshape(res) + self.surface.heights() + offset
                 return self.evaluate(
                     disp.reshape(res), offset, forces=False)[0]
