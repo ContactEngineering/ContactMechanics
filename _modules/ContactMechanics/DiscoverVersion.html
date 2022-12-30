@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.DiscoverVersion &mdash; ContactMechanics 1.0.0.dev58+g5d17784 documentation</title>
+  <title>ContactMechanics.DiscoverVersion &mdash; ContactMechanics 1.0.0.dev58+g3fc9595 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.0.0.dev58+g5d17784
+                1.0.0.dev58+g3fc9595
               </div>
             
           
@@ -222,7 +222,10 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Discover version from PKG-INFO file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fobj</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;PKG-INFO&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fobj</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;PKG-INFO&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">CannotDiscoverVersion</span><span class="p">(</span><span class="s2">&quot;Could not find &#39;PKG-INFO&#39; file.&quot;</span><span class="p">)</span>
     <span class="n">line</span> <span class="o">=</span> <span class="n">fobj</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
     <span class="k">while</span> <span class="n">line</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Version:&#39;</span><span class="p">):</span>
@@ -269,12 +272,13 @@
 
 <span class="c1"># Not sure the mechanisms below are much different from parsing PKG-INFO...</span>
 
+<span class="n">pkg_name</span> <span class="o">=</span> <span class="vm">__name__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.DiscoverVersion&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">__version__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># importlib is present in Python &gt;= 3.8</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">importlib.metadata</span> <span class="kn">import</span> <span class="n">version</span>
 
-        <span class="n">__version__</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="s1">&#39;ContactMechanics&#39;</span><span class="p">)</span>
+        <span class="n">__version__</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
         <span class="n">__version__</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -283,7 +287,7 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">get_distribution</span>
 
-        <span class="n">__version__</span> <span class="o">=</span> <span class="n">get_distribution</span><span class="p">(</span><span class="s1">&#39;ContactMechanics&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">version</span>
+        <span class="n">__version__</span> <span class="o">=</span> <span class="n">get_distribution</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">)</span><span class="o">.</span><span class="n">version</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
         <span class="n">__version__</span> <span class="o">=</span> <span class="kc">None</span>
 
