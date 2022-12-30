@@ -38,6 +38,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update -qy
+        sudo apt-get install python3-setuptools  # Needed for version discovery with pkg_resources in Python 3.7
         python3 -m venv venv
         source venv/bin/activate
         python3 -m pip install --upgrade pip pip-tools
@@ -70,7 +71,6 @@ jobs:
           pip install -v --no-binary muspectre ${MUSPECTRE_VERSION}
         fi
         python3 -m pip install build
-        python3 -m pip install setuptools  # Needed for version discovery with pkg_resources in Python 3.7
         python3 -m pip list
 
     - name: Install extension module
