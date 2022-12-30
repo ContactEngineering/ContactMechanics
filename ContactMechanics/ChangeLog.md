@@ -4,6 +4,7 @@ Change log for ContactMechanics
 v1.1 (31Dec22)
 --------------
 
+- API: `hard_wall.py` is now installed as `ce_hard_wall`
 - BUILD: Changed build/packaging from setuptools to flit
 - MAINT: Compatibility with optimizers of scipy 1.93
 

@@ -41,8 +41,5 @@ documentation = "https://contactengineering.github.io/ContactMechanics/"
 repository = "https://github.com/ContactEngineering/ContactMechanics"
 changelog = "https://github.com/ContactEngineering/ContactMechanics/blob/master/ContactMechanics/ChangeLog.md"
 
-#[project.scripts]
-#hard_wall = "commandline/hard_wall.py"
-#plotacf = "commandline/plotacf.py"
-#plotpsd = "commandline/plotpsd.py"
-#plotmap = "commandline/plotmap.py"
+[project.scripts]
+ce_hard_wall = "ContactMechanics.CommandLineInterface.HardWall:main"
