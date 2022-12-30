@@ -31,6 +31,7 @@ jobs:
         # because flit build loads the package to determine the version.
         pip-compile -q pyproject.toml
         pip install -r requirements.txt
+        rm requirements.txt
 
     - name: Build package
       run: |
