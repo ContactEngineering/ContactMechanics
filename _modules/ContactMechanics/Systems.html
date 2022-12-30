@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 1.0.0.dev56+gb036ee7 documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 1.0.0.dev56+ge72c42a documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.0.0.dev56+gb036ee7
+                1.0.0.dev56+ge72c42a
               </div>
             
           
@@ -854,7 +854,7 @@
         <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s1">&#39;l-bfgs-b&#39;</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">primal_objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-                <span class="n">system</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_gap</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_gap</span><span class="p">),</span>
                 <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">bounds</span><span class="o">=</span><span class="n">bnds</span><span class="p">,</span>
                 <span class="n">options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">gtol</span><span class="o">=</span><span class="n">gtol</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">))</span>
@@ -1003,7 +1003,7 @@
         <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s1">&#39;l-bfgs-b&#39;</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">dual_objective</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-                <span class="n">system</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_force</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_force</span><span class="p">),</span>
                 <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">bounds</span><span class="o">=</span><span class="n">bnds</span><span class="p">,</span>
                 <span class="n">options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">gtol</span><span class="o">=</span><span class="n">gtol</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">))</span>
