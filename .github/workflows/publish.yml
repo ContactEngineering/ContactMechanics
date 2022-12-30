@@ -23,32 +23,18 @@ jobs:
     - name: Installing Python
       run: |
         sudo apt-get update -qy
-        sudo apt-get install -y \
-          python3-pip \
-          python3-venv
-        python3 -m venv ../venv
-        source ../venv/bin/activate
-        python3 -m pip install --upgrade pip
-        python3 -m pip install build
+        sudo apt-get install -y flit sphinx
 
     - name: Build package
       run: |
-        source ../venv/bin/activate
-        python3 -m build .
-
-    - name: Install extension module
-      run: |
-        source ../venv/bin/activate
-        python3 -m pip install dist/*.whl
+        flit --debug build
 
     - name: Install sphinx
       run: |
-        source ../venv/bin/activate
-        python3 -m pip install sphinx sphinx_rtd_theme
+        sudo python3 -m pip install sphinx_rtd_theme
 
     - name: Build documentation
       run: |
-        source ../venv/bin/activate
         cd docs
         sphinx-apidoc -o source/ ../ContactMechanics
         make html
