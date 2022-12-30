@@ -1,6 +1,11 @@
 Change log for ContactMechanics
 ===============================
 
+v1.1 (not yet released)
+-----------------------
+
+- BUILD: Changed build/packaging from setuptools to flit
+
 v1.0 (23Jul22)
 --------------
 
