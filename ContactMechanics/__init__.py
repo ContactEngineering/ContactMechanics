@@ -47,6 +47,7 @@ if __version__ is None:
         __version__ = None
 
 if __version__ is None:
+    # I am not sure if we ever get here, since this also reads from PKG-INFO
     from importlib.metadata import version
 
     __version__ = version(__name__)
