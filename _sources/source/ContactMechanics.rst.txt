@@ -17,6 +17,14 @@ Subpackages
 Submodules
 ----------
 
+ContactMechanics.DiscoverVersion module
+---------------------------------------
+
+.. automodule:: ContactMechanics.DiscoverVersion
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ContactMechanics.FFTElasticHalfSpace module
 -------------------------------------------
 

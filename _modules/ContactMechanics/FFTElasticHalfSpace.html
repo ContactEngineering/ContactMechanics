@@ -1,35 +1,74 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 1.0.1.dev18+gb8063ed documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 1.0.0.dev49+gf16e9c4 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/js/theme.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../../index.html" class="icon icon-home"> ContactMechanics
+          
+
+          
           </a>
+
+          
+            
+            
               <div class="version">
-                1.0.1.dev18+gb8063ed
+                1.0.0.dev49+gf16e9c4
               </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -37,7 +76,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
@@ -56,30 +106,69 @@
 <li class="toctree-l1"><a class="reference internal" href="../../source/ContactMechanics.Tools.html">ContactMechanics.Tools package</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">ContactMechanics</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
           <li><a href="../index.html">Module code</a> &raquo;</li>
+        
       <li>ContactMechanics.FFTElasticHalfSpace</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   <h1>Source code for ContactMechanics.FFTElasticHalfSpace</h1><div class="highlight"><pre>
 <span></span><span class="c1">#</span>
 <span class="c1"># Copyright 2016-2017, 2019-2020 Lars Pastewka</span>
@@ -216,16 +305,16 @@
 <span class="sd">&quot;&quot;&quot;</span> <span class="c1"># noqa E501</span>
 
 
-<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">SurfaceTopography.Support</span> <span class="k">import</span> <span class="n">doi</span>
+<span class="kn">from</span> <span class="nn">SurfaceTopography.Support</span> <span class="kn">import</span> <span class="n">doi</span>
 
-<span class="kn">from</span> <span class="nn">.Substrates</span> <span class="k">import</span> <span class="n">ElasticSubstrate</span>
+<span class="kn">from</span> <span class="nn">.Substrates</span> <span class="kn">import</span> <span class="n">ElasticSubstrate</span>
 
-<span class="kn">from</span> <span class="nn">muFFT</span> <span class="k">import</span> <span class="n">FFT</span>
-<span class="kn">from</span> <span class="nn">NuMPI.Tools</span> <span class="k">import</span> <span class="n">Reduction</span>
+<span class="kn">from</span> <span class="nn">muFFT</span> <span class="kn">import</span> <span class="n">FFT</span>
+<span class="kn">from</span> <span class="nn">NuMPI.Tools</span> <span class="kn">import</span> <span class="n">Reduction</span>
 
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace">[docs]</a><span class="k">class</span> <span class="nc">PeriodicFFTElasticHalfSpace</span><span class="p">(</span><span class="n">ElasticSubstrate</span><span class="p">):</span>
@@ -245,7 +334,7 @@
          <span class="s1">&#39;10.1103/PhysRevB.74.075420&#39;</span><span class="p">,</span>  <span class="c1"># Campana &amp; Müser</span>
          <span class="s1">&#39;10.1103/PhysRevB.86.075459&#39;</span>  <span class="c1"># Pastewka, Sharp, Robbins</span>
          <span class="p">)</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
                  <span class="n">stiffness_q0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">superclass</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -455,7 +544,7 @@
         <span class="sd">&quot;&quot;&quot;Return the MPI communicator&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communicator</span>
 
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">dims</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span>
         <span class="n">size_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">)</span> <span class="k">for</span>
                              <span class="n">dim</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">nb_grid_pts</span> <span class="ow">in</span>
@@ -688,7 +777,7 @@
 <span class="sd">        disp   -- array of displacements</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=no-self-use</span>
-        <span class="k">return</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">disp</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="o">-</span><span class="n">forces</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="mf">.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">disp</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="o">-</span><span class="n">forces</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_scalar_product_k_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ka</span><span class="p">,</span> <span class="n">kb</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -914,7 +1003,7 @@
          <span class="s1">&#39;10.1016/S0043-1648(00)00427-0&#39;</span><span class="p">,</span>  <span class="c1"># Liu, Wang, Liu 2000</span>
          <span class="s1">&#39;10.1063/1.4950802&#39;</span>  <span class="c1"># Pastewka &amp; Robbins 2016</span>
          <span class="p">)</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
                  <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
@@ -1010,11 +1099,11 @@
 <span class="sd">           concern</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=invalid-name</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">.5</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mf">.5</span>
             <span class="n">x_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">subdomain_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -1096,7 +1185,7 @@
 <span class="sd">        needing an increase of the nb_grid_pts</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FreeFFTElasticHalfSpace.check_boundaries"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.check_boundaries">[docs]</a>    <span class="k">def</span> <span class="nf">check_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -1172,30 +1261,46 @@
 </pre></div>
 
            </div>
+           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2015-2020 The Authors.</p>
-  </div>
+    <p>
+        &#169; Copyright 2015-2020 The Authors.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
