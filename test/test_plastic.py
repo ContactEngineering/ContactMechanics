@@ -183,6 +183,7 @@ def test_automatic_offsets(comm_self):
     dois = set()
     t.contact_mechanics(nsteps=10, results_callback=check_result, dois=dois)
     assert dois == {
+        '10.1088/2051-672X/ac860a',  # contact.engineering
         '10.1115/1.2833523',  # Stanley & Kato
         '10.1103/PhysRevB.74.075420',  # Campana, Müser
         '10.1103/PhysRevB.86.075459',  # Pastewka, Sharp, Robbins
@@ -196,6 +197,7 @@ def test_automatic_offsets(comm_self):
     dois = set()
     t.contact_mechanics(nsteps=10, hardness=0.05, results_callback=check_result, dois=dois)
     assert dois == {
+        '10.1088/2051-672X/ac860a',  # contact.engineering
         '10.1115/1.2833523',  # Stanley & Kato
         '10.1103/PhysRevB.74.075420',  # Campana, Müser
         '10.1103/PhysRevB.86.075459',  # Pastewka, Sharp, Robbins
