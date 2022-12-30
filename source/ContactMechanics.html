@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics package &mdash; ContactMechanics 1.0.0.dev52+g9bf5cc5 documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 1.0.0.dev55+gdec5a08 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.0.0.dev52+g9bf5cc5
+                1.0.0.dev55+gdec5a08
               </div>
             
           
@@ -1531,16 +1531,16 @@ the forces) as a function of the gap.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>gap</strong> (<em>float</em>) – gap between the contact surfaces.</p></li>
-<li><p><strong>offset</strong> (<em>float</em>) – constant value to add to the surface heights</p></li>
-<li><p><strong>pot</strong> (<em>(</em><em>default False</em><em>)</em>) – </p></li>
-<li><p><strong>gradient</strong> (<em>(</em><em>default True</em><em>)</em>) – </p></li>
+<li><p><strong>gap</strong> (<em>float</em>) – Gap between the contact surfaces.</p></li>
+<li><p><strong>offset</strong> (<em>float</em>) – Constant value to add to the surface heights.</p></li>
+<li><p><strong>gradient</strong> (<em>bool</em>) – Return gradient in addition to the energy.
+(Default: True)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>energy</strong> (<em>float</em>) – value of energy(scalar value).</p></li>
-<li><p><strong>force</strong> (<em>float,array</em>) – value of force(array).</p></li>
+<li><p><strong>energy</strong> (<em>float</em>) – Value of total energy.</p></li>
+<li><p><strong>force</strong> (<em>array_like</em>) – Value of the forces per surface node (only of gradient is true).</p></li>
 </ul>
 </p>
 </dd>
