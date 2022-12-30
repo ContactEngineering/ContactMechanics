@@ -48,12 +48,12 @@ def get_version_from_pkg_info():
     """
     Discover version from PKG-INFO file.
     """
-    f = open('PKG-INFO', 'r')
-    l = f.readline()
-    while l:
-        if l.startswith('Version:'):
-            return l[8:].strip()
-        l = f.readline()
+    fobj = open('PKG-INFO', 'r')
+    line = fobj.readline()
+    while line:
+        if line.startswith('Version:'):
+            return line[8:].strip()
+        line = fobj.readline()
     raise CannotDiscoverVersion("No line starting with 'Version:' in 'PKG-INFO'.")
 
 
