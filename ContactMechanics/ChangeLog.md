@@ -10,7 +10,7 @@ v1.1 (31Dec22)
 v1.0 (23Jul22)
 --------------
 
-- MAINT: Bumped version to 1.0
+- MAINT: Bumped version to 1.0 (otherwise identical to 0.93.0)
 
 v0.93.0 (24May22)
 -----------------
