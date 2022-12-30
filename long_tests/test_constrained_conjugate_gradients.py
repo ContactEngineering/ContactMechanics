@@ -52,7 +52,7 @@ def test_primal_obj():
     # #####################LBFGSB#####################################
     res = optim.minimize(
         system.primal_objective(offset, gradient=True),
-        init_gap.ravel(),
+        system.shape_minimisation_input(init_gap),
         method='L-BFGS-B', jac=True,
         bounds=bnds,
         options=dict(gtol=gtol, ftol=1e-20))
@@ -117,7 +117,7 @@ def test_dual_obj():
 
     # ####################LBFGSB########################################
     res = optim.minimize(system.dual_objective(offset, gradient=True),
-                         init_pressure.ravel(),
+                         system.shape_minimisation_input(init_pressure),
                          method='L-BFGS-B', jac=True,
                          bounds=bnds,
                          options=dict(gtol=gtol, ftol=1e-20))

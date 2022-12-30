@@ -198,14 +198,14 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
     def _reshape_bounds(self, lbounds=None, ubounds=None):
         if lbounds is not None and ubounds is not None:
-            ubounds = self.shape_minimisation_input(ubounds)
-            lbounds = self.shape_minimisation_input(lbounds)
+            ubounds = self.shape_minimisation_input(np.ma.filled(ubounds, np.inf))
+            lbounds = self.shape_minimisation_input(np.ma.filled(lbounds, -np.inf))
             return optim.Bounds(lb=lbounds, ub=ubounds)
         elif lbounds is not None:
-            lbounds = self.shape_minimisation_input(lbounds)
+            lbounds = self.shape_minimisation_input(np.ma.filled(lbounds, -np.inf))
             return optim.Bounds(lb=lbounds)
         elif ubounds is not None:
-            ubounds = self.shape_minimisation_input(ubounds)
+            ubounds = self.shape_minimisation_input(np.ma.filled(ubounds, np.inf))
             return optim.Bounds(ub=ubounds)
         else:
             return None
@@ -682,7 +682,7 @@ class NonSmoothContactSystem(SystemBase):
         elif solver == 'l-bfgs-b':
             result = optim.minimize(
                 self.primal_objective(offset, gradient=True),
-                self.init_gap.ravel(),
+                system.shape_minimisation_input(self.init_gap),
                 method='L-BFGS-B', jac=True,
                 bounds=bnds,
                 options=dict(gtol=gtol, ftol=1e-20))
@@ -829,11 +829,12 @@ class NonSmoothContactSystem(SystemBase):
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'l-bfgs-b':
-            result = optim.minimize(self.dual_objective(offset, gradient=True),
-                                    self.init_force.ravel(),
-                                    method='L-BFGS-B', jac=True,
-                                    bounds=bnds,
-                                    options=dict(gtol=gtol, ftol=1e-20))
+            result = optim.minimize(
+                self.dual_objective(offset, gradient=True),
+                system.shape_minimisation_input(self.init_force),
+                method='L-BFGS-B', jac=True,
+                bounds=bnds,
+                options=dict(gtol=gtol, ftol=1e-20))
 
         if result.success:
             self.offset = offset

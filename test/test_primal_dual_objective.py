@@ -212,7 +212,7 @@ def test_scipy_friendly_interface_nonperiodic(s):
     init_gap = init_disp - padded_surface.heights() - penetration
 
     res = optim.minimize(system.objective(penetration, gradient=True),
-                         init_gap.ravel(),
+                         system.shape_minimisation_input(init_gap),
                          method='L-BFGS-B', jac=True,
                          bounds=bnds,
                          options=dict(gtol=1e-8, ftol=1e-20))
