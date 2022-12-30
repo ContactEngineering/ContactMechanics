@@ -1,8 +1,8 @@
 Change log for ContactMechanics
 ===============================
 
-v1.1 (not yet released)
------------------------
+v1.1 (31Dec22)
+--------------
 
 - BUILD: Changed build/packaging from setuptools to flit
 - MAINT: Compatibility with optimizers of scipy 1.93
