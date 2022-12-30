@@ -1,0 +1,21 @@
+ContactMechanics.CommandLineInterface package
+=============================================
+
+Submodules
+----------
+
+ContactMechanics.CommandLineInterface.HardWall module
+-----------------------------------------------------
+
+.. automodule:: ContactMechanics.CommandLineInterface.HardWall
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ContactMechanics.CommandLineInterface
+   :members:
+   :undoc-members:
+   :show-inheritance:

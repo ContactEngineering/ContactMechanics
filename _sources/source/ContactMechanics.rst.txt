@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   ContactMechanics.CommandLineInterface
    ContactMechanics.GreensFunctions
    ContactMechanics.IO
    ContactMechanics.Optimization
