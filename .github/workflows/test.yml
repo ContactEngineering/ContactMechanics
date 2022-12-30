@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         mpi: ['yes', 'no']
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.7', '3.8', '3.9', '3.10']
         mpi4py-version: [3.1.4]
         netcdf4-python-version: [1.6.1]
 
@@ -82,4 +82,5 @@ jobs:
         source venv/bin/activate
         python3 .check_netcdf_capabilities.py ${{ matrix.mpi }}
         python3 .check_mufft_capabilities.py ${{ matrix.mpi }}
+        python3 -m pip list
         if [ "${{ matrix.mpi }}" == "yes" ]; then python3 run-tests.py --no-build --verbose --full-trace; else python3 -m pytest --verbose --full-trace -s; fi
