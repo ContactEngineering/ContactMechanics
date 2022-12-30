@@ -62,6 +62,9 @@ v0.90.0 (29Jun20)
 - muFFT dependency updated to muFFT-0.9.3
 - Moved documentation from README.md to the docs folder 
 
+Change log for PyCo (previous name of the package)
+==================================================
+
 v0.57.0 (15May20)
 -----------------
 
