@@ -177,7 +177,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             think it has
         """
         if np.prod(self.substrate.nb_subdomain_grid_pts) == in_array.size:
-            return in_array.reshape(-1)
+            return in_array.ravel()
         raise IncompatibleResolutionError()
 
     def shape_minimisation_output(self, in_array):
@@ -197,23 +197,20 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         raise IncompatibleResolutionError()
 
     def _reshape_bounds(self, lbounds=None, ubounds=None):
-        bnds = None
         if lbounds is not None and ubounds is not None:
             ubounds = self.shape_minimisation_input(ubounds)
             lbounds = self.shape_minimisation_input(lbounds)
-            bnds = tuple(zip(lbounds.tolist(), ubounds.tolist()))
+            return optim.Bounds(lb=lbounds, ub=ubounds)
         elif lbounds is not None:
             lbounds = self.shape_minimisation_input(lbounds)
-            bnds = tuple(
-                zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
+            return optim.Bounds(lb=lbounds)
         elif ubounds is not None:
             ubounds = self.shape_minimisation_input(ubounds)
-            bnds = tuple(
-                zip([None for i in range(len(ubounds))], ubounds.tolist()))
-        return bnds
+            return optim.Bounds(ub=ubounds)
+        else:
+            return None
 
     def _lbounds_from_heights(self, offset):
-
         lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
         lbounds.mask[self.substrate.local_topography_subdomain_slices] = False
         lbounds[self.substrate.local_topography_subdomain_slices] = self.surface.heights() + offset
@@ -495,7 +492,7 @@ class NonSmoothContactSystem(SystemBase):
                     self.evaluate(disp.reshape(res), offset, forces=True, logger=logger)
                 except ValueError as err:
                     raise ValueError("{}: disp.shape: {}, res: {}".format(err, disp.shape, res))
-                return (self.energy, -self.force.reshape(-1))
+                return self.energy, -self.force.ravel()
         else:
             def fun(disp):
                 # pylint: disable=missing-docstring
@@ -572,18 +569,19 @@ class NonSmoothContactSystem(SystemBase):
         __________
 
         gap : float
-              gap between the contact surfaces.
+            Gap between the contact surfaces.
         offset : float
-                constant value to add to the surface heights
-        pot : (default False)
-        gradient : (default True)
+            Constant value to add to the surface heights.
+        gradient : bool
+            Return gradient in addition to the energy.
+            (Default: True)
 
         Returns
         _______
         energy : float
-                value of energy(scalar value).
-        force : float,array
-                value of force(array).
+            Value of total energy.
+        force : array_like
+            Value of the forces per surface node (only of gradient is true).
 
         Notes
         _____
@@ -601,17 +599,19 @@ class NonSmoothContactSystem(SystemBase):
         res = self.substrate.nb_subdomain_grid_pts
         if gradient:
             def fun(gap):
+                print('fun')
+                print(gap.shape)
                 disp = gap.reshape(res) + self.surface.heights() + offset
                 try:
                     self.evaluate(
                         disp.reshape(res), offset, forces=True)
                 except ValueError as err:
-                    raise ValueError(
-                        "{}: gap.shape: {}, res: {}".format(
-                            err, gap.shape, res))
-                return (self.energy, -self.force.reshape(-1))
+                    raise ValueError("{}: gap.shape: {}, res: {}".format(err, gap.shape, res))
+                print(self.energy, self.force.shape)
+                return self.energy, -self.force.ravel()
         else:
             def fun(gap):
+                print(gap.shape)
                 disp = gap.reshape(res) + self.surface.heights() + offset
                 return self.evaluate(
                     disp.reshape(res), offset, forces=False)[0]
@@ -763,11 +763,10 @@ class NonSmoothContactSystem(SystemBase):
                     raise ValueError(
                         "{}: gap.shape: {}, res: {}".format(
                             err, pressure.shape, res))
-                return (self.energy, self.gradient.reshape(-1))
+                return self.energy, self.gradient.ravel()
         else:
             def fun(gap):
-                return self.evaluate(
-                    gap.reshape(res), forces=False)[0]
+                return self.evaluate(gap.reshape(res), forces=False)[0]
 
         return fun
 
