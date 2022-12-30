@@ -35,6 +35,8 @@
 #     PEP 440 compliant (see https://peps.python.org/pep-0440/). We need to
 #     mangle the version string to yield something compatible.
 # - If we install from a source tarball, we need to parse PKG-INFO manually.
+# - If this fails, ask importlib
+# - If this fails, ask pkg_resources
 #
 
 import subprocess
@@ -80,3 +82,40 @@ def get_version_from_git():
         version += '.dirty'
 
     return version
+
+
+try:
+    __version__ = get_version_from_git()
+except CannotDiscoverVersion:
+    __version__ = None
+
+if __version__ is None:
+    try:
+        __version__ = get_version_from_pkg_info()
+    except CannotDiscoverVersion:
+        __version__ = None
+
+# Not sure the mechanisms below are much different from parsing PKG-INFO...
+
+if __version__ is None:
+    # importlib is present in Python >= 3.8
+    try:
+        from importlib.metadata import version
+
+        __version__ = version('ContactMechanics')
+    except ImportError:
+        __version__ = None
+
+if __version__ is None:
+    # pkg_resources is part of setuptools
+    try:
+        from pkg_resources import get_distribution
+
+        __version__ = get_distribution('ContactMechanics').version
+    except ImportError:
+        __version__ = None
+
+# Nope. Out of options.
+
+if __version__ is None:
+    raise CannotDiscoverVersion('Tried git, PKG-INFO, importlib and pkg_resources')

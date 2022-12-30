@@ -33,21 +33,4 @@ from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalf
 from .Substrates import Substrate, ElasticSubstrate, PlasticSubstrate  # noqa: F401
 from .PipelineFunction import contact_mechanics  # noqa: F401
 
-from .DiscoverVersion import get_version_from_git, get_version_from_pkg_info, CannotDiscoverVersion
-
-try:
-    __version__ = get_version_from_git()
-except CannotDiscoverVersion:
-    __version__ = None
-
-if __version__ is None:
-    try:
-        __version__ = get_version_from_pkg_info()
-    except CannotDiscoverVersion:
-        __version__ = None
-
-if __version__ is None:
-    # I am not sure if we ever get here, since this also reads from PKG-INFO
-    from importlib.metadata import version
-
-    __version__ = version(__name__)
+from .DiscoverVersion import __version__
