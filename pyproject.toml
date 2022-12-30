@@ -18,7 +18,7 @@ requires-python = ">=3.7.0"
 dynamic = [ "version" ]
 dependencies = [
     "numpy>=1.16.3",
-    "NuMPI>=0.3.0",
+    "NuMPI>=0.3.1",
     "muSpectre>=0.25.1",
     "SurfaceTopography>=1.3.0"
 ]
