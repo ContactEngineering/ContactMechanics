@@ -42,6 +42,7 @@ jobs:
       run: |
         source ../venv/bin/activate
         python3 -m pip install sphinx sphinx_rtd_theme
+        python3 -m pip install dist/*.whl
         cd docs
         sphinx-apidoc -o source/ ../ContactMechanics
         make html
