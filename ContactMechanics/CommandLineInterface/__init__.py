@@ -1,7 +1,5 @@
 #
-# Copyright 2016, 2020 Lars Pastewka
-#           2018, 2020 Antoine Sanner
-#           2015-2016 Till Junge
+# Copyright 2022 Lars Pastewka
 #
 # ### MIT license
 #
@@ -23,41 +21,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-from setuptools import setup, find_packages
-
-
-scripts = [
-   'commandline/hard_wall.py',
-   'commandline/plotacf.py',
-   'commandline/plotpsd.py',
-   'commandline/plotmap.py'
-   ]
-
-setup(
-    name="ContactMechanics",
-    scripts=scripts,
-    packages=find_packages(),
-    package_data={'': ['ChangeLog.md']},
-    include_package_data=True,
-    # metadata for upload to PyPI
-    author="Lars Pastewka",
-    author_email="lars.pastewka@imtek.uni-freiburg.de",
-    description="Efficient contact mechanics using elastic half-space "
-                "methods",
-    license="MIT",
-    test_suite='test',
-    # dependencies
-    python_requires='>=3.5.0',
-    use_scm_version=True,
-    zip_safe=True,
-    setup_requires=[
-        'setuptools_scm>=3.5.0'
-    ],
-    install_requires=[
-        'numpy>=1.16.3',
-        'NuMPI>=0.3.0',
-        'muFFT>=0.18.1',
-        'SurfaceTopography>=1.0'
-    ]
-)

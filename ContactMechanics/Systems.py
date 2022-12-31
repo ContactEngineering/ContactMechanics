@@ -32,17 +32,15 @@ import abc
 
 import numpy as np
 import scipy
-
-from NuMPI.Tools import Reduction
-
-import ContactMechanics
-import SurfaceTopography
-from ContactMechanics.Optimization import constrained_conjugate_gradients
-from ContactMechanics.Tools import compare_containers
+import scipy.optimize as optim
 
 from NuMPI.Optimization import ccg_without_restart, ccg_with_restart
+from NuMPI.Tools import Reduction
 
-import scipy.optimize as optim
+import SurfaceTopography
+from .FFTElasticHalfSpace import ElasticSubstrate
+from .Optimization import constrained_conjugate_gradients
+from .Tools import compare_containers
 
 
 class IncompatibleFormulationError(Exception):
@@ -179,7 +177,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             think it has
         """
         if np.prod(self.substrate.nb_subdomain_grid_pts) == in_array.size:
-            return in_array.reshape(-1)
+            return in_array.ravel()
         raise IncompatibleResolutionError()
 
     def shape_minimisation_output(self, in_array):
@@ -199,23 +197,20 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         raise IncompatibleResolutionError()
 
     def _reshape_bounds(self, lbounds=None, ubounds=None):
-        bnds = None
         if lbounds is not None and ubounds is not None:
-            ubounds = self.shape_minimisation_input(ubounds)
-            lbounds = self.shape_minimisation_input(lbounds)
-            bnds = tuple(zip(lbounds.tolist(), ubounds.tolist()))
+            ubounds = self.shape_minimisation_input(np.ma.filled(ubounds, np.inf))
+            lbounds = self.shape_minimisation_input(np.ma.filled(lbounds, -np.inf))
+            return optim.Bounds(lb=lbounds, ub=ubounds)
         elif lbounds is not None:
-            lbounds = self.shape_minimisation_input(lbounds)
-            bnds = tuple(
-                zip(lbounds.tolist(), [None for i in range(len(lbounds))]))
+            lbounds = self.shape_minimisation_input(np.ma.filled(lbounds, -np.inf))
+            return optim.Bounds(lb=lbounds)
         elif ubounds is not None:
-            ubounds = self.shape_minimisation_input(ubounds)
-            bnds = tuple(
-                zip([None for i in range(len(ubounds))], ubounds.tolist()))
-        return bnds
+            ubounds = self.shape_minimisation_input(np.ma.filled(ubounds, np.inf))
+            return optim.Bounds(ub=ubounds)
+        else:
+            return None
 
     def _lbounds_from_heights(self, offset):
-
         lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
         lbounds.mask[self.substrate.local_topography_subdomain_slices] = False
         lbounds[self.substrate.local_topography_subdomain_slices] = self.surface.heights() + offset
@@ -402,8 +397,7 @@ class NonSmoothContactSystem(SystemBase):
         """
         is_ok = True
         # any type of substrate formulation should do
-        is_ok &= issubclass(substrate_type,
-                            ContactMechanics.ElasticSubstrate)
+        is_ok &= issubclass(substrate_type, ElasticSubstrate)
 
         # any surface should do
         is_ok &= issubclass(surface_type,
@@ -498,7 +492,7 @@ class NonSmoothContactSystem(SystemBase):
                     self.evaluate(disp.reshape(res), offset, forces=True, logger=logger)
                 except ValueError as err:
                     raise ValueError("{}: disp.shape: {}, res: {}".format(err, disp.shape, res))
-                return (self.energy, -self.force.reshape(-1))
+                return self.energy, -self.force.ravel()
         else:
             def fun(disp):
                 # pylint: disable=missing-docstring
@@ -575,18 +569,19 @@ class NonSmoothContactSystem(SystemBase):
         __________
 
         gap : float
-              gap between the contact surfaces.
+            Gap between the contact surfaces.
         offset : float
-                constant value to add to the surface heights
-        pot : (default False)
-        gradient : (default True)
+            Constant value to add to the surface heights.
+        gradient : bool
+            Return gradient in addition to the energy.
+            (Default: True)
 
         Returns
         _______
         energy : float
-                value of energy(scalar value).
-        force : float,array
-                value of force(array).
+            Value of total energy.
+        force : array_like
+            Value of the forces per surface node (only of gradient is true).
 
         Notes
         _____
@@ -609,10 +604,8 @@ class NonSmoothContactSystem(SystemBase):
                     self.evaluate(
                         disp.reshape(res), offset, forces=True)
                 except ValueError as err:
-                    raise ValueError(
-                        "{}: gap.shape: {}, res: {}".format(
-                            err, gap.shape, res))
-                return (self.energy, -self.force.reshape(-1))
+                    raise ValueError("{}: gap.shape: {}, res: {}".format(err, gap.shape, res))
+                return self.energy, -self.force.ravel()
         else:
             def fun(gap):
                 disp = gap.reshape(res) + self.surface.heights() + offset
@@ -689,7 +682,7 @@ class NonSmoothContactSystem(SystemBase):
         elif solver == 'l-bfgs-b':
             result = optim.minimize(
                 self.primal_objective(offset, gradient=True),
-                self.init_gap,
+                self.shape_minimisation_input(self.init_gap),
                 method='L-BFGS-B', jac=True,
                 bounds=bnds,
                 options=dict(gtol=gtol, ftol=1e-20))
@@ -766,11 +759,10 @@ class NonSmoothContactSystem(SystemBase):
                     raise ValueError(
                         "{}: gap.shape: {}, res: {}".format(
                             err, pressure.shape, res))
-                return (self.energy, self.gradient.reshape(-1))
+                return self.energy, self.gradient.ravel()
         else:
             def fun(gap):
-                return self.evaluate(
-                    gap.reshape(res), forces=False)[0]
+                return self.evaluate(gap.reshape(res), forces=False)[0]
 
         return fun
 
@@ -837,11 +829,12 @@ class NonSmoothContactSystem(SystemBase):
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'l-bfgs-b':
-            result = optim.minimize(self.dual_objective(offset, gradient=True),
-                                    self.init_force,
-                                    method='L-BFGS-B', jac=True,
-                                    bounds=bnds,
-                                    options=dict(gtol=gtol, ftol=1e-20))
+            result = optim.minimize(
+                self.dual_objective(offset, gradient=True),
+                self.shape_minimisation_input(self.init_force),
+                method='L-BFGS-B', jac=True,
+                bounds=bnds,
+                options=dict(gtol=gtol, ftol=1e-20))
 
         if result.success:
             self.offset = offset

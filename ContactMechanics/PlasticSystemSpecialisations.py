@@ -29,9 +29,9 @@ implements plastic mapping algorithms for contact systems
 
 import numpy as np
 
-import ContactMechanics
 import SurfaceTopography
-from ContactMechanics.Systems import NonSmoothContactSystem
+from .FFTElasticHalfSpace import ElasticSubstrate
+from .Systems import NonSmoothContactSystem
 
 
 class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
@@ -50,8 +50,7 @@ class PlasticNonSmoothContactSystem(NonSmoothContactSystem):
         """
         is_ok = True
         # any type of substrate formulation should do
-        is_ok &= issubclass(substrate_type,
-                            ContactMechanics.ElasticSubstrate)
+        is_ok &= issubclass(substrate_type, ElasticSubstrate)
 
         # any surface should do
         is_ok &= issubclass(surface_type,

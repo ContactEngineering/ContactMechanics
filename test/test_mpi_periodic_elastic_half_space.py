@@ -63,7 +63,7 @@ def test_weights(comm, pnp, nx, ny,
     substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                             fft='mpi', communicator=comm)
     reference = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
-                                            fft="fftw",
+                                            fft="serial",
                                             communicator=MPI.COMM_SELF)
     np.testing.assert_allclose(
         reference.greens_function[substrate.fourier_slices],

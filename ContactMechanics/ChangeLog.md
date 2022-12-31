@@ -1,10 +1,17 @@
 Change log for ContactMechanics
 ===============================
 
+v1.1 (31Dec22)
+--------------
+
+- API: `hard_wall.py` is now installed as `ce_hard_wall`
+- BUILD: Changed build/packaging from setuptools to flit
+- MAINT: Compatibility with optimizers of scipy 1.93
+
 v1.0 (23Jul22)
 --------------
 
-- MAINT: Bumped version to 1.0
+- MAINT: Bumped version to 1.0 (otherwise identical to 0.93.0)
 
 v0.93.0 (24May22)
 -----------------
@@ -55,6 +62,9 @@ v0.90.0 (29Jun20)
   SurfaceTopography, ContactMechanics and Adhesion
 - muFFT dependency updated to muFFT-0.9.3
 - Moved documentation from README.md to the docs folder 
+
+Change log for PyCo (previous name of the package)
+==================================================
 
 v0.57.0 (15May20)
 -----------------
