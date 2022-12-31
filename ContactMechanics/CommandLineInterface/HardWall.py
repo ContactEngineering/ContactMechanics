@@ -60,7 +60,7 @@ unit_to_meters = {
 ###
 
 def next_step(system, surface, history=None, pentol=None, maxiter=None,
-              logger=quiet):
+              logger=quiet, verbose=False):
     """
     Run a full contact calculation. Try to guess displacement such that areas
     are equally spaced on a log scale.
@@ -73,6 +73,12 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
         The rigid rough surface.
     history : tuple
         History returned by past calls to next_step
+    pentol : float, optional
+        Penetration tolerance, passed to CG solver. (Default: None)
+    maxiter : int, optional
+        Maximum number of iterations, passed to CG solver. (Default: None)
+    verbose : bool, optional
+        Output verbosity. (Default: False)
 
     Returns
     -------
@@ -124,7 +130,7 @@ def next_step(system, surface, history=None, pentol=None, maxiter=None,
             disp0 = (disp[i] + disp[i + 1]) / 2
 
     opt = system.minimize_proxy(offset=disp0, logger=logger, pentol=pentol,
-                                maxiter=maxiter, verbose=arguments.verbose)
+                                maxiter=maxiter, verbose=verbose)
     c = opt.active_set
     f = opt.jac
     u = opt.x[:f.shape[0], :f.shape[1]]
@@ -191,8 +197,11 @@ def save_contact(fn, surface, substrate, pressure, macro=None):
     macrostr = ''
     if macro is not None:
         macrostr = '\n'.join(['{} = {}'.format(x, y) for x, y in macro])
-    np.savetxt(fn, pressure, fmt='%i', header=versionstr + '\n' + commandline + '\n' + macrostr +
-                                              'Contact map follows. Values are boolean.')
+    np.savetxt(
+        fn,
+        pressure,
+        fmt='%i',
+        header=versionstr + '\n' + commandline + '\n' + macrostr + 'Contact map follows. Values are boolean.')
 
 
 def save_pressure(fn, surface, substrate, pressure, macro=None):
@@ -225,7 +234,9 @@ def tuple2(s):
     try:
         x, y = (float(x) for x in s.split(','))
         return x, y
-    except:
+    except ValueError:
+        raise ArgumentTypeError('Size must be sx,sy')
+    except TypeError:
         raise ArgumentTypeError('Size must be sx,sy')
 
 
@@ -529,7 +540,7 @@ def main():
 
             c, u, f, disp0, load, area, history = \
                 next_step(system, surface, history, pentol=arguments.pentol,
-                          maxiter=arguments.maxiter, logger=logger)
+                          maxiter=arguments.maxiter, logger=logger, verbose=arguments.verbose)
 
             dump_nc(container, u, f, disp0, load, area)
             macro = dump(txt, surface, substrate, u, f, disp0)
