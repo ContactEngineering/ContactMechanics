@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.CommandLineInterface package &mdash; ContactMechanics 1.0.0.dev63+gfa5f913 documentation</title>
+  <title>ContactMechanics.CommandLineInterface package &mdash; ContactMechanics 1.0.0.dev64+g4a618ab documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.0.0.dev63+gfa5f913
+                1.0.0.dev64+g4a618ab
               </div>
             
           
@@ -227,7 +227,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ContactMechanics.CommandLineInterface.HardWall.next_step">
-<span class="sig-prename descclassname"><span class="pre">ContactMechanics.CommandLineInterface.HardWall.</span></span><span class="sig-name descname"><span class="pre">next_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pentol=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger=&lt;ContactMechanics.Tools.Logger.Logger</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/CommandLineInterface/HardWall.html#next_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.CommandLineInterface.HardWall.next_step" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.CommandLineInterface.HardWall.</span></span><span class="sig-name descname"><span class="pre">next_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pentol=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger=&lt;ContactMechanics.Tools.Logger.Logger</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/CommandLineInterface/HardWall.html#next_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.CommandLineInterface.HardWall.next_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a full contact calculation. Try to guess displacement such that areas
 are equally spaced on a log scale.</p>
 <dl class="field-list simple">
@@ -236,6 +236,9 @@ are equally spaced on a log scale.</p>
 <li><p><strong>system</strong> (<em>PyCo.System.SystemBase object</em>) – The contact mechanical system.</p></li>
 <li><p><strong>surface</strong> (<em>SurfaceTopography.SurfaceTopography object</em>) – The rigid rough surface.</p></li>
 <li><p><strong>history</strong> (<em>tuple</em>) – History returned by past calls to next_step</p></li>
+<li><p><strong>pentol</strong> (<em>float</em><em>, </em><em>optional</em>) – Penetration tolerance, passed to CG solver. (Default: None)</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of iterations, passed to CG solver. (Default: None)</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Output verbosity. (Default: False)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
