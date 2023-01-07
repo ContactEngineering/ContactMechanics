@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Tools.common &mdash; ContactMechanics 1.1.0.dev2+g7daf4b9 documentation</title>
+  <title>ContactMechanics.Tools.common &mdash; ContactMechanics 1.1.0.dev2+ga572a99 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev2+g7daf4b9
+                1.1.0.dev2+ga572a99
               </div>
             
           
@@ -204,7 +204,7 @@
 
 
 <div class="viewcode-block" id="compare_containers"><a class="viewcode-back" href="../../../source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.compare_containers">[docs]</a><span class="k">def</span> <span class="nf">compare_containers</span><span class="p">(</span><span class="n">cont_a</span><span class="p">,</span> <span class="n">cont_b</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    compares whether two containers have the same content regardless of their</span>
 <span class="sd">    type. eg, compares [1, 2, 3] and (1, 2., 3.) as True</span>
 <span class="sd">    Keyword Arguments:</span>
@@ -226,7 +226,7 @@
 
 
 <div class="viewcode-block" id="evaluate_gradient"><a class="viewcode-back" href="../../../source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.evaluate_gradient">[docs]</a><span class="k">def</span> <span class="nf">evaluate_gradient</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Don&#39;t actually use this function in production code, it&#39;s not efficient.</span>
 <span class="sd">    Returns an approximation of the gradient evaluated using central</span>
 <span class="sd">    differences.</span>
@@ -266,7 +266,7 @@
 
 
 <div class="viewcode-block" id="compute_wavevectors"><a class="viewcode-back" href="../../../source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.compute_wavevectors">[docs]</a><span class="k">def</span> <span class="nf">compute_wavevectors</span><span class="p">(</span><span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="p">,</span> <span class="n">nb_dims</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    computes and returns the wavevectors q that exist for the surfaces</span>
 <span class="sd">    physical_sizes and nb_grid_pts as one vector of components per dimension</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -282,7 +282,7 @@
 
 
 <div class="viewcode-block" id="fftn"><a class="viewcode-back" href="../../../source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.fftn">[docs]</a><span class="k">def</span> <span class="nf">fftn</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">integral</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    n-dimensional fft according to the conventions detailed in</span>
 <span class="sd">    power_spectrum.tex in the notes folder.</span>
 
@@ -297,7 +297,7 @@
 
 
 <div class="viewcode-block" id="ifftn"><a class="viewcode-back" href="../../../source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.ifftn">[docs]</a><span class="k">def</span> <span class="nf">ifftn</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">integral</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    n-dimensional ifft according to the conventions detailed in</span>
 <span class="sd">    power_spectrum.tex in the notes folder.</span>
 
@@ -312,7 +312,7 @@
 
 
 <div class="viewcode-block" id="get_q_from_lambda"><a class="viewcode-back" href="../../../source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.get_q_from_lambda">[docs]</a><span class="k">def</span> <span class="nf">get_q_from_lambda</span><span class="p">(</span><span class="n">lambda_min</span><span class="p">,</span> <span class="n">lambda_max</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Conversion between wavelength and angular frequency</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Conversion between wavelength and angular frequency</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">lambda_min</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">q_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>

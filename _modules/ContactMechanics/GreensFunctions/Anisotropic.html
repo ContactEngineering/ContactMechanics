@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.GreensFunctions.Anisotropic &mdash; ContactMechanics 1.1.0.dev2+g7daf4b9 documentation</title>
+  <title>ContactMechanics.GreensFunctions.Anisotropic &mdash; ContactMechanics 1.1.0.dev2+ga572a99 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev2+g7daf4b9
+                1.1.0.dev2+ga572a99
               </div>
             
           
@@ -205,7 +205,7 @@
 
 <div class="viewcode-block" id="AnisotropicGreensFunction"><a class="viewcode-back" href="../../../source/ContactMechanics.GreensFunctions.html#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction">[docs]</a><span class="k">class</span> <span class="nc">AnisotropicGreensFunction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C11</span><span class="p">,</span> <span class="n">C12</span><span class="p">,</span> <span class="n">C44</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the surface Green&#39;s function for a linear elastic half-space</span>
 <span class="sd">        with anisotropic elastic constants. The class supports generic</span>
 <span class="sd">        elastic tensors but presently only cubic elastic constants can be</span>
@@ -275,7 +275,7 @@
         <span class="k">return</span> <span class="n">C_tensor</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">L</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="AnisotropicGreensFunction.bulkop"><a class="viewcode-back" href="../../../source/ContactMechanics.GreensFunctions.html#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.bulkop">[docs]</a>    <span class="k">def</span> <span class="nf">bulkop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the linear operator M_il = -C_ijkl q_j q_k</span>
 
 <span class="sd">        Arguments</span>
@@ -371,7 +371,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_U</span><span class="p">(</span><span class="n">qz</span><span class="p">,</span> <span class="n">eta</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_F</span><span class="p">(</span><span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_gamma_stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns the 3x3 stiffness matrix at the Gamma point (q=0)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the 3x3 stiffness matrix at the Gamma point (q=0)&quot;&quot;&quot;</span>
         <span class="c1"># Voigt components: xz = 4, yz = 3, zz = 2</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="bp">self</span><span class="o">.</span><span class="n">_C</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_C</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_C</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]],</span>
                          <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_C</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_C</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_C</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span>

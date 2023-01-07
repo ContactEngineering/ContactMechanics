@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.PlasticSystemSpecialisations &mdash; ContactMechanics 1.1.0.dev2+g7daf4b9 documentation</title>
+  <title>ContactMechanics.PlasticSystemSpecialisations &mdash; ContactMechanics 1.1.0.dev2+ga572a99 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev2+g7daf4b9
+                1.1.0.dev2+ga572a99
               </div>
             
           
@@ -207,13 +207,13 @@
 
 
 <div class="viewcode-block" id="PlasticNonSmoothContactSystem"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.PlasticSystemSpecialisations.PlasticNonSmoothContactSystem">[docs]</a><span class="k">class</span> <span class="nc">PlasticNonSmoothContactSystem</span><span class="p">(</span><span class="n">NonSmoothContactSystem</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This system implements a simple penetration hardness model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PlasticNonSmoothContactSystem.handles"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.PlasticSystemSpecialisations.PlasticNonSmoothContactSystem.handles">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">handles</span><span class="p">(</span><span class="n">substrate_type</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">is_domain_decomposed</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        determines whether this class can handle the proposed system</span>
 <span class="sd">        composition</span>
 <span class="sd">        Keyword Arguments:</span>
@@ -230,7 +230,7 @@
         <span class="k">return</span> <span class="n">is_ok</span></div>
 
 <div class="viewcode-block" id="PlasticNonSmoothContactSystem.minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.PlasticSystemSpecialisations.PlasticNonSmoothContactSystem.minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Need to convert hardness into force units because the solvers operate</span>
         <span class="c1"># internally with forces, not pressures.</span>

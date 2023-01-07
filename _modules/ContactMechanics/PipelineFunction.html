@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.PipelineFunction &mdash; ContactMechanics 1.1.0.dev2+g7daf4b9 documentation</title>
+  <title>ContactMechanics.PipelineFunction &mdash; ContactMechanics 1.1.0.dev2+ga572a99 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev2+g7daf4b9
+                1.1.0.dev2+ga572a99
               </div>
             
           
@@ -209,7 +209,7 @@
 
 <span class="k">def</span> <span class="nf">_contact_calculation</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">external_force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                          <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="p">{}):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run a full contact calculation at a given external load.</span>
 
 <span class="sd">    Parameters</span>
@@ -283,7 +283,7 @@
 
 
 <span class="k">def</span> <span class="nf">_next_contact_step</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pentol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="p">{}):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run a full contact calculation. Try to guess displacement such that areas</span>
 <span class="sd">    are equally spaced on a log scale.</span>
 
@@ -360,7 +360,7 @@
 
 <div class="viewcode-block" id="contact_mechanics"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.PipelineFunction.contact_mechanics">[docs]</a><span class="k">def</span> <span class="nf">contact_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substrate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offsets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pressures</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hardness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                       <span class="n">results_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="p">{}):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Carry out an automated contact mechanics calculations. The pipeline</span>
 <span class="sd">    function return thermodynamic data (averages over the contact area,</span>
 <span class="sd">    e.g. the total force or the total area). Spatially resolved data</span>

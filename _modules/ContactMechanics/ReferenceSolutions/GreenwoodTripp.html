@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.ReferenceSolutions.GreenwoodTripp &mdash; ContactMechanics 1.1.0.dev2+g7daf4b9 documentation</title>
+  <title>ContactMechanics.ReferenceSolutions.GreenwoodTripp &mdash; ContactMechanics 1.1.0.dev2+ga572a99 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev2+g7daf4b9
+                1.1.0.dev2+ga572a99
               </div>
             
           
@@ -213,7 +213,7 @@
 
 
 <div class="viewcode-block" id="Fn"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.GreenwoodTripp.Fn">[docs]</a><span class="k">def</span> <span class="nf">Fn</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">phi</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">s</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns:</span>
 <span class="sd">    --------</span>
 <span class="sd">         :math:`\int_h^\infty (s-h)^n \phi(s) ds`</span>
@@ -226,7 +226,7 @@
 
 <span class="c1"># Use asymptotic expressions for small and large values</span>
 <div class="viewcode-block" id="s"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.GreenwoodTripp.s">[docs]</a><span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="n">ξ</span><span class="p">,</span> <span class="n">ξ1</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">ξ2</span><span class="o">=</span><span class="mf">1e5</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns:</span>
 <span class="sd">    --------</span>
 
@@ -271,7 +271,7 @@
 
 <div class="viewcode-block" id="GreenwoodTripp"><a class="viewcode-back" href="../../../source/ContactMechanics.ReferenceSolutions.html#ContactMechanics.ReferenceSolutions.GreenwoodTripp.GreenwoodTripp">[docs]</a><span class="k">def</span> <span class="nf">GreenwoodTripp</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">μ</span><span class="p">,</span> <span class="n">rhomax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">mix</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
                    <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Greenwood-Tripp solution for the contact of rough spheres.</span>
 <span class="sd">    See: Greenwood, Tripp, J. Appl. Mech. 34, 153 (1967)</span>
 <span class="sd">    Symbols correspond to notation in this paper.</span>

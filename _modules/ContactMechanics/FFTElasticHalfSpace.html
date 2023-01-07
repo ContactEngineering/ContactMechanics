@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 1.1.0.dev2+g7daf4b9 documentation</title>
+  <title>ContactMechanics.FFTElasticHalfSpace &mdash; ContactMechanics 1.1.0.dev2+ga572a99 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev2+g7daf4b9
+                1.1.0.dev2+ga572a99
               </div>
             
           
@@ -318,7 +318,7 @@
 
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace">[docs]</a><span class="k">class</span> <span class="nc">PeriodicFFTElasticHalfSpace</span><span class="p">(</span><span class="n">ElasticSubstrate</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Uses the FFT to solve the displacements and stresses in an elastic</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Uses the FFT to solve the displacements and stresses in an elastic</span>
 <span class="sd">        Halfspace due to a given array of point forces. This halfspace</span>
 <span class="sd">        implementation cheats somewhat: since a net pressure would result in</span>
 <span class="sd">        infinite displacement, the first term of the FFT is systematically</span>
@@ -337,7 +337,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
                  <span class="n">stiffness_q0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">poisson</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">superclass</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        nb_grid_pts : int tuple</span>
@@ -455,7 +455,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nb_domain_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        usually, the nb_grid_pts of the system is equal to the geometric</span>
 <span class="sd">        nb_grid_pts (of the surface). For example free boundary conditions,</span>
 <span class="sd">        require the computational nb_grid_pts to differ from the geometric one,</span>
@@ -465,7 +465,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nb_subdomain_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
 
 <span class="sd">        :return:</span>
@@ -478,7 +478,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">subdomain_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
 
 <span class="sd">        :return:</span>
@@ -491,7 +491,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">subdomain_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
 
 <span class="sd">        :return:</span>
@@ -506,7 +506,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">local_topography_subdomain_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        slice representing the local subdomain without the padding area</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
@@ -514,7 +514,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nb_fourier_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
 
 <span class="sd">        :return:</span>
@@ -523,7 +523,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">fourier_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
 
 <span class="sd">        :return:</span>
@@ -532,7 +532,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">fourier_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When working in Parallel one processor holds only Part of the Data</span>
 
 <span class="sd">        :return:</span>
@@ -541,7 +541,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">communicator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the MPI communicator&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the MPI communicator&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communicator</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -554,7 +554,7 @@
             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size_str</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_greens_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the weights w relating fft(displacement) to fft(pressure):</span>
 <span class="sd">        fft(u) = w*fft(p), see (6) Stanley &amp; Kato J. Tribol. 119(3), 481-485</span>
 <span class="sd">        (Jul 01, 1997).</span>
@@ -663,7 +663,7 @@
         <span class="k">return</span> <span class="n">greens_function</span>
 
     <span class="k">def</span> <span class="nf">_compute_surface_stiffness</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Invert the weights w relating fft(displacement) to fft(pressure):</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">surface_stiffness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_fourier_grid_pts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span>
@@ -673,7 +673,7 @@
         <span class="k">return</span> <span class="n">surface_stiffness</span>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_disp"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_disp">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_disp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Computes the displacement due to a given force array</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Computes the displacement due to a given force array</span>
 <span class="sd">        Keyword Arguments:</span>
 <span class="sd">        forces   -- a numpy array containing point forces (*not* pressures)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -690,7 +690,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">normalisation</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_force"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_force">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Computes the force (*not* pressures) due to a given displacement</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Computes the force (*not* pressures) due to a given displacement</span>
 <span class="sd">        array.</span>
 
 <span class="sd">        Keyword Arguments:</span>
@@ -709,7 +709,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fftengine</span><span class="o">.</span><span class="n">normalisation</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k_disp"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_disp">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k_disp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Computes the K-space displacement due to a given force array</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Computes the K-space displacement due to a given force array</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        __________</span>
@@ -734,7 +734,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k_force"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Computes the K-space forces (*not* pressures) due to a given</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Computes the K-space forces (*not* pressures) due to a given</span>
 <span class="sd">        displacement array.</span>
 
 <span class="sd">        Keyword Arguments:</span>
@@ -751,7 +751,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k_force_k"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k_force_k">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k_force_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp_k</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Computes the K-space forces (*not* pressures) due to a given</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Computes the K-space forces (*not* pressures) due to a given</span>
 <span class="sd">        K-space displacement array.</span>
 
 <span class="sd">        Parameters</span>
@@ -770,7 +770,7 @@
         <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">surface_stiffness</span> <span class="o">*</span> <span class="n">disp_k</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_per_pt</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_elastic_energy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_elastic_energy">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_elastic_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">,</span> <span class="n">disp</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        computes and returns the elastic energy due to forces and displacements</span>
 <span class="sd">        Arguments:</span>
 <span class="sd">        forces -- array of forces</span>
@@ -780,7 +780,7 @@
         <span class="k">return</span> <span class="mf">.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">disp</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="o">-</span><span class="n">forces</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_scalar_product_k_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ka</span><span class="p">,</span> <span class="n">kb</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the scalar product, i.e. the power, between the `a` and `b`,</span>
 <span class="sd">        given their fourier representation.</span>
 
@@ -900,7 +900,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">locsum</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_elastic_energy_k_space"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_elastic_energy_k_space">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_elastic_energy_k_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kforces</span><span class="p">,</span> <span class="n">kdisp</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the Energy due to forces and displacements using their Fourier</span>
 <span class="sd">        representation.</span>
 
@@ -934,7 +934,7 @@
         <span class="k">return</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_scalar_product_k_space</span><span class="p">(</span><span class="n">kdisp</span><span class="p">,</span> <span class="n">kforces</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Evaluates the elastic energy and the point forces</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the elastic energy and the point forces</span>
 <span class="sd">        Keyword Arguments:</span>
 <span class="sd">        disp   -- array of distances</span>
 <span class="sd">        pot    -- (default True) if true, returns potential energy</span>
@@ -957,7 +957,7 @@
         <span class="k">return</span> <span class="n">potential</span><span class="p">,</span> <span class="n">force</span></div>
 
 <div class="viewcode-block" id="PeriodicFFTElasticHalfSpace.evaluate_k"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp_k</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Evaluates the elastic energy and the point forces in fourier sapce</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the elastic energy and the point forces in fourier sapce</span>
 <span class="sd">        or k-space or reciprocal space.</span>
 
 <span class="sd">        Parameters:</span>
@@ -982,7 +982,7 @@
 
 
 <div class="viewcode-block" id="FreeFFTElasticHalfSpace"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace">[docs]</a><span class="k">class</span> <span class="nc">FreeFFTElasticHalfSpace</span><span class="p">(</span><span class="n">PeriodicFFTElasticHalfSpace</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Uses the FFT to solve the displacements and stresses in an non-periodic</span>
 <span class="sd">    elastic Halfspace due to a given array of point forces. Uses the Green&#39;s</span>
 <span class="sd">    functions formulaiton of Johnson (1985, p. 54). The application of the FFT</span>
@@ -1005,7 +1005,7 @@
          <span class="p">)</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">young</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
                  <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        nb_grid_pts : tuple of floats</span>
@@ -1037,7 +1037,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_boundaries</span> <span class="o">=</span> <span class="n">check_boundaries</span>
 
 <div class="viewcode-block" id="FreeFFTElasticHalfSpace.spawn_child"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.spawn_child">[docs]</a>    <span class="k">def</span> <span class="nf">spawn_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb_grid_pts</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        returns an instance with same physical properties with a smaller</span>
 <span class="sd">        computational grid</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1047,7 +1047,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nb_domain_grid_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        usually, the nb_grid_pts of the system is equal to the geometric</span>
 <span class="sd">        nb_grid_pts (of the surface). For example free boundary conditions,</span>
 <span class="sd">        require the computational nb_grid_pts to differ from the geometric one,</span>
@@ -1064,7 +1064,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">domain_boundary_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        Returns a mask of the points that are on the boundary of the domain</span>
 
@@ -1092,7 +1092,7 @@
         <span class="k">return</span> <span class="n">mask</span>
 
     <span class="k">def</span> <span class="nf">_compute_greens_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compute the weights w relating fft(displacement) to fft(pressure):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the weights w relating fft(displacement) to fft(pressure):</span>
 <span class="sd">           fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178</span>
 
 <span class="sd">           This version is less is copied from matscipy, use if memory is a</span>
@@ -1137,7 +1137,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_buffer</span><span class="o">.</span><span class="n">array</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <div class="viewcode-block" id="FreeFFTElasticHalfSpace.evaluate_disp"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_disp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Computes the displacement due to a given force array</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Computes the displacement due to a given force array</span>
 <span class="sd">        Keyword Arguments:</span>
 <span class="sd">        forces   -- a numpy array containing point forces (*not* pressures)</span>
 
@@ -1179,7 +1179,7 @@
         <span class="c1"># return super().evaluate_disp(padded_forces)[s]</span>
 
 <div class="viewcode-block" id="FreeFFTElasticHalfSpace.FreeBoundaryError"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.FreeBoundaryError">[docs]</a>    <span class="k">class</span> <span class="nc">FreeBoundaryError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        called when the forces overlap into the padding region</span>
 <span class="sd">        (i.e. the outer ring of the force array equals zero),</span>
 <span class="sd">        needing an increase of the nb_grid_pts</span>
@@ -1189,7 +1189,7 @@
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FreeFFTElasticHalfSpace.check_boundaries"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.check_boundaries">[docs]</a>    <span class="k">def</span> <span class="nf">check_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Raises an error if the forces are not zero at the boundary of the</span>
 <span class="sd">        active domain</span>
 
@@ -1241,7 +1241,7 @@
                 <span class="s2">&quot; set check_boundary to False&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FreeFFTElasticHalfSpace.check"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks wether force is still in the value range handled correctly</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>

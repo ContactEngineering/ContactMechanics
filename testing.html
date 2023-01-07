@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Testing &mdash; ContactMechanics 1.1.0.dev2+g7daf4b9 documentation</title>
+  <title>Testing &mdash; ContactMechanics 1.1.0.dev2+ga572a99 documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.1.0.dev2+g7daf4b9
+                1.1.0.dev2+ga572a99
               </div>
             
           
@@ -181,7 +181,7 @@
 </pre></div>
 </div>
 <p>Tests that are parallelizable have to run with <a class="reference external" href="https://github.com/bccp/runtests">runtests</a>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python run-tests.py --no-build
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>run-tests.py<span class="w"> </span>--no-build
 </pre></div>
 </div>
 <p>You can choose the number of processors with the option <code class="code docutils literal notranslate"><span class="pre">--mpirun=&quot;mpirun</span> <span class="pre">-np</span> <span class="pre">4&quot;</span></code>. For development purposes you can go beyond the number of processors of your computer using <code class="code docutils literal notranslate"><span class="pre">--mpirun=&quot;mpirun</span> <span class="pre">-np</span> <span class="pre">10</span> <span class="pre">--oversubscribe&quot;</span></code></p>
@@ -195,15 +195,15 @@
 <h1>Linter<a class="headerlink" href="#linter" title="Permalink to this heading">¶</a></h1>
 <p>CI will check the code using the <code class="code docutils literal notranslate"><span class="pre">flake8</span></code> linter.</p>
 <p>Before pushing, make sure to run the tests also with the linter activated:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest --flake8
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>--flake8
 </pre></div>
 </div>
 <p>To run only the linter and not the tests:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest --flake8 -m flake8
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>--flake8<span class="w"> </span>-m<span class="w"> </span>flake8
 </pre></div>
 </div>
 <p>To check a file individually:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 -m flake8 --max-complexity <span class="m">10</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>flake8<span class="w"> </span>--max-complexity<span class="w"> </span><span class="m">10</span>
 </pre></div>
 </div>
 <p>You can configure this as <cite>Preferences-&gt;Tools-&gt;External Tools</cite> in Pycharm:</p>

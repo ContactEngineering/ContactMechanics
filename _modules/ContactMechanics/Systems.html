@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 1.1.0.dev2+g7daf4b9 documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 1.1.0.dev2+ga572a99 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev2+g7daf4b9
+                1.1.0.dev2+ga572a99
               </div>
             
           
@@ -229,7 +229,7 @@
     <span class="s2">&quot;Base class for contact systems&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substrate</span><span class="p">,</span> <span class="n">surface</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Represents a contact problem</span>
 
 <span class="sd">        Parameters:</span>
@@ -254,7 +254,7 @@
 
 <div class="viewcode-block" id="SystemBase.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.evaluate">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the energies and forces in the system for a given displacement</span>
 <span class="sd">        field</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -262,7 +262,7 @@
 
 <div class="viewcode-block" id="SystemBase.is_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.is_proxy">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_proxy</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        subclasses may not be able to implement the full interface because they</span>
 <span class="sd">        try to do something smart and internally compute a different system.</span>
 <span class="sd">        They should declare to  to be proxies and provide a method called cls.</span>
@@ -283,7 +283,7 @@
     <span class="c1"># pylint: disable=unused-argument</span>
 <div class="viewcode-block" id="SystemBase.handles"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.handles">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">handles</span><span class="p">(</span><span class="n">substrate_type</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">is_domain_decomposed</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        returns whether this class (in practice a subclass) handles this</span>
 <span class="sd">        combination of types</span>
 <span class="sd">        Keyword Arguments:</span>
@@ -294,7 +294,7 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="SystemBase.compute_gap"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_gap">[docs]</a>    <span class="k">def</span> <span class="nf">compute_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="o">*</span><span class="n">profile_args</span><span class="p">,</span> <span class="o">**</span><span class="n">profile_kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        evaluate the gap between surface and substrate. Convention is that</span>
 <span class="sd">        non-penetrating contact has gap &gt;= 0</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -317,14 +317,14 @@
 
 <div class="viewcode-block" id="SystemBase.compute_nb_contact_pts"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_nb_contact_pts">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">compute_nb_contact_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        compute and return the number of contact points. Note that this is of</span>
 <span class="sd">        no physical interest, as it is a purely numerical artefact</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="SystemBase.compute_relative_contact_area"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.compute_relative_contact_area">[docs]</a>    <span class="k">def</span> <span class="nf">compute_relative_contact_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; compute and return the relative contact area:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; compute and return the relative contact area:</span>
 <span class="sd">             A</span>
 <span class="sd">        Aᵣ = ──</span>
 <span class="sd">             A₀</span>
@@ -333,7 +333,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SystemBase.shape_minimisation_input"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.shape_minimisation_input">[docs]</a>    <span class="k">def</span> <span class="nf">shape_minimisation_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_array</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        For minimisation of smart systems, the initial guess array (e.g.</span>
 <span class="sd">        displacement) may have a non-intuitive shape and physical_sizes (The</span>
 <span class="sd">        problem physical_sizes may be decreased, as for free, non-periodic</span>
@@ -353,7 +353,7 @@
         <span class="k">raise</span> <span class="n">IncompatibleResolutionError</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="SystemBase.shape_minimisation_output"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.shape_minimisation_output">[docs]</a>    <span class="k">def</span> <span class="nf">shape_minimisation_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_array</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        For minimisation of smart systems, the output array (e.g.</span>
 <span class="sd">        displacement) may have a non-intuitive shape and physical_sizes (The</span>
 <span class="sd">        problem physical_sizes may be decreased, as for free, non-periodic</span>
@@ -412,7 +412,7 @@
                        <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lbounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convenience function. Eliminates boilerplate code for most minimisation</span>
 <span class="sd">        problems by encapsulating the use of scipy.minimize for common default</span>
 <span class="sd">        options. In the case of smart proxy systems, this may also encapsulate</span>
@@ -501,7 +501,7 @@
 
 <div class="viewcode-block" id="SystemBase.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.objective">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This helper method exposes a scipy.optimize-friendly interface to the</span>
 <span class="sd">        evaluate() method. Use this for optimization purposes, it makes sure</span>
 <span class="sd">        that the shape of disp is maintained and lets you set the offset and</span>
@@ -519,7 +519,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="SystemBase.callback"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.SystemBase.callback">[docs]</a>    <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simple callback function that can be handed over to scipy&#39;s minimize to</span>
 <span class="sd">        get updates during minimisation</span>
 <span class="sd">        Parameters:</span>
@@ -530,7 +530,7 @@
 
 
 <div class="viewcode-block" id="NonSmoothContactSystem"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem">[docs]</a><span class="k">class</span> <span class="nc">NonSmoothContactSystem</span><span class="p">(</span><span class="n">SystemBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    For non-smooth contact mechanics (i.e, the equlibrium is the solution to a</span>
 <span class="sd">    constrained optimisation problem with a non-zero gradient of the energy</span>
 <span class="sd">    functional at the solution). The classic contact problems, for which the</span>
@@ -541,7 +541,7 @@
     <span class="c1"># pylint: disable=abstract-method</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substrate</span><span class="p">,</span> <span class="n">surface</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Represents a contact problem</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Represents a contact problem</span>
 <span class="sd">        Keyword Arguments:</span>
 <span class="sd">        substrate   -- An instance of HalfSpace. Defines the solid mechanics in</span>
 <span class="sd">                       the substrate</span>
@@ -560,7 +560,7 @@
 
 <div class="viewcode-block" id="NonSmoothContactSystem.handles"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.handles">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">handles</span><span class="p">(</span><span class="n">substrate_type</span><span class="p">,</span> <span class="n">surface_type</span><span class="p">,</span> <span class="n">is_domain_decomposed</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        determines whether this class can handle the proposed system</span>
 <span class="sd">        composition</span>
 <span class="sd">        Keyword Arguments:</span>
@@ -585,21 +585,21 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.compute_nb_contact_pts"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_nb_contact_pts">[docs]</a>    <span class="k">def</span> <span class="nf">compute_nb_contact_pts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        compute and return the number of contact points. Note that this is of</span>
 <span class="sd">        no physical interest, as it is a purely numerical artefact</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.compute_contact_coordinates"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.compute_contact_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">compute_contact_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        returns an array of all coordinates, where contact pressure is</span>
 <span class="sd">        repulsive. Useful for evaluating the number of contact islands etc.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contact_zone</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.logger_input"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.logger_input">[docs]</a>    <span class="k">def</span> <span class="nf">logger_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Describes the current state of the system (during minimization)</span>
 
 <span class="sd">        Output is suited to be passed to ContactMechanics.Tools.Logger.Logger</span>
@@ -617,7 +617,7 @@
                  <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">),</span> <span class="p">])</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.evaluate"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the energies and forces in the system for a given displacement</span>
 <span class="sd">        field</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -638,7 +638,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.objective">[docs]</a>    <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">disp0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This helper method exposes a scipy.optimize-friendly interface to the</span>
 <span class="sd">        evaluate() method. Use this for optimization purposes, it makes sure</span>
 <span class="sd">        that the shape of disp is maintained and lets you set the offset and</span>
@@ -673,7 +673,7 @@
         <span class="k">return</span> <span class="n">fun</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.hessian_product"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.hessian_product">[docs]</a>    <span class="k">def</span> <span class="nf">hessian_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disp</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        computes the hessian product for objective</span>
 
 <span class="sd">        this is the same then primal_hessian_product</span>
@@ -691,7 +691,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">primal_hessian_product</span><span class="p">(</span><span class="n">disp</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">constrained_conjugate_gradients</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convenience function. Eliminates boilerplate code for most minimisation</span>
 <span class="sd">        problems by encapsulating the use of constrained minimisation.</span>
 
@@ -732,7 +732,7 @@
         <span class="k">return</span> <span class="n">result</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.primal_objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective">[docs]</a>    <span class="k">def</span> <span class="nf">primal_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;To solve the primal objective using gap as the variable.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;To solve the primal objective using gap as the variable.</span>
 <span class="sd">        Can be fed directly to standard solvers ex: scipy solvers etc</span>
 <span class="sd">        and returns the elastic energy and it&#39;s gradient (negative of</span>
 <span class="sd">        the forces) as a function of the gap.</span>
@@ -787,7 +787,7 @@
         <span class="k">return</span> <span class="n">fun</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.primal_hessian_product"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_hessian_product">[docs]</a>    <span class="k">def</span> <span class="nf">primal_hessian_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gap</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns the hessian product of the primal_objective function.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the hessian product of the primal_objective function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inres</span> <span class="o">=</span> <span class="n">gap</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
@@ -797,7 +797,7 @@
 <div class="viewcode-block" id="NonSmoothContactSystem.primal_minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">primal_minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">init_gap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                               <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;ccg_without_restart&#39;</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
 
-        <span class="sd">&quot;&quot;&quot;Convenience function. Eliminates boilerplate code for</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience function. Eliminates boilerplate code for</span>
 <span class="sd">        Primal minimisation problem (gap as variable) by encapsulating the use of constrained</span>
 <span class="sd">        minimisation.</span>
 
@@ -870,7 +870,7 @@
         <span class="k">return</span> <span class="n">result</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.evaluate_dual"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_dual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">press</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the energies and forces in the system for a given displacement</span>
 <span class="sd">        field</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -886,7 +886,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.dual_objective"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective">[docs]</a>    <span class="k">def</span> <span class="nf">dual_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Objective function to handle dual objective, i.e. the Legendre</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Objective function to handle dual objective, i.e. the Legendre</span>
 <span class="sd">        transformation from displacements as variable to pressures</span>
 <span class="sd">        (the Lagrange multiplier) as variable.</span>
 
@@ -939,7 +939,7 @@
         <span class="k">return</span> <span class="n">fun</span></div>
 
 <div class="viewcode-block" id="NonSmoothContactSystem.dual_hessian_product"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_hessian_product">[docs]</a>    <span class="k">def</span> <span class="nf">dual_hessian_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pressure</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the hessian product of the dual_objective function.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the hessian product of the dual_objective function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inres</span> <span class="o">=</span> <span class="n">pressure</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span>
@@ -948,7 +948,7 @@
 
 <div class="viewcode-block" id="NonSmoothContactSystem.dual_minimize_proxy"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">dual_minimize_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">init_force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                             <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;ccg_without_restart&#39;</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convenience function. Eliminates boilerplate code for DUAL minimisation (pixel forces as variables)</span>
 <span class="sd">        problems by encapsulating the use of constrained minimisation.</span>
 
