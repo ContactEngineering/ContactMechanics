@@ -66,10 +66,13 @@ def get_version_from_git():
     """
     Discover version from git repository.
     """
-    git_describe = subprocess.run(
-        ['git', 'describe', '--tags', '--dirty', '--always'],
-        stdout=subprocess.PIPE)
-    if git_describe.returncode != 0:
+    try:
+        git_describe = subprocess.run(
+            ['git', 'describe', '--tags', '--dirty', '--always'],
+            stdout=subprocess.PIPE)
+    except FileNotFoundError:
+        git_describe = None
+    if git_describe is None or git_describe.returncode != 0:
         raise CannotDiscoverVersion('git execution failed.')
     version = git_describe.stdout.decode('latin-1').strip()
 
