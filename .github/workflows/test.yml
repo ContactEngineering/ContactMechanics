@@ -1,0 +1,86 @@
+name: Test code functionality
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  schedule:
+    - cron: "0 2 * * 5"
+
+jobs:
+  tests:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 40
+
+    strategy:
+      matrix:
+        mpi: ['yes', 'no']
+        python-version: ['3.8', '3.9', '3.10']
+        mpi4py-version: [3.1.4]
+        netcdf4-python-version: [1.6.1]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Set up python3 ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -qy
+        python3 -m venv venv
+        source venv/bin/activate
+        python3 -m pip install --upgrade pip pip-tools
+        if [ "${{ matrix.mpi }}" == "yes" ]; then
+          sudo apt-get install -y \
+            openmpi-bin \
+            libopenmpi-dev \
+            libfftw3-dev \
+            libfftw3-mpi-dev \
+            libhdf5-mpi-dev \
+            libpnetcdf-dev \
+            libnetcdf-pnetcdf-dev \
+            meson \
+            ninja-build
+          # Compute mpi4py and muSpectre versions
+          pip-compile pyproject.toml
+          MUSPECTRE_VERSION=$(grep 'muspectre==' requirements.txt)
+          # Install mpi4py
+          echo "Installing mpi4py==${{ matrix.mpi4py-version }}"
+          CC=mpicc python3 -m pip install -v \
+            --no-binary mpi4py \
+            mpi4py==${{ matrix.mpi4py-version }}
+          # Install netCDF4 with MPI support
+          echo "Installing netCD4==${{ matrix.netcdf4-python-version }}"
+          CC=mpicc NETCDF4_DIR=/usr/lib/x86_64-linux-gnu/netcdf/pnetcdf python3 -m pip install -v \
+            --no-binary mpi4py --no-binary netCDF4 \
+            netCDF4==${{ matrix.netcdf4-python-version }}
+          # Manually install muSpectre with MPI enabled
+          echo "Installing ${MUSPECTRE_VERSION}"
+          pip install -v --no-binary muspectre ${MUSPECTRE_VERSION}
+        fi
+        python3 -m pip install build
+        python3 -m pip list
+
+    - name: Install extension module
+      run: |
+        source venv/bin/activate
+        python3 -m pip install .[test]
+
+    - name: Test with pytest
+      run: |
+        source venv/bin/activate
+        python3 .check_netcdf_capabilities.py ${{ matrix.mpi }}
+        python3 .check_mufft_capabilities.py ${{ matrix.mpi }}
+        python3 -m pip list
+        if [ "${{ matrix.mpi }}" == "yes" ]; then python3 run-tests.py --no-build --verbose --full-trace; else python3 -m pytest --verbose --full-trace -s; fi

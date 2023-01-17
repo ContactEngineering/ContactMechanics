@@ -38,7 +38,7 @@ def test_hardwall_plastic(env, tmp_dir):
 
     nc_fn = f'{tmp_dir}/output.nc'
 
-    call_command = ["hard_wall.py"]
+    call_command = ["ce_hard_wall"]
     call_args = [topo_fn,
                  "--hardness", str(hardness),
                  "--modulus", str(Es),

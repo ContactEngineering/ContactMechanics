@@ -1,0 +1,45 @@
+[build-system]
+requires = ["flit_core>=3.2"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "ContactMechanics"
+description = "Efficient contact mechanics using elastic half-space methods"
+readme = "README.md"
+license = { file = "LICENSE.md" }
+authors = [
+    { name = "Till Junge", email = "till.junge@altermail.ch" },
+    { name = "Lars Pastewka", email = "lars.pastewka@imtek.uni-freiburg.de" },
+    { name = "Antoine Sanner", email = "antoine.sanner@imtek.uni-freiburg.de" }
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python"
+]
+requires-python = ">=3.7.0"
+dynamic = [ "version" ]
+dependencies = [
+    "numpy<1.24.0",
+    "scipy>=1.9.0",
+    "NuMPI>=0.3.1",
+    "muSpectre>=0.25.1",
+    "SurfaceTopography>=1.3.0",
+    "netCDF4"
+]
+
+[project.optional-dependencies]
+test = [
+    "flake8<5",
+    "pytest",
+    "pytest-cov",
+    "pytest-flake8",
+    "runtests"
+]
+
+[project.urls]
+documentation = "https://contactengineering.github.io/ContactMechanics/"
+repository = "https://github.com/ContactEngineering/ContactMechanics"
+changelog = "https://github.com/ContactEngineering/ContactMechanics/blob/master/ContactMechanics/ChangeLog.md"
+
+[project.scripts]
+ce_hard_wall = "ContactMechanics.CommandLineInterface.HardWall:main"
