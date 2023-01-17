@@ -46,9 +46,10 @@ jobs:
         source venv/bin/activate
         python3 -m pip install .[test]
 
-    - name: Test with pytest
+    - name: Test example files
       run: |
         source venv/bin/activate
+        python3 -m pip install jupytext
         python3 -m pip list
 
         for f in *.ipynb
