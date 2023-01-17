@@ -36,7 +36,7 @@ from ContactMechanics.Tools.Logger import screen
 from ContactMechanics import PeriodicFFTElasticHalfSpace
 from SurfaceTopography import read_topography
 
-###
+# ##
 
 import matplotlib.pyplot as plt
 
@@ -47,7 +47,7 @@ E_s = 2
 sx, sy = 1, 1
 
 
-###
+# ##
 
 # Minimal implementation of Polonsky & Keer, without plasticity
 def constrained_conjugate_gradients(substrate, topography,
@@ -343,7 +343,7 @@ def constrained_conjugate_gradients(substrate, topography,
     return result
 
 
-###
+# ##
 
 # Read the topography from file.
 topography = read_topography('surface1.out', physical_sizes=(sx, sy))
@@ -362,7 +362,7 @@ substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s,
 # contact area
 res = constrained_conjugate_gradients(
     substrate, topography.heights(),
-    external_force=0.05 * topography.rms_slope() * E_s * sx * sy / 2,
+    external_force=0.05 * topography.rms_gradient() * E_s * sx * sy / 2,
     logger=screen)
 
 # Show contact area
