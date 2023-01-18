@@ -1,3 +1,4 @@
+# %% [markdown]
 #
 # Copyright 2016, 2018, 2020 Lars Pastewka
 #           2019-2020 Antoine Sanner
@@ -23,71 +24,87 @@
 # SOFTWARE.
 #
 
+# %%
 """
 Two contacting rough surfaces. Top surface is continuously displaced in
 x-direction at constant height.
 """
 
+# %%
 import numpy as np
 
+# %%
 from ContactMechanics import PeriodicFFTElasticHalfSpace
 from SurfaceTopography import read_topography
-from SurfaceTopography.UniformLineScanAndTopography import \
-    TranslatedTopography, \
-    CompoundTopography
 from ContactMechanics import make_system
 # from PyCo.Tools import compute_rms_height
 from ContactMechanics.IO.NetCDF import NetCDFContainer
 
-###
+# %% [markdown]
+# ##
 
+# %%
 import matplotlib.pyplot as plt
 
-###
+# %% [markdown]
+# ##
 
+# %%
 # This is the elastic contact modulus, E*.
 E_s = 2
 
-###
+# %% [markdown]
+# ##
 
+# %%
 # This is the physical physical_sizes of the surfaces.
 sx, sy = 1, 1
 
+# %%
 # Read the two contacting surfacs.
 surface1 = read_topography('surface1.out', physical_sizes=(sx, sy))
 surface2 = read_topography('surface2.out', physical_sizes=(sx, sy))
 
+# %%
 print('RMS heights of surfaces = {} {}'.format(surface1.rms_height_from_area(),
                                                surface2.rms_height_from_area()))
 
+# %%
 # This is the grid nb_grid_pts of the two surfaces.
 nx, ny = surface1.nb_grid_pts
 
+# %%
 # TranslatedSurface knows how to translate a surface into some direction.
-translated_surface1 = TranslatedTopography(surface1)
+translated_surface1 = surface1.translate()
 
+# %%
 # This is the compound of the two surfaces, effectively creating a surface
 # that is the difference between the two profiles.
-compound_surface = CompoundTopography(translated_surface1, surface2)
+compound_surface = translated_surface1.superpose(surface2)
 
+# %%
 # Periodic substrate and hard-wall interactions.
 substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sx))
 
+# %%
 # This creates a "System" object that knows about substrate, interaction and
 # surface.
 system = make_system(substrate, compound_surface)
 
+# %%
 # Initial displacement field.
-disp = np.zeros(surface1.shape)
+disp = np.zeros(surface1.nb_grid_pts)
 
+# %%
 # Dump some information to this NetCDF file. Inspect the NetCDF with the
 # 'ncdump' command.
 container = NetCDFContainer('traj.nc', mode='w', double=True)
 # NetCDF needs to know the nb_grid_pts/shape
-container.set_shape(surface2)
+container.set_shape(surface2.nb_grid_pts)
 # This creates a field called 'surface2' inside the NetCDF file.
 container.surface2 = surface2.heights()
 
+# %%
 # Loop over nd displacement steps.
 nd = 3
 step_size = 24
@@ -96,7 +113,7 @@ for i, c in zip(range(0, step_size * nd, step_size), ['r', 'g', 'b', 'y']):
     xshift = i
     # Set the offset of the translated surface, i.e. the translation vector
     # with respect to the untranslated surface.
-    translated_surface1.set_offset(xshift, 0)
+    translated_surface1.offset = xshift, 0
 
     # Solve the contact problem for a constant relative displacement (offset).
     opt = system.minimize_proxy(offset=-0.012, initial_displacements=disp)
@@ -125,6 +142,8 @@ for i, c in zip(range(0, step_size * nd, step_size), ['r', 'g', 'b', 'y']):
     plt.plot(np.arange(nx), top_surface[:, 150], c + '-')
     plt.plot(np.arange(nx), bottom_surface[:, 150], c + '-')
 
+# %%
 container.close()
 
+# %%
 plt.show()

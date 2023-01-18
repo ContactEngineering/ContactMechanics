@@ -1,0 +1,63 @@
+name: Test examples run without failure
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  schedule:
+    - cron: "0 2 * * 5"
+
+jobs:
+  tests:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 40
+
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Set up python3 ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -qy
+        python3 -m venv venv
+        source venv/bin/activate
+        python3 -m pip install --upgrade pip pip-tools
+        python3 -m pip install build
+        python3 -m pip list
+
+    - name: Install extension module
+      run: |
+        source venv/bin/activate
+        python3 -m pip install .[test]
+
+    - name: Test example files
+      run: |
+        source venv/bin/activate
+        python3 -m pip install jupytext
+        python3 -m pip list
+        cd examples
+        for f in *.ipynb
+        do
+            jupytext --check  pytest --warn-only $f
+        done
+
+        for f in *.py
+        do
+            jupytext --check pytest --warn-only $f
+        done
