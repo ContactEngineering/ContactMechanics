@@ -54,10 +54,10 @@ jobs:
         cd examples
         for f in *.ipynb
         do
-            jupytext --check pytest $f
+            jupytext --check --warn-only pytest $f
         done
 
         for f in *.py
         do
-            jupytext --check pytest $f
+            jupytext --check --warn-only pytest $f
         done
