@@ -25,9 +25,10 @@
 #
 
 """
-Defines all solid mechanics model used in PyCo
+Defines all solid mechanics model used in ContactMechanics
 """
 
+import Factory # noqa: F401
 from .Factory import make_system, make_plastic_system  # noqa: F401
 from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace  # noqa: F401
 from .Substrates import Substrate, ElasticSubstrate, PlasticSubstrate  # noqa: F401

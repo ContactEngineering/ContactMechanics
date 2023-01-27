@@ -151,3 +151,7 @@ def make_plastic_system(*args, **kwargs):
     substrate, surface = _make_system_args(*args, **kwargs)
 
     return PlasticNonSmoothContactSystem(substrate=substrate, surface=surface)
+
+from SurfaceTopography.HeightContainer import UniformTopographyInterface
+UniformTopographyInterface.register_function("make_contact_system", make_system)
+UniformTopographyInterface.register_function("make_plastic_contact_system", make_plastic_system)
