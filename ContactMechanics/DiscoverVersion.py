@@ -22,8 +22,6 @@
 # SOFTWARE.
 #
 
-
-
 import os
 import subprocess
 
