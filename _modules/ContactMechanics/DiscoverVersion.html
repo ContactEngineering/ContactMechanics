@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.DiscoverVersion &mdash; ContactMechanics 1.1.0.dev16+gb3e635b1 documentation</title>
+  <title>ContactMechanics.DiscoverVersion &mdash; ContactMechanics 1.1.0.dev16+g20fcf71d documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev16+gb3e635b1
+                1.1.0.dev16+g20fcf71d
               </div>
             
           
@@ -211,6 +211,7 @@
 <span class="c1"># - If this fails, ask pkg_resources</span>
 <span class="c1">#</span>
 
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
 
 
@@ -238,10 +239,16 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Discover version from git repository.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">git_describe</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-        <span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;describe&#39;</span><span class="p">,</span> <span class="s1">&#39;--tags&#39;</span><span class="p">,</span> <span class="s1">&#39;--dirty&#39;</span><span class="p">,</span> <span class="s1">&#39;--always&#39;</span><span class="p">],</span>
-        <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">git_describe</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;.git&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">CannotDiscoverVersion</span><span class="p">(</span><span class="s1">&#39;.git subdirectory does not exist.&#39;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">git_describe</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;describe&#39;</span><span class="p">,</span> <span class="s1">&#39;--tags&#39;</span><span class="p">,</span> <span class="s1">&#39;--dirty&#39;</span><span class="p">,</span> <span class="s1">&#39;--always&#39;</span><span class="p">],</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="n">git_describe</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">git_describe</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">git_describe</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">CannotDiscoverVersion</span><span class="p">(</span><span class="s1">&#39;git execution failed.&#39;</span><span class="p">)</span>
     <span class="n">version</span> <span class="o">=</span> <span class="n">git_describe</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;latin-1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
@@ -259,42 +266,33 @@
     <span class="k">return</span> <span class="n">version</span></div>
 
 
+<span class="n">_pkg_name</span> <span class="o">=</span> <span class="vm">__name__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.DiscoverVersion&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="c1"># importlib is present in Python &gt;= 3.8</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="n">get_version_from_git</span><span class="p">()</span>
-<span class="k">except</span> <span class="n">CannotDiscoverVersion</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">importlib.metadata</span> <span class="kn">import</span> <span class="n">version</span>
+
+    <span class="n">__version__</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="n">_pkg_name</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">__version__</span> <span class="o">=</span> <span class="kc">None</span>
 
+<span class="c1"># Not sure this mechanisms below is much different from the above</span>
 <span class="k">if</span> <span class="n">__version__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">__version__</span> <span class="o">=</span> <span class="n">get_version_from_pkg_info</span><span class="p">()</span>
     <span class="k">except</span> <span class="n">CannotDiscoverVersion</span><span class="p">:</span>
         <span class="n">__version__</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="c1"># Not sure the mechanisms below are much different from parsing PKG-INFO...</span>
-
-<span class="n">pkg_name</span> <span class="o">=</span> <span class="vm">__name__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.DiscoverVersion&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">__version__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="c1"># importlib is present in Python &gt;= 3.8</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">importlib.metadata</span> <span class="kn">import</span> <span class="n">version</span>
-
-        <span class="n">__version__</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="n">__version__</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="k">if</span> <span class="n">__version__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="c1"># pkg_resources is part of setuptools</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">get_distribution</span>
-
-        <span class="n">__version__</span> <span class="o">=</span> <span class="n">get_distribution</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">)</span><span class="o">.</span><span class="n">version</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">__version__</span> <span class="o">=</span> <span class="n">get_version_from_git</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">CannotDiscoverVersion</span><span class="p">:</span>
         <span class="n">__version__</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="c1"># Nope. Out of options.</span>
 
 <span class="k">if</span> <span class="n">__version__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="n">CannotDiscoverVersion</span><span class="p">(</span><span class="s1">&#39;Tried git, PKG-INFO, importlib and pkg_resources&#39;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">CannotDiscoverVersion</span><span class="p">(</span><span class="s1">&#39;Tried importlib, pkg_resources, PKG-INFO and git&#39;</span><span class="p">)</span>
 </pre></div>
 
            </div>
