@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.DiscoverVersion &mdash; ContactMechanics 1.1.0.dev25+g8a54fc3a documentation</title>
+  <title>ContactMechanics.DiscoverVersion &mdash; ContactMechanics 1.1.0.dev25+ga0fcd795 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.0.dev25+g8a54fc3a
+                1.1.0.dev25+ga0fcd795
               </div>
             
           
@@ -202,22 +202,6 @@
     <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="get_version_from_pkg_info"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.DiscoverVersion.get_version_from_pkg_info">[docs]</a><span class="k">def</span> <span class="nf">get_version_from_pkg_info</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Discover version from PKG-INFO file.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">fobj</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;PKG-INFO&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">CannotDiscoverVersion</span><span class="p">(</span><span class="s2">&quot;Could not find &#39;PKG-INFO&#39; file.&quot;</span><span class="p">)</span>
-    <span class="n">line</span> <span class="o">=</span> <span class="n">fobj</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-    <span class="k">while</span> <span class="n">line</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Version:&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">line</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="n">line</span> <span class="o">=</span> <span class="n">fobj</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-    <span class="k">raise</span> <span class="n">CannotDiscoverVersion</span><span class="p">(</span><span class="s2">&quot;No line starting with &#39;Version:&#39; in &#39;PKG-INFO&#39;.&quot;</span><span class="p">)</span></div>
-
-
 <div class="viewcode-block" id="get_version_from_git"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.DiscoverVersion.get_version_from_git">[docs]</a><span class="k">def</span> <span class="nf">get_version_from_git</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Discover version from git repository.</span>
@@ -259,13 +243,7 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">__version__</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="c1"># Not sure this mechanisms below is much different from the above two</span>
-<span class="k">if</span> <span class="n">__version__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">__version__</span> <span class="o">=</span> <span class="n">get_version_from_pkg_info</span><span class="p">()</span>
-    <span class="k">except</span> <span class="n">CannotDiscoverVersion</span><span class="p">:</span>
-        <span class="n">__version__</span> <span class="o">=</span> <span class="kc">None</span>
-
+<span class="c1"># git works if we are in the source repository</span>
 <span class="k">if</span> <span class="n">__version__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">__version__</span> <span class="o">=</span> <span class="n">get_version_from_git</span><span class="p">()</span>
