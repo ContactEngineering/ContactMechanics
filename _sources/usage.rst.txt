@@ -12,21 +12,20 @@ Elastic half-space module
 Coordinate system
 +++++++++++++++++
 
-.. image:: ./Figures/geometry_pdf_tex.svg
+.. image:: ./Figures/fig_kinematics.svg
 
-:math:`h_0(x)` is the content of the topography.
+:math:`h(x)` is the content of the topography.
 
-:math:`\delta`: rigid body penetration
+:math:`b`: rigid body penetration
 
-:math:`h(x) = \delta + h_0(x)` is the height of the indenter with respect to the surface of the undeformed halfspace
+:math:`h_b(x) = b + h(x)` is the height of the indenter with respect to the surface of the undeformed halfspace
 
-:math:`u(x)` displacent of the halfspace
+:math:`u(x)` displacement of the halfspace
 
-:math:`g(x) = u(x) - h(x) = u(x) - (\delta + h_0(x))`: gap
+:math:`g(x)  = u(x) - (b + h(x))`: gap
 
 
 The simulation models the indentation of an elastic halfspace (flat) with a rigid indenter whose geometry is given by the topography.
 
-In the picture above the maximum value of the topography :math:`h_0(x)` is 0. First contact occurs at :math:`\delta = 0 ` and the load will increase as `delta` increases.
 
-If :math:`h_0(x)` contains positive values the first contact will occur at :math:`\delta < 0`
+If :math:`h(x)` contains positive values the first contact will occur at :math:`b < 0`
