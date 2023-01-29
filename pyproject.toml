@@ -16,11 +16,11 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python"
 ]
-requires-python = ">=3.7.0"
+requires-python = ">=3.8.0"
 dynamic = [ "version" ]
 dependencies = [
     "numpy<1.24.0",
-    "scipy>=1.7.3",  # latest that supports Python 3.7
+    "scipy>=1.9.0",
     "NuMPI>=0.3.1",
     "muSpectre>=0.25.1",
     "SurfaceTopography>=1.3.0",
