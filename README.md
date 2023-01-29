@@ -45,8 +45,8 @@ Dependencies
 The package requires :
 - **numpy** - https://www.numpy.org/
 - **NuMPI** - https://github.com/imtek-simulation/numpi
-- **muFFT** - https://gitlab.com/muspectre/muspectre
-- **SurfaceTopography** - https://github.com/ComputationalMechanics/SurfaceTopography
+- **muSpectre** - https://gitlab.com/muspectre/muspectre
+- **SurfaceTopography** - https://github.com/ContactEngineering/SurfaceTopography
 
 Optional dependencies:
 - **runtests** - https://github.com/bccp/runtests
