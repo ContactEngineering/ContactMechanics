@@ -30,22 +30,6 @@ class CannotDiscoverVersion(Exception):
     pass
 
 
-def get_version_from_pkg_info():
-    """
-    Discover version from PKG-INFO file.
-    """
-    try:
-        fobj = open('PKG-INFO', 'r')
-    except FileNotFoundError:
-        raise CannotDiscoverVersion("Could not find 'PKG-INFO' file.")
-    line = fobj.readline()
-    while line:
-        if line.startswith('Version:'):
-            return line[8:].strip()
-        line = fobj.readline()
-    raise CannotDiscoverVersion("No line starting with 'Version:' in 'PKG-INFO'.")
-
-
 def get_version_from_git():
     """
     Discover version from git repository.
@@ -87,13 +71,16 @@ try:
 except ImportError:
     __version__ = None
 
-# Not sure this mechanisms below is much different from the above two
+# pkg_resources is part of setuptools
 if __version__ is None:
     try:
-        __version__ = get_version_from_pkg_info()
-    except CannotDiscoverVersion:
+        from pkg_resources import get_distribution
+
+        __version__ = get_distribution(pkg_name).version
+    except ImportError:
         __version__ = None
 
+# git works if we are in the source repository
 if __version__ is None:
     try:
         __version__ = get_version_from_git()
