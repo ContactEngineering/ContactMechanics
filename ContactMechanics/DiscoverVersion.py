@@ -22,22 +22,7 @@
 # SOFTWARE.
 #
 
-#
-# This is the most minimal-idiotic way of discovering the version that I
-# could come up with. It deals with the following issues:
-# * If we are installed, we can get the version from package metadata,
-#   either via importlib.metadata or from pkg_resources. This also holds for
-#   wheels that contain the metadata. We are good! Yay!
-# * If we are not installed, there are two options:
-#   - We are working within the source git repository. Then
-#        git describe --tags --always
-#     yields a reasonable version descriptor, but that is unfortunately not
-#     PEP 440 compliant (see https://peps.python.org/pep-0440/). We need to
-#     mangle the version string to yield something compatible.
-# - If we install from a source tarball, we need to parse PKG-INFO manually.
-# - If this fails, ask importlib
-# - If this fails, ask pkg_resources
-#
+
 
 import os
 import subprocess
@@ -104,7 +89,7 @@ try:
 except ImportError:
     __version__ = None
 
-# Not sure this mechanisms below is much different from the above
+# Not sure this mechanisms below is much different from the above two
 if __version__ is None:
     try:
         __version__ = get_version_from_pkg_info()
