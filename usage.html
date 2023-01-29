@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Usage &mdash; ContactMechanics 1.1.0.dev18+ge9209293 documentation</title>
+  <title>Usage &mdash; ContactMechanics 1.1.0.dev22+g5ac20bfa documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.1.0.dev18+ge9209293
+                1.1.0.dev22+g5ac20bfa
               </div>
             
           
@@ -192,14 +192,13 @@
 <h2>Elastic half-space module<a class="headerlink" href="#elastic-half-space-module" title="Permalink to this heading">¶</a></h2>
 <section id="coordinate-system">
 <h3>Coordinate system<a class="headerlink" href="#coordinate-system" title="Permalink to this heading">¶</a></h3>
-<img alt="_images/geometry_pdf_tex.svg" src="_images/geometry_pdf_tex.svg" /><p><span class="math notranslate nohighlight">\(h_0(x)\)</span> is the content of the topography.</p>
-<p><span class="math notranslate nohighlight">\(\delta\)</span>: rigid body penetration</p>
-<p><span class="math notranslate nohighlight">\(h(x) = \delta + h_0(x)\)</span> is the height of the indenter with respect to the surface of the undeformed halfspace</p>
-<p><span class="math notranslate nohighlight">\(u(x)\)</span> displacent of the halfspace</p>
-<p><span class="math notranslate nohighlight">\(g(x) = u(x) - h(x) = u(x) - (\delta + h_0(x))\)</span>: gap</p>
+<img alt="_images/fig_kinematics.svg" src="_images/fig_kinematics.svg" /><p><span class="math notranslate nohighlight">\(h(x)\)</span> is the content of the topography.</p>
+<p><span class="math notranslate nohighlight">\(b\)</span>: rigid body penetration</p>
+<p><span class="math notranslate nohighlight">\(h_b(x) = b + h(x)\)</span> is the height of the indenter with respect to the surface of the undeformed halfspace</p>
+<p><span class="math notranslate nohighlight">\(u(x)\)</span> displacement of the halfspace</p>
+<p><span class="math notranslate nohighlight">\(g(x)  = u(x) - (b + h(x))\)</span>: gap</p>
 <p>The simulation models the indentation of an elastic halfspace (flat) with a rigid indenter whose geometry is given by the topography.</p>
-<p>In the picture above the maximum value of the topography <span class="math notranslate nohighlight">\(h_0(x)\)</span> is 0. First contact occurs at <span class="math notranslate nohighlight">\(\delta = 0 ` and the load will increase as `delta\)</span> increases.</p>
-<p>If <span class="math notranslate nohighlight">\(h_0(x)\)</span> contains positive values the first contact will occur at <span class="math notranslate nohighlight">\(\delta &lt; 0\)</span></p>
+<p>If <span class="math notranslate nohighlight">\(h(x)\)</span> contains positive values the first contact will occur at <span class="math notranslate nohighlight">\(b &lt; 0\)</span></p>
 </section>
 </section>
 </section>
