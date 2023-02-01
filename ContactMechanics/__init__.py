@@ -28,10 +28,13 @@
 Defines all solid mechanics model used in ContactMechanics
 """
 
-import Factory # noqa: F401
+# These imports are required to register the analysis functions!
+from ContactMechanics import Factory # noqa: F401
 from .Factory import make_system, make_plastic_system  # noqa: F401
 from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace  # noqa: F401
 from .Substrates import Substrate, ElasticSubstrate, PlasticSubstrate  # noqa: F401
 from .PipelineFunction import contact_mechanics  # noqa: F401
 
 from .DiscoverVersion import __version__  # noqa: F401
+
+
