@@ -22,23 +22,7 @@
 # SOFTWARE.
 #
 
-#
-# This is the most minimal-idiotic way of discovering the version that I
-# could come up with. It deals with the following issues:
-# * If we are installed, we can get the version from package metadata,
-#   either via importlib.metadata or from pkg_resources. This also holds for
-#   wheels that contain the metadata. We are good! Yay!
-# * If we are not installed, there are two options:
-#   - We are working within the source git repository. Then
-#        git describe --tags --always
-#     yields a reasonable version descriptor, but that is unfortunately not
-#     PEP 440 compliant (see https://peps.python.org/pep-0440/). We need to
-#     mangle the version string to yield something compatible.
-# - If we install from a source tarball, we need to parse PKG-INFO manually.
-# - If this fails, ask importlib
-# - If this fails, ask pkg_resources
-#
-
+import os
 import subprocess
 
 
@@ -46,30 +30,20 @@ class CannotDiscoverVersion(Exception):
     pass
 
 
-def get_version_from_pkg_info():
-    """
-    Discover version from PKG-INFO file.
-    """
-    try:
-        fobj = open('PKG-INFO', 'r')
-    except FileNotFoundError:
-        raise CannotDiscoverVersion("Could not find 'PKG-INFO' file.")
-    line = fobj.readline()
-    while line:
-        if line.startswith('Version:'):
-            return line[8:].strip()
-        line = fobj.readline()
-    raise CannotDiscoverVersion("No line starting with 'Version:' in 'PKG-INFO'.")
-
-
 def get_version_from_git():
     """
     Discover version from git repository.
     """
-    git_describe = subprocess.run(
-        ['git', 'describe', '--tags', '--dirty', '--always'],
-        stdout=subprocess.PIPE)
-    if git_describe.returncode != 0:
+    if not os.path.exists('.git'):
+        raise CannotDiscoverVersion('.git subdirectory does not exist.')
+
+    try:
+        git_describe = subprocess.run(
+            ['git', 'describe', '--tags', '--dirty', '--always'],
+            stdout=subprocess.PIPE)
+    except FileNotFoundError:
+        git_describe = None
+    if git_describe is None or git_describe.returncode != 0:
         raise CannotDiscoverVersion('git execution failed.')
     version = git_describe.stdout.decode('latin-1').strip()
 
@@ -87,39 +61,24 @@ def get_version_from_git():
     return version
 
 
+_pkg_name = __name__.replace('.DiscoverVersion', '')
+
+# importlib is present in Python >= 3.8
 try:
-    __version__ = get_version_from_git()
-except CannotDiscoverVersion:
+    from importlib.metadata import version
+
+    __version__ = version(_pkg_name)
+except ImportError:
     __version__ = None
 
+# git works if we are in the source repository
 if __version__ is None:
     try:
-        __version__ = get_version_from_pkg_info()
+        __version__ = get_version_from_git()
     except CannotDiscoverVersion:
-        __version__ = None
-
-# Not sure the mechanisms below are much different from parsing PKG-INFO...
-
-pkg_name = __name__.replace('.DiscoverVersion', '')
-if __version__ is None:
-    # importlib is present in Python >= 3.8
-    try:
-        from importlib.metadata import version
-
-        __version__ = version(pkg_name)
-    except ImportError:
-        __version__ = None
-
-if __version__ is None:
-    # pkg_resources is part of setuptools
-    try:
-        from pkg_resources import get_distribution
-
-        __version__ = get_distribution(pkg_name).version
-    except ImportError:
         __version__ = None
 
 # Nope. Out of options.
 
 if __version__ is None:
-    raise CannotDiscoverVersion('Tried git, PKG-INFO, importlib and pkg_resources')
+    raise CannotDiscoverVersion('Tried importlib, pkg_resources, PKG-INFO and git')
