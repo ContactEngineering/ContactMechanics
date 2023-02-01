@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Factory &mdash; ContactMechanics 1.1.1 documentation</title>
+  <title>ContactMechanics.Factory &mdash; ContactMechanics 1.1.1.dev6+g6d30d90f documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.1
+                1.1.1.dev6+g6d30d90f
               </div>
             
           
@@ -202,6 +202,7 @@
 
 <span class="kn">from</span> <span class="nn">SurfaceTopography</span> <span class="kn">import</span> <span class="n">open_topography</span>
 <span class="kn">from</span> <span class="nn">SurfaceTopography.IO</span> <span class="kn">import</span> <span class="n">ReaderBase</span>
+<span class="kn">from</span> <span class="nn">SurfaceTopography.HeightContainer</span> <span class="kn">import</span> <span class="n">UniformTopographyInterface</span>
 
 <span class="kn">from</span> <span class="nn">.PlasticSystemSpecialisations</span> <span class="kn">import</span> <span class="n">PlasticNonSmoothContactSystem</span>
 <span class="kn">from</span> <span class="nn">.Systems</span> <span class="kn">import</span> <span class="n">NonSmoothContactSystem</span>
@@ -210,7 +211,7 @@
 <span class="kn">from</span> <span class="nn">NuMPI</span> <span class="kn">import</span> <span class="n">MPI</span>
 
 
-<span class="k">def</span> <span class="nf">_make_system_args</span><span class="p">(</span><span class="n">substrate</span><span class="p">,</span> <span class="n">surface</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">_make_system_args</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">substrate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">communicator</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">,</span>
                       <span class="n">physical_sizes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="s2">&quot;mpi&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Factory function for contact systems. Checks the compatibility between the</span>
@@ -261,6 +262,8 @@
 
     <span class="c1"># substrate build with physical sizes and nb_grid_pts</span>
     <span class="c1"># matching the topography</span>
+    <span class="k">if</span> <span class="n">substrate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">substrate</span> <span class="o">=</span> <span class="s2">&quot;periodic&quot;</span> <span class="k">if</span> <span class="n">surface</span><span class="o">.</span><span class="n">is_periodic</span> <span class="k">else</span> <span class="s2">&quot;free&quot;</span>
     <span class="k">if</span> <span class="n">substrate</span> <span class="o">==</span> <span class="s2">&quot;periodic&quot;</span><span class="p">:</span>
         <span class="n">substrate</span> <span class="o">=</span> <span class="n">PeriodicFFTElasticHalfSpace</span><span class="p">(</span>
             <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="n">physical_sizes</span><span class="p">,</span>
@@ -269,6 +272,7 @@
         <span class="n">substrate</span> <span class="o">=</span> <span class="n">FreeFFTElasticHalfSpace</span><span class="p">(</span>
             <span class="n">nb_grid_pts</span><span class="p">,</span> <span class="n">physical_sizes</span><span class="o">=</span><span class="n">physical_sizes</span><span class="p">,</span>
             <span class="n">communicator</span><span class="o">=</span><span class="n">communicator</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="n">fft</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
 
     <span class="c1"># now the topography is ready to load</span>
     <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">surface</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">ReaderBase</span><span class="p">):</span>
@@ -323,6 +327,15 @@
     <span class="n">substrate</span><span class="p">,</span> <span class="n">surface</span> <span class="o">=</span> <span class="n">_make_system_args</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PlasticNonSmoothContactSystem</span><span class="p">(</span><span class="n">substrate</span><span class="o">=</span><span class="n">substrate</span><span class="p">,</span> <span class="n">surface</span><span class="o">=</span><span class="n">surface</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="make_contact_system"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Factory.make_contact_system">[docs]</a><span class="k">def</span> <span class="nf">make_contact_system</span><span class="p">(</span><span class="n">topography</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">make_contact_system</span><span class="p">(</span><span class="n">surface</span><span class="o">=</span><span class="n">topography</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="make_plastic_contact_system"><a class="viewcode-back" href="../../source/ContactMechanics.html#ContactMechanics.Factory.make_plastic_contact_system">[docs]</a><span class="k">def</span> <span class="nf">make_plastic_contact_system</span><span class="p">(</span><span class="n">topography</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">make_plastic_system</span><span class="p">(</span><span class="n">surface</span><span class="o">=</span><span class="n">topography</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<span class="n">UniformTopographyInterface</span><span class="o">.</span><span class="n">register_function</span><span class="p">(</span><span class="s2">&quot;make_contact_system&quot;</span><span class="p">,</span> <span class="n">make_contact_system</span><span class="p">)</span>
+<span class="n">UniformTopographyInterface</span><span class="o">.</span><span class="n">register_function</span><span class="p">(</span><span class="s2">&quot;make_plastic_contact_system&quot;</span><span class="p">,</span> <span class="n">make_plastic_contact_system</span><span class="p">)</span>
 </pre></div>
 
            </div>

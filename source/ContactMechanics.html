@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics package &mdash; ContactMechanics 1.1.1 documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 1.1.1.dev6+g6d30d90f documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.1.1
+                1.1.1.dev6+g6d30d90f
               </div>
             
           
@@ -176,6 +176,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.Factory">ContactMechanics.Factory module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ContactMechanics.Factory.make_contact_system"><code class="docutils literal notranslate"><span class="pre">make_contact_system()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ContactMechanics.Factory.make_plastic_contact_system"><code class="docutils literal notranslate"><span class="pre">make_plastic_contact_system()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ContactMechanics.Factory.make_plastic_system"><code class="docutils literal notranslate"><span class="pre">make_plastic_system()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ContactMechanics.Factory.make_system"><code class="docutils literal notranslate"><span class="pre">make_system()</span></code></a></li>
 </ul>
@@ -1022,6 +1024,16 @@ see FreeFFTElasticHalfSpace.</p>
 <span id="contactmechanics-factory-module"></span><h2>ContactMechanics.Factory module<a class="headerlink" href="#module-ContactMechanics.Factory" title="Permalink to this heading">¶</a></h2>
 <p>Implements a convenient Factory function for Contact System creation</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="ContactMechanics.Factory.make_contact_system">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.Factory.</span></span><span class="sig-name descname"><span class="pre">make_contact_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topography</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Factory.html#make_contact_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Factory.make_contact_system" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ContactMechanics.Factory.make_plastic_contact_system">
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.Factory.</span></span><span class="sig-name descname"><span class="pre">make_plastic_contact_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topography</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Factory.html#make_plastic_contact_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Factory.make_plastic_contact_system" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ContactMechanics.Factory.make_plastic_system">
 <span class="sig-prename descclassname"><span class="pre">ContactMechanics.Factory.</span></span><span class="sig-name descname"><span class="pre">make_plastic_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/Factory.html#make_plastic_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.Factory.make_plastic_system" title="Permalink to this definition">¶</a></dt>
 <dd><p>Factory function for contact systems. Checks the compatibility between the
@@ -1779,7 +1791,7 @@ in_array – array with the initial guess. has the intuitive shape you</p>
 </section>
 <section id="module-ContactMechanics">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ContactMechanics" title="Permalink to this heading">¶</a></h2>
-<p>Defines all solid mechanics model used in PyCo</p>
+<p>Defines all solid mechanics model used in ContactMechanics</p>
 </section>
 </section>
 

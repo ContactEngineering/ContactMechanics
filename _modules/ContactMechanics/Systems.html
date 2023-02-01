@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>ContactMechanics.Systems &mdash; ContactMechanics 1.1.1 documentation</title>
+  <title>ContactMechanics.Systems &mdash; ContactMechanics 1.1.1.dev6+g6d30d90f documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1.1
+                1.1.1.dev6+g6d30d90f
               </div>
             
           
@@ -383,6 +383,9 @@
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_lbounds_from_heights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        computes the bounds for the displacements corresponding to the constraint gap &gt;=0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lbounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">nb_subdomain_grid_pts</span><span class="p">)</span>
         <span class="n">lbounds</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">local_topography_subdomain_slices</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">lbounds</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">local_topography_subdomain_slices</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="o">.</span><span class="n">heights</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset</span>
@@ -392,6 +395,14 @@
         <span class="k">return</span> <span class="n">lbounds</span>
 
     <span class="k">def</span> <span class="nf">_update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the state of the system according to the minmisation result</span>
+
+<span class="sd">        updates the minimization result</span>
+
+<span class="sd">        TODO: This function should not be used when the optimisation variable is the gap or the pressure !</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">disp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_minimisation_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">disp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="n">gradient</span><span class="p">)</span>
