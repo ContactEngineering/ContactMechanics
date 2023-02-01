@@ -39,7 +39,7 @@ from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalf
 from NuMPI import MPI
 
 
-def _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
+def  _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
                       physical_sizes=None, fft="mpi", **kwargs):
     """
     Factory function for contact systems. Checks the compatibility between the
