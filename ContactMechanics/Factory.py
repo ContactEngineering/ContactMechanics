@@ -39,7 +39,7 @@ from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalf
 from NuMPI import MPI
 
 
-def  _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
+def _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
                       physical_sizes=None, fft="mpi", **kwargs):
     """
     Factory function for contact systems. Checks the compatibility between the
@@ -101,7 +101,6 @@ def  _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
             nb_grid_pts, physical_sizes=physical_sizes,
             communicator=communicator, fft=fft, **kwargs)
 
-
     # now the topography is ready to load
     if issubclass(surface.__class__, ReaderBase):
         surface = surface.topography(
@@ -156,11 +155,14 @@ def make_plastic_system(*args, **kwargs):
 
     return PlasticNonSmoothContactSystem(substrate=substrate, surface=surface)
 
+
 def make_contact_system(topography, *args, **kwargs):
     return make_contact_system(surface=topography, *args, **kwargs)
 
+
 def make_plastic_contact_system(topography, *args, **kwargs):
     return make_plastic_system(surface=topography, *args, **kwargs)
+
 
 UniformTopographyInterface.register_function("make_contact_system", make_contact_system)
 UniformTopographyInterface.register_function("make_plastic_contact_system", make_plastic_contact_system)
