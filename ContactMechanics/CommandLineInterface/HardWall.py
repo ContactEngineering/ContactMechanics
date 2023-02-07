@@ -411,9 +411,9 @@ def main():
     # object knows how to optimize the problem. For the hard wall interaction it
     # will always use Polonsky & Keer's constrained conjugate gradient method.
     if arguments.hardness is not None:
-        system = make_plastic_system(substrate, surface)
+        system = make_plastic_system(substrate=substrate, surface=surface)
     else:
-        system = make_system(substrate, surface)
+        system = make_system(substrate=substrate, surface=surface)
 
     ###
 
