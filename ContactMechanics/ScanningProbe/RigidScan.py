@@ -25,6 +25,7 @@
 import numpy as np
 from SurfaceTopography import UniformLineScan, NonuniformLineScan
 
+
 def scan_with_rigid_sphere(topography, radius):
     """
     Scan a topography with a rigid, spherical tip. This emulated scanning of
