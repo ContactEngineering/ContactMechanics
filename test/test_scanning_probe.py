@@ -21,8 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
+import numpy as np
 import pytest
+from SurfaceTopography import UniformLineScan
 
 from SurfaceTopography.Generation import fourier_synthesis
 
@@ -50,3 +51,20 @@ def test_scan_2d_with_rigid_sphere():
     t = fourier_synthesis((1024, 1024), (1, 1), 0.8, rms_slope=0.1)
     with pytest.raises(ValueError):
         scan_with_rigid_sphere(t, 0.1)
+
+
+@pytest.mark.parametrize("periodic", [True, False])
+def test_scan_with_rigid_sphere_pipeline_periodic(periodic):
+    npx = 256
+    sx = 10
+    unit = "m"
+    t = UniformLineScan(np.random.normal(size=[npx, ]),
+                        sx, periodic=periodic, unit=unit)
+
+    radius = 1e-2
+    t_artefacted = t.scan_with_rigid_sphere(radius)
+    assert t_artefacted.nb_grid_pts == t.nb_grid_pts
+    assert t_artefacted.physical_sizes == t.physical_sizes
+    assert t_artefacted.is_periodic == t.is_periodic
+    assert t_artefacted.info["instrument"]["parameters"]["tip_radius"]["value"] == radius
+    assert t_artefacted.info["instrument"]["parameters"]["tip_radius"]["unit"] == unit

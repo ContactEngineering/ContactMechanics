@@ -23,7 +23,7 @@
 #
 
 import numpy as np
-
+from SurfaceTopography import UniformLineScan, NonuniformLineScan
 
 def scan_with_rigid_sphere(topography, radius):
     """
@@ -62,4 +62,54 @@ def scan_with_rigid_sphere(topography, radius):
         scanned_heights += [
             np.max(heights[left:right] + np.sqrt(radius ** 2 - (positions[left:right] - x) ** 2) - radius)]
 
-    return np.array(scanned_heights)
+    return scanned_heights
+
+
+def pipeline_scan_with_rigid_sphere(self, radius):
+    r"""
+    Scan the topography with a rigid, spherical tip. This emulated scanning of
+    a physical topography in an scanning probe instrument.
+
+    Paramaters
+    ----------
+    radius : float
+        Tip radius, in the same units as the topography
+
+    Returns
+    -------
+    topography : :obj:`SurfaceTopography.UniformLineScan` or :obj:`SurfaceTopography.NonuniformLineScan`
+         Topography with scannned heights on the same grid as the topography.
+    """
+    info_dict = dict(instrument=dict(name="Scanning rigid sphere simulation",
+                                     parameters=dict(tip_radius=dict(value=radius, unit=self.unit))))
+    if self.is_periodic:
+        extended_topography = UniformLineScan(
+            np.concatenate([self.heights(), self.heights(), self.heights()]),
+            self.physical_sizes[0] * 3)
+        scanned_heights = scan_with_rigid_sphere(extended_topography, radius)
+        return UniformLineScan(
+            scanned_heights[self.nb_grid_pts[0]:(self.nb_grid_pts[0] * 2)],
+            self.physical_sizes, periodic=True, unit=self.unit,
+            info=info_dict
+        )
+    elif isinstance(self, UniformLineScan):
+        scanned_heights = scan_with_rigid_sphere(self, radius)
+        return UniformLineScan(
+            scanned_heights,
+            self.physical_sizes, periodic=False, unit=self.unit,
+            info=info_dict
+        )
+    elif isinstance(self, NonuniformLineScan):
+        scanned_heights = scan_with_rigid_sphere(self, radius)
+        return NonuniformLineScan(
+            self.positions(),
+            scanned_heights,
+            unit=self.unit,
+            info=info_dict
+        )
+    else:
+        raise ValueError("Unexpected topography instance", type(self))
+
+
+UniformLineScan.register_function("scan_with_rigid_sphere", pipeline_scan_with_rigid_sphere)
+NonuniformLineScan.register_function("scan_with_rigid_sphere", pipeline_scan_with_rigid_sphere)
