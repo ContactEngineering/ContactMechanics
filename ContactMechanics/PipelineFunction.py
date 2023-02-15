@@ -289,9 +289,9 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
                                               **half_space_kwargs)
 
     if (hardness is not None) and (hardness > 0):
-        system = make_plastic_system(substrate, topography)
+        system = make_plastic_system(substrate=substrate, surface=topography)
     else:
-        system = make_system(substrate, topography)
+        system = make_system(substrate=substrate, surface=topography)
 
     # Heuristics for the possible tolerance on penetration.
     # This is necessary because numbers can vary greatly

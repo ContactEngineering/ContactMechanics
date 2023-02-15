@@ -211,6 +211,9 @@ class SystemBase(object, metaclass=abc.ABCMeta):
             return None
 
     def _lbounds_from_heights(self, offset):
+        """
+        computes the bounds for the displacements corresponding to the constraint gap >=0
+        """
         lbounds = np.ma.masked_all(self.substrate.nb_subdomain_grid_pts)
         lbounds.mask[self.substrate.local_topography_subdomain_slices] = False
         lbounds[self.substrate.local_topography_subdomain_slices] = self.surface.heights() + offset
@@ -220,6 +223,14 @@ class SystemBase(object, metaclass=abc.ABCMeta):
         return lbounds
 
     def _update_state(self, offset, result, gradient=True):
+        """
+        Updates the state of the system according to the minmisation result
+
+        updates the minimization result
+
+        TODO: This function should not be used when the optimisation variable is the gap or the pressure !
+
+        """
         self.offset = offset
         self.disp = self.shape_minimisation_output(result.x)
         self.evaluate(self.disp, offset, forces=gradient)

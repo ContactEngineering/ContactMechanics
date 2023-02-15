@@ -53,7 +53,7 @@ def test_constrained_conjugate_gradients():
             profile = np.resize(np.cos(2 * np.pi * np.arange(nx) / nx),
                                 (ny, nx))
             surface = Topography(profile.T, (sx, sy))
-            system = make_system(substrate, surface)
+            system = make_system(substrate=substrate, surface=surface)
 
             result = system.minimize_proxy(offset=disp0,
                                            external_force=normal_force,
@@ -101,7 +101,7 @@ def test_lbfgsb_1D(dx, n):
                                             physical_sizes=(s,), fft='serial')
 
     surface = UniformLineScan(np.cos(2 * np.pi * np.arange(n) / n), (s,))
-    system = make_system(substrate, surface)
+    system = make_system(substrate=substrate, surface=surface)
 
     offset = 0.005
     lbounds = np.zeros(n)

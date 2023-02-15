@@ -54,7 +54,7 @@ def test_constrained_conjugate_gradients(nx, ny, disp0, normal_force):
     surface = Topography(
         np.ma.masked_where(r_sq > r_s ** 2, np.zeros([nx, ny])),
         (sx, sy))
-    system = make_system(substrate, surface)
+    system = make_system(substrate=substrate, surface=surface)
     try:
         result = system.minimize_proxy(offset=disp0,
                                        external_force=normal_force,

@@ -61,7 +61,7 @@ def test_constrained_conjugate_gradients(comm,):
                 subdomain_locations=subs.topography_subdomain_locations,
                 nb_subdomain_grid_pts=subs.topography_nb_subdomain_grid_pts,
                 communicator=subs.communicator)
-            system = make_system(subs, surface)
+            system = make_system(substrate=subs, surface=surface)
 
             result = system.minimize_proxy(offset=disp0,
                                            external_force=normal_force,

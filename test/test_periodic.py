@@ -46,5 +46,5 @@ def test_constrained_conjugate_gradients():
 
     substrate = PeriodicFFTElasticHalfSpace(nb_grid_pts, modulus,
                                             physical_sizes)
-    system = make_system(substrate, topography)
+    system = make_system(substrate=substrate, surface=topography)
     system.minimize_proxy(offset=0.1)
