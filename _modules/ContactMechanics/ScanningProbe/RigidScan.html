@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.ScanningProbe.RigidScan &mdash; ContactMechanics 1.1.1.dev12+gd60141df documentation</title>
+  <title>ContactMechanics.ScanningProbe.RigidScan &mdash; ContactMechanics 1.1.1.dev9+gd68f92a3 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             ContactMechanics
           </a>
               <div class="version">
-                1.1.1.dev12+gd60141df
+                1.1.1.dev9+gd68f92a3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -109,7 +109,6 @@
 <span class="c1">#</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">SurfaceTopography</span> <span class="kn">import</span> <span class="n">UniformLineScan</span><span class="p">,</span> <span class="n">NonuniformLineScan</span>
 
 
 <div class="viewcode-block" id="scan_with_rigid_sphere"><a class="viewcode-back" href="../../../source/ContactMechanics.ScanningProbe.html#ContactMechanics.ScanningProbe.RigidScan.scan_with_rigid_sphere">[docs]</a><span class="k">def</span> <span class="nf">scan_with_rigid_sphere</span><span class="p">(</span><span class="n">topography</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
@@ -149,57 +148,7 @@
         <span class="n">scanned_heights</span> <span class="o">+=</span> <span class="p">[</span>
             <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">heights</span><span class="p">[</span><span class="n">left</span><span class="p">:</span><span class="n">right</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">radius</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">positions</span><span class="p">[</span><span class="n">left</span><span class="p">:</span><span class="n">right</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">radius</span><span class="p">)]</span>
 
-    <span class="k">return</span> <span class="n">scanned_heights</span></div>
-
-
-<div class="viewcode-block" id="pipeline_scan_with_rigid_sphere"><a class="viewcode-back" href="../../../source/ContactMechanics.ScanningProbe.html#ContactMechanics.ScanningProbe.RigidScan.pipeline_scan_with_rigid_sphere">[docs]</a><span class="k">def</span> <span class="nf">pipeline_scan_with_rigid_sphere</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Scan the topography with a rigid, spherical tip. This emulated scanning of</span>
-<span class="sd">    a physical topography in an scanning probe instrument.</span>
-
-<span class="sd">    Paramaters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    radius : float</span>
-<span class="sd">        Tip radius, in the same units as the topography</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    topography : :obj:`SurfaceTopography.UniformLineScan` or :obj:`SurfaceTopography.NonuniformLineScan`</span>
-<span class="sd">         Topography with scannned heights on the same grid as the topography.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">info_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">instrument</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Scanning rigid sphere simulation&quot;</span><span class="p">,</span>
-                                     <span class="n">parameters</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">tip_radius</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">))))</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_periodic</span><span class="p">:</span>
-        <span class="n">extended_topography</span> <span class="o">=</span> <span class="n">UniformLineScan</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">()]),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="n">scanned_heights</span> <span class="o">=</span> <span class="n">scan_with_rigid_sphere</span><span class="p">(</span><span class="n">extended_topography</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">UniformLineScan</span><span class="p">(</span>
-            <span class="n">scanned_heights</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]:(</span><span class="bp">self</span><span class="o">.</span><span class="n">nb_grid_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span>
-            <span class="n">info</span><span class="o">=</span><span class="n">info_dict</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">UniformLineScan</span><span class="p">):</span>
-        <span class="n">scanned_heights</span> <span class="o">=</span> <span class="n">scan_with_rigid_sphere</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">UniformLineScan</span><span class="p">(</span>
-            <span class="n">scanned_heights</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">physical_sizes</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span>
-            <span class="n">info</span><span class="o">=</span><span class="n">info_dict</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NonuniformLineScan</span><span class="p">):</span>
-        <span class="n">scanned_heights</span> <span class="o">=</span> <span class="n">scan_with_rigid_sphere</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">NonuniformLineScan</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">(),</span>
-            <span class="n">scanned_heights</span><span class="p">,</span>
-            <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span>
-            <span class="n">info</span><span class="o">=</span><span class="n">info_dict</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unexpected topography instance&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
-
-
-<span class="n">UniformLineScan</span><span class="o">.</span><span class="n">register_function</span><span class="p">(</span><span class="s2">&quot;scan_with_rigid_sphere&quot;</span><span class="p">,</span> <span class="n">pipeline_scan_with_rigid_sphere</span><span class="p">)</span>
-<span class="n">NonuniformLineScan</span><span class="o">.</span><span class="n">register_function</span><span class="p">(</span><span class="s2">&quot;scan_with_rigid_sphere&quot;</span><span class="p">,</span> <span class="n">pipeline_scan_with_rigid_sphere</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scanned_heights</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
