@@ -32,7 +32,6 @@ from .DiscoverVersion import __version__  # noqa: F401
 
 # These imports are required to register the analysis functions!
 from . import Factory  # noqa: F401
-from .ScanningProbe import RigidScan  # noqa: F401
 from .Factory import make_system, make_plastic_system  # noqa: F401
 from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace  # noqa: F401
 from .Substrates import Substrate, ElasticSubstrate, PlasticSubstrate  # noqa: F401
