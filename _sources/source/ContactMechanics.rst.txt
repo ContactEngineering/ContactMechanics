@@ -12,7 +12,6 @@ Subpackages
    ContactMechanics.IO
    ContactMechanics.Optimization
    ContactMechanics.ReferenceSolutions
-   ContactMechanics.ScanningProbe
    ContactMechanics.Tools
 
 Submodules
@@ -70,6 +69,14 @@ ContactMechanics.Systems module
 -------------------------------
 
 .. automodule:: ContactMechanics.Systems
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ContactMechanics.test\_SurfaceTopography module
+-----------------------------------------------
+
+.. automodule:: ContactMechanics.test_SurfaceTopography
    :members:
    :undoc-members:
    :show-inheritance:
