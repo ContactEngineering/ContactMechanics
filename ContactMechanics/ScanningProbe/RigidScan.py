@@ -69,7 +69,8 @@ def scan_with_rigid_sphere(topography, radius):
 def pipeline_scan_with_rigid_sphere(self, radius):
     r"""
     Scan the topography with a rigid, spherical tip. This emulated scanning of
-    a physical topography in an scanning probe instrument.
+    a physical topography in a scanning probe instrument.
+
 
     Paramaters
     ----------
