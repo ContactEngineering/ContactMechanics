@@ -18,6 +18,12 @@
 # Max. pressure:
 # $p_0 = \frac{3}{2 \pi} a = \frac{3}{2 \pi} F^{1/3} = \frac{3}{2 \pi} \sqrt{b}$
 
+import numpy as np
+import matplotlib.pyplot as plt
+from SurfaceTopography import make_sphere
+from ContactMechanics.Factory import make_system
+from ContactMechanics import FreeFFTElasticHalfSpace
+
 # %%
 R = 1
 Es = 3 / 4
@@ -25,10 +31,9 @@ Es = 3 / 4
 # %%
 
 # %%
-# %pylab inline
-from SurfaceTopography import make_sphere
-from ContactMechanics.Factory import make_system
-from ContactMechanics import FreeFFTElasticHalfSpace
+# %matplotlib inline
+
+
 
 dx = 0.08
 nx = 32
