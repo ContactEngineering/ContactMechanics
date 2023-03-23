@@ -34,7 +34,6 @@ Es = 3 / 4
 # %matplotlib inline
 
 
-
 dx = 0.08
 nx = 32
 sx = nx * dx
@@ -129,8 +128,8 @@ ax.legend()
 fig, ax = plt.subplots()
 
 plt.plot(np.arange(nx) * dx - sx / 2,
-         system_l.force[nx_l // 4:(3 * nx_l // 4), nx_l // 2] / system_l.area_per_pt - system.force[:,
-                                                                                       nx // 2] / system.area_per_pt,
+         system_l.force[nx_l // 4:(3 * nx_l // 4), nx_l // 2] / system_l.area_per_pt
+         - system.force[:, nx // 2] / system.area_per_pt,
          ".")
 
 ax.set_xlabel("$x $")
