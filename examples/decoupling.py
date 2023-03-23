@@ -24,6 +24,8 @@ from SurfaceTopography import make_sphere
 from ContactMechanics.Factory import make_system
 from ContactMechanics import FreeFFTElasticHalfSpace
 
+# flake8: noqa
+
 # %%
 R = 1
 Es = 3 / 4
