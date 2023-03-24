@@ -168,7 +168,7 @@ def make_contact_system(topography, *args, **kwargs):
       >>> topography.make_contact_system(young=1)
       for other possibilities, i.e. finite thickness\
       check the arguments of `FFTElasticHalfspace` or `FreeFFTElasticHalfspace`
-      
+
     - provide an already instantiated substrate
       >>> topography.make_contact_system(substrate=substrate)
     """
