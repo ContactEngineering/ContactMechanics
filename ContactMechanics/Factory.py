@@ -157,6 +157,21 @@ def make_plastic_system(*args, **kwargs):
 
 
 def make_contact_system(topography, *args, **kwargs):
+    fr"""
+    Factory function for contact systems. Checks the compatibility between the
+    substrate, interaction method and surface and returns an object of the
+    appropriate type to handle it. The returned object is always of a subtype
+    of SystemBase.
+
+    This function can be called in different ways:
+    - provide the elastic propoerties of the substrates
+      >>> topography.make_contact_system(young=1)
+      for other possibilities, i.e. finite thickness\
+      check the arguments of `FFTElasticHalfspace` or `FreeFFTElasticHalfspace`
+      
+    - provide an already instantiated substrate
+      >>> topography.make_contact_system(substrate=substrate)
+    """
     return make_contact_system(surface=topography, *args, **kwargs)
 
 
