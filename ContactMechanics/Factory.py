@@ -157,7 +157,7 @@ def make_plastic_system(*args, **kwargs):
 
 
 def make_contact_system(topography, *args, **kwargs):
-    fr"""
+    r"""
     Factory function for contact systems. Checks the compatibility between the
     substrate, interaction method and surface and returns an object of the
     appropriate type to handle it. The returned object is always of a subtype
