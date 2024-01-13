@@ -1,8 +1,6 @@
 import numpy as np
 from SurfaceTopography import Topography
 
-from ContactMechanics import make_system
-
 from NuMPI import MPI
 import pytest
 
