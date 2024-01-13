@@ -1,6 +1,12 @@
 Change log for ContactMechanics
 ===============================
 
+v1.2.0 (13Jan24)
+----------------
+
+- MAINT: Compatiblity with SurfaceTopography 1.12.x
+- BUG: Fixed `make_contact_system` pipeline function
+
 v1.1.1 (29Jan23)
 ----------------
 

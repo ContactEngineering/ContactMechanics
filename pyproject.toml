@@ -23,7 +23,7 @@ dependencies = [
     "scipy>=1.9.0",
     "NuMPI>=0.3.1",
     "muSpectre>=0.25.1",
-    "SurfaceTopography>=1.5.0",
+    "SurfaceTopography>=1.12.2",
     "netCDF4"
 ]
 
@@ -34,6 +34,12 @@ test = [
     "pytest-cov",
     "pytest-flake8",
     "runtests"
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "myst_nb",
+    "numpydoc"
 ]
 
 [project.urls]

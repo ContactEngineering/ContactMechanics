@@ -4,7 +4,7 @@ FFTElasticHalfSpace
 """
 import numpy as np
 import pytest
-from SurfaceTopography import SurfaceContainer
+from SurfaceTopography.Container.SurfaceContainer import InMemorySurfaceContainer
 from SurfaceTopography.Models.SelfAffine import SelfAffine
 from NuMPI import MPI
 
@@ -56,7 +56,7 @@ def test_variance_half_derivative(shortcut_wavelength, hurst_exponent):
     # Elastic energy per surface area
     Eel_brute_force = hs.evaluate_elastic_energy(forces, roughness.heights()) / np.prod(roughness.physical_sizes)
 
-    Eel_analytic = Es / 4 * model_psd.variance_half_derivative()
+    Eel_analytic = Es / 4 * model_psd.variance_derivative(0.5)
     print(Eel_brute_force)
     print(Eel_analytic)
 
@@ -113,7 +113,7 @@ def test_variance_half_derivative_topography_and_container(shortcut_wavelength, 
     # Elastic energy per surface area
     eel_brute_force = hs.evaluate_elastic_energy(forces, roughness.heights()) / np.prod(roughness.physical_sizes)
 
-    eel_analytic = Es / 4 * model_psd.variance_half_derivative()
+    eel_analytic = Es / 4 * model_psd.variance_derivative(0.5)
 
     eel_2d_psd = Es / 4 * roughness.moment_power_spectrum(order=1)
 
@@ -121,7 +121,7 @@ def test_variance_half_derivative_topography_and_container(shortcut_wavelength, 
     eel_from_acf_profile = Es / 4 * roughness.variance_half_derivative_via_autocorrelation_from_profile()
     eel_from_acf_area = Es / 4 * roughness.variance_half_derivative_via_autocorrelation_from_area()
 
-    c = SurfaceContainer([roughness, ])
+    c = InMemorySurfaceContainer([roughness, ])
     eel_container_psd = Es / 4 * c.ciso_moment(unit=unit)
     eel_container_acf = Es / 4 * c.variance_half_derivative_from_autocorrelation(unit=unit)
 
