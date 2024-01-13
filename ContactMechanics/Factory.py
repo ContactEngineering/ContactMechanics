@@ -172,7 +172,7 @@ def make_contact_system(topography, *args, **kwargs):
     - provide an already instantiated substrate
       >>> topography.make_contact_system(substrate=substrate)
     """
-    return make_contact_system(surface=topography, *args, **kwargs)
+    return make_system(surface=topography, *args, **kwargs)
 
 
 def make_plastic_contact_system(topography, *args, **kwargs):
