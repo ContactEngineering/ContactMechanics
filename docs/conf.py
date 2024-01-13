@@ -32,11 +32,14 @@ sys.path.insert(0, os.path.abspath('../..'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.napoleon',
-              'sphinx.ext.autosummary']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.mathjax',
+    'myst_nb',
+    'numpydoc'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -62,6 +65,7 @@ authors = ['Till Junge', 'Lars Pastewka', 'Michael Röttger',
 #
 # The short X.Y version.
 import ContactMechanics
+
 version = ContactMechanics.__version__
 # The full version, including alpha/beta/rc tags.
 release = ContactMechanics.__version__
@@ -83,7 +87,6 @@ pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
-
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -108,19 +111,18 @@ html_static_path = ['_static']
 #
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
-#html_sidebars = {
+# html_sidebars = {
 #    '**': [
 #        'relations.html',  # needs 'show_related': True theme option to display
 #        'searchbox.html',
 #    ]
-#}
+# }
 
 
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'ContactMechanicsDoc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -150,7 +152,6 @@ latex_documents = [
      'Pastewka', 'manual'),
 ]
 
-
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
@@ -159,7 +160,6 @@ man_pages = [
     (master_doc, 'ContactMechanics', 'ContactMechanics Documentation',
      authors, 1)
 ]
-
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -172,5 +172,7 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
+# -- Options for Myst --
 
-
+myst_enable_extensions = [
+    "dollarmath"]
