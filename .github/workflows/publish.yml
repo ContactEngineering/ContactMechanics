@@ -26,12 +26,7 @@ jobs:
         sudo apt-get install -y python3 python3-pip python3-venv
         python3 -m venv ../venv
         source ../venv/bin/activate
-        python3 -m pip install flit pip-tools
-        # We need to install all dependencies before executing flit build,
-        # because flit build loads the package to determine the version.
-        pip-compile -q --resolver=backtracking pyproject.toml
-        pip install -r requirements.txt
-        rm requirements.txt
+        python3 -m pip install .[docs]
 
     - name: Build package
       run: |
@@ -41,7 +36,6 @@ jobs:
     - name: Build documentation
       run: |
         source ../venv/bin/activate
-        python3 -m pip install sphinx sphinx_rtd_theme
         python3 -m pip install dist/*.whl
         cd docs
         sphinx-apidoc -o source/ ../ContactMechanics
