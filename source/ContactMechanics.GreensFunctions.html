@@ -1,17 +1,23 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.GreensFunctions package &mdash; ContactMechanics 1.1.1.dev27+gb1524667 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>ContactMechanics.GreensFunctions package &mdash; ContactMechanics 1.1.1.dev34+g9df9c744 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -33,7 +39,7 @@
             ContactMechanics
           </a>
               <div class="version">
-                1.1.1.dev27+gb1524667
+                1.1.1.dev34+g9df9c744
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -147,11 +153,44 @@
 <span id="contactmechanics-greensfunctions-anisotropic-module"></span><h2>ContactMechanics.GreensFunctions.Anisotropic module<a class="headerlink" href="#module-ContactMechanics.GreensFunctions.Anisotropic" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.GreensFunctions.Anisotropic.</span></span><span class="sig-name descname"><span class="pre">AnisotropicGreensFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C44</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([[1.,</span> <span class="pre">0.,</span> <span class="pre">0.],</span> <span class="pre">[0.,</span> <span class="pre">1.,</span> <span class="pre">0.],</span> <span class="pre">[0.,</span> <span class="pre">0.,</span> <span class="pre">1.]])</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Anisotropic.html#AnisotropicGreensFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.GreensFunctions.Anisotropic.</span></span><span class="sig-name descname"><span class="pre">AnisotropicGreensFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C44</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([[1.,</span> <span class="pre">0.,</span> <span class="pre">0.],</span> <span class="pre">[0.,</span> <span class="pre">1.,</span> <span class="pre">0.],</span> <span class="pre">[0.,</span> <span class="pre">0.,</span> <span class="pre">1.]])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.bulkop" title="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.bulkop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bulkop</span></code></a>(qx, qy, qz)</p></td>
+<td><p>Return the linear operator M_il = -C_ijkl q_j q_k</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>elasticity_tensor</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>find_eigenvalues</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>find_eigenvectors</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>greens_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>stiffness</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>voigt_from_tensor</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.bulkop">
-<span class="sig-name descname"><span class="pre">bulkop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Anisotropic.html#AnisotropicGreensFunction.bulkop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.bulkop" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">bulkop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.bulkop" title="Permalink to this definition"></a></dt>
 <dd><p>Return the linear operator M_il = -C_ijkl q_j q_k</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -168,32 +207,32 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.elasticity_tensor">
-<span class="sig-name descname"><span class="pre">elasticity_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Anisotropic.html#AnisotropicGreensFunction.elasticity_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.elasticity_tensor" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">elasticity_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.elasticity_tensor" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.find_eigenvalues">
-<span class="sig-name descname"><span class="pre">find_eigenvalues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Anisotropic.html#AnisotropicGreensFunction.find_eigenvalues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.find_eigenvalues" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">find_eigenvalues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.find_eigenvalues" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.find_eigenvectors">
-<span class="sig-name descname"><span class="pre">find_eigenvectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rcond</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Anisotropic.html#AnisotropicGreensFunction.find_eigenvectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.find_eigenvectors" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">find_eigenvectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rcond</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.find_eigenvectors" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.greens_function">
-<span class="sig-name descname"><span class="pre">greens_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Anisotropic.html#AnisotropicGreensFunction.greens_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.greens_function" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">greens_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.greens_function" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.stiffness">
-<span class="sig-name descname"><span class="pre">stiffness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Anisotropic.html#AnisotropicGreensFunction.stiffness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.stiffness" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">stiffness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.stiffness" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.voigt_from_tensor">
-<span class="sig-name descname"><span class="pre">voigt_from_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Voigt_ij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Voigt_kl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Anisotropic.html#AnisotropicGreensFunction.voigt_from_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.voigt_from_tensor" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">voigt_from_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Voigt_ij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Voigt_kl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Anisotropic.AnisotropicGreensFunction.voigt_from_tensor" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -203,16 +242,30 @@
 <span id="contactmechanics-greensfunctions-isotropic-module"></span><h2>ContactMechanics.GreensFunctions.Isotropic module<a class="headerlink" href="#module-ContactMechanics.GreensFunctions.Isotropic" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.GreensFunctions.Isotropic.</span></span><span class="sig-name descname"><span class="pre">IsotropicGreensFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shear_modulus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Poisson_ratio</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Isotropic.html#IsotropicGreensFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.GreensFunctions.Isotropic.</span></span><span class="sig-name descname"><span class="pre">IsotropicGreensFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shear_modulus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Poisson_ratio</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>greens_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>stiffness</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction.greens_function">
-<span class="sig-name descname"><span class="pre">greens_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Isotropic.html#IsotropicGreensFunction.greens_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction.greens_function" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">greens_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction.greens_function" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction.stiffness">
-<span class="sig-name descname"><span class="pre">stiffness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/GreensFunctions/Isotropic.html#IsotropicGreensFunction.stiffness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction.stiffness" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">stiffness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.GreensFunctions.Isotropic.IsotropicGreensFunction.stiffness" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

@@ -1,17 +1,23 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics.IO package &mdash; ContactMechanics 1.1.1.dev27+gb1524667 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>ContactMechanics.IO package &mdash; ContactMechanics 1.1.1.dev34+g9df9c744 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -33,7 +39,7 @@
             ContactMechanics
           </a>
               <div class="version">
-                1.1.1.dev27+gb1524667
+                1.1.1.dev34+g9df9c744
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -158,26 +164,76 @@
 database.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.IO.NetCDF.</span></span><span class="sig-name descname"><span class="pre">NetCDFContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NETCDF4'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.IO.NetCDF.</span></span><span class="sig-name descname"><span class="pre">NetCDFContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NETCDF4'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>close</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_cursor</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>get_elastic_surface</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_filename</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>get_h</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_next_frame</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>get_rigid_surface</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_size</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>has_h</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>set_cursor</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>set_elastic_surface</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>set_h</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>set_rigid_surface</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>set_shape</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>sync</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.close">
-<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.close" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.close" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.get_cursor">
-<span class="sig-name descname"><span class="pre">get_cursor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.get_cursor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_cursor" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_cursor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_cursor" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.get_elastic_surface">
-<span class="sig-name descname"><span class="pre">get_elastic_surface</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.get_elastic_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_elastic_surface" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_elastic_surface</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_elastic_surface" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.get_filename">
-<span class="sig-name descname"><span class="pre">get_filename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.get_filename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_filename" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_filename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_filename" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -187,32 +243,32 @@ database.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.get_next_frame">
-<span class="sig-name descname"><span class="pre">get_next_frame</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.get_next_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_next_frame" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_next_frame</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_next_frame" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.get_rigid_surface">
-<span class="sig-name descname"><span class="pre">get_rigid_surface</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.get_rigid_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_rigid_surface" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_rigid_surface</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_rigid_surface" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.get_size">
-<span class="sig-name descname"><span class="pre">get_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.get_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_size" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.get_size" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.has_h">
-<span class="sig-name descname"><span class="pre">has_h</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.has_h"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.has_h" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">has_h</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.has_h" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.set_cursor">
-<span class="sig-name descname"><span class="pre">set_cursor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cur_frame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.set_cursor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.set_cursor" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_cursor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cur_frame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.set_cursor" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.set_elastic_surface">
-<span class="sig-name descname"><span class="pre">set_elastic_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.set_elastic_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.set_elastic_surface" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_elastic_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.set_elastic_surface" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -222,33 +278,62 @@ database.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.set_rigid_surface">
-<span class="sig-name descname"><span class="pre">set_rigid_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.set_rigid_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.set_rigid_surface" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_rigid_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.set_rigid_surface" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.set_shape">
-<span class="sig-name descname"><span class="pre">set_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.set_shape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.set_shape" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.set_shape" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainer.sync">
-<span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainer.sync"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.sync" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainer.sync" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainerFrame">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.IO.NetCDF.</span></span><span class="sig-name descname"><span class="pre">NetCDFContainerFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainerFrame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.IO.NetCDF.</span></span><span class="sig-name descname"><span class="pre">NetCDFContainerFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>index</strong></dt><dd></dd>
+<dt><strong>traj</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.set_grid" title="ContactMechanics.IO.NetCDF.NetCDFContainerFrame.set_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_grid</span></code></a>(name, value[, x0, y0])</p></td>
+<td><p>Assing a value to a certain grid, where the grid starts at x0,y0.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>get_index</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_traj</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>sync</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_index">
-<span class="sig-name descname"><span class="pre">get_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainerFrame.get_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_index" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_index" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_traj">
-<span class="sig-name descname"><span class="pre">get_traj</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainerFrame.get_traj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_traj" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_traj</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_traj" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -258,7 +343,7 @@ database.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainerFrame.set_grid">
-<span class="sig-name descname"><span class="pre">set_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainerFrame.set_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.set_grid" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.set_grid" title="Permalink to this definition"></a></dt>
 <dd><p>Assing a value to a certain grid, where the grid starts at x0,y0. Grid
 can be smaller than the dimensions in the file. Padding region is then
 set to undefined.</p>
@@ -266,7 +351,7 @@ set to undefined.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.NetCDFContainerFrame.sync">
-<span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#NetCDFContainerFrame.sync"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.sync" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.sync" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -278,7 +363,7 @@ set to undefined.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ContactMechanics.IO.NetCDF.open">
-<span class="sig-prename descclassname"><span class="pre">ContactMechanics.IO.NetCDF.</span></span><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ContactMechanics/IO/NetCDF.html#open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ContactMechanics.IO.NetCDF.open" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ContactMechanics.IO.NetCDF.</span></span><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.IO.NetCDF.open" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </section>
