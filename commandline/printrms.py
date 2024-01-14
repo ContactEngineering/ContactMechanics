@@ -26,10 +26,7 @@
 Command line front-end for printing statistical properties to screen
 """
 
-from argparse import ArgumentParser, ArgumentTypeError
-
-import numpy as np
-import matplotlib.pyplot as plt
+from argparse import ArgumentParser
 
 from SurfaceTopography.FromFile import read, detect_format
 

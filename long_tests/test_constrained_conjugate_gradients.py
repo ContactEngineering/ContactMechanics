@@ -10,6 +10,7 @@ pytestmark = pytest.mark.skipif(MPI.COMM_WORLD.Get_size() > 1,
                                 reason="tests only serial funcionalities, "
                                        "please execute with pytest")
 
+
 def test_primal_obj():
     nx = ny = 1024
     sx, sy = 1., 1.
@@ -77,13 +78,13 @@ def test_primal_obj():
 
     # ####################BUGNICOURT###################################
     ccg_without_restart.constrained_conjugate_gradients(system.primal_objective
-                                                  (offset, gradient=True),
-                                                  system.
-                                                  primal_hessian_product,
-                                                  x0=init_gap,
-                                                  mean_val=mean_val,
-                                                  gtol=gtol
-                                                  )
+                                                        (offset, gradient=True),
+                                                        system.
+                                                        primal_hessian_product,
+                                                        x0=init_gap,
+                                                        mean_val=mean_val,
+                                                        gtol=gtol
+                                                        )
     assert res.success
 
     bugnicourt_gap_mean_cons = res.x.reshape((nx, ny))
@@ -134,7 +135,7 @@ def test_dual_obj():
     ccg_without_restart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.
-            dual_hessian_product,
+        dual_hessian_product,
         init_pressure,
         mean_val=None, gtol=gtol)
     assert res.success
@@ -181,7 +182,7 @@ def test_dual_obj():
     ccg_without_restart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.
-            dual_hessian_product,
+        dual_hessian_product,
         init_pressure,
         mean_val=mean_val,
         gtol=gtol)
