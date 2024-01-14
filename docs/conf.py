@@ -21,6 +21,8 @@
 import os
 import sys
 
+import ContactMechanics
+
 sys.path.insert(0, os.path.abspath('../..'))
 
 # -- General configuration ------------------------------------------------
@@ -64,7 +66,6 @@ authors = ['Till Junge', 'Lars Pastewka', 'Michael Röttger',
 # built documents.
 #
 # The short X.Y version.
-import ContactMechanics
 
 version = ContactMechanics.__version__
 # The full version, including alpha/beta/rc tags.
