@@ -23,6 +23,7 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
         mpi4py-version: [3.1.5]
         netcdf4-python-version: [1.6.2]
+        muspectre-version: [0.26.4]
 
     steps:
     - uses: actions/checkout@v3
@@ -35,52 +36,38 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install dependencies and extension module
       run: |
+        set -x
         sudo apt-get update -qy
+        sudo apt-get install -y python3-dev python3-venv libfftw3-dev libopenblas-dev
         python3 -m venv venv
         source venv/bin/activate
-        python3 -m pip install --upgrade pip pip-tools flit wheel setuptools
+        python3 -m pip install --upgrade pip
+        python3 -m pip install flit numpy pip-tools setuptools wheel
         if [ "${{ matrix.mpi }}" == "yes" ]; then
-          sudo apt-get install -y \
-            openmpi-bin \
-            libopenmpi-dev \
-            libfftw3-dev \
-            libfftw3-mpi-dev \
-            libhdf5-mpi-dev \
-            libpnetcdf-dev \
-            libnetcdf-pnetcdf-dev \
-            meson \
-            ninja-build
-          # Compute mpi4py and muSpectre versions
-          pip-compile pyproject.toml
-          MUSPECTRE_VERSION=$(grep 'muspectre==' requirements.txt)
-          # Install mpi4py
-          echo "Installing mpi4py==${{ matrix.mpi4py-version }}"
-          CC=mpicc python3 -m pip install -v \
-            --no-binary mpi4py \
-            mpi4py==${{ matrix.mpi4py-version }}
-          # Install netCDF4 with MPI support
-          echo "Installing netCD4==${{ matrix.netcdf4-python-version }}"
-          CC=mpicc NETCDF4_DIR=/usr/lib/x86_64-linux-gnu/netcdf/pnetcdf python3 -m pip install -v \
-            --no-binary mpi4py --no-binary netCDF4 \
-            netCDF4==${{ matrix.netcdf4-python-version }}
-          # Manually install muSpectre with MPI enabled
-          echo "Installing ${MUSPECTRE_VERSION}"
-          pip install -v --no-binary muspectre ${MUSPECTRE_VERSION}
+          # We now need to recompile some modules to link with native MPI
+          sudo apt-get install openmpi-bin libopenmpi-dev libfftw3-mpi-dev libhdf5-mpi-dev libpnetcdf-dev libnetcdf-pnetcdf-dev
+          # Install mpi4py first (because netCDF4 depends on it)
+          export NETCDF4_DIR=/usr/lib/x86_64-linux-gnu/netcdf/pnetcdf
+          export CC=mpicc
+          python3 -m pip install -v --no-binary mpi4py mpi4py==${{ matrix.mpi4py-version }}
+          python3 -m pip install -v cython
+          python3 -m pip install -v --no-build-isolation --no-binary netCDF4 netCDF4==${{ matrix.netcdf4-python-version }}
+          python3 -m pip install -v --no-build-isolation --no-binary muSpectre muSpectre==${{ matrix.muspectre-version }}
+        else
+          sudo apt-get install libhdf5-dev libnetcdf-dev
         fi
-        python3 -m pip install build
-        python3 -m pip list
-
-    - name: Install extension module
-      run: |
-        source venv/bin/activate
-        python3 -m pip install .[test]
+        python3 -m pip install -v .[test]
+        # Check that NetCDF install was not overriden
+        python3 .check_netcdf_capabilities.py ${{ matrix.mpi }}
+        python3 .check_mufft_capabilities.py ${{ matrix.mpi }}
 
     - name: Test with pytest
       run: |
         source venv/bin/activate
-        python3 .check_netcdf_capabilities.py ${{ matrix.mpi }}
-        python3 .check_mufft_capabilities.py ${{ matrix.mpi }}
-        python3 -m pip list
-        if [ "${{ matrix.mpi }}" == "yes" ]; then python3 run-tests.py --no-build --verbose --full-trace; else python3 -m pytest --verbose --full-trace -s; fi
+        if [ "${{ matrix.mpi }}" == "yes" ]; then
+          python3 run-tests.py --no-build --verbose --full-trace
+        else
+          python3 -m pytest --verbose --full-trace -s
+        fi
