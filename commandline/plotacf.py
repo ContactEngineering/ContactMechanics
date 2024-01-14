@@ -28,7 +28,7 @@ Command line front-end for plotting the height-height autocorrelation
 function of a 2D map
 """
 
-from argparse import ArgumentParser, ArgumentTypeError
+from argparse import ArgumentParser
 
 import matplotlib.pyplot as plt
 
@@ -46,7 +46,7 @@ parser.add_argument('--nbins', dest='nbins', type=int, default=None,
 parser.add_argument('--detrend_mode', dest='detrend_mode', type=str,
                     default='center',
                     help='detrend surface; posibilities are '
-                    'DETREND=center|height|slope|curvature',
+                         'DETREND=center|height|slope|curvature',
                     metavar='DETREND')
 arguments = parser.parse_args()
 
@@ -58,7 +58,7 @@ unit = surface.unit
 nx, ny = surface.shape
 nbins = arguments.nbins
 if nbins is None:
-    nbins = (nx+ny)/2
+    nbins = (nx + ny) / 2
 
 ###
 
@@ -69,6 +69,6 @@ ax = fig.add_subplot(111)
 ax.loglog(r, A, 'ko')
 ax.set_xlabel('Distance $r$ ({})'.format(unit))
 ax.set_ylabel(r'Autocorrelation $\langle h(0)h(r)\rangle$ ({}$^2$)'.format(unit))
-#plt.pcolormesh(A_xy)
-#plt.colorbar()
+# plt.pcolormesh(A_xy)
+# plt.colorbar()
 plt.show()

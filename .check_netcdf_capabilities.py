@@ -18,7 +18,7 @@ if netCDF4 is not None:
 
     if mpi_required:
         # Make sure that we have the parallel version running
-        #assert netCDF4.__has_parallel4_support__
+        # assert netCDF4.__has_parallel4_support__
         assert netCDF4.__has_pnetcdf_support__
 else:
     print('`netCDF4` is not available, defaulting to `scipy.io`.')

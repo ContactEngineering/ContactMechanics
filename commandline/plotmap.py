@@ -59,15 +59,15 @@ except TypeError:
 nx, ny = surface.nb_grid_pts
 
 fig = plt.figure()
-ax = fig.add_subplot(111, aspect=sx/sy)
-Y, X = np.meshgrid((np.arange(ny)+0.5)*sy/ny,
-                   (np.arange(nx)+0.5)*sx/nx)
+ax = fig.add_subplot(111, aspect=sx / sy)
+Y, X = np.meshgrid((np.arange(ny) + 0.5) * sy / ny,
+                   (np.arange(nx) + 0.5) * sx / nx)
 Z = surface[...]
 if arguments.fftshift:
     Z = np.fft.fftshift(Z)
 if arguments.logscale:
     mesh = ax.pcolormesh(X, Y, Z,
-                         norm=colors.LogNorm(vmin=Z.min(), vmax=Z.max()),rasterized=True)
+                         norm=colors.LogNorm(vmin=Z.min(), vmax=Z.max()), rasterized=True)
 else:
     mesh = ax.pcolormesh(X, Y, Z)
 plt.colorbar(mesh, ax=ax)

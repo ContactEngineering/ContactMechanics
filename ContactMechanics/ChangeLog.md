@@ -1,10 +1,11 @@
 Change log for ContactMechanics
 ===============================
 
-v1.2.0 (13Jan24)
+v1.2.0 (14Jan24)
 ----------------
 
 - MAINT: Compatiblity with SurfaceTopography 1.12.x
+- MAINT: Update NuMPI-dependency to 0.4.0 for modern build system
 - BUG: Fixed `make_contact_system` pipeline function
 
 v1.1.1 (29Jan23)

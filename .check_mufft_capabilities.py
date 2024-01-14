@@ -10,5 +10,5 @@ for engine, (a, b, c) in muFFT.fft_engines.items():
 
 if mpi_required:
     # Make sure that we have the parallel version running
-    #assert muFFT.__has_parallel4_support__
+    # assert muFFT.__has_parallel4_support__
     assert muFFT.has_mpi

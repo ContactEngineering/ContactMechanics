@@ -26,10 +26,7 @@
 Command line front-end for printing statistical properties to screen
 """
 
-from argparse import ArgumentParser, ArgumentTypeError
-
-import numpy as np
-import matplotlib.pyplot as plt
+from argparse import ArgumentParser
 
 from SurfaceTopography.FromFile import read, detect_format
 
@@ -51,7 +48,7 @@ if type(surfaces) is not list:
 for surface in surfaces:
     try:
         print('---', surface.info['data'], '---')
-    except:
+    except KeyError:
         print('---')
     print('RMS height =', surface.rms_height(), surface.unit)
     print('RMS slope = ', surface.rms_slope())
