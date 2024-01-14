@@ -126,7 +126,7 @@ def test_dual_obj():
     print(res.message, res.nfev)
     assert res.success
     lbfgsb_force = res.x.reshape((nx, ny))
-    CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area
+    # CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area
     fun = system.dual_objective(offset, gradient=True)
     gap_lbfgsb = fun(res.x)[1]
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
@@ -141,7 +141,7 @@ def test_dual_obj():
     assert res.success
 
     bugnicourt_force = res.x.reshape((nx, ny))
-    CA_bugnicourt = res.x.reshape((nx, ny)) > 0  # Contact area
+    # CA_bugnicourt = res.x.reshape((nx, ny)) > 0  # Contact area
     gap_bugnicourt = fun(res.x)[1]
     gap_bugnicourt = gap_bugnicourt.reshape((nx, ny))
 
@@ -152,7 +152,7 @@ def test_dual_obj():
     assert res.success
 
     polonsky_force = res.x
-    CA_polonsky = res.x.reshape((nx, ny)) > 0  # Contact area
+    # CA_polonsky = res.x.reshape((nx, ny)) > 0  # Contact area
     gap_polonsky = fun(res.x)[1]
     gap_polonsky = gap_polonsky.reshape((nx, ny))
 
