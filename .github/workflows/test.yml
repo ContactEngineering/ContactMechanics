@@ -54,7 +54,7 @@ jobs:
           python3 -m pip install -v --no-binary mpi4py mpi4py==${{ matrix.mpi4py-version }}
           python3 -m pip install -v cython
           python3 -m pip install -v --no-build-isolation --no-binary netCDF4 netCDF4==${{ matrix.netcdf4-python-version }}
-          python3 -m pip install -v --no-build-isolation --no-binary muSpectre muSpectre==${{ matrix.muspectre-version }}
+          python3 -m pip install -v --no-binary muSpectre muSpectre==${{ matrix.muspectre-version }}
         else
           sudo apt-get install libhdf5-dev libnetcdf-dev
         fi
