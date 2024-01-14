@@ -48,7 +48,7 @@ if type(surfaces) is not list:
 for surface in surfaces:
     try:
         print('---', surface.info['data'], '---')
-    except:
+    except KeyError:
         print('---')
     print('RMS height =', surface.rms_height(), surface.unit)
     print('RMS slope = ', surface.rms_slope())
