@@ -41,23 +41,11 @@ jobs:
         source venv/bin/activate
         python3 -m pip install --upgrade pip
         python3 -m pip install flit numpy pip-tools setuptools wheel
-        if [ "${{ matrix.mpi }}" == "yes" ]; then
-          # We now need to recompile some modules to link with native MPI
-          sudo apt-get install openmpi-bin libopenmpi-dev libfftw3-mpi-dev libhdf5-mpi-dev libpnetcdf-dev libnetcdf-pnetcdf-dev
-          # Install mpi4py first (because netCDF4 depends on it)
-          export NETCDF4_DIR=/usr/lib/x86_64-linux-gnu/netcdf/pnetcdf
-          export CC=mpicc
-          python3 -m pip install -v --no-binary mpi4py mpi4py==${{ matrix.mpi4py-version }}
-          python3 -m pip install -v cython
-          python3 -m pip install -v --no-build-isolation --no-binary netCDF4 netCDF4==${{ matrix.netcdf4-python-version }}
-          python3 -m pip install -v --no-binary muSpectre muSpectre==${{ matrix.muspectre-version }}
-        else
-          sudo apt-get install libhdf5-dev libnetcdf-dev
-        fi
+        sudo apt-get install libhdf5-dev libnetcdf-dev
         python3 -m pip install -v .[test]
         # Check that NetCDF install was not overriden
-        python3 .check_netcdf_capabilities.py ${{ matrix.mpi }}
-        python3 .check_mufft_capabilities.py ${{ matrix.mpi }}
+        python3 .check_netcdf_capabilities.py no
+        python3 .check_mufft_capabilities.py no
 
     - name: Test example files
       run: |
