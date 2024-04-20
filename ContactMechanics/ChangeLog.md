@@ -1,6 +1,13 @@
 Change log for ContactMechanics
 ===============================
 
+v1.3.0 (20Apr24)
+----------------
+
+- API: Homogeneized solver naming convention to use hypens rather than
+  underscores
+- MAINT: Bumped NuMPI to 0.5.0
+
 v1.2.0 (14Jan24)
 ----------------
 
