@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics package &mdash; ContactMechanics 1.1.1.dev51+geb97f877 documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 1.2.0.dev1+g0770bdcc documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
@@ -16,8 +16,8 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=c0db083b"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/documentation_options.js?v=2ca21b2b"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -40,7 +40,7 @@
             ContactMechanics
           </a>
               <div class="version">
-                1.1.1.dev51+geb97f877
+                1.2.0.dev1+g0770bdcc
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -518,16 +518,6 @@ in order to have a roundtrip.</p>
 <dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.BndSet">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.FFTElasticHalfSpace.</span></span><span class="sig-name descname"><span class="pre">BndSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">large</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">small</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.BndSet" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>large</strong></dt><dd><p>Alias for field number 0</p>
-</dd>
-<dt><strong>small</strong></dt><dd><p>Alias for field number 1</p>
-</dd>
-</dl>
-</dd>
-</dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -687,7 +677,7 @@ needing an increase of the nb_grid_pts</p>
 active domain</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>force</strong> – </p>
+<dd class="field-odd"><p><strong>force</strong></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1262,10 +1252,10 @@ results are still returned but should be interpreted with care.</p></li>
 <td><p>Returns the hessian product of the dual_objective function.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_minimize_proxy</span></code>(offset[, init_force, ...])</p></td>
-<td><p>Convenience function.</p></td>
+<td><p>Convenience function for DUAL minimisation (pixel forces as variables).</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_objective</span></code>(offset[, gradient])</p></td>
-<td><p>Objective function to handle dual objective, i.e. the Legendre transformation from displacements as variable to pressures (the Lagrange multiplier) as variable.</p></td>
+<td><p>Objective function to handle dual objective, i.e. the Legendre</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(disp, offset[, pot, forces, logger])</p></td>
 <td><p>Compute the energies and forces in the system for a given displacement field</p></td>
@@ -1292,7 +1282,7 @@ results are still returned but should be interpreted with care.</p></li>
 <td><p>Returns the hessian product of the primal_objective function.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">primal_minimize_proxy</span></code>(offset[, init_gap, ...])</p></td>
-<td><p>Convenience function.</p></td>
+<td><p>This function is a convenience function that simplifies the process of solving the primal minimisation problem where the gap is the variable.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">primal_objective</span></code>(offset[, gradient])</p></td>
 <td><p>To solve the primal objective using gap as the variable.</p></td>
@@ -1641,10 +1631,10 @@ adhesion, belong to this type of system</p>
 <td><p>Returns the hessian product of the dual_objective function.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy" title="ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_minimize_proxy</span></code></a>(offset[, init_force, ...])</p></td>
-<td><p>Convenience function.</p></td>
+<td><p>Convenience function for DUAL minimisation (pixel forces as variables).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="ContactMechanics.Systems.NonSmoothContactSystem.dual_objective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_objective</span></code></a>(offset[, gradient])</p></td>
-<td><p>Objective function to handle dual objective, i.e. the Legendre transformation from displacements as variable to pressures (the Lagrange multiplier) as variable.</p></td>
+<td><p>Objective function to handle dual objective, i.e. the Legendre</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate" title="ContactMechanics.Systems.NonSmoothContactSystem.evaluate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code></a>(disp, offset[, pot, forces, logger])</p></td>
 <td><p>Compute the energies and forces in the system for a given displacement field</p></td>
@@ -1674,7 +1664,7 @@ adhesion, belong to this type of system</p>
 <td><p>Returns the hessian product of the primal_objective function.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy" title="ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">primal_minimize_proxy</span></code></a>(offset[, init_gap, ...])</p></td>
-<td><p>Convenience function.</p></td>
+<td><p>This function is a convenience function that simplifies the process of solving the primal minimisation problem where the gap is the variable.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective" title="ContactMechanics.Systems.NonSmoothContactSystem.primal_objective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">primal_objective</span></code></a>(offset[, gradient])</p></td>
 <td><p>To solve the primal objective using gap as the variable.</p></td>
@@ -1715,26 +1705,29 @@ no physical interest, as it is a purely numerical artefact</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy">
-<span class="sig-name descname"><span class="pre">dual_minimize_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccg_without_restart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy" title="Link to this definition"></a></dt>
-<dd><p>Convenience function. Eliminates boilerplate code for DUAL minimisation (pixel forces as variables)
-problems by encapsulating the use of constrained minimisation.</p>
+<span class="sig-name descname"><span class="pre">dual_minimize_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccg-without-restart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy" title="Link to this definition"></a></dt>
+<dd><p>Convenience function for DUAL minimisation (pixel forces as variables).
+This function simplifies the process of solving the dual minimisation problem
+by encapsulating the use of constrained minimisation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>offset</strong> (<em>determines indentation depth</em>) – </p></li>
-<li><p><strong>init_force</strong> (<em>initial guess for force.</em>) – </p></li>
-<li><p><strong>solver</strong> (<em>'ccg_without_restart'</em><em>, </em><em>'ccg_with_restart'</em><em>, </em><em>'l-bfgs-b'</em>) – </p></li>
-<li><p><strong>gtol</strong> (<em>float</em><em>, </em><em>optional</em>) – Default value : 1e-8</p></li>
-<li><p><strong>maxiter</strong> (<em>maximum number</em><em> of </em><em>iterations allowed for convergence</em>) – </p></li>
+<li><p><strong>offset</strong> (<em>float</em>) – Determines the indentation depth.</p></li>
+<li><p><strong>init_force</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Initial guess for the force. If not provided, it defaults to None.</p></li>
+<li><p><strong>solver</strong> (<em>str</em><em>, </em><em>optional</em>) – The solver to be used for the minimisation. It can be one of
+‘ccg-without-restart’, ‘ccg-with-restart’, or ‘l-bfgs-b’. If not provided,
+it defaults to ‘ccg-without-restart’.</p></li>
+<li><p><strong>gtol</strong> (<em>float</em><em>, </em><em>optional</em>) – The gradient tolerance for the solver. If not provided, it defaults to 1e-8.</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of iterations allowed for the solver to converge.
+If not provided, it defaults to 1000.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>gap</strong> (<em>gap or gardient value</em>)</p></li>
-<li><p><strong>force</strong> (<em>final force of the system at the solution</em>)</p></li>
-<li><p><strong>disp</strong> (<em>displacement of the system at the solution</em>)</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>result</strong> – The result of the minimisation. It contains information about the optimisation
+result, including the final gap, force, and displacement of the system at the solution.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OptimizeResult</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1742,34 +1735,35 @@ problems by encapsulating the use of constrained minimisation.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.dual_objective">
 <span class="sig-name descname"><span class="pre">dual_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="Link to this definition"></a></dt>
-<dd><p>Objective function to handle dual objective, i.e. the Legendre
+<dd><blockquote>
+<div><p>Objective function to handle dual objective, i.e. the Legendre
 transformation from displacements as variable to pressures
 (the Lagrange multiplier) as variable.</p>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pressure</strong> (<em>float</em>) – pressure between the contact surfaces.</p></li>
-<li><p><strong>offset</strong> (<em>float</em>) – constant value to add to the surface heights</p></li>
-<li><p><strong>pot</strong> (<em>(</em><em>default False</em><em>)</em>) – </p></li>
-<li><p><strong>gradient</strong> (<em>(</em><em>default True</em><em>)</em>) – </p></li>
-</ul>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>offset</strong><span class="classifier">float</span></dt><dd><p>Constant value to add to the surface heights.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>energy</strong> (<em>float</em>) – value of energy(scalar value).</p></li>
-<li><p><strong>gradient</strong> (<em>float,array</em>) – value of gradient(array) or the value of gap.</p></li>
-</ul>
-</p>
+<dt><strong>gradient</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to return the gradient in addition to the energy. Default is True.</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>Objective:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\min_\lambda \ q(\lambda) = \frac{1}{2}\lambda_i  K^{-1}_{ij} \lambda_j - \lambda_i h_i \\
-\\
-\nabla q = K^{-1}_{ij} \lambda_j - h_i \hspace{0.1cm}
-\text{which is,} \\
-\text{gap} = \text{displacement} - \text{height} \\\end{split}\]</div>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>energy</strong><span class="classifier">float</span></dt><dd><p>Value of total energy.</p>
+</dd>
+<dt><strong>gradient</strong><span class="classifier">array_like</span></dt><dd><p>Value of the gradient (array) or the value of gap (if gradient is True).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="simple">
+<dt>rac{1}{2}lambda_i  K^{-1}_{ij} lambda_j - lambda_i h_i </dt><dd><p></p>
+</dd>
+<dt>abla q = K^{-1}_{ij} lambda_j - h_i hspace{0.1cm}</dt><dd><p>ext{which is,} ext{gap} =      ext{displacement} -     ext{height} </p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1864,29 +1858,29 @@ used</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy">
-<span class="sig-name descname"><span class="pre">primal_minimize_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccg_without_restart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy" title="Link to this definition"></a></dt>
-<dd><p>Convenience function. Eliminates boilerplate code for
-Primal minimisation problem (gap as variable) by encapsulating the use of constrained
-minimisation.</p>
+<span class="sig-name descname"><span class="pre">primal_minimize_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccg-without-restart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_minimize_proxy" title="Link to this definition"></a></dt>
+<dd><p>This function is a convenience function that simplifies the process of
+solving the primal minimisation problem where the gap is the variable.
+It does this by encapsulating the use of constrained minimisation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>offset</strong> (<em>determines indentation depth</em>) – </p></li>
-<li><p><strong>init_force</strong> (<em>initial guess for force.</em>) – </p></li>
-<li><p><strong>solver</strong> (<em>'ccg_without_restart'</em><em>, </em><em>'ccg_with_restart'</em><em>,</em>) – </p></li>
-<li><p><strong>'l-bfgs-b'</strong> – </p></li>
-<li><p><strong>gtol</strong> (<em>float</em><em>, </em><em>optional</em>) – Default value : 1e-8</p></li>
-<li><p><strong>maxiter</strong> (<em>maximum number</em><em> of </em><em>iterations allowed for</em>) – </p></li>
-<li><p><strong>convergence</strong> – </p></li>
+<li><p><strong>offset</strong> (<em>float</em>) – This parameter determines the indentation depth.</p></li>
+<li><p><strong>init_gap</strong> (<em>array_like</em><em>, </em><em>optional</em>) – This is the initial guess for the gap. If not provided, it defaults to None.</p></li>
+<li><p><strong>solver</strong> (<em>str</em><em>, </em><em>optional</em>) – This is the solver to be used for the minimisation. It can be one of
+‘ccg-without-restart’, ‘ccg-with-restart’, or ‘l-bfgs-b’. If not provided,
+it defaults to ‘ccg-without-restart’.</p></li>
+<li><p><strong>gtol</strong> (<em>float</em><em>, </em><em>optional</em>) – This is the gradient tolerance for the solver. If not provided, it defaults to 1e-8.</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – This is the maximum number of iterations allowed for the solver to converge.
+If not provided, it defaults to 1000.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>gap</strong> (<em>gap or gardient value</em>)</p></li>
-<li><p><strong>force</strong> (<em>final force of the system at the solution</em>)</p></li>
-<li><p><strong>disp</strong> (<em>displacement of the system at the solution</em>)</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>result</strong> – The result of the minimisation. It contains information about the optimisation
+result, including the final gap, force, and displacement of the system at the solution.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OptimizeResult</p>
 </dd>
 </dl>
 </dd></dl>
