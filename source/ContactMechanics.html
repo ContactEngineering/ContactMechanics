@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics package &mdash; ContactMechanics 1.2.0.dev2+g5bcc31b7 documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 1.2.0.dev6+gff988946 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
@@ -16,7 +16,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=b9972a71"></script>
+        <script src="../_static/documentation_options.js?v=ad3fa8f2"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -40,7 +40,7 @@
             ContactMechanics
           </a>
               <div class="version">
-                1.2.0.dev2+g5bcc31b7
+                1.2.0.dev6+gff988946
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -71,11 +71,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.DiscoverVersion">ContactMechanics.DiscoverVersion module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ContactMechanics.DiscoverVersion.CannotDiscoverVersion"><code class="docutils literal notranslate"><span class="pre">CannotDiscoverVersion</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ContactMechanics.DiscoverVersion.get_version_from_git"><code class="docutils literal notranslate"><span class="pre">get_version_from_git()</span></code></a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ContactMechanics.FFTElasticHalfSpace">ContactMechanics.FFTElasticHalfSpace module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#convention-used-for-the-dft">Convention used for the DFT :</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parseval-s-theorem-convolutions-and-powers">Parseval’s theorem, Convolutions and powers:</a></li>
@@ -427,21 +422,6 @@
 </section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
-</section>
-<section id="module-ContactMechanics.DiscoverVersion">
-<span id="contactmechanics-discoverversion-module"></span><h2>ContactMechanics.DiscoverVersion module<a class="headerlink" href="#module-ContactMechanics.DiscoverVersion" title="Link to this heading"></a></h2>
-<dl class="py exception">
-<dt class="sig sig-object py" id="ContactMechanics.DiscoverVersion.CannotDiscoverVersion">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.DiscoverVersion.</span></span><span class="sig-name descname"><span class="pre">CannotDiscoverVersion</span></span><a class="headerlink" href="#ContactMechanics.DiscoverVersion.CannotDiscoverVersion" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ContactMechanics.DiscoverVersion.get_version_from_git">
-<span class="sig-prename descclassname"><span class="pre">ContactMechanics.DiscoverVersion.</span></span><span class="sig-name descname"><span class="pre">get_version_from_git</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.DiscoverVersion.get_version_from_git" title="Link to this definition"></a></dt>
-<dd><p>Discover version from git repository.</p>
-</dd></dl>
-
 </section>
 <section id="module-ContactMechanics.FFTElasticHalfSpace">
 <span id="contactmechanics-fftelastichalfspace-module"></span><h2>ContactMechanics.FFTElasticHalfSpace module<a class="headerlink" href="#module-ContactMechanics.FFTElasticHalfSpace" title="Link to this heading"></a></h2>
@@ -1255,19 +1235,19 @@ results are still returned but should be interpreted with care.</p></li>
 <td><p>Convenience function for DUAL minimisation (pixel forces as variables).</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_objective</span></code>(offset[, gradient])</p></td>
-<td><p>Objective function to handle dual objective, i.e. the Legendre</p></td>
+<td><p>Objective function to handle dual objective, i.e. the Legendre transformation from displacements as variable to pressures (the Lagrange multiplier) as variable.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(disp, offset[, pot, forces, logger])</p></td>
-<td><p>Compute the energies and forces in the system for a given displacement field</p></td>
+<td><p>Compute the energies and forces in the system for a given displacement field.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_dual</span></code>(press, offset[, forces])</p></td>
-<td><p>Computes the energies and forces in the system for a given displacement field</p></td>
+<td><p>Computes the energies and forces in the system for a given pressure field.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.PlasticSystemSpecialisations.PlasticNonSmoothContactSystem.handles" title="ContactMechanics.PlasticSystemSpecialisations.PlasticNonSmoothContactSystem.handles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">handles</span></code></a>(substrate_type, surface_type, ...)</p></td>
 <td><p>determines whether this class can handle the proposed system composition Keyword Arguments: substrate_type   -- instance of ElasticSubstrate subclass surface_type     --</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hessian_product</span></code>(disp)</p></td>
-<td><p>computes the hessian product for objective</p></td>
+<td><p>Computes the Hessian product for the objective function.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_proxy</span></code>()</p></td>
 <td><p>subclasses may not be able to implement the full interface because they try to do something smart and internally compute a different system. They should declare to  to be proxies and provide a method called cls. deproxyfied() that returns the energy, force and displacement of the full problem based on its internal state. E.g at the end of an optimization, you could have: if system.is_proxy():     energy, force, disp = system.deproxyfied().</p></td>
@@ -1276,7 +1256,7 @@ results are still returned but should be interpreted with care.</p></li>
 <td><p>Describes the current state of the system (during minimization)</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">objective</span></code>(offset[, disp0, gradient, logger])</p></td>
-<td><p>This helper method exposes a scipy.optimize-friendly interface to the evaluate() method. Use this for optimization purposes, it makes sure that the shape of disp is maintained and lets you set the offset and 'forces' flag without using scipy's cumbersome argument passing interface. Returns a function of only disp Parameters: ----------- offset:     determines indentation depth disp0:     unused variable, present only for interface compatibility     with inheriting classes gradient: (default False)     whether the gradient is supposed to be     used.</p></td>
+<td><p>This helper method exposes a scipy.optimize-friendly interface to the evaluate() method.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">primal_hessian_product</span></code>(gap)</p></td>
 <td><p>Returns the hessian product of the primal_objective function.</p></td>
@@ -1285,7 +1265,7 @@ results are still returned but should be interpreted with care.</p></li>
 <td><p>This function is a convenience function that simplifies the process of solving the primal minimisation problem where the gap is the variable.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">primal_objective</span></code>(offset[, gradient])</p></td>
-<td><p>To solve the primal objective using gap as the variable.</p></td>
+<td><p>Solves the primal objective using gap as the variable.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape_minimisation_input</span></code>(in_array)</p></td>
 <td><p>For minimisation of smart systems, the initial guess array (e.g. displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes may be decreased, as for free, non-periodic systems, or increased as with augmented-lagrangian-type issues).</p></td>
@@ -1634,19 +1614,19 @@ adhesion, belong to this type of system</p>
 <td><p>Convenience function for DUAL minimisation (pixel forces as variables).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="ContactMechanics.Systems.NonSmoothContactSystem.dual_objective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_objective</span></code></a>(offset[, gradient])</p></td>
-<td><p>Objective function to handle dual objective, i.e. the Legendre</p></td>
+<td><p>Objective function to handle dual objective, i.e. the Legendre transformation from displacements as variable to pressures (the Lagrange multiplier) as variable.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate" title="ContactMechanics.Systems.NonSmoothContactSystem.evaluate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code></a>(disp, offset[, pot, forces, logger])</p></td>
-<td><p>Compute the energies and forces in the system for a given displacement field</p></td>
+<td><p>Compute the energies and forces in the system for a given displacement field.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual" title="ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_dual</span></code></a>(press, offset[, forces])</p></td>
-<td><p>Computes the energies and forces in the system for a given displacement field</p></td>
+<td><p>Computes the energies and forces in the system for a given pressure field.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.handles" title="ContactMechanics.Systems.NonSmoothContactSystem.handles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">handles</span></code></a>(substrate_type, surface_type, ...)</p></td>
 <td><p>determines whether this class can handle the proposed system composition Keyword Arguments: substrate_type   -- instance of ElasticSubstrate subclass surface_type     --</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.hessian_product" title="ContactMechanics.Systems.NonSmoothContactSystem.hessian_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hessian_product</span></code></a>(disp)</p></td>
-<td><p>computes the hessian product for objective</p></td>
+<td><p>Computes the Hessian product for the objective function.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_proxy</span></code>()</p></td>
 <td><p>subclasses may not be able to implement the full interface because they try to do something smart and internally compute a different system. They should declare to  to be proxies and provide a method called cls. deproxyfied() that returns the energy, force and displacement of the full problem based on its internal state. E.g at the end of an optimization, you could have: if system.is_proxy():     energy, force, disp = system.deproxyfied().</p></td>
@@ -1658,7 +1638,7 @@ adhesion, belong to this type of system</p>
 <td><p>Convenience function.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.objective" title="ContactMechanics.Systems.NonSmoothContactSystem.objective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">objective</span></code></a>(offset[, disp0, gradient, logger])</p></td>
-<td><p>This helper method exposes a scipy.optimize-friendly interface to the evaluate() method. Use this for optimization purposes, it makes sure that the shape of disp is maintained and lets you set the offset and 'forces' flag without using scipy's cumbersome argument passing interface. Returns a function of only disp Parameters: ----------- offset:     determines indentation depth disp0:     unused variable, present only for interface compatibility     with inheriting classes gradient: (default False)     whether the gradient is supposed to be     used.</p></td>
+<td><p>This helper method exposes a scipy.optimize-friendly interface to the evaluate() method.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_hessian_product" title="ContactMechanics.Systems.NonSmoothContactSystem.primal_hessian_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">primal_hessian_product</span></code></a>(gap)</p></td>
 <td><p>Returns the hessian product of the primal_objective function.</p></td>
@@ -1667,7 +1647,7 @@ adhesion, belong to this type of system</p>
 <td><p>This function is a convenience function that simplifies the process of solving the primal minimisation problem where the gap is the variable.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective" title="ContactMechanics.Systems.NonSmoothContactSystem.primal_objective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">primal_objective</span></code></a>(offset[, gradient])</p></td>
-<td><p>To solve the primal objective using gap as the variable.</p></td>
+<td><p>Solves the primal objective using gap as the variable.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape_minimisation_input</span></code>(in_array)</p></td>
 <td><p>For minimisation of smart systems, the initial guess array (e.g. displacement) may have a non-intuitive shape and physical_sizes (The problem physical_sizes may be decreased, as for free, non-periodic systems, or increased as with augmented-lagrangian-type issues).</p></td>
@@ -1701,6 +1681,19 @@ no physical interest, as it is a purely numerical artefact</p>
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.dual_hessian_product">
 <span class="sig-name descname"><span class="pre">dual_hessian_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_hessian_product" title="Link to this definition"></a></dt>
 <dd><p>Returns the hessian product of the dual_objective function.</p>
+<p>The hessian product is the result of applying the hessian matrix (second derivatives of the objective function)
+to the pressure vector. This is used in optimization algorithms that utilize second-order information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pressure</strong> (<em>array_like</em>) – The pressure vector to which the hessian matrix is applied.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>hessp</strong> – The hessian product, which is the result of applying the hessian matrix to the pressure vector.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1735,49 +1728,91 @@ result, including the final gap, force, and displacement of the system at the so
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.dual_objective">
 <span class="sig-name descname"><span class="pre">dual_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="Link to this definition"></a></dt>
-<dd><blockquote>
-<div><p>Objective function to handle dual objective, i.e. the Legendre
+<dd><p>Objective function to handle dual objective, i.e. the Legendre
 transformation from displacements as variable to pressures
 (the Lagrange multiplier) as variable.</p>
-</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>offset</strong><span class="classifier">float</span></dt><dd><p>Constant value to add to the surface heights.</p>
-</dd>
-<dt><strong>gradient</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to return the gradient in addition to the energy. Default is True.</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offset</strong> (<em>float</em>) – Constant value to add to the surface heights.</p></li>
+<li><p><strong>gradient</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return the gradient in addition to the energy. Default is True.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>energy</strong><span class="classifier">float</span></dt><dd><p>Value of total energy.</p>
-</dd>
-<dt><strong>gradient</strong><span class="classifier">array_like</span></dt><dd><p>Value of the gradient (array) or the value of gap (if gradient is True).</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<dl class="simple">
-<dt>rac{1}{2}lambda_i  K^{-1}_{ij} lambda_j - lambda_i h_i </dt><dd><p></p>
-</dd>
-<dt>abla q = K^{-1}_{ij} lambda_j - h_i hspace{0.1cm}</dt><dd><p>ext{which is,} ext{gap} =      ext{displacement} -     ext{height} </p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>energy</strong> (<em>float</em>) – Value of total energy.</p></li>
+<li><p><strong>gradient</strong> (<em>array_like</em>) – Value of the gradient (array) or the value of gap (if gradient is True).</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The objective function is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\min_\lambda \ q(\lambda) = \frac{1}{2}\lambda_i  K^{-1}_{ij} \lambda_j - \lambda_i h_i \\
+\\
+\nabla q = K^{-1}_{ij} \lambda_j - h_i \hspace{0.1cm}
+\text{which is,} \\
+\text{gap} = \text{displacement} - \text{height} \\\end{split}\]</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.evaluate">
 <span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate" title="Link to this definition"></a></dt>
-<dd><p>Compute the energies and forces in the system for a given displacement
-field</p>
+<dd><p>Compute the energies and forces in the system for a given displacement field.</p>
+<p>This method calculates the gap between the surface and the substrate by calling the <cite>compute_gap</cite> method.
+It then computes the displacement field by calling the <cite>compute</cite> method of the substrate.</p>
+<p>If potential energy is to be computed, it is set to the energy of the substrate. Otherwise, it is set to None.</p>
+<p>If forces are to be computed, they are set to the force of the substrate. Otherwise, they are set to None.</p>
+<p>If a logger is provided, it logs the current state of the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>disp</strong> (<em>array_like</em>) – The displacement field for which the energies and forces are to be computed.</p></li>
+<li><p><strong>offset</strong> (<em>float</em>) – The offset value to be used in the computation.</p></li>
+<li><p><strong>pot</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the potential energy in the system is also computed. Default is True.</p></li>
+<li><p><strong>forces</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the forces in the system are also computed. Default is False.</p></li>
+<li><p><strong>logger</strong> (<a class="reference internal" href="ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.Logger" title="ContactMechanics.Tools.Logger.Logger"><em>Logger</em></a><em>, </em><em>optional</em>) – Logger object to log information at each iteration. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>energy</strong> (<em>float</em>) – Total energy of the system. If potential energy is not computed, it is None.</p></li>
+<li><p><strong>force</strong> (<em>array_like</em>) – Forces in the system. If forces are not computed, they are None.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">
 <span class="sig-name descname"><span class="pre">evaluate_dual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">press</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual" title="Link to this definition"></a></dt>
-<dd><p>Computes the energies and forces in the system for a given displacement
-field</p>
+<dd><p>Computes the energies and forces in the system for a given pressure field.</p>
+<p>This method calculates the displacement field corresponding to the given pressure field
+by calling the <cite>evaluate_disp</cite> method of the substrate. The negative of the pressure field
+is passed as an argument to the <cite>evaluate_disp</cite> method.</p>
+<p>If forces are to be computed, the gradient is calculated as the difference between the displacement
+and the sum of the surface heights and the offset. Otherwise, the gradient is set to None.</p>
+<p>The energy is then computed as half the sum of the product of the pressure and displacement fields,
+minus the sum of the product of the pressure and the sum of the surface heights and the offset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>press</strong> (<em>array_like</em>) – The pressure field for which the displacement field is to be computed.</p></li>
+<li><p><strong>offset</strong> (<em>float</em>) – The offset value to be used in the computation.</p></li>
+<li><p><strong>forces</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the forces in the system are also computed. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>energy</strong> (<em>float</em>) – Total energy of the system.</p></li>
+<li><p><strong>gradient</strong> (<em>array_like</em>) – Gradient, which is the difference between the displacement and the sum of the
+surface heights and the offset. If forces are not computed, the gradient is None.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1793,8 +1828,22 @@ surface_type     –</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.hessian_product">
 <span class="sig-name descname"><span class="pre">hessian_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.hessian_product" title="Link to this definition"></a></dt>
-<dd><p>computes the hessian product for objective</p>
-<p>this is the same then primal_hessian_product</p>
+<dd><p>Computes the Hessian product for the objective function.</p>
+<p>This method calculates the Hessian product by calling the <cite>primal_hessian_product</cite> method.
+The Hessian product is the result of applying the Hessian matrix (second derivatives of the objective function)
+to the displacement vector. This is used in optimization algorithms that utilize second-order information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>disp</strong> (<em>array_like</em>) – The displacement vector to which the Hessian matrix is applied. It can be an array of shape
+nb_subdomain_grid_pts or a flattened version of it.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Hessian product, which is the result of applying the Hessian matrix to the displacement vector.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1830,22 +1879,26 @@ problems by encapsulating the use of constrained minimisation.</p>
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.objective">
 <span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disp0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.objective" title="Link to this definition"></a></dt>
 <dd><p>This helper method exposes a scipy.optimize-friendly interface to the
-evaluate() method. Use this for optimization purposes, it makes sure
-that the shape of disp is maintained and lets you set the offset and
-‘forces’ flag without using scipy’s cumbersome argument passing
-interface. Returns a function of only disp
-Parameters:
-———–
-offset:</p>
-<blockquote>
-<div><p>determines indentation depth</p>
-</div></blockquote>
-<dl class="simple">
-<dt>disp0:</dt><dd><p>unused variable, present only for interface compatibility
-with inheriting classes</p>
+evaluate() method. It is used for optimization purposes and ensures
+that the shape of displacement is maintained. It also allows setting the offset and
+‘forces’ flag without using scipy’s argument passing interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offset</strong> (<em>float</em>) – Determines the indentation depth.</p></li>
+<li><p><strong>disp0</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Unused variable, present only for interface compatibility
+with inheriting classes. Default is None.</p></li>
+<li><p><strong>gradient</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the gradient is supposed to be used. Default is False.</p></li>
+<li><p><strong>logger</strong> (<a class="reference internal" href="ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.Logger" title="ContactMechanics.Tools.Logger.Logger"><em>Logger</em></a><em>, </em><em>optional</em>) – Logger object to log information at each iteration. Default is None.</p></li>
+</ul>
 </dd>
-<dt>gradient: (default False)</dt><dd><p>whether the gradient is supposed to be
-used</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fun</strong> – A function of only displacement. If gradient is True, this function returns
+the energy and the negative of the force when called with displacement.
+If gradient is False, it returns only the energy.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>function</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1854,6 +1907,21 @@ used</p>
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.primal_hessian_product">
 <span class="sig-name descname"><span class="pre">primal_hessian_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gap</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_hessian_product" title="Link to this definition"></a></dt>
 <dd><p>Returns the hessian product of the primal_objective function.</p>
+<p>The hessian product is the result of applying the hessian matrix (second derivatives of the objective function)
+to the gap vector. This is used in optimization algorithms that utilize second-order information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gap</strong> (<em>array_like</em>) – The gap vector to which the hessian matrix is applied.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>hessp</strong> – The hessian product, which is the result of applying the hessian matrix to the gap vector.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The hessian product is computed as the negative of the force evaluated at the reshaped gap vector.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1888,29 +1956,26 @@ result, including the final gap, force, and displacement of the system at the so
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.primal_objective">
 <span class="sig-name descname"><span class="pre">primal_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.primal_objective" title="Link to this definition"></a></dt>
-<dd><p>To solve the primal objective using gap as the variable.
-Can be fed directly to standard solvers ex: scipy solvers etc
-and returns the elastic energy and it’s gradient (negative of
-the forces) as a function of the gap.</p>
+<dd><p>Solves the primal objective using gap as the variable. This function can be fed directly to standard solvers
+such as scipy solvers etc. and returns the elastic energy and its gradient (negative of the forces) as a
+function of the gap.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>gap</strong> (<em>float</em>) – Gap between the contact surfaces.</p></li>
 <li><p><strong>offset</strong> (<em>float</em>) – Constant value to add to the surface heights.</p></li>
-<li><p><strong>gradient</strong> (<em>bool</em>) – Return gradient in addition to the energy.
-(Default: True)</p></li>
+<li><p><strong>gradient</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return gradient in addition to the energy. Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>energy</strong> (<em>float</em>) – Value of total energy.</p></li>
-<li><p><strong>force</strong> (<em>array_like</em>) – Value of the forces per surface node (only of gradient is true).</p></li>
+<li><p><strong>force</strong> (<em>array_like</em>) – Value of the forces per surface node (only if gradient is True).</p></li>
 </ul>
 </p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Objective:</p>
+<p>The objective function is defined as:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\min_u f(u) = 1/2 u_i K_{ij} u_j \\
 \\
