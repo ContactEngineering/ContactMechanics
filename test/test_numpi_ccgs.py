@@ -1,11 +1,9 @@
-from SurfaceTopography import make_sphere
-import ContactMechanics as Solid
-from NuMPI.Optimization import CCGWithRestart, CCGWithoutRestart
 import numpy as np
 import scipy.optimize as optim
+from NuMPI.Optimization import CCGWithoutRestart, CCGWithRestart
+from SurfaceTopography import make_sphere
 
-
-# import pytest
+import ContactMechanics as Solid
 
 
 def test_using_primal_obj():
@@ -72,13 +70,13 @@ def test_using_primal_obj():
 
     # ####################BUGNICOURT###################################
     CCGWithoutRestart.constrained_conjugate_gradients(system.primal_objective
-                                                        (offset, gradient=True),
-                                                        system.
-                                                        primal_hessian_product,
-                                                        x0=init_gap,
-                                                        mean_val=mean_val,
-                                                        gtol=gtol
-                                                        )
+                                                      (offset, gradient=True),
+                                                      system.
+                                                      primal_hessian_product,
+                                                      x0=init_gap,
+                                                      mean_val=mean_val,
+                                                      gtol=gtol
+                                                      )
     assert res.success
 
     bugnicourt_gap_mean_cons = res.x.reshape((nx, ny))
