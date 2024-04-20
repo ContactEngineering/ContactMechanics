@@ -34,7 +34,7 @@ import numpy as np
 import scipy
 import scipy.optimize as optim
 
-from NuMPI.Optimization import ccg_without_restart, ccg_with_restart
+from NuMPI.Optimization import CCGWithoutRestart, CCGWithRestart
 from NuMPI.Tools import Reduction
 
 import SurfaceTopography
@@ -578,7 +578,6 @@ class NonSmoothContactSystem(SystemBase):
 
         Parameters
         __________
-
         gap : float
             Gap between the contact surfaces.
         offset : float
@@ -634,39 +633,36 @@ class NonSmoothContactSystem(SystemBase):
         return hessp
 
     def primal_minimize_proxy(self, offset, init_gap=None,
-                              solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
-
-        """Convenience function. Eliminates boilerplate code for
-        Primal minimisation problem (gap as variable) by encapsulating the use of constrained
-        minimisation.
+                              solver='ccg-without-restart', gtol=1e-8, maxiter=1000):
+        """
+        This function is a convenience function that simplifies the process of
+        solving the primal minimisation problem where the gap is the variable.
+        It does this by encapsulating the use of constrained minimisation.
 
         Parameters
-        __________
-
-        offset     : determines indentation depth
-
-        init_force : initial guess for force.
-
-        solver     : 'ccg_without_restart', 'ccg_with_restart',
-        'l-bfgs-b'
-
-        gtol       : float, optional
-                    Default value : 1e-8
-
-        maxiter    : maximum number of iterations allowed for
-        convergence
+        ----------
+        offset : float
+            This parameter determines the indentation depth.
+        init_gap : array_like, optional
+            This is the initial guess for the gap. If not provided, it defaults to None.
+        solver : str, optional
+            This is the solver to be used for the minimisation. It can be one of
+            'ccg-without-restart', 'ccg-with-restart', or 'l-bfgs-b'. If not provided,
+            it defaults to 'ccg-without-restart'.
+        gtol : float, optional
+            This is the gradient tolerance for the solver. If not provided, it defaults to 1e-8.
+        maxiter : int, optional
+            This is the maximum number of iterations allowed for the solver to converge.
+            If not provided, it defaults to 1000.
 
         Returns
-        _______
-
-        gap : gap or gardient value
-
-        force   : final force of the system at the solution
-
-        disp    : displacement of the system at the solution
+        -------
+        result : OptimizeResult
+            The result of the minimisation. It contains information about the optimisation
+            result, including the final gap, force, and displacement of the system at the solution.
         """
 
-        solvers = {'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'}
+        solvers = {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b'}
 
         if solver not in solvers:
             raise ValueError(
@@ -680,13 +676,13 @@ class NonSmoothContactSystem(SystemBase):
         lbounds = np.zeros(self.init_gap.shape)
         bnds = self._reshape_bounds(lbounds, )
 
-        if solver == 'ccg_without_restart':
-            result = ccg_without_restart.constrained_conjugate_gradients(
+        if solver == 'ccg-without-restart':
+            result = CCGWithoutRestart.constrained_conjugate_gradients(
                 self.primal_objective(offset, gradient=True),
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
-        elif solver == 'ccg_with_restart':
-            result = ccg_with_restart.constrained_conjugate_gradients(
+        elif solver == 'ccg-with-restart':
+            result = CCGWithRestart.constrained_conjugate_gradients(
                 self.primal_objective(offset, gradient=True),
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
@@ -725,30 +721,28 @@ class NonSmoothContactSystem(SystemBase):
         return (self.energy, self.gradient)
 
     def dual_objective(self, offset, gradient=True):
-        r"""Objective function to handle dual objective, i.e. the Legendre
+        """
+        Objective function to handle dual objective, i.e. the Legendre
         transformation from displacements as variable to pressures
         (the Lagrange multiplier) as variable.
 
         Parameters
-        __________
-        pressure : float
-                pressure between the contact surfaces.
+        ----------
         offset : float
-                constant value to add to the surface heights
-        pot : (default False)
-        gradient : (default True)
+            Constant value to add to the surface heights.
+        gradient : bool, optional
+            Whether to return the gradient in addition to the energy. Default is True.
 
         Returns
-        _______
+        -------
         energy : float
-                value of energy(scalar value).
-
-        gradient : float,array
-                value of gradient(array) or the value of gap.
+            Value of total energy.
+        gradient : array_like
+            Value of the gradient (array) or the value of gap (if gradient is True).
 
         Notes
-        _____
-        Objective:
+        -----
+        The objective function is defined as:
 
         .. math ::
 
@@ -757,9 +751,7 @@ class NonSmoothContactSystem(SystemBase):
             \nabla q = K^{-1}_{ij} \lambda_j - h_i \hspace{0.1cm}
             \text{which is,} \\
             \text{gap} = \text{displacement} - \text{height} \\
-
         """
-
         res = self.substrate.nb_domain_grid_pts
         if gradient:
             def fun(pressure):
@@ -786,36 +778,35 @@ class NonSmoothContactSystem(SystemBase):
         return hessp.reshape(inres)
 
     def dual_minimize_proxy(self, offset, init_force=None,
-                            solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
+                            solver='ccg-without-restart', gtol=1e-8, maxiter=1000):
         """
-        Convenience function. Eliminates boilerplate code for DUAL minimisation (pixel forces as variables)
-        problems by encapsulating the use of constrained minimisation.
+        Convenience function for DUAL minimisation (pixel forces as variables).
+        This function simplifies the process of solving the dual minimisation problem
+        by encapsulating the use of constrained minimisation.
 
         Parameters
-        __________
-
-        offset     : determines indentation depth
-
-        init_force : initial guess for force.
-
-        solver     : 'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'
-
-        gtol       : float, optional
-                    Default value : 1e-8
-
-        maxiter    : maximum number of iterations allowed for convergence
+        ----------
+        offset : float
+            Determines the indentation depth.
+        init_force : array_like, optional
+            Initial guess for the force. If not provided, it defaults to None.
+        solver : str, optional
+            The solver to be used for the minimisation. It can be one of
+            'ccg-without-restart', 'ccg-with-restart', or 'l-bfgs-b'. If not provided,
+            it defaults to 'ccg-without-restart'.
+        gtol : float, optional
+            The gradient tolerance for the solver. If not provided, it defaults to 1e-8.
+        maxiter : int, optional
+            The maximum number of iterations allowed for the solver to converge.
+            If not provided, it defaults to 1000.
 
         Returns
-        _______
-
-        gap : gap or gardient value
-
-        force   : final force of the system at the solution
-
-        disp    : displacement of the system at the solution
+        -------
+        result : OptimizeResult
+            The result of the minimisation. It contains information about the optimisation
+            result, including the final gap, force, and displacement of the system at the solution.
         """
-
-        solvers = {'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'}
+        solvers = {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b'}
 
         if solver not in solvers:
             raise ValueError(
@@ -829,13 +820,13 @@ class NonSmoothContactSystem(SystemBase):
         lbounds = np.zeros(self.init_force.shape)
         bnds = self._reshape_bounds(lbounds, )
 
-        if solver == 'ccg_without_restart':
-            result = ccg_without_restart.constrained_conjugate_gradients(
+        if solver == 'ccg-without-restart':
+            result = CCGWithoutRestart.constrained_conjugate_gradients(
                 self.dual_objective(offset, gradient=True),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
-        elif solver == 'ccg_with_restart':
-            result = ccg_with_restart.constrained_conjugate_gradients(
+        elif solver == 'ccg-with-restart':
+            result = CCGWithRestart.constrained_conjugate_gradients(
                 self.dual_objective(offset, gradient=True),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
