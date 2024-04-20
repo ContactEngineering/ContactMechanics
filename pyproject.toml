@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core>=3.2"]
+requires = ["flit_core>=3.2", "DiscoverVersion"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -19,6 +19,7 @@ classifiers = [
 requires-python = ">=3.8.0"
 dynamic = [ "version" ]
 dependencies = [
+    "DiscoverVersion",
     "numpy",
     "scipy>=1.9.0",
     "NuMPI>=0.5.0",

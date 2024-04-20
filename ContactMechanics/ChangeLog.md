@@ -7,6 +7,7 @@ v1.3.0 (20Apr24)
 - API: Homogeneized solver naming convention to use hypens rather than
   underscores
 - MAINT: Bumped NuMPI to 0.5.0
+- MAINT: Changed version discovery to use the `DiscoverVersion` package
 
 v1.2.0 (14Jan24)
 ----------------
