@@ -19,12 +19,12 @@ Updating ContactMechanics
 --------------------------
 
 If you update ContactMechanics (whether with pip or `git pull` if you cloned the repository),  you may need to
-uninstall `NuMPI`, `muSpectre` and or `runtests`, so that the newest version of them will be installed.
+uninstall `NuMPI`_, `muFFT`_ and or `runtests`_, so that the newest version of them will be installed.
 
 .. _SurfaceTopography: https://github.com/ContactEngineering/SurfaceTopography
 .. _FFTW3: http://www.fftw.org/
-.. _muFFT: https://gitlab.com/muspectre/muspectre.git
-.. _nuMPI: https://github.com/IMTEK-Simulation/NuMPI.git
+.. _muFFT: https://github.com/muSpectre/muFFT.git
+.. _NuMPI: https://github.com/IMTEK-Simulation/NuMPI.git
 .. _runtests: https://github.com/bccp/runtests
 .. _Homebrew: https://brew.sh/
 .. _OpenBLAS: https://www.openblas.net/
