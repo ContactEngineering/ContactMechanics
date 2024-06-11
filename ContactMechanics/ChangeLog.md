@@ -1,6 +1,12 @@
 Change log for ContactMechanics
 ===============================
 
+v1.4.0 (11June24)
+-----------------
+
+- MAINT: Bumped SurfaceTopography to 1.13.0
+- MAINT: Switched from muSpectre to muFFT
+
 v1.3.0 (20Apr24)
 ----------------
 
