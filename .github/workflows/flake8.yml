@@ -28,4 +28,4 @@ jobs:
 
     - name: Flake8
       run: |
-        flake8
+        flake8 ContactMechanics test
