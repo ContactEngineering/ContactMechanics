@@ -1,7 +1,7 @@
 
 
 import numpy as np
-from NuMPI.Optimization import ccg_without_restart
+from NuMPI.Optimization import CCGWithoutRestart
 from NuMPI.Tools import Reduction
 from SurfaceTopography import make_sphere
 
@@ -12,7 +12,7 @@ from NuMPI import MPI
 import scipy.optimize as optim
 
 
-def test_ccg_without_restart_free_system(comm):
+def test_CCGWithoutRestart_free_system(comm):
     pnp = Reduction(comm)
 
     nx, ny = 9, 9
@@ -75,7 +75,7 @@ def test_ccg_without_restart_free_system(comm):
 
     system = NonSmoothContactSystem(substrate, surface)
     lbounds_parallel = system._lbounds_from_heights(penetration)
-    res = ccg_without_restart.constrained_conjugate_gradients(
+    res = CCGWithoutRestart.constrained_conjugate_gradients(
         system.objective(penetration, gradient=True),
         # We also test that the logger and the postprocessing involved work properly in parallel
         system.hessian_product,

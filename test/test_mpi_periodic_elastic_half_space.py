@@ -129,7 +129,7 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
 
         substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                                 fft='mpi', communicator=comm)
-        fftengine = FFT((nx, ny), fft='mpi', communicator=comm)
+        fftengine = FFT((nx, ny), engine='mpi', communicator=comm)
         fftengine.create_plan(1)
 
         kpressure = substrate.evaluate_k_force(

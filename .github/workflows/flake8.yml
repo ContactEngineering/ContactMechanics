@@ -11,21 +11,15 @@ on:
       - '**'
 
 jobs:
-  tests:
+  flake8:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-        submodules: recursive
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update -qy
-        sudo apt-get install -y flake8
-
-    - name: Flake8
-      run: |
-        flake8 ContactMechanics test
+      - name: Check out source repository
+        uses: actions/checkout@v4
+      - name: Set up Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: flake8 Lint
+        uses: py-actions/flake8@v2

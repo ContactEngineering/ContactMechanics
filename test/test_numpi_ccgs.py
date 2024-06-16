@@ -1,11 +1,9 @@
-from SurfaceTopography import make_sphere
-import ContactMechanics as Solid
-from NuMPI.Optimization import ccg_with_restart, ccg_without_restart
 import numpy as np
 import scipy.optimize as optim
+from NuMPI.Optimization import CCGWithoutRestart, CCGWithRestart
+from SurfaceTopography import make_sphere
 
-
-# import pytest
+import ContactMechanics as Solid
 
 
 def test_using_primal_obj():
@@ -30,7 +28,7 @@ def test_using_primal_obj():
     init_gap = disp - surface.heights() - offset
 
     # ####################POLONSKY-KEER##############################
-    res = ccg_with_restart.constrained_conjugate_gradients(
+    res = CCGWithRestart.constrained_conjugate_gradients(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product, x0=init_gap, gtol=gtol)
 
@@ -38,7 +36,7 @@ def test_using_primal_obj():
     polonsky_gap = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
-    res = ccg_without_restart.constrained_conjugate_gradients(
+    res = CCGWithoutRestart.constrained_conjugate_gradients(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product, x0=init_gap, mean_val=None, gtol=gtol)
     assert res.success
@@ -62,7 +60,7 @@ def test_using_primal_obj():
     # ##########TEST MEAN VALUES#######################################
     mean_val = np.mean(lbfgsb_gap)
     # ####################POLONSKY-KEER##############################
-    res = ccg_with_restart.constrained_conjugate_gradients(
+    res = CCGWithRestart.constrained_conjugate_gradients(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product, init_gap, gtol=gtol,
         mean_value=mean_val)
@@ -71,14 +69,14 @@ def test_using_primal_obj():
     polonsky_gap_mean_cons = res.x.reshape((nx, ny))
 
     # ####################BUGNICOURT###################################
-    ccg_without_restart.constrained_conjugate_gradients(system.primal_objective
-                                                        (offset, gradient=True),
-                                                        system.
-                                                        primal_hessian_product,
-                                                        x0=init_gap,
-                                                        mean_val=mean_val,
-                                                        gtol=gtol
-                                                        )
+    CCGWithoutRestart.constrained_conjugate_gradients(system.primal_objective
+                                                      (offset, gradient=True),
+                                                      system.
+                                                      primal_hessian_product,
+                                                      x0=init_gap,
+                                                      mean_val=mean_val,
+                                                      gtol=gtol
+                                                      )
     assert res.success
 
     bugnicourt_gap_mean_cons = res.x.reshape((nx, ny))
@@ -126,7 +124,7 @@ def test_using_dual_obj():
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
     # ###################BUGNICOURT########################################
-    ccg_without_restart.constrained_conjugate_gradients(
+    CCGWithoutRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, mean_val=None, gtol=gtol)
     assert res.success
@@ -138,7 +136,7 @@ def test_using_dual_obj():
     gap_bugnicourt = gap_bugnicourt.reshape((nx, ny))
     #
     # # ##################POLONSKY-KEER#####################################
-    res = ccg_with_restart.constrained_conjugate_gradients(
+    res = CCGWithRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, gtol=gtol)
     assert res.success
@@ -163,7 +161,7 @@ def test_using_dual_obj():
     mean_val = np.mean(lbfgsb_force)
     print('mean {}'.format(mean_val))
     # ####################POLONSKY-KEER##############################
-    res = ccg_with_restart.constrained_conjugate_gradients(
+    res = CCGWithRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, gtol=gtol,
         mean_value=mean_val)
@@ -172,7 +170,7 @@ def test_using_dual_obj():
     polonsky_mean = res.x.reshape((nx, ny))
 
     # # ####################BUGNICOURT###################################
-    ccg_without_restart.constrained_conjugate_gradients(
+    CCGWithoutRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, mean_val=mean_val,
         gtol=gtol)

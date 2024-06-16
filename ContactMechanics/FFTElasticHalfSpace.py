@@ -244,7 +244,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
 
-        self.fftengine = FFT(self.nb_domain_grid_pts, fft=fft,
+        self.fftengine = FFT(self.nb_domain_grid_pts, engine=fft,
                              communicator=communicator,
                              allow_temporary_buffer=False,
                              allow_destroy_input=True)

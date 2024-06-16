@@ -357,7 +357,7 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         force[:self.res[0], :self.res[1]] = np.random.random(self.res)
         from muFFT import FFT
         ref = rfftn(force.T).T
-        fftengine = FFT([2 * r for r in self.res], fft="serial")
+        fftengine = FFT([2 * r for r in self.res], engine="serial")
         fftengine.create_plan(1)
         tested = np.zeros(fftengine.nb_fourier_grid_pts, order='f',
                           dtype=complex)

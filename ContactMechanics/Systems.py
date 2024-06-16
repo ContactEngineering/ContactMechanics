@@ -33,11 +33,10 @@ import abc
 import numpy as np
 import scipy
 import scipy.optimize as optim
-
-from NuMPI.Optimization import ccg_without_restart, ccg_with_restart
+import SurfaceTopography
+from NuMPI.Optimization import CCGWithoutRestart, CCGWithRestart
 from NuMPI.Tools import Reduction
 
-import SurfaceTopography
 from .FFTElasticHalfSpace import ElasticSubstrate
 from .Optimization import constrained_conjugate_gradients
 from .Tools import compare_containers
@@ -457,8 +456,36 @@ class NonSmoothContactSystem(SystemBase):
 
     def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
-        Compute the energies and forces in the system for a given displacement
-        field
+        Compute the energies and forces in the system for a given displacement field.
+
+        This method calculates the gap between the surface and the substrate by calling the `compute_gap` method.
+        It then computes the displacement field by calling the `compute` method of the substrate.
+
+        If potential energy is to be computed, it is set to the energy of the substrate. Otherwise, it is set to None.
+
+        If forces are to be computed, they are set to the force of the substrate. Otherwise, they are set to None.
+
+        If a logger is provided, it logs the current state of the system.
+
+        Parameters
+        ----------
+        disp : array_like
+            The displacement field for which the energies and forces are to be computed.
+        offset : float
+            The offset value to be used in the computation.
+        pot : bool, optional
+            If True, the potential energy in the system is also computed. Default is True.
+        forces : bool, optional
+            If True, the forces in the system are also computed. Default is False.
+        logger : Logger, optional
+            Logger object to log information at each iteration. Default is None.
+
+        Returns
+        -------
+        energy : float
+            Total energy of the system. If potential energy is not computed, it is None.
+        force : array_like
+            Forces in the system. If forces are not computed, they are None.
         """
         # attention: the substrate may have a higher nb_grid_pts than the gap
         # and the interaction (e.g. FreeElasticHalfSpace)
@@ -474,25 +501,33 @@ class NonSmoothContactSystem(SystemBase):
         if logger is not None:
             logger.st(*self.logger_input())
 
-        return (self.energy, self.force)
+        return self.energy, self.force
 
     def objective(self, offset, disp0=None, gradient=False, logger=None):
         """
         This helper method exposes a scipy.optimize-friendly interface to the
-        evaluate() method. Use this for optimization purposes, it makes sure
-        that the shape of disp is maintained and lets you set the offset and
-        'forces' flag without using scipy's cumbersome argument passing
-        interface. Returns a function of only disp
-        Parameters:
-        -----------
-        offset:
-            determines indentation depth
-        disp0:
-            unused variable, present only for interface compatibility
-            with inheriting classes
-        gradient: (default False)
-            whether the gradient is supposed to be
-            used
+        evaluate() method. It is used for optimization purposes and ensures
+        that the shape of displacement is maintained. It also allows setting the offset and
+        'forces' flag without using scipy's argument passing interface.
+
+        Parameters
+        ----------
+        offset : float
+            Determines the indentation depth.
+        disp0 : array_like, optional
+            Unused variable, present only for interface compatibility
+            with inheriting classes. Default is None.
+        gradient : bool, optional
+            If True, the gradient is supposed to be used. Default is False.
+        logger : Logger, optional
+            Logger object to log information at each iteration. Default is None.
+
+        Returns
+        -------
+        fun : function
+            A function of only displacement. If gradient is True, this function returns
+            the energy and the negative of the force when called with displacement.
+            If gradient is False, it returns only the energy.
         """
         # pylint: disable=arguments-differ
         res = self.substrate.nb_subdomain_grid_pts
@@ -513,19 +548,22 @@ class NonSmoothContactSystem(SystemBase):
 
     def hessian_product(self, disp):
         """
-        computes the hessian product for objective
+        Computes the Hessian product for the objective function.
 
-        this is the same then primal_hessian_product
+        This method calculates the Hessian product by calling the `primal_hessian_product` method.
+        The Hessian product is the result of applying the Hessian matrix (second derivatives of the objective function)
+        to the displacement vector. This is used in optimization algorithms that utilize second-order information.
 
-        Parameters:
-        -----------
-        disp: float array
-            array of shape nb_subdomain_grid_pts or a flattened version of it
+        Parameters
+        ----------
+        disp : array_like
+            The displacement vector to which the Hessian matrix is applied. It can be an array of shape
+            nb_subdomain_grid_pts or a flattened version of it.
 
-        Returns:
-        --------
-        hessian product
-
+        Returns
+        -------
+        array_like
+            The Hessian product, which is the result of applying the Hessian matrix to the displacement vector.
         """
         return self.primal_hessian_product(disp)
 
@@ -571,40 +609,34 @@ class NonSmoothContactSystem(SystemBase):
         return result
 
     def primal_objective(self, offset, gradient=True):
-        r"""To solve the primal objective using gap as the variable.
-        Can be fed directly to standard solvers ex: scipy solvers etc
-        and returns the elastic energy and it's gradient (negative of
-        the forces) as a function of the gap.
+        r"""
+        Solves the primal objective using gap as the variable. This function can be fed directly to standard solvers
+        such as scipy solvers etc. and returns the elastic energy and its gradient (negative of the forces) as a
+        function of the gap.
 
         Parameters
-        __________
-
-        gap : float
-            Gap between the contact surfaces.
+        ----------
         offset : float
             Constant value to add to the surface heights.
-        gradient : bool
-            Return gradient in addition to the energy.
-            (Default: True)
+        gradient : bool, optional
+            Return gradient in addition to the energy. Default is True.
 
         Returns
-        _______
+        -------
         energy : float
             Value of total energy.
         force : array_like
-            Value of the forces per surface node (only of gradient is true).
+            Value of the forces per surface node (only if gradient is True).
 
         Notes
-        _____
-
-        Objective:
+        -----
+        The objective function is defined as:
 
         .. math ::
 
             \min_u f(u) = 1/2 u_i K_{ij} u_j \\
             \\
             \nabla f = K_{ij} u_j \ \ \ \text{which is the Force.} \\
-
         """
 
         res = self.substrate.nb_subdomain_grid_pts
@@ -626,47 +658,61 @@ class NonSmoothContactSystem(SystemBase):
         return fun
 
     def primal_hessian_product(self, gap):
-        """Returns the hessian product of the primal_objective function.
         """
-        inres = gap.shape
+        Returns the hessian product of the primal_objective function.
+
+        The hessian product is the result of applying the hessian matrix (second derivatives of the objective function)
+        to the gap vector. This is used in optimization algorithms that utilize second-order information.
+
+        Parameters
+        ----------
+        gap : array_like
+            The gap vector to which the hessian matrix is applied.
+
+        Returns
+        -------
+        hessp : array_like
+            The hessian product, which is the result of applying the hessian matrix to the gap vector.
+
+        Notes
+        -----
+        The hessian product is computed as the negative of the force evaluated at the reshaped gap vector.
+        """
+        inres = gap.shape  # Store        inres = gap.shape
         res = self.substrate.nb_subdomain_grid_pts
         hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(inres)
         return hessp
 
-    def primal_minimize_proxy(self, offset, init_gap=None,
-                              solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
-
-        """Convenience function. Eliminates boilerplate code for
-        Primal minimisation problem (gap as variable) by encapsulating the use of constrained
-        minimisation.
+    def primal_minimize_proxy(self, offset, init_gap=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000):
+        """
+        This function is a convenience function that simplifies the process of
+        solving the primal minimisation problem where the gap is the variable.
+        It does this by encapsulating the use of constrained minimisation.
 
         Parameters
-        __________
-
-        offset     : determines indentation depth
-
-        init_force : initial guess for force.
-
-        solver     : 'ccg_without_restart', 'ccg_with_restart',
-        'l-bfgs-b'
-
-        gtol       : float, optional
-                    Default value : 1e-8
-
-        maxiter    : maximum number of iterations allowed for
-        convergence
+        ----------
+        offset : float
+            This parameter determines the indentation depth.
+        init_gap : array_like, optional
+            This is the initial guess for the gap. If not provided, it defaults to None.
+        solver : str, optional
+            This is the solver to be used for the minimisation. It can be one of
+            'ccg-without-restart', 'ccg-with-restart', or 'l-bfgs-b'. If not provided,
+            it defaults to 'ccg-without-restart'.
+        gtol : float, optional
+            This is the gradient tolerance for the solver. If not provided, it defaults to 1e-8.
+        maxiter : int, optional
+            This is the maximum number of iterations allowed for the solver to converge.
+            If not provided, it defaults to 1000.
 
         Returns
-        _______
-
-        gap : gap or gardient value
-
-        force   : final force of the system at the solution
-
-        disp    : displacement of the system at the solution
+        -------
+        result : OptimizeResult
+            The result of the minimisation. It contains information about the optimisation
+            result, including the final gap, force, and displacement of the system at the solution.
         """
 
-        solvers = {'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'}
+        solvers = {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b'}
 
         if solver not in solvers:
             raise ValueError(
@@ -680,13 +726,13 @@ class NonSmoothContactSystem(SystemBase):
         lbounds = np.zeros(self.init_gap.shape)
         bnds = self._reshape_bounds(lbounds, )
 
-        if solver == 'ccg_without_restart':
-            result = ccg_without_restart.constrained_conjugate_gradients(
+        if solver == 'ccg-without-restart':
+            result = CCGWithoutRestart.constrained_conjugate_gradients(
                 self.primal_objective(offset, gradient=True),
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
-        elif solver == 'ccg_with_restart':
-            result = ccg_with_restart.constrained_conjugate_gradients(
+        elif solver == 'ccg-with-restart':
+            result = CCGWithRestart.constrained_conjugate_gradients(
                 self.primal_objective(offset, gradient=True),
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
@@ -710,8 +756,34 @@ class NonSmoothContactSystem(SystemBase):
 
     def evaluate_dual(self, press, offset, forces=False):
         """
-        Computes the energies and forces in the system for a given displacement
-        field
+        Computes the energies and forces in the system for a given pressure field.
+
+        This method calculates the displacement field corresponding to the given pressure field
+        by calling the `evaluate_disp` method of the substrate. The negative of the pressure field
+        is passed as an argument to the `evaluate_disp` method.
+
+        If forces are to be computed, the gradient is calculated as the difference between the displacement
+        and the sum of the surface heights and the offset. Otherwise, the gradient is set to None.
+
+        The energy is then computed as half the sum of the product of the pressure and displacement fields,
+        minus the sum of the product of the pressure and the sum of the surface heights and the offset.
+
+        Parameters
+        ----------
+        press : array_like
+            The pressure field for which the displacement field is to be computed.
+        offset : float
+            The offset value to be used in the computation.
+        forces : bool, optional
+            If True, the forces in the system are also computed. Default is False.
+
+        Returns
+        -------
+        energy : float
+            Total energy of the system.
+        gradient : array_like
+            Gradient, which is the difference between the displacement and the sum of the
+            surface heights and the offset. If forces are not computed, the gradient is None.
         """
         disp = self.substrate.evaluate_disp(-press)
         if forces:
@@ -722,33 +794,31 @@ class NonSmoothContactSystem(SystemBase):
         self.energy = 1 / 2 * np.sum(press * disp) - np.sum(
             press * (self.surface.heights() + offset))
 
-        return (self.energy, self.gradient)
+        return self.energy, self.gradient
 
     def dual_objective(self, offset, gradient=True):
-        r"""Objective function to handle dual objective, i.e. the Legendre
+        r"""
+        Objective function to handle dual objective, i.e. the Legendre
         transformation from displacements as variable to pressures
         (the Lagrange multiplier) as variable.
 
         Parameters
-        __________
-        pressure : float
-                pressure between the contact surfaces.
+        ----------
         offset : float
-                constant value to add to the surface heights
-        pot : (default False)
-        gradient : (default True)
+            Constant value to add to the surface heights.
+        gradient : bool, optional
+            Whether to return the gradient in addition to the energy. Default is True.
 
         Returns
-        _______
+        -------
         energy : float
-                value of energy(scalar value).
-
-        gradient : float,array
-                value of gradient(array) or the value of gap.
+            Value of total energy.
+        gradient : array_like
+            Value of the gradient (array) or the value of gap (if gradient is True).
 
         Notes
-        _____
-        Objective:
+        -----
+        The objective function is defined as:
 
         .. math ::
 
@@ -757,9 +827,7 @@ class NonSmoothContactSystem(SystemBase):
             \nabla q = K^{-1}_{ij} \lambda_j - h_i \hspace{0.1cm}
             \text{which is,} \\
             \text{gap} = \text{displacement} - \text{height} \\
-
         """
-
         res = self.substrate.nb_domain_grid_pts
         if gradient:
             def fun(pressure):
@@ -778,44 +846,56 @@ class NonSmoothContactSystem(SystemBase):
         return fun
 
     def dual_hessian_product(self, pressure):
-        r"""Returns the hessian product of the dual_objective function.
+        """
+        Returns the hessian product of the dual_objective function.
+
+        The hessian product is the result of applying the hessian matrix (second derivatives of the objective function)
+        to the pressure vector. This is used in optimization algorithms that utilize second-order information.
+
+        Parameters
+        ----------
+        pressure : array_like
+            The pressure vector to which the hessian matrix is applied.
+
+        Returns
+        -------
+        hessp : array_like
+            The hessian product, which is the result of applying the hessian matrix to the pressure vector.
         """
         inres = pressure.shape
         res = self.substrate.nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
 
-    def dual_minimize_proxy(self, offset, init_force=None,
-                            solver='ccg_without_restart', gtol=1e-8, maxiter=1000):
+    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000):
         """
-        Convenience function. Eliminates boilerplate code for DUAL minimisation (pixel forces as variables)
-        problems by encapsulating the use of constrained minimisation.
+        Convenience function for DUAL minimisation (pixel forces as variables).
+        This function simplifies the process of solving the dual minimisation problem
+        by encapsulating the use of constrained minimisation.
 
         Parameters
-        __________
-
-        offset     : determines indentation depth
-
-        init_force : initial guess for force.
-
-        solver     : 'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'
-
-        gtol       : float, optional
-                    Default value : 1e-8
-
-        maxiter    : maximum number of iterations allowed for convergence
+        ----------
+        offset : float
+            Determines the indentation depth.
+        init_force : array_like, optional
+            Initial guess for the force. If not provided, it defaults to None.
+        solver : str, optional
+            The solver to be used for the minimisation. It can be one of
+            'ccg-without-restart', 'ccg-with-restart', or 'l-bfgs-b'. If not provided,
+            it defaults to 'ccg-without-restart'.
+        gtol : float, optional
+            The gradient tolerance for the solver. If not provided, it defaults to 1e-8.
+        maxiter : int, optional
+            The maximum number of iterations allowed for the solver to converge.
+            If not provided, it defaults to 1000.
 
         Returns
-        _______
-
-        gap : gap or gardient value
-
-        force   : final force of the system at the solution
-
-        disp    : displacement of the system at the solution
+        -------
+        result : OptimizeResult
+            The result of the minimisation. It contains information about the optimisation
+            result, including the final gap, force, and displacement of the system at the solution.
         """
-
-        solvers = {'ccg_without_restart', 'ccg_with_restart', 'l-bfgs-b'}
+        solvers = {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b'}
 
         if solver not in solvers:
             raise ValueError(
@@ -829,13 +909,13 @@ class NonSmoothContactSystem(SystemBase):
         lbounds = np.zeros(self.init_force.shape)
         bnds = self._reshape_bounds(lbounds, )
 
-        if solver == 'ccg_without_restart':
-            result = ccg_without_restart.constrained_conjugate_gradients(
+        if solver == 'ccg-without-restart':
+            result = CCGWithoutRestart.constrained_conjugate_gradients(
                 self.dual_objective(offset, gradient=True),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
-        elif solver == 'ccg_with_restart':
-            result = ccg_with_restart.constrained_conjugate_gradients(
+        elif solver == 'ccg-with-restart':
+            result = CCGWithRestart.constrained_conjugate_gradients(
                 self.dual_objective(offset, gradient=True),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
