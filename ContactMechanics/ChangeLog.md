@@ -1,6 +1,11 @@
 Change log for ContactMechanics
 ===============================
 
+v1.5.0 (31Jul24)
+----------------
+
+- MAINT: Support for numpy >= 2.0.0
+
 v1.4.0 (11June24)
 -----------------
 
@@ -15,7 +20,12 @@ v1.3.0 (20Apr24)
 - MAINT: Bumped NuMPI to 0.5.0
 - MAINT: Changed version discovery to use the `DiscoverVersion` package
 
-v1.2.0 (14Jan24)
+v1.2.1 (16June24)
+-----------------
+
+- MAINT: Limit numpy to <2.0 (because of compatibility issues)
+
+- v1.2.0 (14Jan24)
 ----------------
 
 - MAINT: Compatiblity with SurfaceTopography 1.12.x

@@ -37,7 +37,7 @@ try:
 
     __have_netcdf4__ = True
 except ImportError:
-    from pupynere import NetCDFFile
+    from scipy.io import netcdf_file
 
     __have_netcdf4__ = False
 
@@ -167,7 +167,7 @@ class NetCDFContainer(object):
             else:
                 if mode == 'ws':
                     mode = 'w'
-                self._data = NetCDFFile(fn, mode)
+                self._data = netcdf_file(fn, mode)
         except RuntimeError as e:
             raise RuntimeError('Error opening file "{0}": {1}'.format(fn, e))
 

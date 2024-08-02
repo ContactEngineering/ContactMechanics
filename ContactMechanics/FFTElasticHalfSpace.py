@@ -447,7 +447,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                 q = np.sqrt((qx * qx).reshape(-1, 1) +
                             (qy * qy).reshape(1, -1))
                 if self.fourier_locations == (0, 0):
-                    q[0, 0] = np.NaN
+                    q[0, 0] = np.nan
                     # q[0,0] has no Impact on the end result,
                     # but q[0,0] =  0 produces runtime Warnings
                     # (because corr[0,0]=inf)

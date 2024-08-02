@@ -24,8 +24,7 @@ dependencies = [
     "scipy>=1.9.0",
     "NuMPI>=0.5.0",
     "muFFT>=0.91.2",
-    "SurfaceTopography>=1.14.0",
-    "netCDF4"
+    "SurfaceTopography>=1.14.0"
 ]
 
 [project.optional-dependencies]
@@ -50,3 +49,10 @@ changelog = "https://github.com/ContactEngineering/ContactMechanics/blob/master/
 
 [project.scripts]
 ce_hard_wall = "ContactMechanics.CommandLineInterface.HardWall:main"
+
+[tool.black]
+line-length = 88
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+
+[tool.isort]
+profile = "black"
