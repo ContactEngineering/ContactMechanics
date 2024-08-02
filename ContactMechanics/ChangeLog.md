@@ -1,7 +1,7 @@
 Change log for ContactMechanics
 ===============================
 
-v1.5.0 (31Jul24)
+v1.5.0 (02Aug24)
 ----------------
 
 - MAINT: Support for numpy >= 2.0.0
