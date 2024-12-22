@@ -23,7 +23,7 @@ dependencies = [
     "numpy",
     "scipy>=1.9.0",
     "NuMPI>=0.5.0",
-    "muFFT>=0.91.2",
+    "muFFT>=0.93.1",
     "SurfaceTopography>=1.15.1"
 ]
 

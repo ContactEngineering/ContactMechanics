@@ -1,6 +1,11 @@
 Change log for ContactMechanics
 ===============================
 
+v1.6.0 (23Dec24)
+----------------
+
+- MAINT: Support for muFFT >= 0.93.0
+
 v1.5.0 (02Aug24)
 ----------------
 
