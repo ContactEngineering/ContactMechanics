@@ -23,7 +23,7 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
         mpi4py-version: [3.1.5]
         netcdf4-python-version: [1.6.2]
-        mufft-version: [0.91.2]
+        mufft-version: [0.93.1]
 
     steps:
     - uses: actions/checkout@v4
