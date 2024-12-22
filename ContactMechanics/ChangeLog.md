@@ -5,6 +5,7 @@ v1.6.0 (23Dec24)
 ----------------
 
 - MAINT: Support for muFFT >= 0.93.0
+- MAINT Bumped SurfaceTopography to 1.17.1
 
 v1.5.0 (02Aug24)
 ----------------

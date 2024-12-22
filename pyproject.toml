@@ -24,7 +24,7 @@ dependencies = [
     "scipy>=1.9.0",
     "NuMPI>=0.5.0",
     "muFFT>=0.93.1",
-    "SurfaceTopography>=1.15.1"
+    "SurfaceTopography>=1.17.1"
 ]
 
 [project.optional-dependencies]
