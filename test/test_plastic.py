@@ -182,7 +182,7 @@ def test_automatic_offsets(comm_self):
     (c,) = read_published_container("https://contact.engineering/go/867nv")
     t = c[2]
     assert (
-        t.info["datafile"]["original"] == "500x500_random.txt"
+        t.info["datafile"]["original"] == "2-500x500_randomtxt.txt"
     ), "Topography has wrong name"
 
     def check_result(
