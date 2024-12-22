@@ -23,18 +23,21 @@
 # SOFTWARE.
 #
 
-import numpy as np
 import os
-from scipy.optimize import bisect
 
+import numpy as np
 from NuMPI.Tools.Reduction import Reduction
-
-from SurfaceTopography import open_topography, PlasticTopography
-from SurfaceTopography import Topography, read_published_container
+from scipy.optimize import bisect
+from SurfaceTopography import (
+    PlasticTopography,
+    Topography,
+    open_topography,
+    read_published_container,
+)
 
 from ContactMechanics import PeriodicFFTElasticHalfSpace
-from ContactMechanics.PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
 from ContactMechanics.Factory import make_plastic_system
+from ContactMechanics.PlasticSystemSpecialisations import PlasticNonSmoothContactSystem
 
 FIXTURE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), ".")
 
@@ -179,7 +182,7 @@ def test_automatic_offsets(comm_self):
     (c,) = read_published_container("https://contact.engineering/go/867nv")
     t = c[2]
     assert (
-        t.info["datafile"]["name"] == "500x500_random.txt"
+        t.info["datafile"]["original"] == "500x500_random.txt"
     ), "Topography has wrong name"
 
     def check_result(
