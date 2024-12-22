@@ -73,8 +73,8 @@ else:
 plt.colorbar(mesh, ax=ax)
 ax.set_xlim(0, sx)
 ax.set_ylim(0, sy)
-if 'unit' in surface.info:
-    unit = surface.info['unit']
+if surface.unit is not None:
+    unit = surface.info
 else:
     unit = 'a.u.'
 ax.set_xlabel('Position $x$ ({})'.format(unit))
