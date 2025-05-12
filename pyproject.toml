@@ -10,7 +10,7 @@ license = { file = "LICENSE.md" }
 authors = [
     { name = "Till Junge", email = "till.junge@altermail.ch" },
     { name = "Lars Pastewka", email = "lars.pastewka@imtek.uni-freiburg.de" },
-    { name = "Antoine Sanner", email = "antoine.sanner@imtek.uni-freiburg.de" }
+    { name = "Antoine Sanner", email = "antoine.sanner@ethz.ch" }
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
