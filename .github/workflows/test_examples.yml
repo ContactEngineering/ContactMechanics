@@ -54,24 +54,4 @@ jobs:
         python3 -m pip install jupytext
         cd examples
         
-        EXIT_CODE=0
-        
-        echo "🔍 Testing notebooks..."
-        for f in *.ipynb; do
-          echo "➡️  Running: $f"
-          if ! jupytext --check "pytest {}" "$f"; then
-            echo "❌ Failure in $f"
-            EXIT_CODE=1
-          fi
-        done
-        
-        echo "🔍 Testing scripts..."
-        for f in *.py; do
-          echo "➡️  Running: $f"
-          if ! jupytext --check "pytest {}" "$f"; then
-            echo "❌ Failure in $f"
-            EXIT_CODE=1
-          fi
-        done
-        
-        exit $EXIT_CODE
+        pytest test_examples.py
