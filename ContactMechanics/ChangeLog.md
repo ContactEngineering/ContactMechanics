@@ -1,6 +1,13 @@
 Change log for ContactMechanics
 ===============================
 
+v1.6.1 (13May25)
+----------------
+
+- MAINT: Drop python 3.8 support
+- TST: adapt to changes in convergence messages in scipy 
+
+
 v1.6.0 (23Dec24)
 ----------------
 
