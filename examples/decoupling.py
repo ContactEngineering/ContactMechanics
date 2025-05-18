@@ -17,20 +17,20 @@
 #
 # Max. pressure:
 # $p_0 = \frac{3}{2 \pi} a = \frac{3}{2 \pi} F^{1/3} = \frac{3}{2 \pi} \sqrt{b}$
-
-import numpy as np
-import matplotlib.pyplot as plt
-from SurfaceTopography import make_sphere
-from ContactMechanics.Factory import make_system
-from ContactMechanics import FreeFFTElasticHalfSpace
-
-# flake8: noqa
+#
+#
+#
 
 # %%
 R = 1
 Es = 3 / 4
 
 # %%
+import numpy as np
+import matplotlib.pyplot as plt
+from SurfaceTopography import make_sphere
+from ContactMechanics.Factory import make_system
+from ContactMechanics import FreeFFTElasticHalfSpace
 
 # %%
 # %matplotlib inline
@@ -174,3 +174,7 @@ a = np.sqrt(penetration)
 ax.plot(r * a, 3 / (2 * np.pi) * a * np.sqrt(1 - r ** 2), "-k", label="Hertz")
 
 ax.set_xlim(0.6, 1.05)
+
+# %%
+
+# %%

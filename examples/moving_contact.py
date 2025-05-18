@@ -35,7 +35,7 @@ import numpy as np
 
 # %%
 from ContactMechanics import PeriodicFFTElasticHalfSpace
-from SurfaceTopography import read_topography
+from SurfaceTopography import open_topography
 from ContactMechanics import make_system
 # from PyCo.Tools import compute_rms_height
 from ContactMechanics.IO.NetCDF import NetCDFContainer
@@ -62,8 +62,8 @@ sx, sy = 1, 1
 
 # %%
 # Read the two contacting surfacs.
-surface1 = read_topography('surface1.out', physical_sizes=(sx, sy))
-surface2 = read_topography('surface2.out', physical_sizes=(sx, sy))
+surface1 = open_topography('surface1.out',).topography(physical_sizes=(sx, sy), periodic=True)
+surface2 = open_topography('surface2.out').topography(physical_sizes=(sx, sy), periodic=True)
 
 # %%
 print('RMS heights of surfaces = {} {}'.format(surface1.rms_height_from_area(),
@@ -89,7 +89,7 @@ substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sx))
 # %%
 # This creates a "System" object that knows about substrate, interaction and
 # surface.
-system = make_system(substrate, compound_surface)
+system = make_system(substrate=substrate, surface=compound_surface)
 
 # %%
 # Initial displacement field.
@@ -147,3 +147,5 @@ container.close()
 
 # %%
 plt.show()
+
+# %%
