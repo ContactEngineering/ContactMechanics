@@ -9,13 +9,13 @@ ContactMechanics.Optimization.ConstrainedConjugateGradients module
 
 .. automodule:: ContactMechanics.Optimization.ConstrainedConjugateGradients
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: ContactMechanics.Optimization
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

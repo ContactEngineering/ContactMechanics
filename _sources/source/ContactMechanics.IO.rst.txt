@@ -9,13 +9,13 @@ ContactMechanics.IO.NetCDF module
 
 .. automodule:: ContactMechanics.IO.NetCDF
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: ContactMechanics.IO
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

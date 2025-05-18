@@ -9,21 +9,21 @@ ContactMechanics.Tools.Logger module
 
 .. automodule:: ContactMechanics.Tools.Logger
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 ContactMechanics.Tools.common module
 ------------------------------------
 
 .. automodule:: ContactMechanics.Tools.common
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: ContactMechanics.Tools
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

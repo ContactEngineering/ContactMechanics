@@ -9,21 +9,21 @@ ContactMechanics.GreensFunctions.Anisotropic module
 
 .. automodule:: ContactMechanics.GreensFunctions.Anisotropic
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 ContactMechanics.GreensFunctions.Isotropic module
 -------------------------------------------------
 
 .. automodule:: ContactMechanics.GreensFunctions.Isotropic
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: ContactMechanics.GreensFunctions
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -6,15 +6,15 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contributing to ContactMechanics &mdash; ContactMechanics 1.6.0.dev4+g69a99cfd documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+  <title>Contributing to ContactMechanics &mdash; ContactMechanics 1.6.0.dev6+g2e57c89e documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=92ff269a"></script>
+      <script src="_static/documentation_options.js?v=c960117d"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -161,8 +161,8 @@ understands almost all unittest syntaxes), because it is compatible with the
 parallel test runner <a class="reference external" href="https://github.com/bccp/runtests">runtests</a>.</p>
 <p>If a whole test file should only be run in serial
 and/or is incompatible with <cite>runtests</cite> (<cite>unittest</cite>), include following line:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">NuMPI</span> <span class="kn">import</span> <span class="n">MPI</span>
-<span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">NuMPI</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 
 <span class="n">pytestmark</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
                                 <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;tests only serial funcionalities, &quot;</span>
@@ -176,25 +176,25 @@ and/or is incompatible with <cite>runtests</cite> (<cite>unittest</cite>), inclu
 <p>In order to vary the number of processors used in the tests, you should always
 explictely use the communicator defined as fixture in <cite>test/conftest.py</cite> instead
 of <cite>MPI.COMM_WORLD</cite>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_parallel</span><span class="p">(</span><span class="n">comm</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">test_parallel</span><span class="p">(</span><span class="n">comm</span><span class="p">):</span>
     <span class="n">substrate</span> <span class="o">=</span> <span class="n">PeriodicFFTElasticHalfSpace</span><span class="p">(</span><span class="o">....</span><span class="p">,</span> <span class="n">commincator</span><span class="o">=</span><span class="n">comm</span><span class="p">)</span>
     <span class="c1"># Take care not to let your functions use their default value</span>
     <span class="c1"># for the communicator !</span>
 </pre></div>
 </div>
 <p>Note: a single test function that should be run only with one processor:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_parallel</span><span class="p">(</span><span class="n">comm_serial</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">test_parallel</span><span class="p">(</span><span class="n">comm_serial</span><span class="p">):</span>
     <span class="k">pass</span>
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">NuMPI</span> <span class="kn">import</span> <span class="n">MPI</span>
-<span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">NuMPI</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span><span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
                     <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;tests only serial funcionalities, &quot;</span>
                            <span class="s2">&quot;please execute with pytest&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">test_parallel</span><span class="p">(</span><span class="n">comm_serial</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_parallel</span><span class="p">(</span><span class="n">comm_serial</span><span class="p">):</span>
     <span class="k">pass</span>
 </pre></div>
 </div>
@@ -213,7 +213,7 @@ one test.</p>
 <p>Often when you develop your test you need to plot and print things to see what
 happens. It is a good idea to let the plots ready for use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="kc">False</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="o">-</span> <span class="n">system</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

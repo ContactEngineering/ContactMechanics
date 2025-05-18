@@ -22,61 +22,61 @@ ContactMechanics.FFTElasticHalfSpace module
 
 .. automodule:: ContactMechanics.FFTElasticHalfSpace
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 ContactMechanics.Factory module
 -------------------------------
 
 .. automodule:: ContactMechanics.Factory
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 ContactMechanics.PipelineFunction module
 ----------------------------------------
 
 .. automodule:: ContactMechanics.PipelineFunction
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 ContactMechanics.PlasticSystemSpecialisations module
 ----------------------------------------------------
 
 .. automodule:: ContactMechanics.PlasticSystemSpecialisations
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 ContactMechanics.Substrates module
 ----------------------------------
 
 .. automodule:: ContactMechanics.Substrates
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 ContactMechanics.Systems module
 -------------------------------
 
 .. automodule:: ContactMechanics.Systems
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 ContactMechanics.test\_surface\_topography module
 -------------------------------------------------
 
 .. automodule:: ContactMechanics.test_surface_topography
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: ContactMechanics
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
