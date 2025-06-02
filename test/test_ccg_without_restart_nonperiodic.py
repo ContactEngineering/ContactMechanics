@@ -12,7 +12,7 @@ from NuMPI import MPI
 import scipy.optimize as optim
 
 
-def test_CCGWithoutRestart_free_system(comm):
+def test_ccg_without_restart_free_system(comm):
     pnp = Reduction(comm)
 
     nx, ny = 9, 9
