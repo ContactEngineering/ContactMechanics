@@ -787,6 +787,7 @@ class NonSmoothContactSystem(SystemBase):
         """
         disp = self.substrate.evaluate_disp(-press)
         if forces:
+            # self.gradient = np.zeros(self.substrate.nb_subdomain_grid_pts)
             self.gradient = disp - self.surface.heights() - offset
         else:
             self.gradient = None
@@ -828,7 +829,7 @@ class NonSmoothContactSystem(SystemBase):
             \text{which is,} \\
             \text{gap} = \text{displacement} - \text{height} \\
         """
-        res = self.substrate.nb_domain_grid_pts
+        res = self.substrate.topography_nb_subdomain_grid_pts
         if gradient:
             def fun(pressure):
                 try:
@@ -863,7 +864,7 @@ class NonSmoothContactSystem(SystemBase):
             The hessian product, which is the result of applying the hessian matrix to the pressure vector.
         """
         inres = pressure.shape
-        res = self.substrate.nb_subdomain_grid_pts
+        res = self.substrate.topography_nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
 
