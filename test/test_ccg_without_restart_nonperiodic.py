@@ -92,22 +92,23 @@ def test_ccg_without_restart_free_system(comm):
     assert pnp.max(abs(_bug - _lbfgsb[substrate.subdomain_slices])) < 1e-5
 
     # Same thing with the dual
-
+    print(system.substrate.topography_nb_subdomain_grid_pts)
+    # return
     res = CCGWithoutRestart.constrained_conjugate_gradients(
         system.dual_objective(penetration, gradient=True),
         # We also test that the logger and the postprocessing involved work properly in parallel
         system.dual_hessian_product,
-        system.substrate.evaluate_force(init_disp[substrate.subdomain_slices])[substrate.topography_subdomain_slices],
+        system.substrate.evaluate_force(init_disp[substrate.subdomain_slices])[substrate.local_topography_subdomain_slices],
         gtol=1e-13,
         maxiter=1000,
         communicator=comm,
     )
     assert res.success
 
-    dual_force = res.x.reshape((nx, ny))
-    CA_dual = res.x.reshape((nx, ny)) > 0  # Contact area
+    dual_force = res.x.reshape(substrate.topography_nb_subdomain_grid_pts)
+    CA_dual = dual_force > 0  # Contact area
     CA_dual = CA_dual.sum() / (nx * ny)
-    gap_dual = system.dual_objective(penetration, gradient=True)(res.x)[1].reshape((nx, ny))
+    gap_dual = system.dual_objective(penetration, gradient=True)(res.x)[1].reshape(substrate.topography_nb_subdomain_grid_pts)
     dual_disp = gap_dual + penetration + system.surface.heights().reshape(system.gap.shape)
 
     assert pnp.max(abs(dual_disp - _lbfgsb[substrate.topography_subdomain_slices])) < 1e-5
