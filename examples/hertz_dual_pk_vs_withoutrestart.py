@@ -35,20 +35,10 @@ substrate = FreeFFTElasticHalfSpace((nx, ny), young=Es, physical_sizes=(sx, sy))
 system = Systems.NonSmoothContactSystem(substrate, surface)
 
 penetration = 0.01
-# lbounds = np.zeros((2 * nx, 2 * ny))
-#
-# Inpose contact constraint only where we have topopgraphy, i.e. not in the padding region
-# lbounds = np.ma.masked_all(system.substrate.nb_subdomain_grid_pts)
-# lbounds.mask[system.substrate.local_topography_subdomain_slices] = False
-# lbounds[system.substrate.local_topography_subdomain_slices] = 0
-# lbounds.set_fill_value(-np.inf)
 
 ######
 
 bnds = optim.Bounds(lb=np.zeros(np.prod(system.substrate.topography_nb_subdomain_grid_pts)))
-# system._reshape_bounds(lbounds, )
-# init_gap = np.zeros((nx, ny))
-# disp = np.zeros((2 * nx, 2 * ny))
 init_pressure = np.zeros((nx,  ny))
 
 
@@ -138,8 +128,10 @@ class ObjectivePlotter(ObjectiveWatch):
         return en, grad
 
 
+# I compute initial guess by projecting the 0 displacement surface on the constraint.
+# this is in order to mimic the initial guess we have in the minimize proxy.
+# It is not exactly the same here because the implementation assumes that the pressures are zero in the padding region.
 u_r = np.zeros(substrate.nb_subdomain_grid_pts)
-
 
 # slice of the local data of the computation subdomain corresponding to the
 # topography subdomain. It's typically the first half of the computation
