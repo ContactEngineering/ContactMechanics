@@ -98,17 +98,19 @@ def test_ccg_without_restart_free_system(comm):
         system.dual_objective(penetration, gradient=True),
         # We also test that the logger and the postprocessing involved work properly in parallel
         system.dual_hessian_product,
-        system.substrate.evaluate_force(init_disp[substrate.subdomain_slices])[substrate.local_topography_subdomain_slices],
+        system.substrate.evaluate_force(
+            init_disp[substrate.subdomain_slices]
+        )[substrate.local_topography_subdomain_slices],
         gtol=1e-13,
         maxiter=1000,
         communicator=comm,
     )
     assert res.success
 
-    dual_force = res.x.reshape(substrate.topography_nb_subdomain_grid_pts)
-    CA_dual = dual_force > 0  # Contact area
-    CA_dual = CA_dual.sum() / (nx * ny)
-    gap_dual = system.dual_objective(penetration, gradient=True)(res.x)[1].reshape(substrate.topography_nb_subdomain_grid_pts)
+    # dual_force = res.x.reshape(substrate.topography_nb_subdomain_grid_pts)
+    # CA_dual = dual_force > 0  # Contact area
+    gap_dual = system.dual_objective(penetration, gradient=True)(res.x)[1].reshape(
+        substrate.topography_nb_subdomain_grid_pts)
     dual_disp = gap_dual + penetration + system.surface.heights().reshape(system.gap.shape)
 
     assert pnp.max(abs(dual_disp - _lbfgsb[substrate.topography_subdomain_slices])) < 1e-5

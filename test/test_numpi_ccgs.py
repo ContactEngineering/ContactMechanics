@@ -1,10 +1,8 @@
 import numpy as np
 import scipy.optimize as optim
-import pytest
 
 from NuMPI.Optimization import CCGWithoutRestart, CCGWithRestart
 from SurfaceTopography import make_sphere
-from matplotlib import pyplot as plt
 
 import ContactMechanics as Solid
 
@@ -270,7 +268,7 @@ def test_dual_obj_nonperiodic():
         system.dual_objective(offset, gradient=True),
         # WRAPOBJ(),
         system.dual_hessian_product,
-        init_pressure + 0.01, # This algorithm gets stuck if the initial pressure is perfectly 0
+        init_pressure + 0.01,  # This algorithm gets stuck if the initial pressure is perfectly 0
         gtol=gtol)
     assert res.success
 
@@ -290,9 +288,6 @@ def test_dual_obj_nonperiodic():
     np.testing.assert_allclose(lbfgsb_force, bugnicourt_force, atol=1e-3)
     np.testing.assert_allclose(bugnicourt_force, polonsky_force, atol=1e-3)
 
-
-    # assert False
-
     # ##########TEST MEAN VALUES#######################################
     mean_val = np.mean(lbfgsb_force)
     print('mean {}'.format(mean_val))
@@ -304,7 +299,6 @@ def test_dual_obj_nonperiodic():
 
     assert res.success
     polonsky_mean = res.x.reshape((nx, ny))
-
 
     # # ####################BUGNICOURT###################################
     CCGWithoutRestart.constrained_conjugate_gradients(
