@@ -22,7 +22,7 @@ substrate = FreeFFTElasticHalfSpace((nx, ny), young=Es, physical_sizes=(sx, sy))
 
 system = Systems.NonSmoothContactSystem(substrate, surface)
 
-penetration = 0.005
+penetration = 0.02
 # lbounds = np.zeros((2 * nx, 2 * ny))
 #
 # Inpose contact constraint only where we have topopgraphy, i.e. not in the padding region
@@ -117,9 +117,14 @@ dual_objective = DualObjectiveHistory(system.dual_objective(penetration, gradien
 # ###################BUGNICOURT########################################
 res = CCGWithoutRestart.constrained_conjugate_gradients(
     dual_objective,
-    system.dual_hessian_product, init_pressure, mean_val=None, gtol=gtol / 1000)
+    system.dual_hessian_product, init_pressure, mean_val=None, gtol=1e-9)
 assert res.success
 
+system.offset = penetration
+system.gap = res.jac
+system.force = system.substrate.force = res.x
+system.contact_zone = res.x > 0
+system.disp = system.gap + penetration + system.surface.heights().reshape(system.gap.shape)
 
 
 #%%
@@ -140,7 +145,7 @@ res = CCGWithoutRestart.constrained_conjugate_gradients(
     # We also test that the logger and the postprocessing involved work properly in parallel
     system.hessian_product,
     init_disp[substrate.subdomain_slices].reshape(-1),
-    gtol=gtol * surface.area_per_pt,
+    gtol=1e-4 * surface.area_per_pt,
     bounds=lbounds_parallel.filled().reshape(-1),
     maxiter=10000,
     # communicator=comm,
