@@ -456,8 +456,6 @@ class NonSmoothContactSystem(SystemBase):
                  -self.reduction.sum(self.substrate.force),
                  ])
 
-
-
     def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
         Compute the energies and forces in the system for a given displacement field.
@@ -800,7 +798,6 @@ class NonSmoothContactSystem(SystemBase):
         self.substrate.force = - force
         self.substrate.disp = disp
 
-
         if logger is not None:
             tot_nb_grid_pts = np.prod(self.nb_grid_pts)
             nb_rep = self.reduction.sum(
@@ -814,21 +811,21 @@ class NonSmoothContactSystem(SystemBase):
                          < 0, 1., 0.))
 
             proj_grad = self.gradient * (force > 0)
-            rms_grad = np.sqrt(self.reduction.sum(proj_grad**2) / tot_nb_grid_pts)
+            rms_grad = np.sqrt(self.reduction.sum(proj_grad ** 2) / tot_nb_grid_pts)
             max_grad = self.reduction.max(np.abs(proj_grad))
             logger.st(['energy',
-                     'force',
-                     'frac_rep_area',
-                     'frac_att_area',
-                     'max_residual',
-                     'rms_residual'],
-                    [self.energy,
-                     -self.reduction.sum(self.substrate.force),
-                     nb_rep / tot_nb_grid_pts,
-                     nb_att / tot_nb_grid_pts,
-                     max_grad,
-                     rms_grad,
-                     ])
+                       'force',
+                       'frac_rep_area',
+                       'frac_att_area',
+                       'max_residual',
+                       'rms_residual'],
+                      [self.energy,
+                       -self.reduction.sum(self.substrate.force),
+                       nb_rep / tot_nb_grid_pts,
+                       nb_att / tot_nb_grid_pts,
+                       max_grad,
+                       rms_grad,
+                       ])
 
         return self.energy, self.gradient
 
@@ -902,7 +899,8 @@ class NonSmoothContactSystem(SystemBase):
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
 
-    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000, logger=None):
+    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000,
+                            logger=None):
         """
         Convenience function for DUAL minimisation (pixel forces as variables).
         This function simplifies the process of solving the dual minimisation problem
