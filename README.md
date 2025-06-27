@@ -1,7 +1,7 @@
+[![Build Status](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/test.yml/badge.svg)](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/test.yml?query=branch%3Amaster)
+
 ContactMechanics
 ================
-
-[![Build Status](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/test.yml/badge.svg)](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/test.yml?query=branch%3Amaster)
 
 *Contact mechanics with Python.* This code implements computation of contact geometry and pressure of a rigid object on a flat elastic half-space. All calculations assume small deformations; in that limit, the contact of any two objects of arbitrary geometry and elastic moduli can be mapped on that of a rigid indenter on an elastic flat.
 
