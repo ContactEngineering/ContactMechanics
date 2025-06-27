@@ -228,3 +228,34 @@ class Logger(object):
 
 quiet = Logger(None)
 screen = Logger()
+
+
+def read_convergence_log(filename):
+    """
+    Read convergence data from log file and return as pandas DataFrame
+
+    Parameters:
+    -----------
+    filename : str
+        Path to the log file
+
+    Returns:
+    --------
+    pandas.DataFrame
+        DataFrame containing the convergence data
+    """
+    import pandas as pd
+
+    # First read the header line to get column names
+    with open(filename, 'r') as f:
+        header_line = f.readline().strip('# \n')
+        # Split by whitespace and extract names after the colon
+        # e.g., "1:energy" -> "energy"
+        column_names = [col.split(':')[1].strip() for col in header_line.split()]
+
+    # Now read the data with the extracted column names
+    df = pd.read_csv(filename,
+                     delim_whitespace=True,
+                     comment='#',
+                     names=column_names)
+    return df
