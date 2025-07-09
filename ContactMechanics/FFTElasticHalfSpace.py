@@ -862,7 +862,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
     """
     Uses the FFT to solve the displacements and stresses in an non-periodic
     elastic Halfspace due to a given array of point forces. Uses the Green's
-    functions formulaiton of Johnson (1985, p. 54). The application of the FFT
+    functions formulation of Johnson (1985, p. 54). The application of the FFT
     to a nonperiodic domain is explained in Hockney (1969, p. 178.)
 
     K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge: Cambridge
@@ -911,11 +911,12 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         communicator : mpi4py communicator NuMPI stub communicator
             MPI communicator object.
         check_boundaries: bool
-        if set to true, the function check will test that the pressures are
-        zero at the boundary of the topography-domain.
-        `check()` is called systematically at the end of system.minimize_proxy
+            if set to true, the function check will test that the pressures are
+            zero at the boundary of the topography-domain.
+            `check()` is called systematically at the end of system.minimize_proxy
         """
-        self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
+        if isinstance(self, FreeFFTElasticHalfSpace):
+            self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
         super().__init__(
             nb_grid_pts,
             young,
@@ -1122,7 +1123,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 # Automatically pad forces if force array is half of subdomain
                 # nb_grid_pts
                 padded_forces = np.zeros(self.nb_domain_grid_pts)
-                s = [slice(0, forces.shape[i]) for i in range(len(forces.shape))]
+                s = tuple(slice(0, forces.shape[i]) for i in range(len(forces.shape)))
                 padded_forces[s] = forces
                 return super().evaluate_disp(padded_forces)[s]
         else:
@@ -1224,6 +1225,312 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """
         if self._check_boundaries:
             self.check_boundaries(force)
+
+
+class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
+    """Uses the FFT to solve the displacements and stresses in a semi-periodic
+    elastic Halfspace due to a given array of point forces. Uses the Green's
+    functions formulation of Johnson (1985, p. 54). The application of the FFT
+    to a nonperiodic domain is explained in Hockney (1969, p. 178.)
+    """
+
+    def __init__(
+            self,
+            nb_grid_pts,
+            young,
+            physical_sizes=2 * np.pi,
+            periodicity = (False, True),
+            n_images = 10,
+            fft="serial",
+            communicator=None,
+            check_boundaries=False,
+        ):
+        """_summary_
+
+        Parameters
+        ----------
+        nb_grid_pts : tuple of floats
+            Tuple containing number of points in spatial directions. The length
+            of the tuple determines the spatial dimension of the problem.
+            Warning: internally, the free boundary conditions require the
+            system to store a system of 2*nb_grid_pts.x-1 by 2*nb_grid_pts.y-1.
+            Keep in mind that if your surface is nx by ny, the forces and
+            displacements will still be 2nx-1 by 2ny-1.
+        young : float
+            Equiv. Young's modulus E', 1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
+        physical_sizes : tuple of floats
+            (default 2π) domain physical_sizes. For multidimensional problems,
+            a tuple can be provided to specify the lengths per dimension. If
+            the tuple has less entries than dimensions, the last value in
+            repeated.
+        periodicity : tuple(bool, bool)
+            Specify (x,y) periodicity for dim=2. 'True' assumes periodicity in the
+            corresponding direction. (False, False) obtains result similar to
+            FreeFFTElasticHalfSpace. Defaults to (False, True): non-periodic in x-
+            and periodic in y-direction.
+        n_images : int
+            Number of images (each in +/- direction) that are taken into account
+            for the numeric periodization. Defaults to 10.
+        communicator : mpi4py communicator NuMPI stub communicator
+            MPI communicator object.
+        check_boundaries: bool
+            if set to true, the function check will test that the pressures are
+            zero at the boundary of the topography-domain.
+            `check()` is called systematically at the end of system.minimize_proxy
+        """
+
+        if periodicity[0]:
+            nx = nb_grid_pts[0]
+        else:
+            nx = nb_grid_pts[0] * 2 - 1
+        if periodicity[1]:
+            ny = nb_grid_pts[1]
+        else:
+            ny = nb_grid_pts[1] * 2 - 1
+        self._comp_nb_grid_pts = tuple((nx, ny))
+        
+        self.periodicity = periodicity
+        self.n_images = n_images
+
+        super().__init__(
+            nb_grid_pts,
+            young,
+            physical_sizes,
+            fft=fft,
+            communicator=communicator,
+        )
+
+        self.greens_function = self._compute_greens_function()
+        self.surface_stiffness = self._compute_surface_stiffness()
+    
+
+    def _compute_greens_function(self):
+        
+        # get image iterators, for non-periodic, only [0] image is looked at
+        if self.periodicity[0]:
+            images_x = np.arange(-self.n_images, self.n_images+1)
+        else:
+            images_x = [0]
+        if self.periodicity[1]:
+            images_y = np.arange(-self.n_images, self.n_images+1)
+        else:
+            images_y = [0]
+
+        # sum up periodic images
+        p_real = np.zeros(self.nb_domain_grid_pts)
+        for img_x in images_x:
+            for img_y in images_y:
+                p_real += self._compute_greens_function_inner(img_x, img_y)
+
+        # FFT
+        self.G_real = np.copy(p_real)
+        self.real_buffer.p = p_real
+        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+
+        return self.fourier_buffer.p.copy()
+
+
+    def _compute_greens_function_inner(self, img_x, img_y):
+        """Compute the weights w relating fft(displacement) to fft(pressure):
+        fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
+
+        This version 
+        """
+
+        if self.dim == 1:
+            pass
+        else:
+            a = self._steps[0] * 0.5
+            b = self._steps[1] * 0.5
+
+            # if domain > grid_pts: [0, 0.5, 1, -1, -0.5] - fft (both sides)
+            # if domain = grid_pts: [0, 0.5, 1] - rfft (one side)
+
+            x_s = np.arange(
+                self.subdomain_locations[0],
+                self.subdomain_locations[0] + self.nb_subdomain_grid_pts[0],
+            )
+            x_s = (
+                np.where(x_s <= self.nb_grid_pts[0], x_s, x_s - self.nb_grid_pts[0] * 2)
+                * self._steps[0]
+            )
+            if self.periodicity[0]:
+                x_s = np.arange(0, self.nb_domain_grid_pts[0]) / self.nb_domain_grid_pts[0]
+            else:
+                x_s = np.fft.fftfreq(self.nb_domain_grid_pts[0])*2
+            x_s.shape = (-1, 1)
+            y_s = np.arange(
+                self.subdomain_locations[1],
+                self.subdomain_locations[1] + self.nb_subdomain_grid_pts[1],
+            )
+            y_s = (
+                np.where(y_s <= self.nb_grid_pts[1], y_s, y_s - self.nb_grid_pts[1] * 2)
+                * self._steps[1]
+            )
+            if self.periodicity[1]:
+                y_s = np.arange(0, self.nb_domain_grid_pts[1]) / self.nb_domain_grid_pts[1]
+            else:
+                y_s = np.fft.fftfreq(self.nb_domain_grid_pts[1])*2
+            y_s.shape = (1, -1)
+
+            #print("self.subdomain_locations[0] :{}".format(self.subdomain_locations[0]))
+            #print("self.nb_subdomain_grid_pts[0] :{}".format(self.nb_subdomain_grid_pts[0]))
+            #print("self.subdomain_locations[1] :{}".format(self.subdomain_locations[1]))
+            #print("self.nb_subdomain_grid_pts[1] :{}".format(self.nb_subdomain_grid_pts[1]))
+
+            # image shift, x_y and y_s are 0 <= x_i, y_i <= 1.
+            x_s = x_s + float(img_x)
+            y_s = y_s + float(img_y)
+
+            #print("x_s :{}".format(x_s))
+            #print("y_s :{}".format(y_s))
+
+            
+
+            p = (
+                1
+                / (np.pi * self.young)
+                * (
+                    (x_s + a)
+                    * np.log(
+                        (
+                            (y_s + b)
+                            + np.sqrt(
+                                (y_s + b) * (y_s + b)  # noqa: E501
+                                + (x_s + a) * (x_s + a)
+                            )
+                        )  # noqa: E501
+                        / (
+                            (y_s - b)
+                            + np.sqrt(
+                                (y_s - b) * (y_s - b)  # noqa: E501
+                                + (x_s + a) * (x_s + a)
+                            )
+                        )
+                    )  # noqa: E501
+                    + (y_s + b)
+                    * np.log(
+                        (
+                            (x_s + a)
+                            + np.sqrt(
+                                (y_s + b) * (y_s + b)  # noqa: E501
+                                + (x_s + a) * (x_s + a)
+                            )
+                        )  # noqa: E501
+                        / (
+                            (x_s - a)
+                            + np.sqrt(
+                                (y_s + b) * (y_s + b)  # noqa: E501
+                                + (x_s - a) * (x_s - a)
+                            )
+                        )
+                    )  # noqa: E501
+                    + (x_s - a)
+                    * np.log(
+                        (
+                            (y_s - b)
+                            + np.sqrt(
+                                (y_s - b) * (y_s - b)  # noqa: E501
+                                + (x_s - a) * (x_s - a)
+                            )
+                        )  # noqa: E501
+                        / (
+                            (y_s + b)
+                            + np.sqrt(
+                                (y_s + b) * (y_s + b)  # noqa: E501
+                                + (x_s - a) * (x_s - a)
+                            )
+                        )
+                    )  # noqa: E501
+                    + (y_s - b)
+                    * np.log(
+                        (
+                            (x_s - a)
+                            + np.sqrt(
+                                (y_s - b) * (y_s - b)  # noqa: E501
+                                + (x_s - a) * (x_s - a)
+                            )
+                        )  # noqa: E501
+                        / (
+                            (x_s + a)
+                            + np.sqrt(
+                                (y_s - b) * (y_s - b)  # noqa: E501
+                                + (x_s + a) * (x_s + a)
+                            )
+                        )
+                    )
+                )
+            )  # noqa: E501
+            return p
+
+
+    def evaluate_disp(self, forces):
+        """Computes the displacement due to a given force array
+        Keyword Arguments:
+        forces   -- a numpy array containing point forces (*not* pressures)
+
+        if running in MPI this should be only the forces in the Subdomain
+
+        if running in serial one can give the force array with or without the
+        padded region
+
+        """
+
+        return super().evaluate_disp(forces)
+
+    def get_G_real(self):
+        """only for analysis and development purposes
+        Returns the 'ordered' G_real numpy array
+        Inverting the custom frequency ordering in preparation for FFT
+
+        Returns
+        -------
+        G_real_ordered : 2D numpy array
+            ordered G_real
+        """
+
+        #nx = int(np.ceil(self.G_real.shape[0]/2))
+        #ny = int(np.ceil(self.G_real.shape[1]/2))
+ 
+        #m = np.concatenate((np.arange(nx), np.arange(-(nx-1), 0)))
+        #n = np.concatenate((np.arange(ny), np.arange(-(ny-1), 0)))
+
+        self.nx, self.ny = self.nb_grid_pts
+
+        if self.periodicity[0]:
+            nx = self.nx
+        else:
+            nx = self.nx * 2 - 1
+        m = np.round(np.fft.fftfreq(nx) * nx).astype(int)
+
+        if self.periodicity[1]:
+            ny = self.ny
+        else:
+            ny = self.ny * 2 - 1
+        n = np.round(np.fft.fftfreq(ny) * ny).astype(int)
+
+        inv_x = np.argsort(m)
+        inv_y = np.argsort(n)
+
+        G_real_ordered = self.G_real[np.ix_(inv_x, inv_y)]
+
+        return G_real_ordered
+
+    def get_G_real_slices(self):
+        """only for analysis and development purposes
+        Returns two middle slices of the G_real array, in x- and y-direction
+        """
+
+        G_real = self.get_G_real()
+
+        mid_row = int(np.floor(G_real.shape[0] // 2))
+        mid_col = int(np.floor(G_real.shape[1] // 2))
+
+        y_slice = G_real[mid_row, :]   # middle x, slice in y direction
+        x_slice = G_real[:, mid_col]
+
+        return x_slice, y_slice
+
 
 
 # convenient container for storing correspondences betwees small and large
