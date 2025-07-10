@@ -915,8 +915,10 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             zero at the boundary of the topography-domain.
             `check()` is called systematically at the end of system.minimize_proxy
         """
-        if isinstance(self, FreeFFTElasticHalfSpace):
+        # isinstance returns True for any class that inherits
+        if type(self) == FreeFFTElasticHalfSpace:
             self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
+            
         super().__init__(
             nb_grid_pts,
             young,
@@ -1334,7 +1336,7 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
         """Compute the weights w relating fft(displacement) to fft(pressure):
         fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
 
-        This version 
+        Returns the real-space Green's function array
         """
 
         if self.dim == 1:
@@ -1343,49 +1345,25 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             a = self._steps[0] * 0.5
             b = self._steps[1] * 0.5
 
-            # if domain > grid_pts: [0, 0.5, 1, -1, -0.5] - fft (both sides)
-            # if domain = grid_pts: [0, 0.5, 1] - rfft (one side)
+            # for n_base=3, L=1:
+            # if domain > grid_pts: [0, 1/3 2/3 -2/3 -1/3] - fft (both sides, non-periodic)
+            # if domain = grid_pts: [0, 1/3 2/3] - rfft (one side, periodic)
 
-            x_s = np.arange(
-                self.subdomain_locations[0],
-                self.subdomain_locations[0] + self.nb_subdomain_grid_pts[0],
-            )
-            x_s = (
-                np.where(x_s <= self.nb_grid_pts[0], x_s, x_s - self.nb_grid_pts[0] * 2)
-                * self._steps[0]
-            )
             if self.periodicity[0]:
                 x_s = np.arange(0, self.nb_domain_grid_pts[0]) / self.nb_domain_grid_pts[0]
             else:
-                x_s = np.fft.fftfreq(self.nb_domain_grid_pts[0])*2
+                x_s = np.fft.fftfreq(self.nb_domain_grid_pts[0])*self.nb_domain_grid_pts[0]/self._nb_grid_pts[0]
             x_s.shape = (-1, 1)
-            y_s = np.arange(
-                self.subdomain_locations[1],
-                self.subdomain_locations[1] + self.nb_subdomain_grid_pts[1],
-            )
-            y_s = (
-                np.where(y_s <= self.nb_grid_pts[1], y_s, y_s - self.nb_grid_pts[1] * 2)
-                * self._steps[1]
-            )
+
             if self.periodicity[1]:
                 y_s = np.arange(0, self.nb_domain_grid_pts[1]) / self.nb_domain_grid_pts[1]
             else:
-                y_s = np.fft.fftfreq(self.nb_domain_grid_pts[1])*2
+                y_s = np.fft.fftfreq(self.nb_domain_grid_pts[1])*self.nb_domain_grid_pts[1]/self._nb_grid_pts[1]
             y_s.shape = (1, -1)
-
-            #print("self.subdomain_locations[0] :{}".format(self.subdomain_locations[0]))
-            #print("self.nb_subdomain_grid_pts[0] :{}".format(self.nb_subdomain_grid_pts[0]))
-            #print("self.subdomain_locations[1] :{}".format(self.subdomain_locations[1]))
-            #print("self.nb_subdomain_grid_pts[1] :{}".format(self.nb_subdomain_grid_pts[1]))
 
             # image shift, x_y and y_s are 0 <= x_i, y_i <= 1.
             x_s = x_s + float(img_x)
             y_s = y_s + float(img_y)
-
-            #print("x_s :{}".format(x_s))
-            #print("y_s :{}".format(y_s))
-
-            
 
             p = (
                 1
@@ -1464,7 +1442,7 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             return p
 
 
-    def evaluate_disp(self, forces):
+    def evaluate_disp(self, forces=None, pressures=None):
         """Computes the displacement due to a given force array
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
@@ -1476,7 +1454,26 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
 
         """
 
-        return super().evaluate_disp(forces)
+        if forces.any():
+            return super().evaluate_disp(forces)
+        if pressures.any():
+            forces = pressures * self.area_per_pt
+            return super().evaluate_disp(forces)
+        
+
+    def evaluate_force(self, disp):
+        """Computes the force (*not* pressures) due to a given displacement
+        array.
+
+        Keyword Arguments:
+        disp   -- a numpy array containing point displacements
+        """
+        if disp.shape != self.nb_subdomain_grid_pts:
+            disp_ = np.zeros(self.nb_subdomain_grid_pts)
+            disp_[:disp.shape[0], :disp.shape[1]] = disp
+            return super().evaluate_force(disp_)
+        else:
+            return super().evaluate_force(disp)
 
     def get_G_real(self):
         """only for analysis and development purposes
@@ -1530,7 +1527,6 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
         x_slice = G_real[:, mid_col]
 
         return x_slice, y_slice
-
 
 
 # convenient container for storing correspondences betwees small and large

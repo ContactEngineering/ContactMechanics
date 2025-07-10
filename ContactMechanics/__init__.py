@@ -35,6 +35,7 @@ from . import Factory  # noqa: F401
 from .Factory import make_plastic_system, make_system  # noqa: F401
 from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace  # noqa: F401
 from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace  # noqa: F401
+from .FFTElasticHalfSpace import SemiPeriodicFFTElasticHalfSpace
 from .PipelineFunction import contact_mechanics  # noqa: F401
 from .Substrates import (ElasticSubstrate, PlasticSubstrate,  # noqa: F401
                          Substrate)

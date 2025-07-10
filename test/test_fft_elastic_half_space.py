@@ -42,6 +42,7 @@ from NuMPI import MPI
 
 from ContactMechanics import PeriodicFFTElasticHalfSpace
 from ContactMechanics import FreeFFTElasticHalfSpace
+from ContactMechanics import SemiPeriodicFFTElasticHalfSpace
 import ContactMechanics.Tools as Tools
 
 pytestmark = pytest.mark.skipif(
@@ -515,16 +516,78 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
                         "error = {} ≥ tol = {}".format(error, tol))
 
 
-def test_domain_boundary_mask():
-    nx = 4
-    system = FreeFFTElasticHalfSpace((nx, nx), 1, (1., 1.))
+    def test_domain_boundary_mask(self):
+        nx = 4
+        system = FreeFFTElasticHalfSpace((nx, nx), 1, (1., 1.))
 
-    np.testing.assert_allclose(
-        system.domain_boundary_mask,
-        [
-            [1, 1, 1, 1],
-            [1, 0, 0, 1],
-            [1, 0, 0, 1],
-            [1, 1, 1, 1],
-            ]
-        )
+        np.testing.assert_allclose(
+            system.domain_boundary_mask,
+            [
+                [1, 1, 1, 1],
+                [1, 0, 0, 1],
+                [1, 0, 0, 1],
+                [1, 1, 1, 1],
+                ]
+            )
+
+
+class SemiPeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
+
+    # test if all base class functions run
+    # Test independence of result of x and y Direction
+    # test if n_images=0 equals FreeFFT solution
+
+    def setUp(self):
+        self.physical_sizes = (0.1, 0.1)
+        base_res = 16
+        self.res = (base_res, base_res)
+        self.young = 3 + 2 * random()
+        self.periodicity = (False, True)
+
+    def test_consistency(self):
+        """check for similar results with diifferent mesh cell sizes under constant conditons
+        """
+        pressure = list()
+        base_res = 32
+        tol = 1e-3
+        for i in (1, 2):
+            s_res = base_res * i
+            test_res = (s_res, s_res)
+            hs = SemiPeriodicFFTElasticHalfSpace(test_res, self.young,
+                                         self.physical_sizes)
+            forces = np.zeros((s_res, s_res))
+            forces[:s_res // 2, :s_res // 2] = 1.
+
+            pressure.append(
+                hs.evaluate_disp(forces)[::i, ::i] * hs.area_per_pt)
+        error = ((pressure[0] - pressure[1]) ** 2).sum().sum() / base_res ** 2
+        self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
+
+    def test_force_calculation(self):
+        hs = SemiPeriodicFFTElasticHalfSpace(self.res, self.young,
+                                         self.physical_sizes, self.periodicity)
+        comp_nb_grid_pts = tuple((self.res[0]*2-1, self.res[1]))
+        disp = np.random.random(comp_nb_grid_pts)
+
+    def test_fftengine_nb_grid_pts(self):
+        """check if fftengine domain grid points are created correctly according
+        to periodicty boundary conditions
+        """
+        hs = SemiPeriodicFFTElasticHalfSpace(self.res, self.young, self.physical_sizes, periodicity=(True, False))
+        assert hs.fftengine.nb_domain_grid_pts == tuple((self.res[0], 2*self.res[1]-1))
+
+    # test unit neutrality
+
+    def test_domain_boundary_mask(self):
+        nx = 4
+        system = SemiPeriodicFFTElasticHalfSpace((nx, nx), 1, (1., 1.))
+
+        np.testing.assert_allclose(
+            system.domain_boundary_mask,
+            [
+                [1, 1, 1, 1],
+                [1, 0, 0, 1],
+                [1, 0, 0, 1],
+                [1, 1, 1, 1],
+                ]
+            )
