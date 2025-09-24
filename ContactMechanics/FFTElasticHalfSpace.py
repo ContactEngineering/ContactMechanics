@@ -217,12 +217,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         communicator : mpi4py communicator or NuMPI stub communicator
             MPI communicator object.
         """
-        super().__init__()
-        if not hasattr(nb_grid_pts, "__iter__"):
-            nb_grid_pts = (nb_grid_pts,)
-        if not hasattr(physical_sizes, "__iter__"):
-            physical_sizes = (physical_sizes,)
-        self.__dim = len(nb_grid_pts)
+
+        
+
+        super().__init__(nb_grid_pts, physical_sizes)
+
         if self.dim not in (1, 2):
             raise self.Error(
                 (
@@ -234,11 +233,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             raise self.Error(
                 "Please specify either stiffness_q0 or thickness " "or neither."
             )
-        self._nb_grid_pts = nb_grid_pts
-        tmpsize = list()
-        for i in range(self.dim):
-            tmpsize.append(physical_sizes[min(i, len(physical_sizes) - 1)])
-        self._physical_sizes = tuple(tmpsize)
+
 
         try:
             self._steps = tuple(
@@ -285,24 +280,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             self.greens_function = self._compute_greens_function()
             self.surface_stiffness = self._compute_surface_stiffness()
 
-    @property
-    def dim(
-        self,
-    ):
-        "return the substrate's physical dimension"
-        return self.__dim
-
-    @property
-    def nb_grid_pts(self):
-        return self._nb_grid_pts
-
-    @property
-    def area_per_pt(self):
-        return np.prod(self.physical_sizes) / np.prod(self.nb_grid_pts)
-
-    @property
-    def physical_sizes(self):
-        return self._physical_sizes
 
     @property
     def nb_domain_grid_pts(
@@ -1116,9 +1093,16 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         """
         if forces.shape == self.nb_subdomain_grid_pts:
             return super().evaluate_disp(forces)
+        elif forces.shape == self.topography_nb_subdomain_grid_pts:  # The forces are unpadded
+            padded_forces = np.zeros(self.nb_subdomain_grid_pts)
+            padded_forces[self.local_topography_subdomain_slices] = forces
+            # if return_padded:
+            #     return super().evaluate_disp(padded_forces)
+            # else:
+            return super().evaluate_disp(padded_forces)[self.local_topography_subdomain_slices]
 
-        elif self.nb_subdomain_grid_pts == self.nb_domain_grid_pts:
-            if forces.shape == self.nb_grid_pts:
+        elif self.nb_subdomain_grid_pts == self.nb_domain_grid_pts:  # Means that we are running in serial
+            if forces.shape == self.nb_grid_pts:  # The forces provided are not padded
                 # Automatically pad forces if force array is half of subdomain
                 # nb_grid_pts
                 padded_forces = np.zeros(self.nb_domain_grid_pts)
