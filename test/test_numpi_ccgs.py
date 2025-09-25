@@ -230,7 +230,7 @@ def test_dual_obj_nonperiodic():
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
     # ###################BUGNICOURT########################################
-    CCGWithoutRestart.constrained_conjugate_gradients(
+    res = CCGWithoutRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, mean_val=None, gtol=gtol)
     assert res.success
