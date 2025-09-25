@@ -1110,8 +1110,8 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
 
         if running in MPI this should be only the forces in the Subdomain
 
-        if running in serial one can give the force array with or without the
-        padded region
+        The force array can be given with (it's shape is then `nb_subdomain_grid_pts`),
+        or without (the shape is `topography_nb_subdomain_grid_pts`) the padding region.
 
         """
         if forces.shape == self.nb_subdomain_grid_pts:
