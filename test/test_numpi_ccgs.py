@@ -198,7 +198,7 @@ def test_dual_obj_nonperiodic():
     offset = 0.005
     # lbounds = np.zeros((2 * nx, 2 * ny))
     #
-    # Inpose contact constraint only where we have topopgraphy, i.e. not in the padding region
+    # Impose contact constraint only where we have topography, i.e. not in the padding region
     # lbounds = np.ma.masked_all(system.substrate.nb_subdomain_grid_pts)
     # lbounds.mask[system.substrate.local_topography_subdomain_slices] = False
     # lbounds[system.substrate.local_topography_subdomain_slices] = 0
