@@ -301,7 +301,7 @@ def test_dual_obj_nonperiodic():
     polonsky_mean = res.x.reshape((nx, ny))
 
     # # ####################BUGNICOURT###################################
-    CCGWithoutRestart.constrained_conjugate_gradients(
+    res = CCGWithoutRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, mean_val=mean_val,
         gtol=gtol)
