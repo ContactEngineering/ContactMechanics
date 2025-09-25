@@ -197,14 +197,14 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
     def _reshape_bounds(self, lbounds=None, ubounds=None):
         if lbounds is not None and ubounds is not None:
-            ubounds = self.shape_minimisation_input(np.ma.filled(ubounds, np.inf))
-            lbounds = self.shape_minimisation_input(np.ma.filled(lbounds, -np.inf))
+            ubounds = (np.ma.filled(ubounds, np.inf)).ravel()
+            lbounds = (np.ma.filled(lbounds, -np.inf)).ravel()
             return optim.Bounds(lb=lbounds, ub=ubounds)
         elif lbounds is not None:
-            lbounds = self.shape_minimisation_input(np.ma.filled(lbounds, -np.inf))
+            lbounds = (np.ma.filled(lbounds, -np.inf)).ravel()
             return optim.Bounds(lb=lbounds)
         elif ubounds is not None:
-            ubounds = self.shape_minimisation_input(np.ma.filled(ubounds, np.inf))
+            ubounds = (np.ma.filled(ubounds, np.inf)).ravel()
             return optim.Bounds(ub=ubounds)
         else:
             return None
@@ -912,6 +912,8 @@ class NonSmoothContactSystem(SystemBase):
             Determines the indentation depth.
         init_force : array_like, optional
             Initial guess for the force. If not provided, it defaults to None.
+            For Nonperiodic calculations, the array does not include the padding region,
+            i.e. it is of shape `substrate.topography_nb_subdomain_grid_pts`
         solver : str, optional
             The solver to be used for the minimisation. It can be one of
             'ccg-without-restart', 'ccg-with-restart', or 'l-bfgs-b'. If not provided,
@@ -939,6 +941,9 @@ class NonSmoothContactSystem(SystemBase):
         self.contact_zone = None
         self.init_force = init_force
 
+        if init_force is not None and init_force.shape != self.substrate.topography_nb_subdomain_grid_pts:
+            raise IncompatibleResolutionError
+
         lbounds = np.zeros(self.init_force.shape)
         bnds = self._reshape_bounds(lbounds, )
 
@@ -955,7 +960,7 @@ class NonSmoothContactSystem(SystemBase):
         elif solver == 'l-bfgs-b':
             result = optim.minimize(
                 self.dual_objective(offset, gradient=True, logger=logger),
-                self.shape_minimisation_input(self.init_force),
+                self.init_force.ravel(),
                 method='L-BFGS-B', jac=True,
                 bounds=bnds,
                 options=dict(gtol=gtol, ftol=1e-20))

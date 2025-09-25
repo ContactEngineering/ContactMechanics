@@ -119,6 +119,33 @@ def test_dual_obj(s):
     np.testing.assert_allclose(force_pk, force_lbfgsb, atol=1e-5)
 
 
+@pytest.mark.parametrize("solver", {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b'})
+def test_dual_minimize_proxy_nonperiodic(solver):
+    nx, ny = 128, 128
+    sx = sy = 1.
+    R = 10.
+    Es = 50.
+
+    surface = make_sphere(R, (nx, ny), (sx, sy), kind="paraboloid")
+    substrate = Solid.FreeFFTElasticHalfSpace((nx, ny), young=Es,
+                                                  physical_sizes=(sx, sy))
+
+    offset = 0.005
+
+    init_gap = np.zeros((nx, ny))
+    disp = np.zeros((2 * nx, 2* ny))
+    disp[substrate.topography_subdomain_slices] = init_gap + surface.heights() + offset
+    disp[disp < 0] = 0
+    init_force = substrate.evaluate_force(disp)[substrate.topography_subdomain_slices]
+
+    system = Solid.Systems.NonSmoothContactSystem(substrate, surface)
+
+    res = system.dual_minimize_proxy(offset, init_force=init_force,
+                                     solver=solver, logger=Logger('test_log.log'))
+    assert res.success
+
+
+
 @pytest.mark.parametrize("s", (1., 2.))
 def test_primal_hessian(s):
     nx = 64
