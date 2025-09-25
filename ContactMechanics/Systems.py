@@ -847,7 +847,11 @@ class NonSmoothContactSystem(SystemBase):
         energy : float
             Value of total energy.
         gradient : array_like
-            Value of the gradient (array) or the value of gap (if gradient is True).
+            Value of the gradient (array), which corresponds to the value of gap..
+            The array is ravelled to a 1D arreay for compatibility with scipy solvers.
+            Note that for the nonperiodic substrate that uses padding, the shape of the array
+            corresponds to the unpadded domain, i.e. where the topography is defined.
+            That is, the shape of the array before ravelling is `substrate.topograhy_nb_subdomain_grid_pts`.`
 
         Notes
         -----
