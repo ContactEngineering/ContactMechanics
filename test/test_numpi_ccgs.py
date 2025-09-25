@@ -303,7 +303,7 @@ def test_dual_obj_nonperiodic():
     # # ####################BUGNICOURT###################################
     res = CCGWithoutRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
-        system.dual_hessian_product, init_pressure, mean_val=mean_val,
+        system.dual_hessian_product, init_pressure+0.01, mean_val=mean_val,
         gtol=gtol)
     assert res.success
 
