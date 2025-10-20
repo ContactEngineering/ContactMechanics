@@ -5,7 +5,7 @@ import scipy.optimize as optim
 
 import numpy as np
 import pytest
-
+from ContactMechanics.Tools.Logger import screen, Logger
 
 # import matplotlib.pyplot as plt
 
@@ -82,7 +82,7 @@ def test_dual_obj(s):
     init_force = substrate.evaluate_force(disp)
 
     res = system.dual_minimize_proxy(offset, init_force=init_force,
-                                     solver='ccg-without-restart', )
+                                     solver='ccg-without-restart', logger=Logger('test_log.log'))
 
     assert res.success
     CA_bug = res.x.reshape((nx, ny)) > 0  # Contact area
@@ -92,7 +92,7 @@ def test_dual_obj(s):
     gap_bug = gap_bug.reshape((nx, ny))
 
     res = system.dual_minimize_proxy(offset, init_force=init_force,
-                                     solver='ccg-with-restart', )
+                                     solver='ccg-with-restart', logger=screen)
 
     assert res.success, res.message
     CA_pk = res.x.reshape((nx, ny)) > 0  # Contact are
@@ -102,7 +102,7 @@ def test_dual_obj(s):
     gap_pk = gap_pk.reshape((nx, ny))
 
     res = system.dual_minimize_proxy(offset, init_force=init_force,
-                                     solver='l-bfgs-b', )
+                                     solver='l-bfgs-b', logger=screen)
 
     assert res.success, res.message
     CA_lbfgsb = res.x.reshape((nx, ny)) > 0  # Contact area

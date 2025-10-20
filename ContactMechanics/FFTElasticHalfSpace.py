@@ -1133,25 +1133,29 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         if forces.shape == self.nb_subdomain_grid_pts:
             return super().evaluate_disp(forces)
 
-        # given forces match the unpadded domain grid points, apply zero-padding
-        if forces.shape == self.nb_grid_pts:
-            padded_forces = np.zeros(self.nb_domain_grid_pts)
-            s = tuple(slice(0, forces.shape[i]) for i in range(len(forces.shape)))
-            padded_forces[s] = forces
+        elif forces.shape == self.topography_nb_subdomain_grid_pts:  # The forces are unpadded
+            padded_forces = np.zeros(self.nb_subdomain_grid_pts)
+            padded_forces[self.local_topography_subdomain_slices] = forces
+
             if bIncludePadding:
                 return super().evaluate_disp(padded_forces)
             else:
-                return super().evaluate_disp(padded_forces)[s]
+                return super().evaluate_disp(padded_forces)[
+                    self.local_topography_subdomain_slices
+                ]
 
-        # no match with computational or geometric grid points
-        raise self.Error(
-            "force array has a different shape ({0}) "
-            "than the subdomain nb_grid_pts ({1}), this "
-            "halfspace's nb_grid_pts ({2}) or "
-            "half of it.".format(
-                forces.shape, self.nb_subdomain_grid_pts, self.nb_domain_grid_pts
+        elif self.nb_subdomain_grid_pts == self.nb_domain_grid_pts:  # Means that we are running in serial
+            if forces.shape == self.nb_grid_pts:  # The forces provided are not padded
+                # Automatically pad forces if force array is half of subdomain
+                # nb_grid_pts
+                padded_forces = np.zeros(self.nb_domain_grid_pts)
+                s = [slice(0, forces.shape[i]) for i in range(len(forces.shape))]
+                padded_forces[s] = forces
+                return super().evaluate_disp(padded_forces)[s]
+        else:
+            raise self.Error(
+                "forces should be of subdomain nb_grid_pts when " "using MPI"
             )
-        )
 
         raise self.Error(
             "force array has a different shape ({0}) "

@@ -450,9 +450,13 @@ class NonSmoothContactSystem(SystemBase):
 
         # How to compute the contact area will actually depend on wether it is a primal or dual solver
         return (['energy',
-                 'substrate force', ],
+                 'force',
+                 ],
                 [self.energy,
-                 -self.reduction.sum(self.substrate.force), ])
+                 -self.reduction.sum(self.substrate.force),
+                 ])
+
+
 
     def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
@@ -754,7 +758,7 @@ class NonSmoothContactSystem(SystemBase):
 
         return result
 
-    def evaluate_dual(self, press, offset, forces=False):
+    def evaluate_dual(self, force, offset, logger=None):
         """
         Computes the energies and forces in the system for a given pressure field.
 
@@ -770,11 +774,11 @@ class NonSmoothContactSystem(SystemBase):
 
         Parameters
         ----------
-        press : array_like
-            The pressure field for which the displacement field is to be computed.
+        force : array_like
+            The force applied to each pixel of the substrate
         offset : float
             The offset value to be used in the computation.
-        forces : bool, optional
+        gradient : bool, optional
             If True, the forces in the system are also computed. Default is False.
 
         Returns
@@ -785,18 +789,50 @@ class NonSmoothContactSystem(SystemBase):
             Gradient, which is the difference between the displacement and the sum of the
             surface heights and the offset. If forces are not computed, the gradient is None.
         """
-        disp = self.substrate.evaluate_disp(-press)
-        if forces:
-            self.gradient = disp - self.surface.heights() - offset
-        else:
-            self.gradient = None
+        disp = self.substrate.evaluate_disp(-force)
 
-        self.energy = 1 / 2 * np.sum(press * disp) - np.sum(
-            press * (self.surface.heights() + offset))
+        self.gradient = disp - self.surface.heights() - offset
+
+        self.energy = 1 / 2 * np.sum(force * disp) - np.sum(
+            force * (self.surface.heights() + offset))
+
+        # Update state:
+        self.substrate.force = - force
+        self.substrate.disp = disp
+
+
+        if logger is not None:
+            tot_nb_grid_pts = np.prod(self.nb_grid_pts)
+            nb_rep = self.reduction.sum(
+                np.where(- self.substrate.force[
+                    self.substrate.local_topography_subdomain_slices]
+                         > 0, 1., 0.))
+
+            nb_att = self.reduction.sum(
+                np.where(- self.substrate.force[
+                    self.substrate.local_topography_subdomain_slices]
+                         < 0, 1., 0.))
+
+            proj_grad = self.gradient * (force > 0)
+            rms_grad = np.sqrt(self.reduction.sum(proj_grad**2) / tot_nb_grid_pts)
+            max_grad = self.reduction.max(np.abs(proj_grad))
+            logger.st(['energy',
+                     'force',
+                     'frac_rep_area',
+                     'frac_att_area',
+                     'max_residual',
+                     'rms_residual'],
+                    [self.energy,
+                     -self.reduction.sum(self.substrate.force),
+                     nb_rep / tot_nb_grid_pts,
+                     nb_att / tot_nb_grid_pts,
+                     max_grad,
+                     rms_grad,
+                     ])
 
         return self.energy, self.gradient
 
-    def dual_objective(self, offset, gradient=True):
+    def dual_objective(self, offset, gradient=True, logger=None):
         r"""
         Objective function to handle dual objective, i.e. the Legendre
         transformation from displacements as variable to pressures
@@ -828,20 +864,19 @@ class NonSmoothContactSystem(SystemBase):
             \text{which is,} \\
             \text{gap} = \text{displacement} - \text{height} \\
         """
-        res = self.substrate.nb_domain_grid_pts
+        res = self.substrate.topography_nb_subdomain_grid_pts
         if gradient:
             def fun(pressure):
                 try:
                     self.evaluate_dual(
-                        pressure.reshape(res), offset, forces=True)
+                        pressure.reshape(res), offset, logger=logger)
                 except ValueError as err:
                     raise ValueError(
                         "{}: gap.shape: {}, res: {}".format(
                             err, pressure.shape, res))
                 return self.energy, self.gradient.ravel()
         else:
-            def fun(gap):
-                return self.evaluate(gap.reshape(res), forces=False)[0]
+            raise NotImplementedError
 
         return fun
 
@@ -863,11 +898,11 @@ class NonSmoothContactSystem(SystemBase):
             The hessian product, which is the result of applying the hessian matrix to the pressure vector.
         """
         inres = pressure.shape
-        res = self.substrate.nb_subdomain_grid_pts
+        res = self.substrate.topography_nb_subdomain_grid_pts
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
 
-    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000):
+    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000, logger=None):
         """
         Convenience function for DUAL minimisation (pixel forces as variables).
         This function simplifies the process of solving the dual minimisation problem
@@ -911,23 +946,24 @@ class NonSmoothContactSystem(SystemBase):
 
         if solver == 'ccg-without-restart':
             result = CCGWithoutRestart.constrained_conjugate_gradients(
-                self.dual_objective(offset, gradient=True),
+                self.dual_objective(offset, gradient=True, logger=logger),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'ccg-with-restart':
             result = CCGWithRestart.constrained_conjugate_gradients(
-                self.dual_objective(offset, gradient=True),
+                self.dual_objective(offset, gradient=True, logger=logger),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'l-bfgs-b':
             result = optim.minimize(
-                self.dual_objective(offset, gradient=True),
+                self.dual_objective(offset, gradient=True, logger=logger),
                 self.shape_minimisation_input(self.init_force),
                 method='L-BFGS-B', jac=True,
                 bounds=bnds,
                 options=dict(gtol=gtol, ftol=1e-20))
 
         if result.success:
+            # TODO: I think I need to call substrate.compute , so that substrate.energy is computed
             self.offset = offset
             self.gap = result.jac
             self.force = self.substrate.force = result.x
