@@ -31,18 +31,19 @@ Tests the fft elastic halfspace implementation
 
 import unittest
 
-import pytest
-
 import numpy as np
+import pytest
+from NuMPI import MPI
+from numpy.fft import irfftn, rfftn
 from numpy.linalg import norm
 from numpy.random import rand, random
-from numpy.fft import rfftn, irfftn
 
-from NuMPI import MPI
-
-from ContactMechanics import PeriodicFFTElasticHalfSpace
-from ContactMechanics import FreeFFTElasticHalfSpace
 import ContactMechanics.Tools as Tools
+from ContactMechanics import (
+    FreeFFTElasticHalfSpace,
+    PeriodicFFTElasticHalfSpace,
+    SemiPeriodicFFTElasticHalfSpace,
+)
 
 pytestmark = pytest.mark.skipif(
     MPI.COMM_WORLD.Get_size() > 1,
@@ -514,17 +515,169 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         self.assertTrue(error < tol,
                         "error = {} ≥ tol = {}".format(error, tol))
 
+    def test_domain_boundary_mask(self):
+        nx = 4
+        system = FreeFFTElasticHalfSpace((nx, nx), 1, (1., 1.))
 
-def test_domain_boundary_mask():
-    nx = 4
-    system = FreeFFTElasticHalfSpace((nx, nx), 1, (1., 1.))
+        np.testing.assert_allclose(
+            system.domain_boundary_mask,
+            [
+                [1, 1, 1, 1],
+                [1, 0, 0, 1],
+                [1, 0, 0, 1],
+                [1, 1, 1, 1],
+                ]
+            )
 
-    np.testing.assert_allclose(
-        system.domain_boundary_mask,
-        [
-            [1, 1, 1, 1],
-            [1, 0, 0, 1],
-            [1, 0, 0, 1],
-            [1, 1, 1, 1],
-            ]
-        )
+
+class SemiPeriodicFFTElasticHalfSpaceTest(unittest.TestCase):
+
+    def setUp(self):
+        self.physical_sizes = (0.1, 0.1)
+        base_res = 8
+        self.res = (base_res, base_res)
+        self.young = 210e09 + 50e09 * random()
+        self.periodicity = (False, True)
+
+    def test_grid_resolution_consistency(self):
+        """Check for similar results with different mesh cell sizes under constant conditions.
+        Repeat for all periodicity combinations.
+        """
+        base_res = 32
+        tol = 1e-08
+        res_factors = (1, 2, 3)
+        periodicities = [(False, True), (True, False),
+                         (True, True), (False, False)]
+
+        for periodicity in periodicities:
+            disp = list()
+
+            for i in res_factors:
+                s_res = base_res * i
+                test_res = (s_res, s_res)
+                hs = SemiPeriodicFFTElasticHalfSpace(nb_grid_pts=test_res,
+                                                     young=self.young,
+                                                     physical_sizes=self.physical_sizes,
+                                                     periodicity=periodicity)
+                forces = np.zeros((s_res, s_res))
+                forces[:s_res // 2, :s_res // 2] = 1e08
+                disp.append(
+                    hs.evaluate_disp(forces)[::i, ::i] * hs.area_per_pt)
+
+            error = ((disp[0] - disp[1]) ** 2).sum().sum() / base_res ** 2
+            self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
+
+    def test_direction_independence(self):
+        """Check for similar results when swapping periodicty directions.
+        """
+        tol = 1e-12
+        hs1 = SemiPeriodicFFTElasticHalfSpace(nb_grid_pts=self.res,
+                                              young=self.young,
+                                              physical_sizes=self.physical_sizes,
+                                              periodicity=(True, False))
+        hs2 = SemiPeriodicFFTElasticHalfSpace(nb_grid_pts=self.res,
+                                              young=self.young,
+                                              physical_sizes=self.physical_sizes,
+                                              periodicity=(False, True))
+        forces = np.zeros(self.res)
+        forces[:self.res[0] // 2, :self.res[1] // 2] = 1e08
+
+        disp1 = hs1.evaluate_disp(forces)
+        disp2 = hs2.evaluate_disp(forces.T).T
+
+        error = Tools.mean_err(disp1, disp2)
+        self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
+
+    def test_force_calculation(self):
+        """Check consistency of reverse-calculation of forces from displacements.
+        Calculate displacements from known forces and then recalculate forces.
+        Compare to original forces.
+        """
+        tol = 1e02
+        hs = SemiPeriodicFFTElasticHalfSpace(nb_grid_pts=self.res,
+                                             young=self.young,
+                                             physical_sizes=self.physical_sizes,
+                                             periodicity=self.periodicity)
+        forces = np.zeros(self.res)
+        forces[:self.res[0] // 2, :self.res[1] // 2] = 1e07
+
+        # Note: we also need to obtain deformation of the padding region
+        # in order to correctly reverse-calculate the forces
+        disp = hs.evaluate_disp(forces, bIncludePadding=True)
+        rec_forces = hs.evaluate_force(disp)[:self.res[0], :self.res[1]]
+
+        error = Tools.mean_err(forces, rec_forces)
+        self.assertTrue(error < tol, "error = {}, tol = {}".format(error, tol))
+
+    def test_fftengine_nb_grid_pts(self):
+        """Check if fftengine domain grid points are created correctly according
+        to periodicity boundary conditions.
+        """
+        hs1 = SemiPeriodicFFTElasticHalfSpace(self.res,
+                                              self.young,
+                                              self.physical_sizes,
+                                              periodicity=(True, False))
+        target1 = (self.res[0], 2*self.res[1]-1)
+        self.assertTrue(hs1.fftengine.nb_domain_grid_pts == target1)
+
+        hs2 = SemiPeriodicFFTElasticHalfSpace(self.res,
+                                              self.young,
+                                              self.physical_sizes,
+                                              periodicity=(False, True))
+        target2 = (2*self.res[0]-1, self.res[1])
+        self.assertTrue(hs2.fftengine.nb_domain_grid_pts == target2)
+
+    def test_length_unit_neutrality(self):
+        """Runs the same problem in two length unit sets and checks whether
+        results are changed.
+        """
+        tol = 1e-12
+
+        # length in m
+        l_old = self.physical_sizes
+        E_old = self.young
+        # length in cm
+        l_new = tuple(1e02 * length for length in l_old)
+        E_new = 1e-4 * E_old
+
+        system_old = SemiPeriodicFFTElasticHalfSpace(nb_grid_pts=self.res,
+                                                     young=E_old,
+                                                     physical_sizes=l_old,
+                                                     periodicity=self.periodicity)
+        system_new = SemiPeriodicFFTElasticHalfSpace(nb_grid_pts=self.res,
+                                                     young=E_new,
+                                                     physical_sizes=l_new,
+                                                     periodicity=self.periodicity)
+
+        forces = np.zeros(self.res)
+        forces[:self.res[0] // 2, :self.res[1] // 2] = 1e07
+
+        disp_old = system_old.evaluate_disp(forces)
+        disp_new = system_new.evaluate_disp(forces) / 1e02  # convert cm to m
+
+        error = Tools.mean_err(disp_old, disp_new)
+        self.assertTrue(error < tol, "error = {} ≥ tol = {}".format(error, tol))
+
+    def test_compare_to_freeFFT_solution(self):
+        """Check if SemiPeriodicFFT with no periodic images returns the same
+        result as FreeFFT solution.
+        """
+        tol = 1e-12
+
+        system_semi = SemiPeriodicFFTElasticHalfSpace(nb_grid_pts=self.res,
+                                                      young=self.young,
+                                                      physical_sizes=self.physical_sizes,
+                                                      periodicity=(False, False),
+                                                      n_images=0)
+        system_free = FreeFFTElasticHalfSpace(nb_grid_pts=self.res,
+                                              young=self.young,
+                                              physical_sizes=self.physical_sizes)
+
+        forces = np.zeros(self.res)
+        forces[:self.res[0] // 2, :self.res[1] // 2] = 1e08
+
+        disp_semi = system_semi.evaluate_disp(forces)
+        disp_free = system_free.evaluate_disp(forces)
+
+        error = Tools.mean_err(disp_semi, disp_free)
+        self.assertTrue(error < tol, "error = {} ≥ tol = {}".format(error, tol))
