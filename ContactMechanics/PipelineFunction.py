@@ -25,18 +25,24 @@
 import logging
 
 import numpy as np
-
 from SurfaceTopography import PlasticTopography
 from SurfaceTopography.HeightContainer import UniformTopographyInterface
 
-from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace
-from .Factory import make_system, make_plastic_system
+from .Factory import make_plastic_system, make_system
+from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
 
 _log = logging.getLogger(__name__)
 
 
-def _contact_calculation(system, offset=None, external_force=None, history=None, pentol=None, maxiter=None,
-                         optimizer_kwargs={}):
+def _contact_calculation(
+    system,
+    offset=None,
+    external_force=None,
+    history=None,
+    pentol=None,
+    maxiter=None,
+    optimizer_kwargs={},
+):
     """
     Run a full contact calculation at a given external load.
 
@@ -85,12 +91,23 @@ def _contact_calculation(system, offset=None, external_force=None, history=None,
         total_contact_areas = []
         converged = np.array([], dtype=bool)
     if history is not None:
-        mean_displacements, mean_gaps, mean_pressures, total_contact_areas, converged = history
+        (
+            mean_displacements,
+            mean_gaps,
+            mean_pressures,
+            total_contact_areas,
+            converged,
+        ) = history
 
-    opt = system.minimize_proxy(offset=offset, external_force=external_force, pentol=pentol, maxiter=maxiter,
-                                **optimizer_kwargs)
+    opt = system.minimize_proxy(
+        offset=offset,
+        external_force=external_force,
+        pentol=pentol,
+        maxiter=maxiter,
+        **optimizer_kwargs,
+    )
     force_xy = opt.jac
-    displacement_xy = opt.x[:force_xy.shape[0], :force_xy.shape[1]]
+    displacement_xy = opt.x[: force_xy.shape[0], : force_xy.shape[1]]
     mean_displacements = np.append(mean_displacements, [opt.offset])
     mean_gaps = np.append(mean_gaps, [np.mean(displacement_xy) - middle - opt.offset])
     mean_load = force_xy.sum() / np.prod(topography.physical_sizes)
@@ -106,11 +123,21 @@ def _contact_calculation(system, offset=None, external_force=None, history=None,
 
     contacting_points_xy = force_xy > 0
 
-    return displacement_xy, gap_xy, pressure_xy, contacting_points_xy, opt.offset, mean_load, total_contact_area, \
-        (mean_displacements, mean_gaps, mean_pressures, total_contact_areas, converged)
+    return (
+        displacement_xy,
+        gap_xy,
+        pressure_xy,
+        contacting_points_xy,
+        opt.offset,
+        mean_load,
+        total_contact_area,
+        (mean_displacements, mean_gaps, mean_pressures, total_contact_areas, converged),
+    )
 
 
-def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimizer_kwargs={}):
+def _next_contact_step(
+    system, history=None, pentol=None, maxiter=None, optimizer_kwargs={}
+):
     """
     Run a full contact calculation. Try to guess displacement such that areas
     are equally spaced on a log scale.
@@ -162,7 +189,13 @@ def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimize
     if history is None:
         step = 0
     else:
-        mean_displacements, mean_gaps, mean_pressures, total_contact_areas, converged = history
+        (
+            mean_displacements,
+            mean_gaps,
+            mean_pressures,
+            total_contact_areas,
+            converged,
+        ) = history
         step = len(mean_displacements)
 
     if step == 0:
@@ -172,7 +205,8 @@ def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimize
     else:
         # Intermediate sort by area
         sorted_disp, sorted_area = np.transpose(
-            sorted(zip(mean_displacements, total_contact_areas), key=lambda x: x[1]))
+            sorted(zip(mean_displacements, total_contact_areas), key=lambda x: x[1])
+        )
 
         ref_area = np.log10(np.array(sorted_area + 1 / np.prod(topography.nb_grid_pts)))
         darea = np.append(ref_area[1:] - ref_area[:-1], -ref_area[-1])
@@ -182,12 +216,27 @@ def _next_contact_step(system, history=None, pentol=None, maxiter=None, optimize
         else:
             mean_displacement = (sorted_disp[i] + sorted_disp[i + 1]) / 2
 
-    return _contact_calculation(system, offset=mean_displacement, pentol=pentol, maxiter=maxiter, history=history,
-                                optimizer_kwargs=optimizer_kwargs)
+    return _contact_calculation(
+        system,
+        offset=mean_displacement,
+        pentol=pentol,
+        maxiter=maxiter,
+        history=history,
+        optimizer_kwargs=optimizer_kwargs,
+    )
 
 
-def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures=None, hardness=None, maxiter=100,
-                      results_callback=None, optimizer_kwargs={}):
+def contact_mechanics(
+    self,
+    substrate=None,
+    nsteps=None,
+    offsets=None,
+    pressures=None,
+    hardness=None,
+    maxiter=100,
+    results_callback=None,
+    optimizer_kwargs={},
+):
     """
     Carry out an automated contact mechanics calculations. The pipeline
     function return thermodynamic data (averages over the contact area,
@@ -243,29 +292,43 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
     # Choose substrate from 'is_periodic' flag, if not given
     #
     if substrate is None:
-        substrate = 'periodic' if self.is_periodic else 'nonperiodic'
+        substrate = "periodic" if self.is_periodic else "nonperiodic"
 
-    if self.is_periodic != (substrate == 'periodic'):
-        alert_message = 'Topography is '
+    if self.is_periodic != (substrate == "periodic"):
+        alert_message = "Topography is "
         if self.is_periodic:
-            alert_message += 'periodic, but the analysis is configured for free boundaries.'
+            alert_message += (
+                "periodic, but the analysis is configured for free boundaries."
+            )
         else:
-            alert_message += 'not periodic, but the analysis is configured for periodic boundaries.'
+            alert_message += (
+                "not periodic, but the analysis is configured for periodic boundaries."
+            )
         _log.warning(alert_message)
 
     #
     # Check whether either pressures or nsteps is given, but not both
     #
     if (nsteps is None) and (offsets is None) and (pressures is None):
-        raise ValueError("Either `nsteps`, `offsets` or `pressures` must be given for a contact mechanics calculation.")
+        raise ValueError(
+            "Either `nsteps`, `offsets` or `pressures` must be given for a contact mechanics calculation."
+        )
     elif (nsteps is not None) and (offsets is not None) and (pressures is not None):
-        raise ValueError("All of `nsteps`, `offsets` and `pressures` are given. There can only be one.")
+        raise ValueError(
+            "All of `nsteps`, `offsets` and `pressures` are given. There can only be one."
+        )
     elif (nsteps is not None) and (offsets is not None):
-        raise ValueError("Both of `nsteps` and `offsets` are given. Please specify only one.")
+        raise ValueError(
+            "Both of `nsteps` and `offsets` are given. Please specify only one."
+        )
     elif (nsteps is not None) and (pressures is not None):
-        raise ValueError("Both of `nsteps` and `pressures` are given. Please specify only one.")
+        raise ValueError(
+            "Both of `nsteps` and `pressures` are given. Please specify only one."
+        )
     elif (offsets is not None) and (pressures is not None):
-        raise ValueError("Both of `offsets` and `pressures` are given. Please specify only one.")
+        raise ValueError(
+            "Both of `offsets` and `pressures` are given. Please specify only one."
+        )
 
     # Conversion of force units
     force_conv = np.prod(self.physical_sizes)
@@ -280,13 +343,15 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
     else:
         topography = self
 
-    half_space_factory = dict(periodic=PeriodicFFTElasticHalfSpace,
-                              nonperiodic=FreeFFTElasticHalfSpace)
+    half_space_factory = dict(
+        periodic=PeriodicFFTElasticHalfSpace, nonperiodic=FreeFFTElasticHalfSpace
+    )
 
     half_space_kwargs = {}
 
-    substrate = half_space_factory[substrate](topography.nb_grid_pts, 1.0, topography.physical_sizes,
-                                              **half_space_kwargs)
+    substrate = half_space_factory[substrate](
+        topography.nb_grid_pts, 1.0, topography.physical_sizes, **half_space_kwargs
+    )
 
     if (hardness is not None) and (hardness > 0):
         system = make_plastic_system(substrate=substrate, surface=topography)
@@ -308,24 +373,70 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
     history = None
     for i in range(nsteps):
         if offsets is not None:
-            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure, \
-                total_contact_area, history = _contact_calculation(
-                    system, offset=offsets[i], history=history, pentol=pentol, maxiter=maxiter,
-                    optimizer_kwargs=optimizer_kwargs)
+            (
+                displacement_xy,
+                gap_xy,
+                pressure_xy,
+                contacting_points_xy,
+                mean_displacement,
+                mean_pressure,
+                total_contact_area,
+                history,
+            ) = _contact_calculation(
+                system,
+                offset=offsets[i],
+                history=history,
+                pentol=pentol,
+                maxiter=maxiter,
+                optimizer_kwargs=optimizer_kwargs,
+            )
         elif pressures is not None:
-            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure, \
-                total_contact_area, history = _contact_calculation(
-                    system, external_force=pressures[i] * force_conv, history=history, pentol=pentol, maxiter=maxiter,
-                    optimizer_kwargs=optimizer_kwargs)
+            (
+                displacement_xy,
+                gap_xy,
+                pressure_xy,
+                contacting_points_xy,
+                mean_displacement,
+                mean_pressure,
+                total_contact_area,
+                history,
+            ) = _contact_calculation(
+                system,
+                external_force=pressures[i] * force_conv,
+                history=history,
+                pentol=pentol,
+                maxiter=maxiter,
+                optimizer_kwargs=optimizer_kwargs,
+            )
         else:
-            displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement, mean_pressure, \
-                total_contact_area, history = _next_contact_step(
-                    system, history=history, pentol=pentol, maxiter=maxiter, optimizer_kwargs=optimizer_kwargs)
+            (
+                displacement_xy,
+                gap_xy,
+                pressure_xy,
+                contacting_points_xy,
+                mean_displacement,
+                mean_pressure,
+                total_contact_area,
+                history,
+            ) = _next_contact_step(
+                system,
+                history=history,
+                pentol=pentol,
+                maxiter=maxiter,
+                optimizer_kwargs=optimizer_kwargs,
+            )
 
         # Report results via callback
         if results_callback is not None:
-            results_callback(displacement_xy, gap_xy, pressure_xy, contacting_points_xy, mean_displacement,
-                             mean_pressure, total_contact_area)
+            results_callback(
+                displacement_xy,
+                gap_xy,
+                pressure_xy,
+                contacting_points_xy,
+                mean_displacement,
+                mean_pressure,
+                total_contact_area,
+            )
 
     mean_displacement, mean_gap, mean_pressure, total_contact_area, converged = history
 
@@ -339,4 +450,4 @@ def contact_mechanics(self, substrate=None, nsteps=None, offsets=None, pressures
 
 
 # Register analysis functions from this module
-UniformTopographyInterface.register_function('contact_mechanics', contact_mechanics)
+UniformTopographyInterface.register_function("contact_mechanics", contact_mechanics)
