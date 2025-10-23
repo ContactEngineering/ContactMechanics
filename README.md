@@ -1,5 +1,7 @@
 [![Build Status](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/test.yml/badge.svg)](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/test.yml?query=branch%3Amaster)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ContactEngineering/ContactMechanics)
+
 ContactMechanics
 ================
 
