@@ -1110,15 +1110,22 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
 
         if running in MPI this should be only the forces in the Subdomain
 
-        if running in serial one can give the force array with or without the
-        padded region
+        The force array can be given with (it's shape is then `nb_subdomain_grid_pts`),
+        or without (the shape is `topography_nb_subdomain_grid_pts`) the padding region.
 
         """
         if forces.shape == self.nb_subdomain_grid_pts:
             return super().evaluate_disp(forces)
+        elif forces.shape == self.topography_nb_subdomain_grid_pts:  # The forces are unpadded
+            padded_forces = np.zeros(self.nb_subdomain_grid_pts)
+            padded_forces[self.local_topography_subdomain_slices] = forces
+            # if return_padded:
+            #     return super().evaluate_disp(padded_forces)
+            # else:
+            return super().evaluate_disp(padded_forces)[self.local_topography_subdomain_slices]
 
-        elif self.nb_subdomain_grid_pts == self.nb_domain_grid_pts:
-            if forces.shape == self.nb_grid_pts:
+        elif self.nb_subdomain_grid_pts == self.nb_domain_grid_pts:  # Means that we are running in serial
+            if forces.shape == self.nb_grid_pts:  # The forces provided are not padded
                 # Automatically pad forces if force array is half of subdomain
                 # nb_grid_pts
                 padded_forces = np.zeros(self.nb_domain_grid_pts)
