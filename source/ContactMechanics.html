@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics package &mdash; ContactMechanics 1.6.1.dev10+g6639aa86 documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 1.6.1.dev34+g5a13a702 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=eecacea9"></script>
+      <script src="../_static/documentation_options.js?v=b8f34b96"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -397,6 +397,7 @@
 <li class="toctree-l3"><a class="reference internal" href="ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.hdr_str"><code class="docutils literal notranslate"><span class="pre">hdr_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.hdrfmt_str"><code class="docutils literal notranslate"><span class="pre">hdrfmt_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.numfmt_str"><code class="docutils literal notranslate"><span class="pre">numfmt_str()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.read_convergence_log"><code class="docutils literal notranslate"><span class="pre">read_convergence_log()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ContactMechanics.Tools.html#module-ContactMechanics.Tools.common">ContactMechanics.Tools.common module</a><ul>
@@ -675,8 +676,8 @@ active domain</p>
 Keyword Arguments:
 forces   – a numpy array containing point forces (<em>not</em> pressures)</p>
 <p>if running in MPI this should be only the forces in the Subdomain</p>
-<p>if running in serial one can give the force array with or without the
-padded region</p>
+<p>The force array can be given with (it’s shape is then <cite>nb_subdomain_grid_pts</cite>),
+or without (the shape is <cite>topography_nb_subdomain_grid_pts</cite>) the padding region.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1229,13 +1230,13 @@ results are still returned but should be interpreted with care.</p></li>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_minimize_proxy</span></code>(offset[, init_force, ...])</p></td>
 <td><p>Convenience function for DUAL minimisation (pixel forces as variables).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_objective</span></code>(offset[, gradient])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_objective</span></code>(offset[, gradient, logger])</p></td>
 <td><p>Objective function to handle dual objective, i.e. the Legendre transformation from displacements as variable to pressures (the Lagrange multiplier) as variable.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(disp, offset[, pot, forces, logger])</p></td>
 <td><p>Compute the energies and forces in the system for a given displacement field.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_dual</span></code>(press, offset[, forces])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_dual</span></code>(force, offset[, logger])</p></td>
 <td><p>Computes the energies and forces in the system for a given pressure field.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.PlasticSystemSpecialisations.PlasticNonSmoothContactSystem.handles" title="ContactMechanics.PlasticSystemSpecialisations.PlasticNonSmoothContactSystem.handles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">handles</span></code></a>(substrate_type, surface_type, ...)</p></td>
@@ -1608,13 +1609,13 @@ adhesion, belong to this type of system</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy" title="ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_minimize_proxy</span></code></a>(offset[, init_force, ...])</p></td>
 <td><p>Convenience function for DUAL minimisation (pixel forces as variables).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="ContactMechanics.Systems.NonSmoothContactSystem.dual_objective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_objective</span></code></a>(offset[, gradient])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="ContactMechanics.Systems.NonSmoothContactSystem.dual_objective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_objective</span></code></a>(offset[, gradient, logger])</p></td>
 <td><p>Objective function to handle dual objective, i.e. the Legendre transformation from displacements as variable to pressures (the Lagrange multiplier) as variable.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate" title="ContactMechanics.Systems.NonSmoothContactSystem.evaluate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code></a>(disp, offset[, pot, forces, logger])</p></td>
 <td><p>Compute the energies and forces in the system for a given displacement field.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual" title="ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_dual</span></code></a>(press, offset[, forces])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual" title="ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_dual</span></code></a>(force, offset[, logger])</p></td>
 <td><p>Computes the energies and forces in the system for a given pressure field.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.Systems.NonSmoothContactSystem.handles" title="ContactMechanics.Systems.NonSmoothContactSystem.handles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">handles</span></code></a>(substrate_type, surface_type, ...)</p></td>
@@ -1693,7 +1694,7 @@ to the pressure vector. This is used in optimization algorithms that utilize sec
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy">
-<span class="sig-name descname"><span class="pre">dual_minimize_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccg-without-restart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">dual_minimize_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccg-without-restart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_minimize_proxy" title="Link to this definition"></a></dt>
 <dd><p>Convenience function for DUAL minimisation (pixel forces as variables).
 This function simplifies the process of solving the dual minimisation problem
 by encapsulating the use of constrained minimisation.</p>
@@ -1701,7 +1702,9 @@ by encapsulating the use of constrained minimisation.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>offset</strong> (<em>float</em>) – Determines the indentation depth.</p></li>
-<li><p><strong>init_force</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Initial guess for the force. If not provided, it defaults to None.</p></li>
+<li><p><strong>init_force</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Initial guess for the force. If not provided, it defaults to None.
+For Nonperiodic calculations, the array does not include the padding region,
+i.e. it is of shape <cite>substrate.topography_nb_subdomain_grid_pts</cite></p></li>
 <li><p><strong>solver</strong> (<em>str</em><em>, </em><em>optional</em>) – The solver to be used for the minimisation. It can be one of
 ‘ccg-without-restart’, ‘ccg-with-restart’, or ‘l-bfgs-b’. If not provided,
 it defaults to ‘ccg-without-restart’.</p></li>
@@ -1722,7 +1725,7 @@ result, including the final gap, force, and displacement of the system at the so
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.dual_objective">
-<span class="sig-name descname"><span class="pre">dual_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">dual_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.dual_objective" title="Link to this definition"></a></dt>
 <dd><p>Objective function to handle dual objective, i.e. the Legendre
 transformation from displacements as variable to pressures
 (the Lagrange multiplier) as variable.</p>
@@ -1736,7 +1739,11 @@ transformation from displacements as variable to pressures
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>energy</strong> (<em>float</em>) – Value of total energy.</p></li>
-<li><p><strong>gradient</strong> (<em>array_like</em>) – Value of the gradient (array) or the value of gap (if gradient is True).</p></li>
+<li><p><strong>gradient</strong> (<em>array_like</em>) – Value of the gradient (array), which corresponds to the value of gap..
+The array is ravelled to a 1D arreay for compatibility with scipy solvers.
+Note that for the nonperiodic substrate that uses padding, the shape of the array
+corresponds to the unpadded domain, i.e. where the topography is defined.
+That is, the shape of the array before ravelling is <cite>substrate.topography_nb_subdomain_grid_pts</cite>.`</p></li>
 </ul>
 </p>
 </dd>
@@ -1782,7 +1789,7 @@ It then computes the displacement field by calling the <cite>compute</cite> meth
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual">
-<span class="sig-name descname"><span class="pre">evaluate_dual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">press</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">evaluate_dual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.Systems.NonSmoothContactSystem.evaluate_dual" title="Link to this definition"></a></dt>
 <dd><p>Computes the energies and forces in the system for a given pressure field.</p>
 <p>This method calculates the displacement field corresponding to the given pressure field
 by calling the <cite>evaluate_disp</cite> method of the substrate. The negative of the pressure field
@@ -1794,9 +1801,9 @@ minus the sum of the product of the pressure and the sum of the surface heights 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>press</strong> (<em>array_like</em>) – The pressure field for which the displacement field is to be computed.</p></li>
+<li><p><strong>force</strong> (<em>array_like</em>) – The force applied to each pixel of the substrate</p></li>
 <li><p><strong>offset</strong> (<em>float</em>) – The offset value to be used in the computation.</p></li>
-<li><p><strong>forces</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the forces in the system are also computed. Default is False.</p></li>
+<li><p><strong>gradient</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the forces in the system are also computed. Default is False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
