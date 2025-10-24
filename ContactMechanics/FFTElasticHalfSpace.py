@@ -1293,9 +1293,10 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             repeated.
         periodicity : tuple(bool, bool)
             Specify (x,y) periodicity for dim=2. 'True' assumes periodicity in the
-            corresponding direction. (False, False) obtains result similar to
-            FreeFFTElasticHalfSpace. Defaults to (False, True): non-periodic in x-
-            and periodic in y-direction.
+            corresponding direction. (False, False) obtains result equal to
+            FreeFFTElasticHalfSpace. (True, True) obtains results similar to
+            PeriodicFFTElasticHalfSpace (but rigid displacement may differ).
+            Defaults to (False, True): non-periodic in x- and periodic in y-direction.
         n_images : int
             Number of images (each in +/- direction) that are taken into account
             for the numeric periodization. Defaults to 10.
