@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics package &mdash; ContactMechanics 1.6.1.dev34+g5a13a702 documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 1.6.1.dev43+gc318fe29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b8f34b96"></script>
+      <script src="../_static/documentation_options.js?v=e653504e"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -118,6 +118,13 @@
 <li class="toctree-l4"><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.topography_nb_subdomain_grid_pts"><code class="docutils literal notranslate"><span class="pre">PeriodicFFTElasticHalfSpace.topography_nb_subdomain_grid_pts</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.topography_subdomain_locations"><code class="docutils literal notranslate"><span class="pre">PeriodicFFTElasticHalfSpace.topography_subdomain_locations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.topography_subdomain_slices"><code class="docutils literal notranslate"><span class="pre">PeriodicFFTElasticHalfSpace.topography_subdomain_slices</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace"><code class="docutils literal notranslate"><span class="pre">SemiPeriodicFFTElasticHalfSpace</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_disp"><code class="docutils literal notranslate"><span class="pre">SemiPeriodicFFTElasticHalfSpace.evaluate_disp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_force"><code class="docutils literal notranslate"><span class="pre">SemiPeriodicFFTElasticHalfSpace.evaluate_force()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real"><code class="docutils literal notranslate"><span class="pre">SemiPeriodicFFTElasticHalfSpace.get_G_real()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real_slices"><code class="docutils literal notranslate"><span class="pre">SemiPeriodicFFTElasticHalfSpace.get_G_real_slices()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -525,7 +532,7 @@ in order to have a roundtrip.</p>
 <dd><p>Bases: <a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">PeriodicFFTElasticHalfSpace</span></code></a></p>
 <p>Uses the FFT to solve the displacements and stresses in an non-periodic
 elastic Halfspace due to a given array of point forces. Uses the Green’s
-functions formulaiton of Johnson (1985, p. 54). The application of the FFT
+functions formulation of Johnson (1985, p. 54). The application of the FFT
 to a nonperiodic domain is explained in Hockney (1969, p. 178.)</p>
 <p>K. L. Johnson. (1985). Contact Mechanics. [Online]. Cambridge: Cambridge
 University Press. Available from: Cambridge Books Online
@@ -588,8 +595,8 @@ Academic Press, New York, 1969, pp. 136-211.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(disp[, pot, forces])</p></td>
 <td><p>Evaluates the elastic energy and the point forces Keyword Arguments: disp   -- array of distances pot    -- (default True) if true, returns potential energy forces -- (default False) if true, returns forces</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp" title="ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_disp</span></code></a>(forces)</p></td>
-<td><p>Computes the displacement due to a given force array Keyword Arguments: forces   -- a numpy array containing point forces (<em>not</em> pressures)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp" title="ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_disp</span></code></a>(forces[, bIncludePadding])</p></td>
+<td><p>Computes the displacement due to a given force array</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_elastic_energy</span></code>(forces, disp)</p></td>
 <td><p>computes and returns the elastic energy due to forces and displacements Arguments: forces -- array of forces disp   -- array of displacements</p></td>
@@ -671,13 +678,27 @@ active domain</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp">
-<span class="sig-name descname"><span class="pre">evaluate_disp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forces</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp" title="Link to this definition"></a></dt>
-<dd><p>Computes the displacement due to a given force array
-Keyword Arguments:
-forces   – a numpy array containing point forces (<em>not</em> pressures)</p>
-<p>if running in MPI this should be only the forces in the Subdomain</p>
-<p>The force array can be given with (it’s shape is then <cite>nb_subdomain_grid_pts</cite>),
-or without (the shape is <cite>topography_nb_subdomain_grid_pts</cite>) the padding region.</p>
+<span class="sig-name descname"><span class="pre">evaluate_disp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bIncludePadding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.evaluate_disp" title="Link to this definition"></a></dt>
+<dd><p>Computes the displacement due to a given force array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forces</strong> (<em>ndarray</em>) – Array of point forces (<em>not</em> pressures).
+If running in MPI this should be only the forces in the Subdomain.
+If running in serial, the force array can be given with (it’s shape is then <cite>nb_subdomain_grid_pts</cite>),
+or without (the shape is <cite>topography_nb_subdomain_grid_pts</cite>) the padding region.</p></li>
+<li><p><strong>bIncludePadding</strong> (<em>bool</em>) – if True, the returned displacement array includes the padded
+region, else only the unpadded region is returned.
+Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>displacement</strong> – displacement array corresponding to the input forces</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1086,6 +1107,196 @@ see FreeFFTElasticHalfSpace.</p>
 <dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.topography_subdomain_slices">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topography_subdomain_slices</span></span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.topography_subdomain_slices" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ContactMechanics.FFTElasticHalfSpace.</span></span><span class="sig-name descname"><span class="pre">SemiPeriodicFFTElasticHalfSpace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nb_grid_pts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">young</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physical_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(6.283185307179586,</span> <span class="pre">6.283185307179586)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periodicity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(False,</span> <span class="pre">True)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fft</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'serial'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">communicator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_boundaries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace" title="ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">FreeFFTElasticHalfSpace</span></code></a></p>
+<p>Solution of displacements and stresses in a semi-periodic
+elastic halfspace due to a given array of point forces. Uses the Green’s
+functions formulation of Johnson (1985, p. 54). The application of the FFT
+to a nonperiodic domain is explained in Hockney (1969, p. 178.).
+Periodic images are numerically summed to obtain the periodicity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>area_per_pt</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></dt><dd><p>Return the MPI communicator</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dim</span></code></dt><dd><p>return the substrate’s physical dimension</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">domain_boundary_mask</span></code></dt><dd><p>Returns a mask of the points that are on the boundary of the domain</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_locations</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_slices</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_topography_subdomain_slices</span></code></dt><dd><p>slice representing the local subdomain without the padding area</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_domain_grid_pts</span></code></dt><dd><p>usually, the nb_grid_pts of the system is equal to the geometric</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_fourier_grid_pts</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+</dd>
+<dt><strong>nb_grid_pts</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+</dd>
+<dt><strong>physical_sizes</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_slices</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+</dd>
+<dt><strong>topography_nb_subdomain_grid_pts</strong></dt><dd></dd>
+<dt><strong>topography_subdomain_locations</strong></dt><dd></dd>
+<dt><strong>topography_subdomain_slices</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">FreeBoundaryError</span></code>(message)</p></td>
+<td><p>called when the forces overlap into the padding region (i.e. the outer ring of the force array equals zero), needing an increase of the nb_grid_pts.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">check</span></code>([force])</p></td>
+<td><p>Checks wether force is still in the value range handled correctly :param force:</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_boundaries</span></code>([force, tol])</p></td>
+<td><p>Raises an error if the forces are not zero at the boundary of the active domain</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute</span></code>(disp[, pot, forces])</p></td>
+<td><p>computes and stores the elastic energy and/or surface forces the as function of the surface displacement.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_k</span></code>(disp_k[, pot, forces])</p></td>
+<td><p>computes and stores the elastic energy and/or surface forces the as function of the surface displacement in Fourier Space.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(disp[, pot, forces])</p></td>
+<td><p>Evaluates the elastic energy and the point forces Keyword Arguments: disp   -- array of distances pot    -- (default True) if true, returns potential energy forces -- (default False) if true, returns forces</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_disp" title="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_disp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_disp</span></code></a>(forces[, bIncludePadding])</p></td>
+<td><p>Computes the displacement due to a given force array</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_elastic_energy</span></code>(forces, disp)</p></td>
+<td><p>computes and returns the elastic energy due to forces and displacements Arguments: forces -- array of forces disp   -- array of displacements</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_elastic_energy_k_space</span></code>(kforces, kdisp)</p></td>
+<td><p>Computes the Energy due to forces and displacements using their Fourier representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_force" title="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_force"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_force</span></code></a>(disp)</p></td>
+<td><p>Computes the force (<em>not</em> pressures) due to a given displacement array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_k</span></code>(disp_k[, pot, forces])</p></td>
+<td><p>Evaluates the elastic energy and the point forces in fourier sapce or k-space or reciprocal space.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_k_disp</span></code>(forces)</p></td>
+<td><p>Computes the K-space displacement due to a given force array</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_k_force</span></code>(disp)</p></td>
+<td><p>Computes the K-space forces (<em>not</em> pressures) due to a given displacement array.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_k_force_k</span></code>(disp_k)</p></td>
+<td><p>Computes the K-space forces (<em>not</em> pressures) due to a given K-space displacement array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_scalar_product_k_space</span></code>(ka, kb)</p></td>
+<td><p>Computes the scalar product, i.e. the power, between the <cite>a</cite> and <cite>b</cite>, given their fourier representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real" title="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_G_real</span></code></a>()</p></td>
+<td><p>For analysis purposes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real_slices" title="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real_slices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_G_real_slices</span></code></a>()</p></td>
+<td><p>For analysis purposes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_periodic</span></code>()</p></td>
+<td><p>non-periodic substrates can use some optimisations</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">spawn_child</span></code>(nb_grid_pts)</p></td>
+<td><p>returns an instance with same physical properties with a smaller computational grid</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Error</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_disp">
+<span class="sig-name descname"><span class="pre">evaluate_disp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bIncludePadding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_disp" title="Link to this definition"></a></dt>
+<dd><p>Computes the displacement due to a given force array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forces</strong> (<em>ndarray</em>) – Array of point forces (<em>not</em> pressures).
+If running in MPI this should be only the forces in the Subdomain.
+If running in serial one can give the force array with or without the
+padded region.</p></li>
+<li><p><strong>bIncludePadding</strong> (<em>bool</em>) – if True, the returned displacement array includes the padded
+region, else only the unpadded region is returned.
+Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>disp</strong> – A numpy array containing point displacements.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_force">
+<span class="sig-name descname"><span class="pre">evaluate_force</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disp</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_force" title="Link to this definition"></a></dt>
+<dd><p>Computes the force (<em>not</em> pressures) due to a given displacement
+array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>disp</strong> (<em>ndarray</em>) – A numpy array containing point displacements.
+Zero padding is applied if the shape does not match the
+computational (padded) grid points.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>forces</strong> – Array of calculated point forces.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real">
+<span class="sig-name descname"><span class="pre">get_G_real</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real" title="Link to this definition"></a></dt>
+<dd><p>For analysis purposes.
+Returns the ‘ordered’ 2d G_real numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>G_real_ordered</strong> – Green’s function in real space with G(0,0) at the array center</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray of shape (M, N)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real_slices">
+<span class="sig-name descname"><span class="pre">get_G_real_slices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real_slices" title="Link to this definition"></a></dt>
+<dd><p>For analysis purposes.
+Returns two 1d middle slices of the G_real array, in x- and y-direction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>x_slice</strong> (<em>ndarray of shape (M,)</em>) – middle slice of G_real in x-direction</p></li>
+<li><p><strong>y_slice</strong> (<em>ndarray of shape (N,)</em>) – middle slice of G_real in y-direction</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

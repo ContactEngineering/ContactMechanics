@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; ContactMechanics 1.6.1.dev34+g5a13a702 documentation</title>
+  <title>Index &mdash; ContactMechanics 1.6.1.dev43+gc318fe29 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -13,7 +13,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=b8f34b96"></script>
+      <script src="_static/documentation_options.js?v=e653504e"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -417,6 +417,8 @@
       <ul>
         <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_disp">(ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
 </li>
+        <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_disp">(ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace method)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -427,7 +429,11 @@
       <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_elastic_energy_k_space">evaluate_elastic_energy_k_space() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
 </li>
       <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_force">evaluate_force() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
+
+      <ul>
+        <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.evaluate_force">(ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace method)</a>
 </li>
+      </ul></li>
       <li><a href="source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.evaluate_gradient">evaluate_gradient() (in module ContactMechanics.Tools.common)</a>
 </li>
       <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.evaluate_k">evaluate_k() (ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace method)</a>
@@ -482,14 +488,18 @@
 </li>
       <li><a href="source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_filename">get_filename() (ContactMechanics.IO.NetCDF.NetCDFContainer method)</a>
 </li>
+      <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real">get_G_real() (ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace method)</a>
+</li>
+      <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace.get_G_real_slices">get_G_real_slices() (ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace method)</a>
+</li>
       <li><a href="source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_h">get_h() (ContactMechanics.IO.NetCDF.NetCDFContainer method)</a>
 </li>
       <li><a href="source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainerFrame.get_index">get_index() (ContactMechanics.IO.NetCDF.NetCDFContainerFrame method)</a>
 </li>
-      <li><a href="source/ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.Logger.get_logfile">get_logfile() (ContactMechanics.Tools.Logger.Logger method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/ContactMechanics.Tools.html#ContactMechanics.Tools.Logger.Logger.get_logfile">get_logfile() (ContactMechanics.Tools.Logger.Logger method)</a>
+</li>
       <li><a href="source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.get_next_frame">get_next_frame() (ContactMechanics.IO.NetCDF.NetCDFContainer method)</a>
 </li>
       <li><a href="source/ContactMechanics.Tools.html#ContactMechanics.Tools.common.get_q_from_lambda">get_q_from_lambda() (in module ContactMechanics.Tools.common)</a>
@@ -786,6 +796,8 @@
       <li><a href="source/ContactMechanics.CommandLineInterface.html#ContactMechanics.CommandLineInterface.HardWall.save_gap">save_gap() (in module ContactMechanics.CommandLineInterface.HardWall)</a>
 </li>
       <li><a href="source/ContactMechanics.CommandLineInterface.html#ContactMechanics.CommandLineInterface.HardWall.save_pressure">save_pressure() (in module ContactMechanics.CommandLineInterface.HardWall)</a>
+</li>
+      <li><a href="source/ContactMechanics.html#ContactMechanics.FFTElasticHalfSpace.SemiPeriodicFFTElasticHalfSpace">SemiPeriodicFFTElasticHalfSpace (class in ContactMechanics.FFTElasticHalfSpace)</a>
 </li>
       <li><a href="source/ContactMechanics.IO.html#ContactMechanics.IO.NetCDF.NetCDFContainer.set_cursor">set_cursor() (ContactMechanics.IO.NetCDF.NetCDFContainer method)</a>
 </li>
