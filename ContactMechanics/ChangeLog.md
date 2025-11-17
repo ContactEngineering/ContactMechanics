@@ -1,6 +1,13 @@
 Change log for ContactMechanics
 ===============================
 
+v1.7.0 (29Oct25)
+-----------------
+
+- ENH: semiperiodic elastic halfspace
+- ENH: Dual proxy works in parallel 
+- ENH: dual minimize proxy for now also works on nonperiodic substrates (i.e. with padding)
+
 v1.6.1 (13May25)
 ----------------
 

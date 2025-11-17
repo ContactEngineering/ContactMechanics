@@ -20,8 +20,8 @@ jobs:
     strategy:
       matrix:
         mpi: ['yes', 'no']
-        python-version: ['3.9', '3.10', '3.11', '3.12']
-        mpi4py-version: [3.1.5]
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13'']
+        mpi4py-version: [4.1.1]
         netcdf4-python-version: [1.6.2]
         mufft-version: [0.93.1]
 
