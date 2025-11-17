@@ -1,7 +1,7 @@
 Change log for ContactMechanics
 ===============================
 
-v1.7.0 (290Oct25)
+v1.7.0 (29Oct25)
 -----------------
 
 - ENH: semiperiodic elastic halfspace
