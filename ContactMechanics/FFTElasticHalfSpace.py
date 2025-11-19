@@ -220,12 +220,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         communicator : mpi4py communicator or NuMPI stub communicator
             MPI communicator object.
         """
-        super().__init__()
-        if not hasattr(nb_grid_pts, "__iter__"):
-            nb_grid_pts = (nb_grid_pts,)
-        if not hasattr(physical_sizes, "__iter__"):
-            physical_sizes = (physical_sizes,)
-        self.__dim = len(nb_grid_pts)
+
+        
+
+        super().__init__(nb_grid_pts, physical_sizes)
+
         if self.dim not in (1, 2):
             raise self.Error(
                 (
@@ -237,11 +236,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             raise self.Error(
                 "Please specify either stiffness_q0 or thickness " "or neither."
             )
-        self._nb_grid_pts = nb_grid_pts
-        tmpsize = list()
-        for i in range(self.dim):
-            tmpsize.append(physical_sizes[min(i, len(physical_sizes) - 1)])
-        self._physical_sizes = tuple(tmpsize)
+
 
         try:
             self._steps = tuple(
@@ -288,24 +283,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             self.greens_function = self._compute_greens_function()
             self.surface_stiffness = self._compute_surface_stiffness()
 
-    @property
-    def dim(
-        self,
-    ):
-        "return the substrate's physical dimension"
-        return self.__dim
-
-    @property
-    def nb_grid_pts(self):
-        return self._nb_grid_pts
-
-    @property
-    def area_per_pt(self):
-        return np.prod(self.physical_sizes) / np.prod(self.nb_grid_pts)
-
-    @property
-    def physical_sizes(self):
-        return self._physical_sizes
 
     @property
     def nb_domain_grid_pts(
