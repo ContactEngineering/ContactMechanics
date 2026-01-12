@@ -23,8 +23,8 @@ dependencies = [
     "numpy",
     "scipy>=1.9.0",
     "NuMPI>=0.5.0",
-    "muGrid>=0.103.0",
-    "SurfaceTopography @ git+https://github.com/ContactEngineering/SurfaceTopography@27_numpyfftengine_mugrid_api"
+    "muGrid==0.105.1",
+    "SurfaceTopography @ git+https://github.com/ContactEngineering/SurfaceTopography@master"
 ]
 
 [project.optional-dependencies]
