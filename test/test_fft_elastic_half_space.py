@@ -362,9 +362,9 @@ class FreeFFTElasticHalfSpaceTest(unittest.TestCase):
         fftengine = FFTEngine([2 * r for r in self.res])
         real_field = fftengine.real_space_field("real")
         fourier_field = fftengine.fourier_space_field("fourier")
-        real_field.p[0] = force
+        real_field.p[...] = force
         fftengine.fft(real_field, fourier_field)
-        tested = fourier_field.p[0]
+        tested = fourier_field.p
         np.testing.assert_allclose(ref.real,
                                    tested.real)
         np.testing.assert_allclose(ref.imag,

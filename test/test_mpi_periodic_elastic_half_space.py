@@ -142,9 +142,9 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
         if k[0] == nx // 2 and nx % 2 == 0:
             expected_k_disp[k[0], -k[1]] += (.5 + .5j)*(nx * ny)
 
-        real_field.p[0] = disp[substrate.subdomain_slices]
+        real_field.p[...] = disp[substrate.subdomain_slices]
         fftengine.fft(real_field, fourier_field)
-        fft_disp = fourier_field.p[0]
+        fft_disp = fourier_field.p
         np.testing.assert_allclose(fft_disp,
                                    expected_k_disp[substrate.fourier_slices],
                                    rtol=1e-7, atol=ATOL)

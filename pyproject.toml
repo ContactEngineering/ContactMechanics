@@ -52,7 +52,7 @@ ce_hard_wall = "ContactMechanics.CommandLineInterface.HardWall:main"
 
 [tool.black]
 line-length = 88
-target-version = ["py310", "py311", "py312", "py313"]
+target-version = ["py310", "py311", "py312", "py313", "py314"]
 
 [tool.isort]
 profile = "black"
