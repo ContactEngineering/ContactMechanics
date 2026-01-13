@@ -23,7 +23,7 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13']
         mpi4py-version: [4.1.1]
         netcdf4-python-version: [1.6.2]
-        mugrid-version: [0.105.1]
+        mugrid-version: [0.105.0]
 
     steps:
     - uses: actions/checkout@v5
