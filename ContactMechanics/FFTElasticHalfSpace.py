@@ -392,7 +392,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.nb_fourier_grid_pts
+        return self.fftengine._cpp.nb_fourier_subdomain_grid_pts
 
     @property
     def fourier_locations(self):
