@@ -98,15 +98,15 @@ hermitian symmetry, extra care has to be taken when performing the sum.
 # TODO
 
 
-muFFT fourier transform:
-------------------------
+muGrid.FFTEngine fourier transform:
+------------------------------------
 
 `fft` and `ifft` never applies the normalisation factor, meaning that you will need
 to multiply `ifft(fft)` by `1 / np.prod(nb_grid_pts) = fftengine.normalisation`)
 in order to have a roundtrip.
 
-muFFT vs. np.fft:
------------------
+muGrid.FFTEngine vs. np.fft:
+----------------------------
 
 Normalisation:
 ---------------
@@ -121,7 +121,7 @@ Normalisation:
 
 numpy by default transforms the last index first.
 
-muFFT the first
+muGrid.FFTEngine the first
 ```
 real_buffer.p = a
 fftengine.fft(real_buffer, fourier_buffer)
@@ -139,7 +139,7 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
-from muFFT import FFT
+from muGrid import Communicator, FFTEngine
 from NuMPI.Tools import Reduction
 from SurfaceTopography.Support import doi
 
@@ -177,6 +177,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         superclass=True,
         fft="serial",
         communicator=None,
+        fftengine=None,
     ):
         """
         Parameters
@@ -213,12 +214,13 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             client software never uses this.
             Only inheriting subclasses use this.
         fft: string
-            Default: 'serial'
-            FFT engine to use. Options are 'fftw', 'fftwmpi', 'pfft' and
-            'p3dfft'. 'serial' and 'mpi' can also be specified, where the
-            choice of the appropriate fft is made by muFFT
+            Deprecated, ignored if fftengine is provided.
         communicator : mpi4py communicator or NuMPI stub communicator
-            MPI communicator object.
+            MPI communicator object. Ignored if fftengine is provided.
+        fftengine : muGrid.FFTEngine, optional
+            External FFT engine instance. If provided, this engine will be
+            used instead of creating a new one internally. The engine's
+            nb_domain_grid_pts must match the half-space's nb_domain_grid_pts.
         """
         super().__init__()
         if not hasattr(nb_grid_pts, "__iter__"):
@@ -265,18 +267,25 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         self.stiffness_q0 = stiffness_q0
         self.thickness = thickness
 
-        self.fftengine = FFT(
-            self.nb_domain_grid_pts,
-            engine=fft,
-            communicator=communicator,
-            allow_temporary_buffer=False,
-            allow_destroy_input=True,
-        )
+        if fftengine is not None:
+            # Use external FFT engine
+            self.fftengine = fftengine
+            if tuple(fftengine.nb_domain_grid_pts) != tuple(self.nb_domain_grid_pts):
+                raise self.Error(
+                    f"FFTEngine grid size {tuple(fftengine.nb_domain_grid_pts)} "
+                    f"doesn't match expected {self.nb_domain_grid_pts}"
+                )
+        else:
+            # Create internal FFT engine (muGrid 0.105+ supports 1D, 2D, and 3D)
+            if communicator is not None:
+                mu_comm = Communicator(communicator)
+            else:
+                mu_comm = None
+            self.fftengine = FFTEngine(list(self.nb_domain_grid_pts), mu_comm)
+
         # Allocate buffers and create plan for one degree of freedom
-        self.real_buffer = self.fftengine.register_real_space_field("real-space")
-        self.fourier_buffer = self.fftengine.register_fourier_space_field(
-            "fourier-space"
-        )
+        self.real_buffer = self.fftengine.real_space_field("real-space")
+        self.fourier_buffer = self.fftengine.fourier_space_field("fourier-space")
 
         self.greens_function = None
         self.surface_stiffness = None
@@ -352,7 +361,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.subdomain_slices
+        return tuple(
+            slice(s, s + n)
+            for s, n in zip(self.subdomain_locations, self.nb_subdomain_grid_pts)
+        )
 
     @property
     def topography_subdomain_slices(self):
@@ -380,7 +392,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.nb_fourier_grid_pts
+        return self.fftengine._cpp.nb_fourier_subdomain_grid_pts
 
     @property
     def fourier_locations(self):
@@ -389,7 +401,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.fourier_locations
+        return self.fftengine._cpp.fourier_subdomain_locations
 
     @property
     def fourier_slices(self):
@@ -398,7 +410,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine.fourier_slices
+        nb_fourier_subdomain = self.fftengine._cpp.nb_fourier_subdomain_grid_pts
+        return tuple(
+            slice(s, s + n)
+            for s, n in zip(self.fourier_locations, nb_fourier_subdomain)
+        )
 
     @property
     def communicator(self):
@@ -558,9 +574,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     "halfspace's nb_grid_pts ({1})"
                 ).format(forces.shape, self.nb_subdomain_grid_pts)
             )
-        self.real_buffer.p = -forces
+        self.real_buffer.p[...] = -forces
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-        self.fourier_buffer.p *= self.greens_function
+        self.fourier_buffer.p[...] *= self.greens_function
         self.fftengine.ifft(self.fourier_buffer, self.real_buffer)
         return self.real_buffer.p.real / self.area_per_pt * self.fftengine.normalisation
 
@@ -578,9 +594,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     "this halfspace's nb_grid_pts ({1})"
                 ).format(disp.shape, self.nb_subdomain_grid_pts)
             )
-        self.real_buffer.p = disp
+        self.real_buffer.p[...] = disp
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-        self.fourier_buffer.p *= self.surface_stiffness
+        self.fourier_buffer.p[...] *= self.surface_stiffness
         self.fftengine.ifft(self.fourier_buffer, self.real_buffer)
         return (
             -self.real_buffer.p.real * self.area_per_pt * self.fftengine.normalisation
@@ -608,7 +624,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     "s nb_grid_pts ({1})"
                 ).format(forces.shape, self.nb_subdomain_grid_pts)
             )  # nopep8
-        self.real_buffer.p = -forces
+        self.real_buffer.p[...] = -forces
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
         return self.greens_function * self.fourier_buffer.p / self.area_per_pt
 
@@ -626,7 +642,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     "halfspace's nb_grid_pts ({1})"
                 ).format(disp.shape, self.nb_subdomain_grid_pts)
             )  # nopep8
-        self.real_buffer.p = disp
+        self.real_buffer.p[...] = disp
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
         return -self.surface_stiffness * self.fourier_buffer.p * self.area_per_pt
 
@@ -830,7 +846,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             # kforce = self.evaluate_k_force(disp)
             # TODO: OPTIMISATION: here kdisp is computed twice, because it's
             #  needed in kforce
-            self.real_buffer.p = disp
+            self.real_buffer.p[...] = disp
             self.fftengine.fft(self.real_buffer, self.fourier_buffer)
             dispk = self.fourier_buffer.p
             kforce = self.evaluate_k_force_k(dispk)
@@ -893,6 +909,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         fft="serial",
         communicator=None,
         check_boundaries=False,
+        fftengine=None,
     ):
         """
         Parameters
@@ -912,11 +929,14 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             the tuple has less entries than dimensions, the last value in
             repeated.
         communicator : mpi4py communicator NuMPI stub communicator
-            MPI communicator object.
+            MPI communicator object. Ignored if fftengine is provided.
         check_boundaries: bool
             if set to true, the function check will test that the pressures are
             zero at the boundary of the topography-domain.
             `check()` is called systematically at the end of system.minimize_proxy
+        fftengine : muGrid.FFTEngine, optional
+            External FFT engine instance. If provided, this engine will be
+            used instead of creating a new one internally.
         """
         # do not use isinstance since it returns True for any class that inherits
         if type(self) is FreeFFTElasticHalfSpace:
@@ -929,6 +949,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             superclass=False,
             fft=fft,
             communicator=communicator,
+            fftengine=fftengine,
         )
         self.greens_function = self._compute_greens_function()
         self.surface_stiffness = self._compute_surface_stiffness()
@@ -1032,7 +1053,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 * self._steps[1]
             )
             y_s.shape = (1, -1)
-            self.real_buffer.p = (
+            self.real_buffer.p[...] = (
                 1
                 / (np.pi * self.young)
                 * (
@@ -1273,6 +1294,7 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             fft: str = "serial",
             communicator=None,
             check_boundaries: bool = False,
+            fftengine=None,
     ) -> None:
         """
         Parameters
@@ -1301,11 +1323,14 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             Number of images (each in +/- direction) that are taken into account
             for the numeric periodization. Defaults to 10.
         communicator : mpi4py communicator NuMPI stub communicator
-            MPI communicator object.
+            MPI communicator object. Ignored if fftengine is provided.
         check_boundaries: bool
             if set to true, the function check will test that the pressures are
             zero at the boundary of the topography-domain.
             `check()` is called systematically at the end of system.minimize_proxy
+        fftengine : muGrid.FFTEngine, optional
+            External FFT engine instance. If provided, this engine will be
+            used instead of creating a new one internally.
         """
 
         # extend domain in non-periodic direction(s)
@@ -1328,7 +1353,8 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             physical_sizes,
             fft=fft,
             communicator=communicator,
-            check_boundaries=check_boundaries
+            check_boundaries=check_boundaries,
+            fftengine=fftengine,
         )
 
     def _compute_greens_function(self) -> NDArray:
@@ -1358,7 +1384,7 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
 
         # FFT
         self.G_real = np.copy(p_real)
-        self.real_buffer.p = p_real
+        self.real_buffer.p[...] = p_real
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
 
         return self.fourier_buffer.p.copy()
