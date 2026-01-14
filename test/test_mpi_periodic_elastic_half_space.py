@@ -25,13 +25,11 @@
 
 import numpy as np
 import pytest
-
-from muFFT import FFT
+from muGrid import Communicator, FFTEngine
 from NuMPI import MPI
+from NuMPI.Tools import Reduction
 
 from ContactMechanics import PeriodicFFTElasticHalfSpace
-
-from NuMPI.Tools import Reduction
 
 
 @pytest.fixture
@@ -129,8 +127,9 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
 
         substrate = PeriodicFFTElasticHalfSpace((nx, ny), E_s, (sx, sy),
                                                 fft='mpi', communicator=comm)
-        fftengine = FFT((nx, ny), engine='mpi', communicator=comm)
-        fftengine.create_plan(1)
+        fftengine = FFTEngine([nx, ny], Communicator(comm))
+        real_field = fftengine.real_space_field("real")
+        fourier_field = fftengine.fourier_space_field("fourier")
 
         kpressure = substrate.evaluate_k_force(
             disp[substrate.subdomain_slices]) / substrate.area_per_pt
@@ -143,9 +142,9 @@ def test_sineWave_disp(comm, pnp, nx, ny, basenpoints):
         if k[0] == nx // 2 and nx % 2 == 0:
             expected_k_disp[k[0], -k[1]] += (.5 + .5j)*(nx * ny)
 
-        fft_disp = np.zeros(substrate.nb_fourier_grid_pts, order='f',
-                            dtype=complex)
-        fftengine.fft(disp[substrate.subdomain_slices], fft_disp)
+        real_field.p[...] = disp[substrate.subdomain_slices]
+        fftengine.fft(real_field, fourier_field)
+        fft_disp = fourier_field.p
         np.testing.assert_allclose(fft_disp,
                                    expected_k_disp[substrate.fourier_slices],
                                    rtol=1e-7, atol=ATOL)

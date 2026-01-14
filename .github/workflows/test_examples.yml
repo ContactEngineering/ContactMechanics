@@ -22,7 +22,7 @@ jobs:
         python-version: ['3.11']
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
         submodules: recursive
@@ -45,7 +45,7 @@ jobs:
         python3 -m pip install -v .[test]
         # Check that NetCDF install was not overriden
         python3 .check_netcdf_capabilities.py no
-        python3 .check_mufft_capabilities.py no
+        python3 .check_mugrid_capabilities.py no
 
     - name: Test example files
       run: |

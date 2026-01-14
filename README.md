@@ -1,5 +1,7 @@
 [![Build Status](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/test.yml/badge.svg)](https://github.com/ContactEngineering/ContactMechanics/actions/workflows/test.yml?query=branch%3Amaster)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ContactEngineering/ContactMechanics)
+
 ContactMechanics
 ================
 
@@ -40,7 +42,7 @@ Dependencies
 The package requires :
 - **numpy** - https://www.numpy.org/
 - **NuMPI** - https://github.com/imtek-simulation/numpi
-- **muFFT** - https://github.com/muSpectre/muFFT
+- **muGrid** - https://github.com/muSpectre/muGrid
 - **SurfaceTopography** - https://github.com/ContactEngineering/SurfaceTopography
 
 Optional dependencies:

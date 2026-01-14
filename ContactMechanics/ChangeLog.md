@@ -1,18 +1,26 @@
 Change log for ContactMechanics
 ===============================
 
-v1.7.0 (14Jan26)
+v1.8.0 (14Jan26)
 ----------------
 
 - MAINT: Updated examples to current API
 - MAINT: Formatting with black
 - CI: Update actions/checkout to v5 and actions/setup-python to v6
 
+v1.7.0 (29Oct25)
+-----------------
+
+- ENH: semiperiodic elastic halfspace
+- ENH: Dual proxy works in parallel 
+- ENH: dual minimize proxy for now also works on nonperiodic substrates (i.e. with padding)
+
 v1.6.1 (13May25)
 ----------------
 
 - MAINT: Drop python 3.8 support
 - TST: adapt to changes in convergence messages in scipy 
+
 
 v1.6.0 (23Dec24)
 ----------------
