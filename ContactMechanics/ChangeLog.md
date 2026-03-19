@@ -1,6 +1,10 @@
 Change log for ContactMechanics
 ===============================
 
+v1.8.1 (19Mar26)
+----------------
+- MAINT: fix compatibility with Pandas 3 
+
 v1.8.0 (14Jan26)
 ----------------
 
