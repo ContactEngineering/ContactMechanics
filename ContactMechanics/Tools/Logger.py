@@ -255,7 +255,7 @@ def read_convergence_log(filename):
 
     # Now read the data with the extracted column names
     df = pd.read_csv(filename,
-                     delim_whitespace=True,
+                     sep=r"\s+",
                      comment='#',
                      names=column_names)
     return df
