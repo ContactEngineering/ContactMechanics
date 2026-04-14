@@ -205,8 +205,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             (Equation A.30), see also equation A9 in
             [Carbone, Lorenz, Persson and Wohlers, EJPE (2009)](https://doi.org/10.1140/epje/i2009-10484-8)
             for a more classical way of writing the Greens function.
-            The elastic layer has youngs modulus `young` 
-            and poisson ratio `poisson`.  
+            The elastic layer has youngs modulus `young`
+            and poisson ratio `poisson`.
         poisson : float
             Default 0
              Poisson number. Need only be specified for substrates
