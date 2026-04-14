@@ -202,7 +202,15 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         thickness : float, optional
             Thickness of the elastic half-space. If None, this
             models an infinitely deep half-space. Cannot be used in
-            combination with stiffness_q0.
+            combination with stiffness_q0. If a finite thickness is used, 
+            this function implements the greens function for an 
+            elastic layer of thickness `thickness` on top of a rigid flat as
+            derived in [Carbone and Mangialardi, JMPS (2008)](https://doi.org/10.1016/j.jmps.2007.05.009) 
+            (Equation A.30), see also equation A9 in 
+            [Carbone, Lorenz, Persson and Wohlers, EJPE (2009)](https://doi.org/10.1140/epje/i2009-10484-8)
+            for a more classical way of writing the Greens function.
+            The elastic layer has youngs modulus `young` and poisson ratio 
+            `poisson`.  
         poisson : float
             Default 0
              Poisson number. Need only be specified for substrates
