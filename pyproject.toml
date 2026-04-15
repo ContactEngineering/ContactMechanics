@@ -16,15 +16,15 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python"
 ]
-requires-python = ">=3.9.0"
+requires-python = ">=3.10.0"
 dynamic = [ "version" ]
 dependencies = [
     "DiscoverVersion",
     "numpy",
     "scipy>=1.9.0",
     "NuMPI>=0.5.0",
-    "muFFT>=0.93.1",
-    "SurfaceTopography>=1.17.1"
+    "muGrid>=0.105.0",
+    "SurfaceTopography>=1.20.0"
 ]
 
 [project.optional-dependencies]
@@ -52,7 +52,7 @@ ce_hard_wall = "ContactMechanics.CommandLineInterface.HardWall:main"
 
 [tool.black]
 line-length = 88
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py310", "py311", "py312", "py313", "py314"]
 
 [tool.isort]
 profile = "black"
