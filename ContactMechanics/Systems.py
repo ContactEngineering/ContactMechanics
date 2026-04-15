@@ -902,7 +902,7 @@ class NonSmoothContactSystem(SystemBase):
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
 
-    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000, logger=None):
+    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000, logger=None, solver_options=dict()):
         """
         Convenience function for DUAL minimisation (pixel forces as variables).
         This function simplifies the process of solving the dual minimisation problem
@@ -930,7 +930,7 @@ class NonSmoothContactSystem(SystemBase):
             The result of the minimisation. It contains information about the optimisation
             result, including the final gap, force, and displacement of the system at the solution.
         """
-        solvers = {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b'}
+        solvers = {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b', 'trust-constr'}
 
         if solver not in solvers:
             raise ValueError(
@@ -955,23 +955,29 @@ class NonSmoothContactSystem(SystemBase):
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'l-bfgs-b':
-            while True: 
-                result = optim.minimize(
+            result = optim.minimize(
                 self.dual_objective(offset, gradient=True, logger=logger),
                 self.shape_minimisation_input(self.init_force),
                 method='L-BFGS-B', jac=True,
                 bounds=bnds,
                 options=dict(gtol=gtol, ftol=1e-40))
-                if result.message == "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH":
-                    print('restarting minimization because convergence not based on gtol')
-                    self.init_force = self.substrate.force
-                else: 
-                    break
-
+        elif solver == 'trust-constr':
+            result = optim.minimize(
+                fun = self.dual_objective(offset, gradient=True, logger=logger),
+                x0 = self.shape_minimisation_input(self.init_force),
+                hessp = lambda x,p: self.dual_hessian_product(p),
+                method='trust-constr', jac=True,
+                bounds=bnds,
+                options=dict(**solver_options))
         if result.success:
             # TODO: I think I need to call substrate.compute , so that substrate.energy is computed
             self.offset = offset
-            self.gap = result.jac
+            if solver == 'trust-constr':
+                # For trust-constr, result.jac is the (possibly sparse) constraint Jacobian.
+                # The objective gradient (our residual/gap) is stored in result.grad.
+                self.gap = np.asarray(result.grad).reshape(result.x.shape)
+            else:
+                self.gap = result.jac
             self.force = self.substrate.force = result.x
             self.contact_zone = result.x > 0
             self.disp = self.gap + offset + self.surface.heights().reshape(self.gap.shape)
