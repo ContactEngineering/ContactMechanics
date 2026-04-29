@@ -10,15 +10,20 @@ from ContactMechanics.Systems import NonSmoothContactSystem
 from NuMPI import MPI
 
 import scipy.optimize as optim
+from ContactMechanics.Tools.Logger import Logger
 
 
 def test_ccg_without_restart_free_system(comm):
     pnp = Reduction(comm)
 
-    nx, ny = 9, 9
+    nx, ny = 40, 40
     sx = sy = 4.
     R = 1.
     Es = 0.75
+
+    gtol = 1e-10
+    # typical forces are of the order of 1e-2
+    # So 1e-10 is a reasonable tolerance
 
     # MAKE REFERENCE solution in serial
 
@@ -48,11 +53,11 @@ def test_ccg_without_restart_free_system(comm):
     init_disp[bounded.filled(False)] = lbounds[bounded.filled(False)]
 
     res = optim.minimize(
-        system.objective(penetration, gradient=True),
+        system.objective(penetration, gradient=True, logger=Logger('conv.log')),
         system.shape_minimisation_input(init_disp),
         method='L-BFGS-B', jac=True,
         bounds=bnds,
-        options=dict(gtol=1e-13, ftol=1e-20))
+        options=dict(gtol=gtol, ftol=1e-20), )
 
     assert res.success
     _lbfgsb = res.x.reshape((2 * nx, 2 * ny))
@@ -80,7 +85,7 @@ def test_ccg_without_restart_free_system(comm):
         # We also test that the logger and the postprocessing involved work properly in parallel
         system.hessian_product,
         init_disp[substrate.subdomain_slices].reshape(-1),
-        gtol=1e-13,
+        gtol=gtol,
         bounds=lbounds_parallel.filled().reshape(-1),
         maxiter=1000,
         communicator=comm,
@@ -101,7 +106,7 @@ def test_ccg_without_restart_free_system(comm):
         system.substrate.evaluate_force(
             init_disp[substrate.subdomain_slices]
         )[substrate.local_topography_subdomain_slices],
-        gtol=1e-13,
+        gtol=gtol,
         maxiter=1000,
         communicator=comm,
     )

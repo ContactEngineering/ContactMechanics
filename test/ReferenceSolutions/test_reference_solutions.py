@@ -100,5 +100,5 @@ class ReferenceSolutionsTest(unittest.TestCase):
         R = 5
         ds = np.linspace(0, 3, 100)
         np.testing.assert_allclose(Hz.elastic_energy(ds[-1], R, Es),
-                                   np.trapz(Hz.normal_load(ds, R, Es), x=ds),
+                                   np.trapezoid(Hz.normal_load(ds, R, Es), x=ds),
                                    rtol=1e-4)

@@ -198,7 +198,7 @@ def test_dual_obj_nonperiodic():
     offset = 0.005
     # lbounds = np.zeros((2 * nx, 2 * ny))
     #
-    # Inpose contact constraint only where we have topopgraphy, i.e. not in the padding region
+    # Impose contact constraint only where we have topography, i.e. not in the padding region
     # lbounds = np.ma.masked_all(system.substrate.nb_subdomain_grid_pts)
     # lbounds.mask[system.substrate.local_topography_subdomain_slices] = False
     # lbounds[system.substrate.local_topography_subdomain_slices] = 0
@@ -230,7 +230,7 @@ def test_dual_obj_nonperiodic():
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
     # ###################BUGNICOURT########################################
-    CCGWithoutRestart.constrained_conjugate_gradients(
+    res = CCGWithoutRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, mean_val=None, gtol=gtol)
     assert res.success
@@ -301,9 +301,9 @@ def test_dual_obj_nonperiodic():
     polonsky_mean = res.x.reshape((nx, ny))
 
     # # ####################BUGNICOURT###################################
-    CCGWithoutRestart.constrained_conjugate_gradients(
+    res = CCGWithoutRestart.constrained_conjugate_gradients(
         system.dual_objective(offset, gradient=True),
-        system.dual_hessian_product, init_pressure, mean_val=mean_val,
+        system.dual_hessian_product, init_pressure+0.01, mean_val=mean_val,
         gtol=gtol)
     assert res.success
 

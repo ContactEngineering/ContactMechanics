@@ -197,14 +197,14 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
     def _reshape_bounds(self, lbounds=None, ubounds=None):
         if lbounds is not None and ubounds is not None:
-            ubounds = self.shape_minimisation_input(np.ma.filled(ubounds, np.inf))
-            lbounds = self.shape_minimisation_input(np.ma.filled(lbounds, -np.inf))
+            ubounds = (np.ma.filled(ubounds, np.inf)).ravel()
+            lbounds = (np.ma.filled(lbounds, -np.inf)).ravel()
             return optim.Bounds(lb=lbounds, ub=ubounds)
         elif lbounds is not None:
-            lbounds = self.shape_minimisation_input(np.ma.filled(lbounds, -np.inf))
+            lbounds = (np.ma.filled(lbounds, -np.inf)).ravel()
             return optim.Bounds(lb=lbounds)
         elif ubounds is not None:
-            ubounds = self.shape_minimisation_input(np.ma.filled(ubounds, np.inf))
+            ubounds = (np.ma.filled(ubounds, np.inf)).ravel()
             return optim.Bounds(ub=ubounds)
         else:
             return None
@@ -455,8 +455,6 @@ class NonSmoothContactSystem(SystemBase):
                 [self.energy,
                  -self.reduction.sum(self.substrate.force),
                  ])
-
-
 
     def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
         """
@@ -800,7 +798,6 @@ class NonSmoothContactSystem(SystemBase):
         self.substrate.force = - force
         self.substrate.disp = disp
 
-
         if logger is not None:
             tot_nb_grid_pts = np.prod(self.nb_grid_pts)
             nb_rep = self.reduction.sum(
@@ -814,21 +811,21 @@ class NonSmoothContactSystem(SystemBase):
                          < 0, 1., 0.))
 
             proj_grad = self.gradient * (force > 0)
-            rms_grad = np.sqrt(self.reduction.sum(proj_grad**2) / tot_nb_grid_pts)
+            rms_grad = np.sqrt(self.reduction.sum(proj_grad ** 2) / tot_nb_grid_pts)
             max_grad = self.reduction.max(np.abs(proj_grad))
             logger.st(['energy',
-                     'force',
-                     'frac_rep_area',
-                     'frac_att_area',
-                     'max_residual',
-                     'rms_residual'],
-                    [self.energy,
-                     -self.reduction.sum(self.substrate.force),
-                     nb_rep / tot_nb_grid_pts,
-                     nb_att / tot_nb_grid_pts,
-                     max_grad,
-                     rms_grad,
-                     ])
+                       'force',
+                       'frac_rep_area',
+                       'frac_att_area',
+                       'max_residual',
+                       'rms_residual'],
+                      [self.energy,
+                       -self.reduction.sum(self.substrate.force),
+                       nb_rep / tot_nb_grid_pts,
+                       nb_att / tot_nb_grid_pts,
+                       max_grad,
+                       rms_grad,
+                       ])
 
         return self.energy, self.gradient
 
@@ -850,7 +847,11 @@ class NonSmoothContactSystem(SystemBase):
         energy : float
             Value of total energy.
         gradient : array_like
-            Value of the gradient (array) or the value of gap (if gradient is True).
+            Value of the gradient (array), which corresponds to the value of gap..
+            The array is ravelled to a 1D arreay for compatibility with scipy solvers.
+            Note that for the nonperiodic substrate that uses padding, the shape of the array
+            corresponds to the unpadded domain, i.e. where the topography is defined.
+            That is, the shape of the array before ravelling is `substrate.topography_nb_subdomain_grid_pts`.`
 
         Notes
         -----
@@ -902,7 +903,8 @@ class NonSmoothContactSystem(SystemBase):
         hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
         return hessp.reshape(inres)
 
-    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000, logger=None):
+    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000,
+                            logger=None):
         """
         Convenience function for DUAL minimisation (pixel forces as variables).
         This function simplifies the process of solving the dual minimisation problem
@@ -914,6 +916,8 @@ class NonSmoothContactSystem(SystemBase):
             Determines the indentation depth.
         init_force : array_like, optional
             Initial guess for the force. If not provided, it defaults to None.
+            For Nonperiodic calculations, the array does not include the padding region,
+            i.e. it is of shape `substrate.topography_nb_subdomain_grid_pts`
         solver : str, optional
             The solver to be used for the minimisation. It can be one of
             'ccg-without-restart', 'ccg-with-restart', or 'l-bfgs-b'. If not provided,
@@ -941,6 +945,9 @@ class NonSmoothContactSystem(SystemBase):
         self.contact_zone = None
         self.init_force = init_force
 
+        if init_force is not None and init_force.shape != self.substrate.topography_nb_subdomain_grid_pts:
+            raise IncompatibleResolutionError
+
         lbounds = np.zeros(self.init_force.shape)
         bnds = self._reshape_bounds(lbounds, )
 
@@ -958,7 +965,7 @@ class NonSmoothContactSystem(SystemBase):
             while True: 
                 result = optim.minimize(
                 self.dual_objective(offset, gradient=True, logger=logger),
-                self.shape_minimisation_input(self.init_force),
+                self.init_force.ravel(),
                 method='L-BFGS-B', jac=True,
                 bounds=bnds,
                 options=dict(gtol=gtol, ftol=1e-40))

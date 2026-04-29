@@ -1,6 +1,24 @@
 Change log for ContactMechanics
 ===============================
 
+v1.8.1 (19Mar26)
+----------------
+- MAINT: fix compatibility with Pandas 3 
+
+v1.8.0 (14Jan26)
+----------------
+
+- MAINT: Updated examples to current API
+- MAINT: Formatting with black
+- CI: Update actions/checkout to v5 and actions/setup-python to v6
+
+v1.7.0 (29Oct25)
+-----------------
+
+- ENH: semiperiodic elastic halfspace
+- ENH: Dual proxy works in parallel 
+- ENH: dual minimize proxy for now also works on nonperiodic substrates (i.e. with padding)
+
 v1.6.1 (13May25)
 ----------------
 
