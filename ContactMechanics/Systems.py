@@ -451,9 +451,13 @@ class NonSmoothContactSystem(SystemBase):
         # How to compute the contact area will actually depend on wether it is a primal or dual solver
         return (['energy',
                  'force',
+                 'neg_forces',
+                 'gap_forces',
                  ],
                 [self.energy,
                  -self.reduction.sum(self.substrate.force),
+                 self.reduction.sum(np.abs(self.force) * (self.force > 0)),
+                 self.reduction.sum(np.abs(self.force[self.substrate.local_topography_subdomain_slices]) * (self.gap > 0)),
                  ])
 
     def evaluate(self, disp, offset, pot=True, forces=False, logger=None):
