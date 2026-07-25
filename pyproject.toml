@@ -29,10 +29,9 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    "flake8<8",
+    "flake8",
     "pytest",
     "pytest-cov",
-    "pytest-flake8",
     "runtests"
 ]
 docs = [
