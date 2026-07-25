@@ -1,6 +1,13 @@
 Change log for ContactMechanics
 ===============================
 
+
+v1.8.2 (25Jul26)
+----------------
+- MAINT: fix compatibility with NuMPI 0.12 API
+- MAINT: remove pytest-flake8 optional dependency
+
+
 v1.8.1 (19Mar26)
 ----------------
 - MAINT: fix compatibility with Pandas 3 
