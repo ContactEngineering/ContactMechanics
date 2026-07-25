@@ -734,7 +734,7 @@ class NonSmoothContactSystem(SystemBase):
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'ccg-with-restart':
-            result = CCGWithRestart.constrained_conjugate_gradients(
+            result = CCGWithRestart.constrained_conjugate_gradients_with_restart(
                 self.primal_objective(offset, gradient=True),
                 self.primal_hessian_product, x0=init_gap, gtol=gtol,
                 maxiter=maxiter)
@@ -957,7 +957,7 @@ class NonSmoothContactSystem(SystemBase):
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'ccg-with-restart':
-            result = CCGWithRestart.constrained_conjugate_gradients(
+            result = CCGWithRestart.constrained_conjugate_gradients_with_restart(
                 self.dual_objective(offset, gradient=True, logger=logger),
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)

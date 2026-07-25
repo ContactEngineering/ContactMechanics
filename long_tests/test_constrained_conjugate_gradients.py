@@ -33,7 +33,7 @@ def test_primal_obj():
     init_gap = disp - surface.heights() - offset
 
     # ####################POLONSKY-KEER##############################
-    res = CCGWithRestart.constrained_conjugate_gradients(
+    res = CCGWithRestart.constrained_conjugate_gradients_with_restart(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product, x0=init_gap, gtol=gtol)
 
@@ -69,10 +69,10 @@ def test_primal_obj():
     # ##########TEST MEAN VALUES#######################################
     mean_val = np.mean(lbfgsb_gap)
     # ####################POLONSKY-KEER##############################
-    res = CCGWithRestart.constrained_conjugate_gradients(
+    res = CCGWithRestart.constrained_conjugate_gradients_with_restart(
         system.primal_objective(offset, gradient=True),
         system.primal_hessian_product, init_gap, gtol=gtol,
-        mean_value=mean_val)
+        mean_val=mean_val)
 
     assert res.success
     polonsky_gap_mean_cons = res.x.reshape((nx, ny))
@@ -147,7 +147,7 @@ def test_dual_obj():
     gap_bugnicourt = gap_bugnicourt.reshape((nx, ny))
 
     # # ##################POLONSKY-KEER#####################################
-    res = CCGWithRestart.constrained_conjugate_gradients(
+    res = CCGWithRestart.constrained_conjugate_gradients_with_restart(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, gtol=gtol)
     assert res.success
@@ -171,10 +171,10 @@ def test_dual_obj():
     mean_val = np.mean(lbfgsb_force)
     # print('mean {}'.format(mean_val))
     # ####################POLONSKY-KEER##############################
-    res = CCGWithRestart.constrained_conjugate_gradients(
+    res = CCGWithRestart.constrained_conjugate_gradients_with_restart(
         system.dual_objective(offset, gradient=True),
         system.dual_hessian_product, init_pressure, gtol=gtol,
-        mean_value=mean_val)
+        mean_val=mean_val)
 
     assert res.success
     polonsky_force_mean_cons = res.x.reshape((nx, ny))
