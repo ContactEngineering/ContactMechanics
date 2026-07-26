@@ -6,7 +6,7 @@ import subprocess
 
 basedir = pathlib.Path(__file__,'..',).resolve()
 # print(scripts)
-scripts = basedir.glob('*.py')
+scripts = list(basedir.glob('*.py'))
 
 @pytest.mark.parametrize('script', scripts)
 def test_script_execution( script):
@@ -14,7 +14,7 @@ def test_script_execution( script):
     # call = f"jupytext --to notebook --output - {script} | jupyter nbconvert --execute --allow-errors -y --stdin --to=html --output={script.name}.html".split(" ")
     # assert subprocess.check_call(call, env=env, shell=True) == 0
 
-notebooks = basedir.glob('*.ipynb')
+notebooks = list(basedir.glob('*.ipynb'))
 @pytest.mark.parametrize('nb', notebooks)
 def test_notebooks_execution(nb):
     path = str(nb)
