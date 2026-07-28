@@ -1,6 +1,9 @@
 Change log for ContactMechanics
 ===============================
 
+v1.8.2.1 (28Jul26)
+----------------
+- MAINT: Bump required muGrid version to >=1.0
 
 v1.8.2 (25Jul26)
 ----------------
