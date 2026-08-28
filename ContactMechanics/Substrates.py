@@ -29,12 +29,41 @@ Base class for continuum mechanics models of halfspaces
 """
 
 import abc
-
+import numpy as np
 
 class Substrate(object, metaclass=abc.ABCMeta):
     """ Generic baseclass from which all substate classes derive
     """
     _periodic = None
+
+    def __init__(self, nb_grid_pts, physical_sizes):
+        
+        if not hasattr(nb_grid_pts, "__iter__"):
+            nb_grid_pts = (nb_grid_pts,)
+        if not hasattr(physical_sizes, "__iter__"):
+            physical_sizes = (physical_sizes,)
+        
+        self._nb_grid_pts = nb_grid_pts
+
+        tmpsize = list()
+        for i in range(self.dim):
+            tmpsize.append(physical_sizes[min(i, len(physical_sizes) - 1)])
+        self._physical_sizes = tuple(tmpsize)
+
+        self._physical_sizes = physical_sizes
+
+    @property
+    def nb_grid_pts(self):
+        return self._nb_grid_pts
+
+
+    @property
+    def area_per_pt(self):
+        return np.prod(self.physical_sizes) / np.prod(self.nb_grid_pts)
+
+    @property
+    def physical_sizes(self):
+        return self._physical_sizes
 
     class Error(Exception):
         # pylint: disable=missing-docstring
@@ -63,6 +92,11 @@ class Substrate(object, metaclass=abc.ABCMeta):
         """
         """
         pass
+
+    @property
+    def dim(self,):
+        "return the substrate's physical dimension"
+        return len(self.nb_domain_grid_pts)
 
     @property
     @abc.abstractmethod
@@ -119,7 +153,8 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
     # Since an elastic substrate essentially defines a Potential, a similar
     # internal structure is chosen
 
-    def __init__(self):
+    def __init__(self, nb_grid_pts, physical_sizes):
+        super().__init__(nb_grid_pts, physical_sizes)
         self.energy = None
         self.force = None
         self.force_k = None
