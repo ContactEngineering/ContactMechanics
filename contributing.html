@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contributing to ContactMechanics &mdash; ContactMechanics 1.8.2.dev5+g40ad18ea documentation</title>
+  <title>Contributing to ContactMechanics &mdash; ContactMechanics 1.8.3.dev4+gcb7f4090 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -14,7 +14,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=3af38e11"></script>
+      <script src="_static/documentation_options.js?v=891c8f67"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -165,8 +165,8 @@ and/or is incompatible with <cite>runtests</cite> (<cite>unittest</cite>), inclu
 <span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 
 <span class="n">pytestmark</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
-                                <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;tests only serial funcionalities, &quot;</span>
-                                       <span class="s2">&quot;please execute with pytest&quot;</span><span class="p">)</span>
+                                <span class="n">reason</span><span class="o">=</span><span class="s2">"tests only serial funcionalities, "</span>
+                                       <span class="s2">"please execute with pytest"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The file will executed in a run with <cite>pytest</cite> and not with a (parallel) run with
@@ -192,8 +192,8 @@ of <cite>MPI.COMM_WORLD</cite>.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span><span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
-                    <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;tests only serial funcionalities, &quot;</span>
-                           <span class="s2">&quot;please execute with pytest&quot;</span><span class="p">)</span>
+                    <span class="n">reason</span><span class="o">=</span><span class="s2">"tests only serial funcionalities, "</span>
+                           <span class="s2">"please execute with pytest"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">test_parallel</span><span class="p">(</span><span class="n">comm_serial</span><span class="p">):</span>
     <span class="k">pass</span>
 </pre></div>
@@ -215,7 +215,7 @@ happens. It is a good idea to let the plots ready for use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="kc">False</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="o">-</span> <span class="n">system</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="o">-</span> <span class="n">system</span><span class="o">.</span><span class="n">substrate</span><span class="o">.</span><span class="n">force</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">"pressure"</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>

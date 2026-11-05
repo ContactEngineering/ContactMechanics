@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContactMechanics package &mdash; ContactMechanics 1.8.2.dev5+g40ad18ea documentation</title>
+  <title>ContactMechanics package &mdash; ContactMechanics 1.8.3.dev4+gcb7f4090 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=3af38e11"></script>
+      <script src="../_static/documentation_options.js?v=891c8f67"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -547,29 +547,29 @@ Academic Press, New York, 1969, pp. 136-211.</p>
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>area_per_pt</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></dt><dd><p>Return the MPI communicator</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.communicator" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.communicator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></a></dt><dd><p>Return the MPI communicator</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dim</span></code></dt><dd><p>return the substrate’s physical dimension</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.dim" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.dim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dim</span></code></a></dt><dd><p>return the substrate’s physical dimension</p>
 </dd>
 <dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.domain_boundary_mask" title="ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.domain_boundary_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">domain_boundary_mask</span></code></a></dt><dd><p>Returns a mask of the points that are on the boundary of the domain</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_locations</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.fourier_locations" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.fourier_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_locations</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_slices</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.fourier_slices" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.fourier_slices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_slices</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_topography_subdomain_slices</span></code></dt><dd><p>slice representing the local subdomain without the padding area</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.local_topography_subdomain_slices" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.local_topography_subdomain_slices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_topography_subdomain_slices</span></code></a></dt><dd><p>slice representing the local subdomain without the padding area</p>
 </dd>
 <dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.nb_domain_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.nb_domain_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_domain_grid_pts</span></code></a></dt><dd><p>usually, the nb_grid_pts of the system is equal to the geometric</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_fourier_grid_pts</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_fourier_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_fourier_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_fourier_grid_pts</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
 <dt><strong>nb_grid_pts</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_subdomain_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_subdomain_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
 <dt><strong>physical_sizes</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_locations" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_slices</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_slices" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_slices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_slices</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
 <dt><strong>topography_nb_subdomain_grid_pts</strong></dt><dd></dd>
 <dt><strong>topography_subdomain_locations</strong></dt><dd></dd>
@@ -1126,29 +1126,29 @@ Periodic images are numerically summed to obtain the periodicity.</p>
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>area_per_pt</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></dt><dd><p>Return the MPI communicator</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.communicator" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.communicator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></a></dt><dd><p>Return the MPI communicator</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dim</span></code></dt><dd><p>return the substrate’s physical dimension</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.dim" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.dim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dim</span></code></a></dt><dd><p>return the substrate’s physical dimension</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">domain_boundary_mask</span></code></dt><dd><p>Returns a mask of the points that are on the boundary of the domain</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.domain_boundary_mask" title="ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.domain_boundary_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">domain_boundary_mask</span></code></a></dt><dd><p>Returns a mask of the points that are on the boundary of the domain</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_locations</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.fourier_locations" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.fourier_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_locations</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_slices</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.fourier_slices" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.fourier_slices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourier_slices</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_topography_subdomain_slices</span></code></dt><dd><p>slice representing the local subdomain without the padding area</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.local_topography_subdomain_slices" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.local_topography_subdomain_slices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_topography_subdomain_slices</span></code></a></dt><dd><p>slice representing the local subdomain without the padding area</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_domain_grid_pts</span></code></dt><dd><p>usually, the nb_grid_pts of the system is equal to the geometric</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.nb_domain_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.FreeFFTElasticHalfSpace.nb_domain_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_domain_grid_pts</span></code></a></dt><dd><p>usually, the nb_grid_pts of the system is equal to the geometric</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_fourier_grid_pts</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_fourier_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_fourier_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_fourier_grid_pts</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
 <dt><strong>nb_grid_pts</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_subdomain_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_subdomain_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
 <dt><strong>physical_sizes</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_locations" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_slices</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_slices" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_slices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_slices</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
 <dt><strong>topography_nb_subdomain_grid_pts</strong></dt><dd></dd>
 <dt><strong>topography_subdomain_locations</strong></dt><dd></dd>
@@ -1409,7 +1409,7 @@ results are still returned but should be interpreted with care.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_grid_pts</span></code></dt><dd><p>For systems, nb_grid_pts can become non-trivial</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_grid_pts</span></code></a></dt><dd><p>For systems, nb_grid_pts can become non-trivial</p>
 </dd>
 </dl>
 </dd>
@@ -1521,12 +1521,12 @@ surface_type     –</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></dt><dd><p>Return the MPI communicator</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.communicator" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.communicator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></a></dt><dd><p>Return the MPI communicator</p>
 </dd>
 <dt><strong>nb_domain_grid_pts</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_subdomain_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_subdomain_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_locations" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
 </dl>
 </dd>
@@ -1617,12 +1617,12 @@ forces – (default False) whether the forces should be evaluated</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></dt><dd><p>Return the MPI communicator</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.communicator" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.communicator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">communicator</span></code></a></dt><dd><p>Return the MPI communicator</p>
 </dd>
 <dt><strong>nb_domain_grid_pts</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_subdomain_grid_pts" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.nb_subdomain_grid_pts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nb_subdomain_grid_pts</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
+<dt><a class="reference internal" href="#ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_locations" title="ContactMechanics.FFTElasticHalfSpace.PeriodicFFTElasticHalfSpace.subdomain_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdomain_locations</span></code></a></dt><dd><p>When working in Parallel one processor holds only Part of the Data</p>
 </dd>
 </dl>
 </dd>
