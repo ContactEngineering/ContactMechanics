@@ -962,12 +962,18 @@ class NonSmoothContactSystem(SystemBase):
                 self.dual_hessian_product, x0=init_force, gtol=gtol,
                 maxiter=maxiter)
         elif solver == 'l-bfgs-b':
-            result = optim.minimize(
+            while True: 
+                result = optim.minimize(
                 self.dual_objective(offset, gradient=True, logger=logger),
                 self.init_force.ravel(),
                 method='L-BFGS-B', jac=True,
                 bounds=bnds,
-                options=dict(gtol=gtol, ftol=1e-20))
+                options=dict(gtol=gtol, ftol=1e-40))
+                if result.message == "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH":
+                    print('restarting minimization because convergence not based on gtol')
+                    self.init_force = self.substrate.force
+                else: 
+                    break
 
         if result.success:
             # TODO: I think I need to call substrate.compute , so that substrate.energy is computed
