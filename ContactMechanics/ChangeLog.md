@@ -1,18 +1,32 @@
+<!--
+Style for this changelog (keep to it so entries stay uniform):
+
+- Newest version first. Heading `vX.Y.Z (DDMonYY)`, underlined with dashes.
+  A version not yet released is headed `vX.Y.Z (not yet released)`.
+- One bullet per user-visible change, at most two lines (about 200
+  characters). Say what changed for the user and, if useful, why or by how
+  much. Omit internals: no function, class, file or variable names, no
+  environment variables, no commit or PR references.
+- Start every bullet with one of: `ENH:` (new feature), `BUG:` (fix),
+  `API:` (interface change), `PERF:` (speed or memory), `MAINT:`, `TST:`,
+  `DOC:`, `BUILD:`, `CI:`.
+- Small related fixes may share one bullet. No trailing period on bullets.
+-->
+
 Change log for ContactMechanics
 ===============================
 
 v1.9.0 (not yet released)
 -------------------------
-- BUG: `ReferenceSolutions.Cone.contact_radius_and_area` returned pi a/D
-  instead of pi (a/D)^2 for the contact area; `Cone.deformation` inside the
-  contact depended on the sampling points
-- BUG: `ReferenceSolutions.Hertz.surface_stress` and `Hertz.stress` lost
-  accuracy close to the center and close to the surface by cancellation
-- BUG: `ReferenceSolutions.GreenwoodTripp` stopped when the change of the
-  damped iterate was below `tol`, i.e. at a residual of `tol / mix`
-- MAINT: `ReferenceSolutions.Cone` no longer imports matplotlib and
-  ContactMechanics at module level; the demonstration script was replaced
-  by a test
+- MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
+  scipy 1.13 or later and a recent DiscoverVersion
+- CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Cone reference solution: correct contact area, displacements
+  independent of the sampling points
+- BUG: Hertz reference stresses are accurate close to the center and the
+  surface
+- BUG: Greenwood-Tripp reference solution converges to the requested
+  tolerance
 
 v1.8.3 (28Jul26)
 ----------------
