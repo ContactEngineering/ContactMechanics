@@ -1,31 +1,34 @@
+<!--
+Style for this changelog (keep to it so entries stay uniform):
+
+- Newest version first. Heading `vX.Y.Z (DDMonYY)`, underlined with dashes.
+  A version not yet released is headed `vX.Y.Z (not yet released)`.
+- One bullet per user-visible change, at most two lines (about 200
+  characters). Say what changed for the user and, if useful, why or by how
+  much. Omit internals: no function, class, file or variable names, no
+  environment variables, no commit or PR references.
+- Start every bullet with one of: `ENH:` (new feature), `BUG:` (fix),
+  `API:` (interface change), `PERF:` (speed or memory), `MAINT:`, `TST:`,
+  `DOC:`, `BUILD:`, `CI:`.
+- Small related fixes may share one bullet. No trailing period on bullets.
+-->
+
 Change log for ContactMechanics
 ===============================
 
 v1.9.0 (not yet released)
 -------------------------
-- BUG: Polonsky & Keer crashed for flat topographies at constant external
-  force without `pentol`, and did not converge for flat topographies out of
-  contact; the characteristic length is now inferred from offset or load
-- BUG: array (per-pixel) hardness raised a `ValueError`; a hardness of zero
-  was treated as no hardness
-- BUG: plastic displacement was also accumulated on elastic contact points
-  with penetration below `pentol`; the plastic mask and `active_set` are now
-  computed from the final iterate
-- BUG: Polonsky & Keer stalled (for up to `maxiter` iterations, with a wrong
-  contact area) when the undeformed rigid surface penetrated everywhere,
-  depending on roundoff; the initial state is now consistent (#3)
-- BUG: at constant external force, the uniform initial force was distributed
-  over masked (undefined) points
-- BUG: relative convergence checks divided by quantities that can vanish
-  (total force, maximum height plus offset)
-- ENH: default `forcetol` is E* × sqrt(area_per_pt) × `pentol` instead of an
-  absolute 1e-5
-- ENH: `ConvergenceWarning` when Polonsky & Keer stops at `maxiter`; the
-  system state is populated also without convergence
-- ENH: `FreeFFTElasticHalfSpace` warns by default if forces at the boundary of
-  the domain are nonzero (`check_boundaries=None`); `True` raises as before
-- MAINT: removed the force in the padding region from the convergence
-  criterion; it vanishes by construction
+- MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
+  scipy 1.13 or later and a recent DiscoverVersion
+- CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Polonsky-Keer could stall near full contact and return a wrong
+  contact area; on 81 test problems it now always converges
+- BUG: Polonsky-Keer no longer crashes or stalls for flat punches
+- ENH: Polonsky-Keer accepts a hardness that varies in space; plastic
+  deformation only occurs where the material flows
+- API: Default force tolerance scales with modulus and grid; Polonsky-Keer
+  warns when it does not converge
+- API: Nonperiodic substrates warn when the contact reaches the boundary
 
 v1.8.3 (28Jul26)
 ----------------
