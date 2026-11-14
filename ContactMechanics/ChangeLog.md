@@ -17,6 +17,17 @@ v1.9.0 (not yet released)
 - ENH: logger argument for primal objective and proxy (#40)
 - ENH: `maxiter` is forwarded to L-BFGS-B; MPI communicator is forwarded to
   the conjugate-gradient solvers (#21)
+- BUG: `substrate.force` had a different sign and grid depending on how the
+  state was computed (positive contact forces on the topography grid after
+  minimization, -dE/du on the substrate grid after `evaluate`); it is now
+  always -dE/du on the grid of the substrate (#28)
+- API: `NonSmoothContactSystem.compute_normal_force` returns the normal load,
+  positive for compressive contact, independent of how the state was
+  computed (previously its sign depended on it)
+- ENH: `minimize_proxy` stores the elastic energy in `energy` and
+  `substrate.energy`
+- DOC: Sign conventions of forces and the result of `minimize_proxy` (#28,
+  #96)
 
 v1.8.3 (28Jul26)
 ----------------

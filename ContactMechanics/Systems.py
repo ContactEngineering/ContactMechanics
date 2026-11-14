@@ -374,6 +374,26 @@ class NonSmoothContactSystem(SystemBase):
     functional at the solution). The classic contact problems, for which the
     interaction between the tribopartners is just non-penetration without
     adhesion, belong to this type of system
+
+    Sign conventions
+    ----------------
+    Displacements `disp` are positive into the substrate. Gaps are
+    nonnegative for non-penetrating surfaces.
+
+    `substrate.force` is the force exerted *by* the substrate on its surface
+    nodes, -dE/du, on the (for nonperiodic substrates: padded) grid of the
+    substrate. It is negative where the substrate is compressed. This
+    convention is independent of how the state was computed.
+
+    After a minimization (`minimize_proxy`, `primal_minimize_proxy`,
+    `dual_minimize_proxy`), `force` is the contact force acting *on* the
+    substrate on the (unpadded) topography grid, i.e. it is positive in
+    the contact; `force / area_per_pt` is the contact pressure. Note that
+    `evaluate` (used by the objective functions) instead sets `force` to
+    the substrate force -dE/du.
+
+    `compute_normal_force` returns the total normal load, which is positive
+    for compressive contact.
     """
 
     # pylint: disable=abstract-method
@@ -419,8 +439,40 @@ class NonSmoothContactSystem(SystemBase):
         return self.surface.nb_grid_pts
 
     def compute_normal_force(self):
-        "computes and returns the sum of all forces"
-        return self.reduction.sum(self.substrate.force)
+        """
+        Computes and returns the normal load, i.e. the total force acting on
+        the substrate. It is positive for compressive contact.
+        """
+        return -self.reduction.sum(self.substrate.force)
+
+    def _set_state(self, offset, disp, force, energy, contact_zone=None):
+        """
+        Store the state after a minimization.
+
+        Parameters
+        ----------
+        offset : float
+            Offset of the rigid surface.
+        disp : np.ndarray
+            Displacements on the (local) grid of the substrate.
+        force : np.ndarray
+            Contact forces on the (local) topography grid, positive in
+            compression.
+        energy : float
+            Elastic energy.
+        contact_zone : np.ndarray, optional
+            Contacting points. (Default: points with positive force)
+        """
+        self.offset = offset
+        self.disp = disp
+        self.force = force
+        self.energy = self.substrate.energy = energy
+        self.contact_zone = force > 0 if contact_zone is None else contact_zone
+        # The substrate force has the opposite sign and lives on the grid of
+        # the substrate
+        substrate_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
+        substrate_force[self.comp_slice] = -force
+        self.substrate.force = substrate_force
 
     def compute_nb_contact_pts(self):
         """
@@ -574,10 +626,18 @@ class NonSmoothContactSystem(SystemBase):
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of constrained minimisation.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
+        solver : callable, optional
+            The solver. (Default:
+            `ContactMechanics.Optimization.constrained_conjugate_gradients`)
         offset : float
             determines indentation depth
+        external_force : float
+            Total normal load; if given, the offset is determined by the
+            solver.
+        hardness : float or array_like
+            Hardness in units of force per pixel (for plastic calculations).
         initial_displacements : array_like
             initial guess for surface displacement. If not set, zero
                       displacement of shape
@@ -592,6 +652,38 @@ class NonSmoothContactSystem(SystemBase):
             Maximum number of iterations allowed for convergence.
         logger : :obj:`ContactMechanics.Tools.Logger`
             Reports status and values at each iteration.
+
+        All keyword arguments are passed on to the solver; see
+        `ContactMechanics.Optimization.constrained_conjugate_gradients` for
+        all options.
+
+        Returns
+        -------
+        result : scipy.optimize.OptimizeResult
+            The result of the solver with the following attributes:
+
+            - success : bool, whether the tolerances were reached
+            - message : str, description of the termination
+            - x : np.ndarray, displacements on the (local) grid of the
+              substrate, i.e. including the padding region of nonperiodic
+              substrates
+            - jac : np.ndarray, contact forces on the (local) topography
+              grid, positive in compression (`jac / area_per_pt` is the
+              contact pressure)
+            - fun : float, elastic energy
+            - offset : float, offset of the rigid surface (computed by the
+              solver if `external_force` is given)
+            - active_set : np.ndarray, points whose forces are between zero
+              and the hardness
+            - plastic : np.ndarray, plastically deforming points (only for
+              plastic calculations)
+            - nit : int, number of iterations
+            - nfev : int, number of evaluations of the elastic response
+            - maxcv : dict, maximum penetration and maximum force violation
+
+        If the solver succeeded, the state of the system (`offset`, `disp`,
+        `force`, `energy`, `contact_zone`, `substrate.force`) is updated, see
+        the sign conventions in the class documentation.
         """
         # pylint: disable=arguments-differ
         self.disp = None
@@ -602,11 +694,7 @@ class NonSmoothContactSystem(SystemBase):
             self.surface,
             **kwargs)
         if result.success:
-            self.offset = result.offset
-            self.disp = result.x
-            self.force = self.substrate.force = result.jac
-            self.contact_zone = result.jac > 0
-
+            self._set_state(result.offset, result.x, result.jac, result.fun)
             self.substrate.check()
         return result
 
@@ -840,13 +928,11 @@ class NonSmoothContactSystem(SystemBase):
                 options=dict(gtol=gtol, ftol=0, maxiter=maxiter))
 
         if result.success:
-            self.offset = offset
-            self.disp = np.reshape(result.x, res) + base
-            # This sets energy, gap and (substrate) forces
-            self.evaluate(self.disp, offset, forces=True)
-            self.force = self.substrate.force = -self.force[self.comp_slice]
+            disp = np.reshape(result.x, res) + base
+            # This computes energy, gap and substrate forces
+            energy, substrate_force = self.evaluate(disp, offset, forces=True)
             # The solvers place active constraints exactly onto the bound
-            self.contact_zone = self.gap <= 0
+            self._set_state(offset, disp, -substrate_force[self.comp_slice], energy, contact_zone=self.gap <= 0)
 
         return result
 
@@ -888,8 +974,11 @@ class NonSmoothContactSystem(SystemBase):
         self.energy = 1 / 2 * self.reduction.sum(force * disp) - self.reduction.sum(
             force * (self.surface.heights() + offset))
 
-        # Update state:
-        self.substrate.force = - force
+        # Update state: the substrate force has the opposite sign and lives
+        # on the grid of the substrate
+        substrate_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
+        substrate_force[self.comp_slice] = -force
+        self.substrate.force = substrate_force
         self.substrate.disp = disp
 
         if logger is not None:
@@ -1092,14 +1181,11 @@ class NonSmoothContactSystem(SystemBase):
                 options=dict(gtol=gtol, ftol=0, maxiter=maxiter))
 
         if result.success:
-            self.offset = offset
             force = np.reshape(result.x, res)
             padded_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
             padded_force[self.comp_slice] = force
-            self.disp = self.substrate.evaluate_disp(-padded_force)
-            self.gap = self.compute_gap(self.disp, offset)
-            self.force = self.substrate.force = force
-            self.energy = self.reduction.sum(force * self.disp[self.comp_slice]) / 2
-            self.contact_zone = force > 0
+            disp = self.substrate.evaluate_disp(-padded_force)
+            self.gap = self.compute_gap(disp, offset)
+            self._set_state(offset, disp, force, self.reduction.sum(force * disp[self.comp_slice]) / 2)
 
         return result
