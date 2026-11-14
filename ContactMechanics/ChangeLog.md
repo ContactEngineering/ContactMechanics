@@ -1,3 +1,18 @@
+<!--
+Style for this changelog (keep to it so entries stay uniform):
+
+- Newest version first. Heading `vX.Y.Z (DDMonYY)`, underlined with dashes.
+  A version not yet released is headed `vX.Y.Z (not yet released)`.
+- One bullet per user-visible change, at most two lines (about 200
+  characters). Say what changed for the user and, if useful, why or by how
+  much. Omit internals: no function, class, file or variable names, no
+  environment variables, no commit or PR references.
+- Start every bullet with one of: `ENH:` (new feature), `BUG:` (fix),
+  `API:` (interface change), `PERF:` (speed or memory), `MAINT:`, `TST:`,
+  `DOC:`, `BUILD:`, `CI:`.
+- Small related fixes may share one bullet. No trailing period on bullets.
+-->
+
 Change log for ContactMechanics
 ===============================
 
@@ -26,6 +41,24 @@ v1.9.0 (not yet released)
   the domain are nonzero (`check_boundaries=None`); `True` raises as before
 - MAINT: removed the force in the padding region from the convergence
   criterion; it vanishes by construction
+- BUG: automatic offset stepping of `contact_mechanics` and `ce_hard_wall`
+  extrapolated towards full contact only for zero-mean heights; for
+  shifted heights it retracted the rigid surface
+- BUG: `ce_hard_wall --displacement` crashed; the contact map of plastic
+  calculations excluded plastically deformed points; plastic displacement
+  was not reset between automatic steps of `ce_hard_wall`
+- BUG: passing `pentol` or `maxiter` in `optimizer_kwargs` of
+  `contact_mechanics` raised a TypeError
+- BUG: `len()` of NetCDF containers failed with scipy's netCDF backend
+- API: `contact_mechanics` and `ce_hard_wall` use the iteration limit of the
+  solver by default (previously 100 and 1000, which left calculations near
+  full contact unconverged); the solver's penetration tolerance replaces a
+  duplicated heuristic in `contact_mechanics`
+- API: `ce_hard_wall` uses the same stepping code as `contact_mechanics`
+  (#60), has a `--nsteps` option and writes a `converged` column to the log
+- DOC: second return value of `contact_mechanics` is the fractional contact
+  area (#87)
+- TST: tests for all modes of `ce_hard_wall` (#62)
 
 v1.8.3 (28Jul26)
 ----------------

@@ -22,6 +22,7 @@
 # SOFTWARE.
 #
 
+
 import logging
 
 import numpy as np
@@ -34,6 +35,20 @@ from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalf
 _log = logging.getLogger(__name__)
 
 
+def _optimizer_kwargs(pentol, maxiter, optimizer_kwargs):
+    """
+    Merge explicit solver arguments into `optimizer_kwargs`. Explicit
+    arguments that are None are not passed, such that the solver defaults
+    apply.
+    """
+    kwargs = {} if optimizer_kwargs is None else dict(optimizer_kwargs)
+    if pentol is not None:
+        kwargs['pentol'] = pentol
+    if maxiter is not None:
+        kwargs['maxiter'] = maxiter
+    return kwargs
+
+
 def _contact_calculation(
     system,
     offset=None,
@@ -41,7 +56,7 @@ def _contact_calculation(
     history=None,
     pentol=None,
     maxiter=None,
-    optimizer_kwargs={},
+    optimizer_kwargs=None,
 ):
     """
     Run a full contact calculation at a given external load.
@@ -56,23 +71,32 @@ def _contact_calculation(
         The force pushing the surfaces together. (Default: None)
     history : tuple
         History returned by past calls to next_step
+    pentol : float, optional
+        Penetration tolerance. (Default: None, i.e. the solver default)
+    maxiter : int, optional
+        Maximum number of iterations. (Default: None, i.e. the solver default)
+    optimizer_kwargs : dict, optional
+        Optional arguments passed on to the optimizer. (Default: None)
 
     Returns
     -------
     displacements : numpy.ndarray
         Current surface displacement field.
-    forces : numpy.ndarray
+    gap : numpy.ndarray
+        Current gap field.
+    pressure : numpy.ndarray
         Current surface pressure field.
+    contacting_points : numpy.ndarray
+        Boolean map of points in contact (positive pressure).
     displacement : float
-        Current displacement of the rigid surface
+        Current displacement (offset) of the rigid surface
     load : float
-        Current load.
+        Current mean pressure.
     area : float
         Current fractional contact area.
     history : tuple
-        History of contact calculations.
-    optimizer_kwargs : dict, optional
-        Optional arguments passed on to the optimizer. (Default: {})
+        History of contact calculations: offsets, mean gaps, mean pressures,
+        fractional contact areas and convergence flags.
     """
 
     topography = system.surface
@@ -88,23 +112,21 @@ def _contact_calculation(
         mean_displacements = []
         mean_gaps = []
         mean_pressures = []
-        total_contact_areas = []
+        fractional_contact_areas = []
         converged = np.array([], dtype=bool)
     if history is not None:
         (
             mean_displacements,
             mean_gaps,
             mean_pressures,
-            total_contact_areas,
+            fractional_contact_areas,
             converged,
         ) = history
 
     opt = system.minimize_proxy(
         offset=offset,
         external_force=external_force,
-        pentol=pentol,
-        maxiter=maxiter,
-        **optimizer_kwargs,
+        **_optimizer_kwargs(pentol, maxiter, optimizer_kwargs),
     )
     force_xy = opt.jac
     displacement_xy = opt.x[: force_xy.shape[0], : force_xy.shape[1]]
@@ -112,8 +134,8 @@ def _contact_calculation(
     mean_gaps = np.append(mean_gaps, [np.mean(displacement_xy) - middle - opt.offset])
     mean_load = force_xy.sum() / np.prod(topography.physical_sizes)
     mean_pressures = np.append(mean_pressures, [mean_load])
-    total_contact_area = (force_xy > 0).sum() / np.prod(topography.nb_grid_pts)
-    total_contact_areas = np.append(total_contact_areas, [total_contact_area])
+    fractional_contact_area = (force_xy > 0).sum() / np.prod(topography.nb_grid_pts)
+    fractional_contact_areas = np.append(fractional_contact_areas, [fractional_contact_area])
     converged = np.append(converged, np.array([opt.success], dtype=bool))
 
     area_per_pt = substrate.area_per_pt
@@ -130,13 +152,13 @@ def _contact_calculation(
         contacting_points_xy,
         opt.offset,
         mean_load,
-        total_contact_area,
-        (mean_displacements, mean_gaps, mean_pressures, total_contact_areas, converged),
+        fractional_contact_area,
+        (mean_displacements, mean_gaps, mean_pressures, fractional_contact_areas, converged),
     )
 
 
 def _next_contact_step(
-    system, history=None, pentol=None, maxiter=None, optimizer_kwargs={}
+    system, history=None, pentol=None, maxiter=None, optimizer_kwargs=None
 ):
     """
     Run a full contact calculation. Try to guess displacement such that areas
@@ -148,23 +170,16 @@ def _next_contact_step(
         The contact mechanical system.
     history : tuple
         History returned by past calls to next_step
+    pentol : float, optional
+        Penetration tolerance. (Default: None, i.e. the solver default)
+    maxiter : int, optional
+        Maximum number of iterations. (Default: None, i.e. the solver default)
+    optimizer_kwargs : dict, optional
+        Optional arguments passed on to the optimizer. (Default: None)
 
     Returns
     -------
-    displacements : numpy.ndarray
-        Current surface displacement field.
-    forces : numpy.ndarray
-        Current surface pressure field.
-    displacement : float
-        Current displacement of the rigid surface
-    load : float
-        Current load.
-    area : float
-        Current fractional contact area.
-    history : tuple
-        History of contact calculations.
-    optimizer_kwargs : dict, optional
-        Optional arguments passed on to the optimizer. (Default: {})
+    See `_contact_calculation`.
     """
 
     # Get topography object from contact system
@@ -181,10 +196,10 @@ def _next_contact_step(
     # Get the profile as a numpy array
     heights = topography.heights()
 
-    # Find max, min and mean heights
+    # Find max and mean heights. Note that offsets live on the scale of
+    # negative heights: first contact occurs at offset -top.
     top = np.max(heights)
     middle = np.mean(heights)
-    bot = np.min(heights)
 
     if history is None:
         step = 0
@@ -193,7 +208,7 @@ def _next_contact_step(
             mean_displacements,
             mean_gaps,
             mean_pressures,
-            total_contact_areas,
+            fractional_contact_areas,
             converged,
         ) = history
         step = len(mean_displacements)
@@ -205,14 +220,16 @@ def _next_contact_step(
     else:
         # Intermediate sort by area
         sorted_disp, sorted_area = np.transpose(
-            sorted(zip(mean_displacements, total_contact_areas), key=lambda x: x[1])
+            sorted(zip(mean_displacements, fractional_contact_areas), key=lambda x: x[1])
         )
 
         ref_area = np.log10(np.array(sorted_area + 1 / np.prod(topography.nb_grid_pts)))
         darea = np.append(ref_area[1:] - ref_area[:-1], -ref_area[-1])
         i = np.argmax(darea)
         if i == step - 1:
-            mean_displacement = bot + 2 * (sorted_disp[-1] - bot)
+            # Largest gap is towards full contact: double the indentation
+            # (measured from first contact) of the largest contact area
+            mean_displacement = 2 * sorted_disp[-1] + top
         else:
             mean_displacement = (sorted_disp[i] + sorted_disp[i + 1]) / 2
 
@@ -226,6 +243,58 @@ def _next_contact_step(
     )
 
 
+def _contact_steps(system, nsteps=None, offsets=None, pressures=None, pentol=None, maxiter=None,
+                   optimizer_kwargs=None):
+    """
+    Generator running a sequence of contact calculations, either at given
+    offsets, at given mean pressures or at automatically chosen offsets.
+
+    Parameters
+    ----------
+    system : ContactMechanics.Systems.SystemBase
+        The contact mechanical system.
+    nsteps : int, optional
+        Number of automatically chosen contact steps.
+    offsets : list of floats, optional
+        List with offsets.
+    pressures : list of floats, optional
+        List with mean pressures (force per area).
+    pentol : float, optional
+        Penetration tolerance. (Default: None, i.e. the solver default)
+    maxiter : int, optional
+        Maximum number of iterations. (Default: None, i.e. the solver default)
+    optimizer_kwargs : dict, optional
+        Optional arguments passed on to the optimizer. (Default: None)
+
+    Yields
+    ------
+    The return value of `_contact_calculation` for every step.
+    """
+    if sum(x is not None for x in (nsteps, offsets, pressures)) != 1:
+        raise ValueError("Exactly one of `nsteps`, `offsets` and `pressures` must be given.")
+
+    history = None
+    if offsets is not None:
+        for offset in offsets:
+            step = _contact_calculation(system, offset=offset, history=history, pentol=pentol, maxiter=maxiter,
+                                        optimizer_kwargs=optimizer_kwargs)
+            history = step[-1]
+            yield step
+    elif pressures is not None:
+        area = np.prod(system.surface.physical_sizes)
+        for pressure in pressures:
+            step = _contact_calculation(system, external_force=pressure * area, history=history, pentol=pentol,
+                                        maxiter=maxiter, optimizer_kwargs=optimizer_kwargs)
+            history = step[-1]
+            yield step
+    else:
+        for i in range(nsteps):
+            step = _next_contact_step(system, history=history, pentol=pentol, maxiter=maxiter,
+                                      optimizer_kwargs=optimizer_kwargs)
+            history = step[-1]
+            yield step
+
+
 def contact_mechanics(
     self,
     substrate=None,
@@ -233,9 +302,9 @@ def contact_mechanics(
     offsets=None,
     pressures=None,
     hardness=None,
-    maxiter=100,
+    maxiter=None,
     results_callback=None,
-    optimizer_kwargs={},
+    optimizer_kwargs=None,
 ):
     """
     Carry out an automated contact mechanics calculations. The pipeline
@@ -255,7 +324,10 @@ def contact_mechanics(
         periodic or nonperiodic.
         (Default: None)
     nsteps : int, optional
-        Number of contact steps. (Default: 10)
+        Number of contact steps, with offsets chosen automatically such that
+        the contact areas are approximately equally spaced on a log scale.
+        Can only be set if `offsets` and `pressures` are set to None.
+        (Default: None)
     offsets : list of floats, optional
         List with offsets. Can only be set if `nsteps` and `pressures` is
         set to None. (Default: None)
@@ -266,21 +338,24 @@ def contact_mechanics(
         Hardness in units of E*. Calculation is fully elastic if set to None.
         (Default: None)
     maxiter : int, optional
-        Maximum number of interations. (Default: 100)
+        Maximum number of interations. (Default: None, i.e. the default of
+        the Polonsky & Keer solver)
     results_callback : func, optional
-        Callback function receiving displacement, pressure, etc. fields.
-        (Default: None)
+        Callback function receiving displacement, gap, pressure, contacting
+        points, offset, mean pressure and fractional contact area for each
+        step. (Default: None)
     optimizer_kwargs : dict, optional
-        Optional arguments passed on to the optimizer. (Default: {})
+        Optional arguments passed on to the optimizer. (Default: None)
 
     Returns
     -------
     mean_pressure : np.ndarray
         Array with mean pressure for each calculation step.
-    total_contact_area : np.ndarray
-        Array with total area for each calculation step.
+    fractional_contact_area : np.ndarray
+        Array with fractional contact area (contact area divided by the
+        projected area of the topography) for each calculation step.
     mean_displacement : np.ndarray
-        Array with mean displacement for each calculation step.
+        Array with mean displacement (offset) for each calculation step.
     mean_gap : np.ndarray
         Array with mean gap for each calculation step.
     converged : np.ndarray
@@ -330,14 +405,6 @@ def contact_mechanics(
             "Both of `offsets` and `pressures` are given. Please specify only one."
         )
 
-    # Conversion of force units
-    force_conv = np.prod(self.physical_sizes)
-
-    #
-    # Some constants
-    #
-    min_pentol = 1e-12  # lower bound for the penetration tolerance
-
     if (hardness is not None) and (hardness > 0):
         topography = PlasticTopography(self, hardness)
     else:
@@ -349,6 +416,7 @@ def contact_mechanics(
 
     half_space_kwargs = {}
 
+    # The contact modulus is unity, i.e. pressures and hardness are in units of E*
     substrate = half_space_factory[substrate](
         topography.nb_grid_pts, 1.0, topography.physical_sizes, **half_space_kwargs
     )
@@ -358,74 +426,18 @@ def contact_mechanics(
     else:
         system = make_system(substrate=substrate, surface=topography)
 
-    # Heuristics for the possible tolerance on penetration.
-    # This is necessary because numbers can vary greatly
-    # depending on the system of units.
-    rms_height = topography.rms_height_from_area()
-    pentol = rms_height / (10 * np.mean(topography.nb_grid_pts))
-    pentol = max(pentol, min_pentol)
-
-    if pressures is not None:
-        nsteps = len(pressures)
-    if offsets is not None:
-        nsteps = len(offsets)
-
     history = None
-    for i in range(nsteps):
-        if offsets is not None:
-            (
-                displacement_xy,
-                gap_xy,
-                pressure_xy,
-                contacting_points_xy,
-                mean_displacement,
-                mean_pressure,
-                total_contact_area,
-                history,
-            ) = _contact_calculation(
-                system,
-                offset=offsets[i],
-                history=history,
-                pentol=pentol,
-                maxiter=maxiter,
-                optimizer_kwargs=optimizer_kwargs,
-            )
-        elif pressures is not None:
-            (
-                displacement_xy,
-                gap_xy,
-                pressure_xy,
-                contacting_points_xy,
-                mean_displacement,
-                mean_pressure,
-                total_contact_area,
-                history,
-            ) = _contact_calculation(
-                system,
-                external_force=pressures[i] * force_conv,
-                history=history,
-                pentol=pentol,
-                maxiter=maxiter,
-                optimizer_kwargs=optimizer_kwargs,
-            )
-        else:
-            (
-                displacement_xy,
-                gap_xy,
-                pressure_xy,
-                contacting_points_xy,
-                mean_displacement,
-                mean_pressure,
-                total_contact_area,
-                history,
-            ) = _next_contact_step(
-                system,
-                history=history,
-                pentol=pentol,
-                maxiter=maxiter,
-                optimizer_kwargs=optimizer_kwargs,
-            )
-
+    for (
+        displacement_xy,
+        gap_xy,
+        pressure_xy,
+        contacting_points_xy,
+        mean_displacement,
+        mean_pressure,
+        fractional_contact_area,
+        history,
+    ) in _contact_steps(system, nsteps=nsteps, offsets=offsets, pressures=pressures, maxiter=maxiter,
+                        optimizer_kwargs=optimizer_kwargs):
         # Report results via callback
         if results_callback is not None:
             results_callback(
@@ -435,18 +447,18 @@ def contact_mechanics(
                 contacting_points_xy,
                 mean_displacement,
                 mean_pressure,
-                total_contact_area,
+                fractional_contact_area,
             )
 
-    mean_displacement, mean_gap, mean_pressure, total_contact_area, converged = history
+    mean_displacement, mean_gap, mean_pressure, fractional_contact_area, converged = history
 
     mean_pressure = np.array(mean_pressure)
-    total_contact_area = np.array(total_contact_area)
+    fractional_contact_area = np.array(fractional_contact_area)
     mean_displacement = np.array(mean_displacement)
     mean_gap = np.array(mean_gap)
     converged = np.array(converged)
 
-    return mean_pressure, total_contact_area, mean_displacement, mean_gap, converged
+    return mean_pressure, fractional_contact_area, mean_displacement, mean_gap, converged
 
 
 # Register analysis functions from this module
