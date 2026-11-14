@@ -1,28 +1,36 @@
+<!--
+Style for this changelog (keep to it so entries stay uniform):
+
+- Newest version first. Heading `vX.Y.Z (DDMonYY)`, underlined with dashes.
+  A version not yet released is headed `vX.Y.Z (not yet released)`.
+- One bullet per user-visible change, at most two lines (about 200
+  characters). Say what changed for the user and, if useful, why or by how
+  much. Omit internals: no function, class, file or variable names, no
+  environment variables, no commit or PR references.
+- Start every bullet with one of: `ENH:` (new feature), `BUG:` (fix),
+  `API:` (interface change), `PERF:` (speed or memory), `MAINT:`, `TST:`,
+  `DOC:`, `BUILD:`, `CI:`.
+- Small related fixes may share one bullet. No trailing period on bullets.
+-->
+
 Change log for ContactMechanics
 ===============================
 
 v1.9.0 (not yet released)
 -------------------------
-- BUG: The real-space Green's function of nonperiodic substrates lost
-  accuracy far from the origin (relative error up to 1e-4 on large grids)
-  and was not symmetric; it is now accurate to ~1e-10 everywhere
-- BUG: The sum over periodic images of `SemiPeriodicFFTElasticHalfSpace`
-  diverged, i.e. the displacements depended on `n_images` by a constant;
-  `SemiPeriodicFFTElasticHalfSpace` now also works with MPI decomposition
-- BUG: `AnisotropicGreensFunction` failed for crystal orientations that break
-  the z -> -z symmetry and for scalar wavevectors
-- BUG: `IsotropicGreensFunction` returned zero stiffness for wavevectors
-  below an absolute cutoff of 1e-6
-- BUG: `PeriodicFFTElasticHalfSpace` crashed in 1D with `stiffness_q0=0` and
-  for a finite thickness with `poisson=0.5`; `thickness` was silently
-  ignored in 1D and now raises
-- ENH: `FreeFFTElasticHalfSpace` and `SemiPeriodicFFTElasticHalfSpace`
-  accept `poisson`
-- API: Geometry (`nb_grid_pts`, `physical_sizes`, `area_per_pt`, `dim`) is
-  handled by `ElasticSubstrate`; the unused classes `Substrate` and
-  `PlasticSubstrate` were removed (#128)
-- API: Removed unused `Tools.common.fftn` and `ifftn` (#97)
-- DOC: Convention for the stiffness at q=0 of periodic substrates
+- MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
+  scipy 1.13 or later and a recent DiscoverVersion
+- CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Green's function of nonperiodic substrates is accurate to 1e-10 on
+  large grids (previously 1e-4)
+- BUG: Semi-periodic substrates converge with the number of periodic images
+  and work in parallel runs
+- BUG: Anisotropic Green's function works for all crystal orientations, the
+  isotropic one for small wavevectors
+- BUG: Periodic substrates no longer crash in 1D with a vanishing stiffness of
+  the uniform mode or for incompressible layers
+- ENH: Nonperiodic substrates accept a Poisson ratio
+- API: Removed unused substrate base classes and FFT helpers
 
 v1.8.3 (28Jul26)
 ----------------
