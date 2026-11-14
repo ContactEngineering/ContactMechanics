@@ -7,7 +7,7 @@ import warnings
 
 import numpy as np
 import pytest
-from SurfaceTopography import PlasticTopography, Topography, make_sphere
+from SurfaceTopography import PlasticTopography, Topography, UniformLineScan, make_sphere
 
 from ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace, make_system
 from ContactMechanics.Optimization import ConvergenceWarning, constrained_conjugate_gradients
@@ -198,3 +198,15 @@ def test_convergence_when_rigid_surface_penetrates_everywhere(seed):
                                               maxiter=1000)
     assert shifted.success
     np.testing.assert_allclose(shifted.jac.sum(), result.jac.sum(), rtol=1e-4)
+
+
+def test_line_scan():
+    # Default tolerances for one-dimensional problems (line scans have no
+    # areal rms height)
+    nb_grid_pts = 256
+    x = np.arange(nb_grid_pts) / nb_grid_pts
+    surface = UniformLineScan(0.01 * np.cos(2 * np.pi * x), 1., periodic=True)
+    result = constrained_conjugate_gradients(PeriodicFFTElasticHalfSpace((nb_grid_pts,), 1., (1.,)), surface,
+                                             offset=0.)
+    assert result.success
+    assert 0 < (result.jac > 0).mean() < 1

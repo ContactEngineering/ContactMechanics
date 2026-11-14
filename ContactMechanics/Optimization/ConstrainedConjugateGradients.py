@@ -209,7 +209,11 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
 
     # Characteristic length of the problem. This is necessary because numbers
     # can vary greatly depending on the system of units.
-    length_scale = topography.rms_height_from_area()
+    if topography.dim == 1:
+        rms_height = topography.rms_height_from_profile()
+    else:
+        rms_height = topography.rms_height_from_area()
+    length_scale = rms_height
     if length_scale == 0:
         # This is a flat surface, which only makes sense for nonperiodic
         # calculations, i.e. it is a punch.
@@ -225,7 +229,7 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         length_scale = pentol
 
     if pentol is None:
-        if topography.rms_height_from_area() > 0:
+        if rms_height > 0:
             # Heuristics for the possible tolerance on penetration.
             pentol = length_scale / (10 * np.mean(topography.nb_grid_pts))
         else:
