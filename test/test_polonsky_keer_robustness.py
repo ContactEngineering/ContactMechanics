@@ -179,3 +179,22 @@ def test_check_boundaries():
     with warnings.catch_warnings():
         warnings.filterwarnings('error', message='.*not zero at the boundary')
         assert solve(check_boundaries=False).success
+
+
+@pytest.mark.parametrize('seed', range(1, 7))
+def test_convergence_when_rigid_surface_penetrates_everywhere(seed):
+    # If the undeformed rigid surface penetrates the substrate everywhere, the
+    # initial gap vanishes up to roundoff. This used to stall the iteration
+    # (tiny but finite G_old, huge conjugacy factor G/G_old) with a wrong
+    # contact area, depending on roundoff.
+    heights = 0.01 * _rough_heights(64, seed=seed)
+    surface = Topography(heights, (1., 1.))
+    result = constrained_conjugate_gradients(PeriodicFFTElasticHalfSpace(surface.nb_grid_pts, 1., (1., 1.)),
+                                             surface, offset=-heights.min(), maxiter=1000)
+    assert result.success
+    # Shifting the heights must not change the result
+    shifted = constrained_conjugate_gradients(PeriodicFFTElasticHalfSpace(surface.nb_grid_pts, 1., (1., 1.)),
+                                              Topography(heights + 5, (1., 1.)), offset=-heights.min() - 5,
+                                              maxiter=1000)
+    assert shifted.success
+    np.testing.assert_allclose(shifted.jac.sum(), result.jac.sum(), rtol=1e-4)

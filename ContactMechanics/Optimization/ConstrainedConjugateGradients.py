@@ -271,6 +271,16 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     # Force outside the computational region must be zero
     f_r[pad_mask] = 0.0
 
+    if initial_forces is None:
+        # Start from a consistent state: Remove tensile forces and recompute
+        # the displacements. Otherwise the gap vanishes in the initial contact
+        # area up to roundoff if the rigid surface penetrates everywhere,
+        # while it is finite after the first step. The CG factor G/G_old then
+        # becomes huge and the iteration stalls.
+        f_r[f_r > 0.0] = 0.0
+        u_r = substrate.evaluate_disp(f_r)
+        result.nfev += 1
+
     # iteration
     delta = 0
     delta_str = 'reset'

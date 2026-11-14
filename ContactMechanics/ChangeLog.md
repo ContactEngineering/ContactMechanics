@@ -11,6 +11,9 @@ v1.9.0 (not yet released)
 - BUG: plastic displacement was also accumulated on elastic contact points
   with penetration below `pentol`; the plastic mask and `active_set` are now
   computed from the final iterate
+- BUG: Polonsky & Keer stalled (for up to `maxiter` iterations, with a wrong
+  contact area) when the undeformed rigid surface penetrated everywhere,
+  depending on roundoff; the initial state is now consistent (#3)
 - BUG: at constant external force, the uniform initial force was distributed
   over masked (undefined) points
 - BUG: relative convergence checks divided by quantities that can vanish
