@@ -703,7 +703,10 @@ class NonSmoothContactSystem(SystemBase):
         Characteristic length of the contact problem, used to make default
         tolerances independent of the system of units.
         """
-        length = self.surface.rms_height_from_area()
+        if self.surface.dim == 1:
+            length = self.surface.rms_height_from_profile()
+        else:
+            length = self.surface.rms_height_from_area()
         if length == 0:
             # Flat surface (e.g. a punch): fall back to the indentation depth
             length = abs(offset)
