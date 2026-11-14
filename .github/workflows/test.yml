@@ -18,11 +18,12 @@ jobs:
     timeout-minutes: 40
 
     strategy:
+      fail-fast: false
       matrix:
         mpi: ['yes', 'no']
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
         mpi4py-version: [4.1.1]
-        netcdf4-python-version: [1.6.2]
+        netcdf4-python-version: [1.7.4]
         mugrid-version: [1.0]
 
     steps:
@@ -67,6 +68,9 @@ jobs:
       run: |
         source venv/bin/activate
         if [ "${{ matrix.mpi }}" == "yes" ]; then
+          # The runners have fewer cores than the MPI tests use ranks
+          export OMPI_MCA_rmaps_base_oversubscribe=1
+          export PRTE_MCA_rmaps_default_mapping_policy=:oversubscribe
           python3 run-tests.py --no-build --verbose --full-trace
         else
           python3 -m pytest --verbose --full-trace -s
