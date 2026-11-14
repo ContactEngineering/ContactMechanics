@@ -1,6 +1,23 @@
 Change log for ContactMechanics
 ===============================
 
+v1.9.0 (not yet released)
+-------------------------
+- BUG: `primal_minimize_proxy` and `dual_minimize_proxy` stored the solver's
+  projected residual as forces (primal) or gap (dual); the system state is now
+  recomputed from the solution
+- BUG: default tolerances of the primal and dual proxies are now relative to
+  the problem scales (E*, rms height) instead of an absolute `gtol=1e-8`;
+  L-BFGS-B's `ftol` criterion is disabled since it is absolute for small
+  energies
+- BUG: dual energy was not reduced over MPI ranks
+- BUG: `init_gap`/`init_force` default to sensible initial guesses instead of
+  raising; user-provided guesses are projected onto the feasible set
+- ENH: primal proxy and objective support nonperiodic (padded) substrates (#77)
+- ENH: logger argument for primal objective and proxy (#40)
+- ENH: `maxiter` is forwarded to L-BFGS-B; MPI communicator is forwarded to
+  the conjugate-gradient solvers (#21)
+
 v1.8.3 (28Jul26)
 ----------------
 - MAINT: Bump required muGrid version to >=1.0

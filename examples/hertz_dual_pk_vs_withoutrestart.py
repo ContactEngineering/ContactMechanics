@@ -173,11 +173,6 @@ res = CCGWithoutRestart.constrained_conjugate_gradients(
     system.dual_hessian_product, f_r[substrate.topography_subdomain_slices], mean_val=None, gtol=1e-9)
 assert res.success
 
-system.offset = penetration
-system.gap = res.jac
-system.force = system.substrate.force = res.x
-system.contact_zone = res.x > 0
-system.disp = system.gap + penetration + system.surface.heights().reshape(system.gap.shape)
 
 
 #%%
