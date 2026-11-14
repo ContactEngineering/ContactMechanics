@@ -37,6 +37,23 @@ v1.9.0 (not yet released)
   shows the parameters of constructors
 - DOC: Self-contained examples for the size of contact patches and the
   contact area as a function of load
+- BUG: Polonsky-Keer could stall near full contact and return a wrong
+  contact area; on 81 test problems it now always converges
+- BUG: Polonsky-Keer no longer crashes or stalls for flat punches
+- ENH: Polonsky-Keer accepts a hardness that varies in space; plastic
+  deformation only occurs where the material flows
+- API: Default force tolerance scales with modulus and grid; Polonsky-Keer
+  warns when it does not converge
+- API: Nonperiodic substrates warn when the contact reaches the boundary
+- BUG: Automatic load steps work for topographies with nonzero mean height
+- BUG: Command line tool: displacement mode works, contact maps include
+  plastic points and plastic deformation is reset between steps
+- API: Contact calculations iterate until convergence by default; this is
+  slower but avoids unconverged steps near full contact
+- ENH: Command line tool uses the same load steps as the pipeline, can set
+  the number of steps and reports convergence
+- BUG: Reading NetCDF output works without the netCDF4 package
+- DOC: The contact area returned by the pipeline is the fractional area
 
 v1.8.3 (28Jul26)
 ----------------

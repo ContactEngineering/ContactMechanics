@@ -268,6 +268,12 @@ class NetCDFContainer(object):
             length = len(self._data.dimensions['frame'])
         except TypeError:
             length = self._data.dimensions['frame']
+        if length is None:
+            # scipy's netcdf_file reports unlimited dimensions as None; the
+            # number of frames is the length of the variables along 'frame'
+            length = max((v.shape[0] for v in self._data.variables.values()
+                          if v.dimensions and v.dimensions[0] == 'frame'),
+                         default=0)
         return length
 
     def close(self):

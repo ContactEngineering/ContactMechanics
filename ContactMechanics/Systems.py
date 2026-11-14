@@ -681,20 +681,18 @@ class NonSmoothContactSystem(SystemBase):
             - nfev : int, number of evaluations of the elastic response
             - maxcv : dict, maximum penetration and maximum force violation
 
-        If the solver succeeded, the state of the system (`offset`, `disp`,
-        `force`, `energy`, `contact_zone`, `substrate.force`) is updated, see
-        the sign conventions in the class documentation.
+        The state of the system (`offset`, `disp`, `force`, `energy`,
+        `contact_zone`, `substrate.force`) is updated even if the solver did
+        not converge; check `result.success` before using it. See the sign
+        conventions in the class documentation.
         """
         # pylint: disable=arguments-differ
-        self.disp = None
-        self.force = None
-        self.contact_zone = None
         result = solver(
             self.substrate,
             self.surface,
             **kwargs)
+        self._set_state(result.offset, result.x, result.jac, result.fun)
         if result.success:
-            self._set_state(result.offset, result.x, result.jac, result.fun)
             self.substrate.check()
         return result
 
