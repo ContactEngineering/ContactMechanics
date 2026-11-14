@@ -109,36 +109,6 @@ def compute_wavevectors(nb_grid_pts, physical_sizes, nb_dims):
     return vectors
 
 
-def fftn(arr, integral):
-    """
-    n-dimensional fft according to the conventions detailed in
-    power_spectrum.tex in the notes folder.
-
-    Keyword Arguments:
-    arr      -- Input array, can be complex
-    integral -- depending of dimensionality:
-                1D: Length of domain
-                2D: Area
-                etc
-    """
-    return integral / np.prod(arr.shape) * np.fft.fftn(arr)
-
-
-def ifftn(arr, integral):
-    """
-    n-dimensional ifft according to the conventions detailed in
-    power_spectrum.tex in the notes folder.
-
-    Keyword Arguments:
-    arr      -- Input array, can be complex
-    integral -- depending of dimensionality:
-                1D: Length of domain
-                2D: Area
-                etc
-    """
-    return np.prod(arr.shape) / integral * np.fft.ifftn(arr)
-
-
 def get_q_from_lambda(lambda_min, lambda_max):
     """ Conversion between wavelength and angular frequency
     """

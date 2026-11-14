@@ -39,7 +39,8 @@ class AnisotropicGreensFunction(object):
         elastic tensors but presently only cubic elastic constants can be
         passed to the constructor.
 
-        Note that this class fails for an isotropic substrate. Use
+        Note that this class fails for an isotropic substrate (the bulk
+        operator then has degenerate eigenvalues). Use
         `IsotropicGreensFunction` instead for isotropic materials.
 
         Parameters
@@ -122,32 +123,41 @@ class AnisotropicGreensFunction(object):
             M[i, l] += -self.elasticity_tensor(i, j, k, l) * q[j] * q[k]
         return M
 
+    def find_qz(self, qx, qy):
+        """
+        Find the out-of-plane wavevectors qz for which the bulk operator
+        M(qx, qy, qz) is singular, i.e. the roots of det(M), which is a
+        polynomial of degree 6 in qz with real coefficients.
+
+        Returns
+        -------
+        qz : np.ndarray
+            The three roots with negative imaginary part, i.e. modes that
+            decay into the substrate (z < 0), followed by the three roots
+            with positive imaginary part.
+        """
+        # Interpolate the polynomial at the 7th roots of unity; the
+        # coefficients are then given by a discrete Fourier transform. This is
+        # well conditioned for |q| of order unity.
+        nb_samples = 7
+        z = np.exp(2j * np.pi * np.arange(nb_samples) / nb_samples)
+        values = np.array([np.linalg.det(self.bulkop(qx, qy, _z)) for _z in z])
+        coefficients = (np.fft.fft(values) / nb_samples).real
+        roots = np.roots(coefficients[::-1])
+        decaying = roots[roots.imag < 0]
+        growing = roots[roots.imag > 0]
+        if len(decaying) != 3 or len(growing) != 3:
+            raise RuntimeError('Expected three decaying and three growing modes for wavevector {},{}, but found '
+                               'roots {}.'.format(qx, qy, roots))
+        return np.append(decaying, growing)
+
     def find_eigenvalues(self, qx, qy):
-        # We know that det(M) has the form c0 + c2*Q^2 + c4*Q^4 + c6*Q^6, but
-        # we don't have the prefactors explicitly. We first need to construct
-        # them here by evaluating:
-        # Q = 0: det(M) = c0
-        # Q = 1: det(M) = c0 + c2 + c4 + c6
-        # Q = 2: det(M) = c0 + 4*c2 + 16*c4 + 64*c6
-        # Q = 3: det(M) = c0 + 9*c2 + 81*c4 + 729*c6
-
-        fac1 = 1
-        fac2 = 2
-        fac3 = 3
-        A = np.array([[0, 0, 0, 1],
-                      [fac1 ** 6, fac1 ** 4, fac1 ** 2, 1],
-                      [fac2 ** 6, fac2 ** 4, fac2 ** 2, 1],
-                      [fac3 ** 6, fac3 ** 4, fac3 ** 2, 1]])
-        b = np.array([np.linalg.det(self.bulkop(qx, qy, 0)),
-                      np.linalg.det(self.bulkop(qx, qy, 1j * fac1)),
-                      np.linalg.det(self.bulkop(qx, qy, 1j * fac2)),
-                      np.linalg.det(self.bulkop(qx, qy, 1j * fac3))])
-        p = np.linalg.solve(A, b)
-        r = np.roots(p)
-
-        # We need to take the sqrt because we have the roots of the equation
-        # c0 + c2*Q + c4*Q^2 + C6*Q^3
-        return np.sqrt(r)
+        """
+        Decay rates Q of the three modes that decay into the substrate, such
+        that qz = -1j * Q. For substrates whose elastic constants are
+        symmetric under z -> -z, Q is real.
+        """
+        return 1j * self.find_qz(qx, qy)[:3]
 
     def find_eigenvectors(self, qx, qy, qz, rcond=1e-6):
         eta = []
@@ -187,14 +197,12 @@ class AnisotropicGreensFunction(object):
         return F
 
     def _make_U_and_F(self, qx, qy, thickness, exp_tol=100):
-        _qz = self.find_eigenvalues(qx, qy)
+        qz = self.find_qz(qx, qy)
         # If thickness*qz > some threshold, then we need to solve for the
         # problem of infinite thickness, otherwise we get floating point
         # issues when evaluating exp(-thickness*qz) in _make_F
-        if thickness is None or np.max(np.real(thickness * _qz)) > exp_tol:
-            qz = -1j * _qz
-        else:
-            qz = np.append(-1j * _qz, 1j * _qz)
+        if thickness is None or np.max(-qz[:3].imag * thickness) > exp_tol:
+            qz = qz[:3]
         eta = self.find_eigenvectors(qx, qy, qz)
         return self._make_U(qz, eta), self._make_F(qx, qy, qz, eta, thickness)
 
@@ -227,41 +235,27 @@ class AnisotropicGreensFunction(object):
             return np.linalg.inv(
                 self._greens_function(qx, qy, thickness, zero_tol=zero_tol))
 
-    def greens_function(self, qx, qy, zero_tol=1e-6):
-        # Note: Normalization of the q vectors is required for numerical
-        # stability
+    def _evaluate(self, func, qx, qy, power, zero_tol):
+        """
+        Evaluate `func` at normalized wavevectors and rescale the result by
+        |q|**power. Normalization of the q vectors is required for numerical
+        stability.
+        """
+        if np.isscalar(qx) and np.isscalar(qy):
+            return self._evaluate(func, np.array([qx]), np.array([qy]), power, zero_tol)[0]
+        qx = np.asarray(qx, dtype=float)
+        qy = np.asarray(qy, dtype=float)
         abs_q = np.sqrt(qx ** 2 + qy ** 2)
         abs_q[abs_q == 0] = 1
-        thickness = [None] * len(
-            abs_q) if self._thickness is None else self._thickness * abs_q
+        thickness = [None] * len(abs_q) if self._thickness is None else self._thickness * abs_q
 
-        if np.isscalar(qx) and np.isscalar(qy):
-            return self._greens_function(qx / abs_q, qy / abs_q, thickness,
-                                         zero_tol=zero_tol) / abs_q
+        return np.array([func(_qx / _abs_q, _qy / _abs_q, _thickness, zero_tol=zero_tol) * _abs_q ** power
+                         for _qx, _qy, _abs_q, _thickness in zip(qx, qy, abs_q, thickness)])
 
-        gf = []
-        for _qx, _qy, _abs_q, _thickness in zip(qx, qy, abs_q, thickness):
-            gf += [
-                self._greens_function(_qx / _abs_q, _qy / _abs_q, _thickness,
-                                      zero_tol=zero_tol) / _abs_q]
-        return np.array(gf)
+    def greens_function(self, qx, qy, zero_tol=1e-6):
+        return self._evaluate(self._greens_function, qx, qy, -1, zero_tol)
 
     def stiffness(self, qx, qy, zero_tol=1e-6):
-        # Note: Normalization of the q vectors is required for numerical
-        # stability
-        abs_q = np.sqrt(qx ** 2 + qy ** 2)
-        abs_q[abs_q == 0] = 1
-        thickness = [None] * len(
-            abs_q) if self._thickness is None else self._thickness * abs_q
-
-        if np.isscalar(qx) and np.isscalar(qy):
-            return self._stiffness(qx / abs_q, qy / abs_q, thickness,
-                                   zero_tol=zero_tol) * abs_q
-
-        gf = []
-        for _qx, _qy, _abs_q, _thickness in zip(qx, qy, abs_q, thickness):
-            gf += [self._stiffness(_qx / _abs_q, _qy / _abs_q, _thickness,
-                                   zero_tol=zero_tol) * _abs_q]
-        return np.array(gf)
+        return self._evaluate(self._stiffness, qx, qy, 1, zero_tol)
 
     __call__ = stiffness

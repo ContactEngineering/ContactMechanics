@@ -30,9 +30,13 @@ Base class for continuum mechanics models of halfspaces
 
 import abc
 
+import numpy as np
 
-class Substrate(object, metaclass=abc.ABCMeta):
-    """ Generic baseclass from which all substate classes derive
+
+class ElasticSubstrate(object, metaclass=abc.ABCMeta):
+    """
+    Generic base class for elastic substrates. It holds the geometry of the
+    surface grid; subclasses define the elastic response.
     """
     _periodic = None
 
@@ -40,7 +44,50 @@ class Substrate(object, metaclass=abc.ABCMeta):
         # pylint: disable=missing-docstring
         pass
 
-    name = 'generic_halfspace'
+    name = 'generic_elastic_halfspace'
+
+    # Since an elastic substrate essentially defines a Potential, a similar
+    # internal structure is chosen
+
+    def __init__(self, nb_grid_pts, physical_sizes):
+        """
+        Parameters
+        ----------
+        nb_grid_pts : int or tuple of ints
+            Number of grid points of the surface. The length of the tuple
+            determines the spatial dimension of the problem.
+        physical_sizes : float or tuple of floats
+            Physical size of the surface. If the tuple has less entries than
+            dimensions, the last value is repeated.
+        """
+        if not hasattr(nb_grid_pts, "__iter__"):
+            nb_grid_pts = (nb_grid_pts,)
+        if not hasattr(physical_sizes, "__iter__"):
+            physical_sizes = (physical_sizes,)
+        self._nb_grid_pts = tuple(nb_grid_pts)
+        self._physical_sizes = tuple(physical_sizes[min(i, len(physical_sizes) - 1)]
+                                     for i in range(len(self._nb_grid_pts)))
+
+        self.energy = None
+        self.force = None
+        self.force_k = None
+
+    @property
+    def dim(self):
+        "return the substrate's physical dimension"
+        return len(self._nb_grid_pts)
+
+    @property
+    def nb_grid_pts(self):
+        return self._nb_grid_pts
+
+    @property
+    def physical_sizes(self):
+        return self._physical_sizes
+
+    @property
+    def area_per_pt(self):
+        return np.prod(self.physical_sizes) / np.prod(self.nb_grid_pts)
 
     def spawn_child(self, dummy):
         """ does nothing for most substrates.
@@ -61,6 +108,8 @@ class Substrate(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def nb_domain_grid_pts(self):
         """
+        Number of grid points of the computational domain. This can differ
+        from `nb_grid_pts`, e.g. for nonperiodic substrates that are padded.
         """
         pass
 
@@ -90,12 +139,6 @@ class Substrate(object, metaclass=abc.ABCMeta):
         """Return the MPI communicator"""
         pass
 
-    # @property
-    # @abc.abstractmethod
-    # def dim(self, ):
-    #    "return the substrate's physical dimension"
-    #    pass
-
     def check(self, force=None):
         """
         Checks wether force is still in the value range handled correctly.
@@ -110,28 +153,13 @@ class Substrate(object, metaclass=abc.ABCMeta):
         """
         pass
 
-
-class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
-    """ Generic baseclass for elastic substrates
-    """
-    name = 'generic_elastic_halfspace'
-
-    # Since an elastic substrate essentially defines a Potential, a similar
-    # internal structure is chosen
-
-    def __init__(self):
-        self.energy = None
-        self.force = None
-        self.force_k = None
-
     def __repr__(self):
         dims = 'x', 'y', 'z'
         size_str = ', '.join('{}: {}({})'.format(dim, size, nb_grid_pts) for
-                             dim, size, nb_grid_pts in zip(dims, self.size,
+                             dim, size, nb_grid_pts in zip(dims, self.physical_sizes,
                                                            self.nb_grid_pts))
         return "{0.dim}-dimensional halfspace '{0.name}', " \
-               "physical_sizes(nb_grid_pts) in  {1}, E' = {0.young}" \
-            .format(self, size_str)
+               "physical_sizes(nb_grid_pts) in {1}".format(self, size_str)
 
     def compute(self, disp, pot=True, forces=False):
         """
@@ -175,10 +203,3 @@ class ElasticSubstrate(Substrate, metaclass=abc.ABCMeta):
         forces -- (default False) whether the forces should be evaluated
         """
         raise NotImplementedError()
-
-
-class PlasticSubstrate(Substrate):
-    """ Generic baseclass for plastic substrates
-    """
-    # pylint: disable=too-few-public-methods
-    name = 'generic_plastic_halfspace'
