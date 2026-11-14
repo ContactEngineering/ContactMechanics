@@ -28,6 +28,7 @@ The methods that are implemented in this code are described in various papers:
 
    installation
    usage
+   examples
    testing
    contributing
 
