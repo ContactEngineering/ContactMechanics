@@ -1,6 +1,14 @@
 Change log for ContactMechanics
 ===============================
 
+v1.9.0 (not yet released)
+-------------------------
+- MAINT: Require numpy >= 2.2.5 (muGrid fields are read-only views with older
+  numpy), scipy >= 1.13.0 and DiscoverVersion >= 0.1.8; these are the oldest
+  versions that install and pass the tests together with the other minimum
+  requirements
+- MAINT: CI tests the minimum versions of all dependencies and Python 3.15
+
 v1.8.3 (28Jul26)
 ----------------
 - MAINT: Bump required muGrid version to >=1.0
