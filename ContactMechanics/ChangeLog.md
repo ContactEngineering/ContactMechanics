@@ -1,6 +1,29 @@
 Change log for ContactMechanics
 ===============================
 
+v1.9.0 (not yet released)
+-------------------------
+- BUG: The real-space Green's function of nonperiodic substrates lost
+  accuracy far from the origin (relative error up to 1e-4 on large grids)
+  and was not symmetric; it is now accurate to ~1e-10 everywhere
+- BUG: The sum over periodic images of `SemiPeriodicFFTElasticHalfSpace`
+  diverged, i.e. the displacements depended on `n_images` by a constant;
+  `SemiPeriodicFFTElasticHalfSpace` now also works with MPI decomposition
+- BUG: `AnisotropicGreensFunction` failed for crystal orientations that break
+  the z -> -z symmetry and for scalar wavevectors
+- BUG: `IsotropicGreensFunction` returned zero stiffness for wavevectors
+  below an absolute cutoff of 1e-6
+- BUG: `PeriodicFFTElasticHalfSpace` crashed in 1D with `stiffness_q0=0` and
+  for a finite thickness with `poisson=0.5`; `thickness` was silently
+  ignored in 1D and now raises
+- ENH: `FreeFFTElasticHalfSpace` and `SemiPeriodicFFTElasticHalfSpace`
+  accept `poisson`
+- API: Geometry (`nb_grid_pts`, `physical_sizes`, `area_per_pt`, `dim`) is
+  handled by `ElasticSubstrate`; the unused classes `Substrate` and
+  `PlasticSubstrate` were removed (#128)
+- API: Removed unused `Tools.common.fftn` and `ifftn` (#97)
+- DOC: Convention for the stiffness at q=0 of periodic substrates
+
 v1.8.3 (28Jul26)
 ----------------
 - MAINT: Bump required muGrid version to >=1.0

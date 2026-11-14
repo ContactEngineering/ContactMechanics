@@ -37,6 +37,6 @@ from .FFTElasticHalfSpace import FreeFFTElasticHalfSpace  # noqa: F401
 from .FFTElasticHalfSpace import PeriodicFFTElasticHalfSpace  # noqa: F401
 from .FFTElasticHalfSpace import SemiPeriodicFFTElasticHalfSpace  # noqa: F401
 from .PipelineFunction import contact_mechanics  # noqa: F401
-from .Substrates import ElasticSubstrate, PlasticSubstrate, Substrate  # noqa: F401
+from .Substrates import ElasticSubstrate  # noqa: F401
 
 __version__ = get_version('ContactMechanics', __file__)
