@@ -1,22 +1,33 @@
+<!--
+Style for this changelog (keep to it so entries stay uniform):
+
+- Newest version first. Heading `vX.Y.Z (DDMonYY)`, underlined with dashes.
+  A version not yet released is headed `vX.Y.Z (not yet released)`.
+- One bullet per user-visible change, at most two lines (about 200
+  characters). Say what changed for the user and, if useful, why or by how
+  much. Omit internals: no function, class, file or variable names, no
+  environment variables, no commit or PR references.
+- Start every bullet with one of: `ENH:` (new feature), `BUG:` (fix),
+  `API:` (interface change), `PERF:` (speed or memory), `MAINT:`, `TST:`,
+  `DOC:`, `BUILD:`, `CI:`.
+- Small related fixes may share one bullet. No trailing period on bullets.
+-->
+
 Change log for ContactMechanics
 ===============================
 
 v1.9.0 (not yet released)
 -------------------------
-- BUG: `primal_minimize_proxy` and `dual_minimize_proxy` stored the solver's
-  projected residual as forces (primal) or gap (dual); the system state is now
-  recomputed from the solution
-- BUG: default tolerances of the primal and dual proxies are now relative to
-  the problem scales (E*, rms height) instead of an absolute `gtol=1e-8`;
-  L-BFGS-B's `ftol` criterion is disabled since it is absolute for small
-  energies
-- BUG: dual energy was not reduced over MPI ranks
-- BUG: `init_gap`/`init_force` default to sensible initial guesses instead of
-  raising; user-provided guesses are projected onto the feasible set
-- ENH: primal proxy and objective support nonperiodic (padded) substrates (#77)
-- ENH: logger argument for primal objective and proxy (#40)
-- ENH: `maxiter` is forwarded to L-BFGS-B; MPI communicator is forwarded to
-  the conjugate-gradient solvers (#21)
+- MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
+  scipy 1.13 or later and a recent DiscoverVersion
+- CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Primal and dual solvers reported wrong forces and gaps after
+  converging; the state is now computed from the solution
+- BUG: Default tolerances of the primal and dual solvers scale with the
+  problem instead of depending on the system of units
+- BUG: Primal and dual solvers no longer crash without an initial guess; the
+  dual energy is correct in parallel runs
+- ENH: Primal solver supports nonperiodic substrates and logging
 
 v1.8.3 (28Jul26)
 ----------------
