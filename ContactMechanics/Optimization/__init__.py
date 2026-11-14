@@ -28,4 +28,4 @@ Optimization algorithms
 """
 
 from .ConstrainedConjugateGradients import \
-    constrained_conjugate_gradients  # noqa: F401
+    constrained_conjugate_gradients, ConvergenceWarning  # noqa: F401
