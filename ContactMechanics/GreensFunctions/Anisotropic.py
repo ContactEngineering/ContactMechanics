@@ -80,6 +80,11 @@ class AnisotropicGreensFunction(object):
         )
         for i, j in np.ndindex(6, 6):
             self._C[i, j] = self.voigt_from_tensor(C_tensor, i, j)
+        # Elastic constants are symmetric under z -> -z if all components
+        # with an odd number of z-indices vanish
+        is_z = (np.arange(3) == 2).astype(int)
+        nb_z_indices = np.add.outer(np.add.outer(is_z, is_z), np.add.outer(is_z, is_z))
+        self._z_symmetric = np.abs(C_tensor[nb_z_indices % 2 == 1]).max() <= 1e-12 * np.abs(C_tensor).max()
 
     def elasticity_tensor(self, i, j, k, L):
         Voigt_ij = i
@@ -136,14 +141,25 @@ class AnisotropicGreensFunction(object):
             decay into the substrate (z < 0), followed by the three roots
             with positive imaginary part.
         """
-        # Interpolate the polynomial at the 7th roots of unity; the
-        # coefficients are then given by a discrete Fourier transform. This is
-        # well conditioned for |q| of order unity.
-        nb_samples = 7
-        z = np.exp(2j * np.pi * np.arange(nb_samples) / nb_samples)
-        values = np.array([np.linalg.det(self.bulkop(qx, qy, _z)) for _z in z])
-        coefficients = (np.fft.fft(values) / nb_samples).real
-        roots = np.roots(coefficients[::-1])
+        # The polynomial is interpolated at roots of unity; the coefficients
+        # are then given by a discrete Fourier transform. This is well
+        # conditioned for |q| of order unity.
+        if self._z_symmetric:
+            # det(M) is even in qz, i.e. a polynomial of degree 3 in qz**2.
+            # Its roots are more accurate than those of the polynomial of
+            # degree 6, in particular for (nearly) degenerate roots.
+            nb_samples = 4
+            w = np.exp(2j * np.pi * np.arange(nb_samples) / nb_samples)
+            values = np.array([np.linalg.det(self.bulkop(qx, qy, np.sqrt(_w))) for _w in w])
+            coefficients = (np.fft.fft(values) / nb_samples).real
+            decaying = -1j * np.sqrt(-np.roots(coefficients[::-1]))
+            roots = np.append(decaying, -decaying)
+        else:
+            nb_samples = 7
+            z = np.exp(2j * np.pi * np.arange(nb_samples) / nb_samples)
+            values = np.array([np.linalg.det(self.bulkop(qx, qy, _z)) for _z in z])
+            coefficients = (np.fft.fft(values) / nb_samples).real
+            roots = np.roots(coefficients[::-1])
         decaying = roots[roots.imag < 0]
         growing = roots[roots.imag > 0]
         if len(decaying) != 3 or len(growing) != 3:
