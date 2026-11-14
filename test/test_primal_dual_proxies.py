@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from NuMPI import MPI
 from NuMPI.Tools import Reduction
-from SurfaceTopography import Topography, make_sphere
+from SurfaceTopography import Topography, UniformLineScan, make_sphere
 
 from ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
 from ContactMechanics.Systems import NonSmoothContactSystem
@@ -142,3 +142,18 @@ def test_parallel(comm, kind, solver, substrate_class):
     assert pnp.max(np.abs(system.disp - reference.disp[substrate.subdomain_slices])) < 1e-6 * length
     assert pnp.max(np.abs(system.force - reference.force[substrate.topography_subdomain_slices])) < \
         1e-6 * np.abs(reference.force).max()
+
+
+@pytest.mark.parametrize('kind', ['primal', 'dual'])
+def test_line_scan(kind):
+    # Default tolerances for one-dimensional problems (line scans have no
+    # areal rms height)
+    nb_grid_pts = 256
+    x = np.arange(nb_grid_pts) / nb_grid_pts
+    surface = UniformLineScan(0.01 * np.cos(2 * np.pi * x), 1., periodic=True)
+    system = NonSmoothContactSystem(PeriodicFFTElasticHalfSpace((nb_grid_pts,), 1., (1.,)), surface)
+    reference = NonSmoothContactSystem(PeriodicFFTElasticHalfSpace((nb_grid_pts,), 1., (1.,)), surface)
+    assert reference.minimize_proxy(offset=0., pentol=1e-10).success
+    result = getattr(system, f'{kind}_minimize_proxy')(0.)
+    assert result.success
+    np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-4)
