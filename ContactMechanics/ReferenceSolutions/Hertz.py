@@ -171,10 +171,9 @@ def surface_stress(r, poisson=0.5):
         Azimuthal stress (in units of maximum pressure p0).
     """
 
-    mask0 = np.abs(r) < 1e-6
-    maski = np.logical_and(r < 1.0, np.logical_not(mask0))
-    masko = np.logical_and(np.logical_not(maski), np.logical_not(mask0))
-    r_0 = r[mask0]
+    r = np.asarray(r, dtype=float)
+    maski = np.abs(r) < 1.0
+    masko = np.logical_not(maski)
     r_i = r[maski]
     r_o = r[masko]
 
@@ -183,18 +182,16 @@ def surface_stress(r, poisson=0.5):
     sr = np.zeros_like(r)
     stheta = np.zeros_like(r)
 
-    # Solution at r=0
-    if mask0.sum() > 0:
-        pz[mask0] = np.ones_like(r_0)
-        sr[mask0] = -(1. + 2 * poisson) / 2. * np.ones_like(r_0)
-        stheta[mask0] = -(1. + 2 * poisson) / 2. * np.ones_like(r_0)
-
     # Solution inside the contact radius
     if maski.sum() > 0:
-        r_a_sq = r_i ** 2
-        pz[maski] = np.sqrt(1 - r_a_sq)
-        sr[maski] = (1. - 2. * poisson) / (3. * r_a_sq) * (1. - (1. - r_a_sq) ** (3. / 2)) - np.sqrt(1. - r_a_sq)  # noqa: E501
-        stheta[maski] = -(1. - 2. * poisson) / (3. * r_a_sq) * (1. - (1. - r_a_sq) ** (3. / 2)) - 2 * poisson * np.sqrt(1. - r_a_sq)  # noqa: E501
+        s = np.sqrt(1. - r_i ** 2)
+        # (1 - (1 - r**2)**(3/2)) / r**2 = (1 + s + s**2) / (1 + s) with
+        # s = sqrt(1 - r**2); the right hand side is free of cancellation
+        # for small r and gives the limit 3/2 at r = 0
+        one_minus_s3_div_r2 = (1. + s + s * s) / (1. + s)
+        pz[maski] = s
+        sr[maski] = (1. - 2. * poisson) / 3. * one_minus_s3_div_r2 - s
+        stheta[maski] = -(1. - 2. * poisson) / 3. * one_minus_s3_div_r2 - 2 * poisson * s
 
     # Solution outside of the contact radius
     if masko.sum() > 0:
@@ -312,8 +309,13 @@ def stress(r, z, poisson=0.5):
         p0).
     """
 
+    # u is the positive root of u**2 - p*u - z**2 = 0. For p < 0 (inside the
+    # contact, close to the surface), the textbook expression
+    # p/2 + sqrt(p**2/4 + z**2) cancels; use u = z**2 / (sqrt(...) - p/2).
     p = r ** 2 + z ** 2 - 1
-    u = p / 2 + np.sqrt(p ** 2 / 4 + z ** 2)
+    sqrt_discriminant = np.sqrt(p ** 2 / 4 + z ** 2)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        u = np.where(p >= 0, p / 2 + sqrt_discriminant, z ** 2 / (sqrt_discriminant - p / 2))
     sqrtu = np.sqrt(u)
 
     # Note: The equation for u is
@@ -327,13 +329,10 @@ def stress(r, z, poisson=0.5):
     # Precompute arctan
     sqrtu_arctan_inv_sqrtu = sqrtu * np.arctan(1. / sqrtu)
 
-    # The next two expressions give numerical problems at the tip center and
-    # the contact edge, regularize with the asymptotic value.
-
-    # Note: (1-z**3)/r**2->3/2 for r->0
-    one_minus_z3_div_r2 = 3. / 2. * np.ones_like(r)
-    mask = r > 0
-    one_minus_z3_div_r2[mask] = (1. - z[mask] ** 3) / r[mask] ** 2
+    # Note: (1 - z**3) / r**2 = (1 + z + z**2) / (1 + z) since
+    # z = sqrt(1 - r**2); the right hand side is free of cancellation for
+    # small r and gives the limit 3/2 at r = 0
+    one_minus_z3_div_r2 = (1. + z + z * z) / (1. + z)
 
     # Note: z**2/(u+z**2)->1 for u+z**2->0
     u_plus_z2 = u + z ** 2

@@ -64,6 +64,12 @@ v1.9.0 (not yet released)
   the uniform mode or for incompressible layers
 - ENH: Nonperiodic substrates accept a Poisson ratio
 - API: Removed unused substrate base classes and FFT helpers
+- BUG: Cone reference solution: correct contact area, displacements
+  independent of the sampling points
+- BUG: Hertz reference stresses are accurate close to the center and the
+  surface
+- BUG: Greenwood-Tripp reference solution converges to the requested
+  tolerance
 
 v1.8.3 (28Jul26)
 ----------------
