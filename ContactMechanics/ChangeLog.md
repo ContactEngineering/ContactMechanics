@@ -18,47 +18,26 @@ Change log for ContactMechanics
 
 v1.9.0 (not yet released)
 -------------------------
-- BUG: Polonsky & Keer crashed for flat topographies at constant external
-  force without `pentol`, and did not converge for flat topographies out of
-  contact; the characteristic length is now inferred from offset or load
-- BUG: array (per-pixel) hardness raised a `ValueError`; a hardness of zero
-  was treated as no hardness
-- BUG: plastic displacement was also accumulated on elastic contact points
-  with penetration below `pentol`; the plastic mask and `active_set` are now
-  computed from the final iterate
-- BUG: Polonsky & Keer stalled (for up to `maxiter` iterations, with a wrong
-  contact area) when the undeformed rigid surface penetrated everywhere,
-  depending on roundoff; the initial state is now consistent (#3)
-- BUG: at constant external force, the uniform initial force was distributed
-  over masked (undefined) points
-- BUG: relative convergence checks divided by quantities that can vanish
-  (total force, maximum height plus offset)
-- ENH: default `forcetol` is E* × sqrt(area_per_pt) × `pentol` instead of an
-  absolute 1e-5
-- ENH: `ConvergenceWarning` when Polonsky & Keer stops at `maxiter`; the
-  system state is populated also without convergence
-- ENH: `FreeFFTElasticHalfSpace` warns by default if forces at the boundary of
-  the domain are nonzero (`check_boundaries=None`); `True` raises as before
-- MAINT: removed the force in the padding region from the convergence
-  criterion; it vanishes by construction
-- BUG: automatic offset stepping of `contact_mechanics` and `ce_hard_wall`
-  extrapolated towards full contact only for zero-mean heights; for
-  shifted heights it retracted the rigid surface
-- BUG: `ce_hard_wall --displacement` crashed; the contact map of plastic
-  calculations excluded plastically deformed points; plastic displacement
-  was not reset between automatic steps of `ce_hard_wall`
-- BUG: passing `pentol` or `maxiter` in `optimizer_kwargs` of
-  `contact_mechanics` raised a TypeError
-- BUG: `len()` of NetCDF containers failed with scipy's netCDF backend
-- API: `contact_mechanics` and `ce_hard_wall` use the iteration limit of the
-  solver by default (previously 100 and 1000, which left calculations near
-  full contact unconverged); the solver's penetration tolerance replaces a
-  duplicated heuristic in `contact_mechanics`
-- API: `ce_hard_wall` uses the same stepping code as `contact_mechanics`
-  (#60), has a `--nsteps` option and writes a `converged` column to the log
-- DOC: second return value of `contact_mechanics` is the fractional contact
-  area (#87)
-- TST: tests for all modes of `ce_hard_wall` (#62)
+- MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
+  scipy 1.13 or later and a recent DiscoverVersion
+- CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Polonsky-Keer could stall near full contact and return a wrong
+  contact area; on 81 test problems it now always converges
+- BUG: Polonsky-Keer no longer crashes or stalls for flat punches
+- ENH: Polonsky-Keer accepts a hardness that varies in space; plastic
+  deformation only occurs where the material flows
+- API: Default force tolerance scales with modulus and grid; Polonsky-Keer
+  warns when it does not converge
+- API: Nonperiodic substrates warn when the contact reaches the boundary
+- BUG: Automatic load steps work for topographies with nonzero mean height
+- BUG: Command line tool: displacement mode works, contact maps include
+  plastic points and plastic deformation is reset between steps
+- API: Contact calculations iterate until convergence by default; this is
+  slower but avoids unconverged steps near full contact
+- ENH: Command line tool uses the same load steps as the pipeline, can set
+  the number of steps and reports convergence
+- BUG: Reading NetCDF output works without the netCDF4 package
+- DOC: The contact area returned by the pipeline is the fractional area
 
 v1.8.3 (28Jul26)
 ----------------
