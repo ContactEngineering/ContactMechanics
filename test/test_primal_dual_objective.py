@@ -25,32 +25,34 @@ def test_primal_obj(s):
 
     offset = 0.05
 
-    init_gap = np.zeros((nx, ny))  # .flatten()
-    disp = init_gap + surface.heights() + offset
+    # Feasible initial gap with free variables; in this full-contact case the
+    # default (undeformed substrate) has all variables on the bound, from
+    # which 'ccg-with-restart' cannot start.
+    init_gap = surface.heights() + offset
 
-    res = system.primal_minimize_proxy(offset, init_gap=disp,
-                                       solver='ccg-without-restart', )
+    res = system.primal_minimize_proxy(offset, init_gap=init_gap,
+                                       solver='ccg-without-restart')
 
     assert res.success
     CA_bug = res.x.reshape((nx, ny)) == 0  # Contact area
-    force_bug = res.jac
+    force_bug = system.force
     gap_bug = res.x
     gap_bug = gap_bug.reshape((nx, ny))
 
-    res = system.primal_minimize_proxy(offset, init_gap=disp,
-                                       solver='ccg-with-restart', )
+    res = system.primal_minimize_proxy(offset, init_gap=init_gap,
+                                       solver='ccg-with-restart')
 
     assert res.success
     CA_pk = res.x.reshape((nx, ny)) == 0  # Contact are
-    force_pk = res.jac
+    force_pk = system.force
     gap_pk = res.x
     gap_pk = gap_pk.reshape((nx, ny))
 
-    res = system.primal_minimize_proxy(offset, init_gap=disp,
-                                       solver='l-bfgs-b', )
+    res = system.primal_minimize_proxy(offset, init_gap=init_gap,
+                                       solver='l-bfgs-b')
     assert res.success
     CA_lbfgsb = res.x.reshape((nx, ny)) == 0  # Contact area
-    force_lbfgsb = res.jac
+    force_lbfgsb = system.force
     gap_lbfgsb = res.x
     gap_lbfgsb = gap_lbfgsb.reshape((nx, ny))
 
