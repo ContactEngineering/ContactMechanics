@@ -1,6 +1,32 @@
 Change log for ContactMechanics
 ===============================
 
+v1.9.0 (not yet released)
+-------------------------
+- BUG: Polonsky & Keer crashed for flat topographies at constant external
+  force without `pentol`, and did not converge for flat topographies out of
+  contact; the characteristic length is now inferred from offset or load
+- BUG: array (per-pixel) hardness raised a `ValueError`; a hardness of zero
+  was treated as no hardness
+- BUG: plastic displacement was also accumulated on elastic contact points
+  with penetration below `pentol`; the plastic mask and `active_set` are now
+  computed from the final iterate
+- BUG: Polonsky & Keer stalled (for up to `maxiter` iterations, with a wrong
+  contact area) when the undeformed rigid surface penetrated everywhere,
+  depending on roundoff; the initial state is now consistent (#3)
+- BUG: at constant external force, the uniform initial force was distributed
+  over masked (undefined) points
+- BUG: relative convergence checks divided by quantities that can vanish
+  (total force, maximum height plus offset)
+- ENH: default `forcetol` is E* × sqrt(area_per_pt) × `pentol` instead of an
+  absolute 1e-5
+- ENH: `ConvergenceWarning` when Polonsky & Keer stops at `maxiter`; the
+  system state is populated also without convergence
+- ENH: `FreeFFTElasticHalfSpace` warns by default if forces at the boundary of
+  the domain are nonzero (`check_boundaries=None`); `True` raises as before
+- MAINT: removed the force in the padding region from the convergence
+  criterion; it vanishes by construction
+
 v1.8.3 (28Jul26)
 ----------------
 - MAINT: Bump required muGrid version to >=1.0

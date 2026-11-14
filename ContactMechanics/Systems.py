@@ -592,21 +592,21 @@ class NonSmoothContactSystem(SystemBase):
             Maximum number of iterations allowed for convergence.
         logger : :obj:`ContactMechanics.Tools.Logger`
             Reports status and values at each iteration.
+
+        The state of the system (`offset`, `disp`, `force`, `contact_zone`)
+        is updated even if the solver did not converge; check
+        `result.success` before using it.
         """
         # pylint: disable=arguments-differ
-        self.disp = None
-        self.force = None
-        self.contact_zone = None
         result = solver(
             self.substrate,
             self.surface,
             **kwargs)
+        self.offset = result.offset
+        self.disp = result.x
+        self.force = self.substrate.force = result.jac
+        self.contact_zone = result.jac > 0
         if result.success:
-            self.offset = result.offset
-            self.disp = result.x
-            self.force = self.substrate.force = result.jac
-            self.contact_zone = result.jac > 0
-
             self.substrate.check()
         return result
 
