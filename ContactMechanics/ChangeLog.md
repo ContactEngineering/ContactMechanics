@@ -1,5 +1,26 @@
+<!--
+Style for this changelog (keep to it so entries stay uniform):
+
+- Newest version first. Heading `vX.Y.Z (DDMonYY)`, underlined with dashes.
+  A version not yet released is headed `vX.Y.Z (not yet released)`.
+- One bullet per user-visible change, at most two lines (about 200
+  characters). Say what changed for the user and, if useful, why or by how
+  much. Omit internals: no function, class, file or variable names, no
+  environment variables, no commit or PR references.
+- Start every bullet with one of: `ENH:` (new feature), `BUG:` (fix),
+  `API:` (interface change), `PERF:` (speed or memory), `MAINT:`, `TST:`,
+  `DOC:`, `BUILD:`, `CI:`.
+- Small related fixes may share one bullet. No trailing period on bullets.
+-->
+
 Change log for ContactMechanics
 ===============================
+
+v1.9.0 (not yet released)
+-------------------------
+- MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
+  scipy 1.13 or later and a recent DiscoverVersion
+- CI: Test Python 3.15 and the oldest supported versions of all dependencies
 
 v1.8.3 (28Jul26)
 ----------------
