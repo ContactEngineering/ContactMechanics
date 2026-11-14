@@ -1,6 +1,19 @@
 Change log for ContactMechanics
 ===============================
 
+v1.9.0 (not yet released)
+-------------------------
+- BUG: `ReferenceSolutions.Cone.contact_radius_and_area` returned pi a/D
+  instead of pi (a/D)^2 for the contact area; `Cone.deformation` inside the
+  contact depended on the sampling points
+- BUG: `ReferenceSolutions.Hertz.surface_stress` and `Hertz.stress` lost
+  accuracy close to the center and close to the surface by cancellation
+- BUG: `ReferenceSolutions.GreenwoodTripp` stopped when the change of the
+  damped iterate was below `tol`, i.e. at a residual of `tol / mix`
+- MAINT: `ReferenceSolutions.Cone` no longer imports matplotlib and
+  ContactMechanics at module level; the demonstration script was replaced
+  by a test
+
 v1.8.3 (28Jul26)
 ----------------
 - MAINT: Bump required muGrid version to >=1.0
