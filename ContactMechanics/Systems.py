@@ -704,16 +704,16 @@ class NonSmoothContactSystem(SystemBase):
         Characteristic length of the contact problem, used to make default
         tolerances independent of the system of units.
         """
-        if self.surface.dim == 1:
-            length = self.surface.rms_height_from_profile()
-        else:
-            length = self.surface.rms_height_from_area()
+        # Rms height of the valid pixels; computed here because older
+        # versions of SurfaceTopography do not ignore masked heights
+        valid = self._valid_mask()
+        nb_valid = self.reduction.sum(valid * 1)
+        mean_height = self.reduction.sum(np.where(valid, self._filled_heights(), 0.)) / nb_valid
+        length = np.sqrt(self.reduction.sum(np.where(valid, self._filled_heights() - mean_height, 0.) ** 2) /
+                         nb_valid)
         if length == 0:
             # Flat surface (e.g. a punch): fall back to the indentation depth,
             # i.e. the mean height of the valid pixels plus the offset
-            valid = self._valid_mask()
-            mean_height = self.reduction.sum(np.where(valid, self._filled_heights(), 0.)) / \
-                self.reduction.sum(valid * 1)
             length = abs(mean_height + offset)
         if length == 0:
             raise ValueError("Cannot infer a length scale for a flat surface "

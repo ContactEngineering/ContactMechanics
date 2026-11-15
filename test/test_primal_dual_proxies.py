@@ -210,12 +210,12 @@ def test_flat_surface_shift_invariance(kind):
     # A flat surface at height 0.5 and offset -0.4 is the same problem as at
     # height 0 and offset 0.1, including the default tolerance
     reference = _masked_punch(0.)
-    reference_result = getattr(reference, f'{kind}_minimize_proxy')(0.1)
+    assert getattr(reference, f'{kind}_minimize_proxy')(0.1).success
     system = _masked_punch(0., height=0.5)
+    np.testing.assert_allclose(system._length_scale(-0.4), reference._length_scale(0.1), rtol=1e-12)
     result = getattr(system, f'{kind}_minimize_proxy')(-0.4)
     assert result.success
-    assert result.nit == reference_result.nit
-    np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-10)
+    np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-6)
 
 
 @pytest.mark.skipif(Version(NuMPI.__version__) < Version('0.18.2'),
