@@ -383,9 +383,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             # Compute gap and adjust offset (if at constant external force)
             g_r = u_r[comp_mask] - masked_surface
             if external_force is not None:
-                offset = 0
                 if A_cg > 0:
                     offset = reduction.sum(g_r[c_r[comp_mask]]) / A_cg
+                else:
+                    # No contact (e.g. at zero load): the rigid surface just
+                    # touches the substrate
+                    offset = reduction.min(g_r)
             g_r -= offset
 
             # Compute G = sum(g*g) (over contact area only)
