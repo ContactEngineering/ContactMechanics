@@ -33,7 +33,7 @@ import abc
 import numpy as np
 import scipy
 import scipy.optimize as optim
-import SurfaceTopography
+from SurfaceTopography.HeightContainer import UniformTopographyInterface
 from NuMPI.Optimization import CCGWithoutRestart, CCGWithRestart
 from NuMPI.Tools import Reduction
 
@@ -430,8 +430,7 @@ class NonSmoothContactSystem(SystemBase):
         is_ok &= issubclass(substrate_type, ElasticSubstrate)
 
         # any surface should do
-        is_ok &= issubclass(surface_type,
-                            SurfaceTopography.UniformTopographyInterface)
+        is_ok &= issubclass(surface_type, UniformTopographyInterface)
         return is_ok
 
     @property

@@ -107,3 +107,40 @@ def test_plastic(tmp_path, sphere_fn):
 def test_only_one_mode(tmp_path, sphere_fn):
     with pytest.raises(ValueError):
         _run(tmp_path, sphere_fn, '--pressure', '1e-3', '--displacement', '0.01')
+
+
+def test_units_and_scaling(tmp_path, sphere_fn):
+    # Heights in nm are converted to µm and scaled by a factor of 2: the
+    # sphere becomes 2e-3 times as high
+    reference = _run(tmp_path, sphere_fn, '--displacement', '0.001')
+    log = _run(tmp_path, sphere_fn, '--displacement', '0.000002', '--physical_sizes-unit', 'µm',
+               '--height-unit', 'nm', '--height-fac', '2')
+    # Mean rigid surface position scales with the heights
+    np.testing.assert_allclose(log[0, 1] - 0.000002, (reference[0, 1] - 0.001) * 2e-3, rtol=1e-6)
+    _run(tmp_path, sphere_fn, '--nsteps', '2', '--detrend', 'curvature')
+
+
+def test_modulus_and_poisson(tmp_path, sphere_fn):
+    reference = _run(tmp_path, sphere_fn, '--displacement', '0.002', '--boundary', 'nonperiodic')
+    log = _run(tmp_path, sphere_fn, '--displacement', '0.002', '--boundary', 'nonperiodic', '--modulus', '2',
+               '--poisson', '0.5')
+    # The load scales with the contact modulus E / (1 - nu^2)
+    np.testing.assert_allclose(log[0, 3], reference[0, 3] * 2 / 0.75, rtol=1e-6)
+    pressure_file = (tmp_path / 'pressure').read_text()
+    assert 'contact modulus' in pressure_file
+
+
+@pytest.mark.parametrize('args', [
+    ['--boundary', 'unknown'],
+    ['--boundary', 'nonperiodic', '--thickness', '1'],
+    ['--pressure', '1,2'],
+    ['--height-unit', 'nm'],
+])
+def test_invalid_arguments(tmp_path, sphere_fn, args):
+    with pytest.raises(ValueError):
+        _run(tmp_path, sphere_fn, *args)
+
+
+def test_invalid_physical_sizes(tmp_path, sphere_fn):
+    with pytest.raises(SystemExit):
+        _run(tmp_path, sphere_fn, '--physical_sizes', '1')

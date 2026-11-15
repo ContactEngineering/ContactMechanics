@@ -195,6 +195,8 @@ class NetCDFContainer(object):
                 self._shape2 = self._shape
             elif 'atom' in self._data.dimensions:
                 n = self._data.dimensions['atom']
+                # netCDF4 returns a Dimension object, scipy an integer
+                n = n if isinstance(n, int) else len(n)
                 nx = int(sqrt(n))
                 assert nx * nx == n
                 self._shape = (nx, nx)
@@ -286,7 +288,13 @@ class NetCDFContainer(object):
         return 'h' in self._data.variables
 
     def set_rigid_surface(self, h, ndof=None):
-        self.set_shape(h, ndof=ndof)
+        """
+        Store the rigid surface. It can have a different size than the grid
+        of the container; if the grid is not yet defined, it is defined by
+        the rigid surface.
+        """
+        if not self._is_defined:
+            self.set_shape(h, ndof=ndof)
         nx, ny = self._shape2
         hnx, hny = h.shape
 
@@ -344,7 +352,8 @@ class NetCDFContainer(object):
         if name in self._data.variables:
             return self._data.variables[name][...]
 
-        return self._data.__getattr__(name)
+        # Note: scipy's netcdf_file does not implement __getattr__
+        return getattr(self._data, name)
 
     def __setattr__(self, name, value):
         if name[0] == '_':

@@ -84,13 +84,21 @@ def s(ξ, ξ1=1e-5, ξ2=1e5):
     return r
 
 
+_s = s
+
+
 # Use asymptotic expressions for small and large values
 def ξ(s, s1=1e-5, s2=1e5):
+    """
+    Inverse of `s`. Asymptotic cases are approximated by the asymptotic
+    expressions.
+    """
+    # Note: The argument `s` shadows the function `s`, which is inverted here
     def ξnum(s0):
         return (
-            brentq(lambda ξ: s(ξ) - s0, 1e-12, 1e12)
+            brentq(lambda ξ: _s(np.array([ξ]))[0] - s0, 1e-12, 1e12)
             if np.isscalar(s0)
-            else np.array([brentq(lambda ξ: s(ξ) - _s0, 1e-12, 1e12) for _s0 in s0])
+            else np.array([brentq(lambda ξ: _s(np.array([ξ]))[0] - _s0, 1e-12, 1e12) for _s0 in s0])
         )
 
     m1 = s < s1

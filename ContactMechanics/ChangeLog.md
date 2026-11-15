@@ -33,10 +33,6 @@ v1.9.0 (not yet released)
 - API: The normal force is positive for compressive contact, also after
   evaluating the elastic energy
 - DOC: Sign conventions of forces and the results of the solvers
-- DOC: Example notebooks are part of the documentation; the documentation
-  shows the parameters of constructors
-- DOC: Self-contained examples for the size of contact patches and the
-  contact area as a function of load
 - BUG: Polonsky-Keer could stall near full contact and return a wrong
   contact area; on 81 test problems it now always converges
 - BUG: Polonsky-Keer no longer crashes or stalls for flat punches
@@ -70,6 +66,19 @@ v1.9.0 (not yet released)
   surface
 - BUG: Greenwood-Tripp reference solution converges to the requested
   tolerance
+- DOC: Example notebooks are part of the documentation; the documentation
+  shows the parameters of constructors
+- DOC: Self-contained examples for the size of contact patches and the
+  contact area as a function of load
+- BUG: NetCDF output: global attributes and files of the AMBER convention
+  can be read with both backends; rigid surfaces of different size work
+- BUG: Contact systems can be created from a file without specifying the
+  physical sizes
+- BUG: Loggers without output file no longer keep all output in memory
+- BUG: Inverse of the profile function of the Greenwood-Tripp solution failed
+  for intermediate values
+- BUG: Checking whether a contact system supports a topography failed
+- CI: Tests must cover at least 90% of the code
 
 v1.8.3 (28Jul26)
 ----------------

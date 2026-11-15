@@ -91,7 +91,11 @@ def _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
     # substrate build with physical sizes and nb_grid_pts
     # matching the topography
     if substrate is None:
-        substrate = "periodic" if surface.is_periodic else "free"
+        if hasattr(surface, "is_periodic"):  # it is a SurfaceTopography instance
+            is_periodic = surface.is_periodic
+        else:  # we assume it is a reader instance
+            is_periodic = surface.default_channel.is_periodic
+        substrate = "periodic" if is_periodic else "free"
     if substrate == "periodic":
         substrate = PeriodicFFTElasticHalfSpace(
             nb_grid_pts, physical_sizes=physical_sizes,
@@ -103,10 +107,14 @@ def _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
 
     # now the topography is ready to load
     if issubclass(surface.__class__, ReaderBase):
+        topography_kwargs = {}
+        if surface.default_channel.physical_sizes is None:
+            # Physical sizes can only be passed if they are not fixed by the file
+            topography_kwargs['physical_sizes'] = physical_sizes
         surface = surface.topography(
             subdomain_locations=substrate.topography_subdomain_locations,
             nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
-            physical_sizes=physical_sizes)
+            **topography_kwargs)
         # TODO: this may fail for some readers
 
     return substrate, surface
