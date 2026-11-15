@@ -114,7 +114,8 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         Maximum (tensile) force outside the contact region and maximum excess
         over the hardness inside the flowing region allowed for convergence
         (absolute force per pixel). Default: E* × sqrt(area_per_pt) ×
-        pentol, i.e. the force needed to displace a single pixel by pentol.
+        pentol (E* × pentol for line scans), i.e. the force needed to
+        displace a single pixel by pentol.
     thermotol : float, optional
         Maximum *relative* change in thermodynamic control property during
         convergence: total force (relative to the total force) at constant
@@ -219,7 +220,11 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # calculations, i.e. it is a punch.
         if external_force is not None:
             # Displacement of a rigid punch that covers the domain
-            length_scale = abs(external_force) / (contact_modulus * sqrt(np.prod(topography.physical_sizes)))
+            if topography.dim == 1:
+                # Forces of line scans are per unit length
+                length_scale = abs(external_force) / contact_modulus
+            else:
+                length_scale = abs(external_force) / (contact_modulus * sqrt(np.prod(topography.physical_sizes)))
         elif offset is not None:
             length_scale = abs(offset + reduction.sum(masked_surface) / nb_surface_pts)
     if length_scale == 0:
@@ -235,7 +240,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         else:
             pentol = length_scale / 1000
     if forcetol is None:
-        forcetol = contact_modulus * sqrt(substrate.area_per_pt) * pentol
+        # Stiffness of a single pixel; forces of line scans are per unit length
+        pixel_stiffness = contact_modulus if substrate.dim == 1 else contact_modulus * sqrt(substrate.area_per_pt)
+        forcetol = pixel_stiffness * pentol
 
     logger.pr(f'maxiter = {maxiter}')
     logger.pr(f'pentol = {pentol}')
@@ -411,9 +418,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             if external_force is not None:
                 # We now compute an offset that corresponds to the bearing area solution using the deformed substrate,
                 # i.e. the current gap
+                if reduction.sum(hardness_c) < external_force:
+                    raise ValueError('The external force exceeds the load that the plastic substrate can carry.')
+                # At the upper end of the interval, all pixels must penetrate
                 offset = optim.bisect(
                     lambda x: reduction.sum(hardness_c[(g_r - x) < 0.0]) - external_force,
-                    reduction.max(g_r), reduction.min(g_r), xtol=1e-12 * length_scale)
+                    reduction.max(g_r) + length_scale, reduction.min(g_r), xtol=1e-12 * length_scale)
             g_r -= offset
 
             # Mix force
