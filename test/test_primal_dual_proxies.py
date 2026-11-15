@@ -103,6 +103,17 @@ def test_logger(kind, tmp_path):
         assert len(f.readlines()) > result.nit
 
 
+def test_primal_energy_only_objective_with_logger(tmp_path):
+    fn = tmp_path / 'log.out'
+    system = _periodic_system()
+    res = system.substrate.nb_subdomain_grid_pts
+    fun = system.primal_objective(0., gradient=False, logger=Logger(str(fn)))
+    energy = fun(np.zeros(res).reshape(-1))
+    np.testing.assert_allclose(energy, system.primal_objective(0.)(np.zeros(res).reshape(-1))[0])
+    with open(fn) as f:
+        assert len(f.readlines()) > 0
+
+
 def test_primal_initial_gap_on_topography_domain():
     system = _free_system()
     nb_grid_pts = system.substrate.topography_nb_subdomain_grid_pts
@@ -203,6 +214,30 @@ def test_masked_topography(kind, fill):
     assert result.success
     np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-5)
     np.testing.assert_array_equal(system.contact_zone, reference.contact_zone)
+
+
+def test_primal_masked_initial_gap():
+    # Values hidden under the mask of an initial guess must not matter
+    reference = _masked_punch(np.nan)
+    assert reference.primal_minimize_proxy(0.1).success
+    system = _masked_punch(np.nan)
+    init_gap = np.ma.masked_array(np.full(system.surface.nb_subdomain_grid_pts, np.nan),
+                                  mask=np.ma.getmaskarray(system.surface.heights()))
+    init_gap[~init_gap.mask] = 0.
+    result = system.primal_minimize_proxy(0.1, init_gap=init_gap)
+    assert result.success
+    assert np.all(np.isfinite(system.force))
+    np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-5)
+
+
+@pytest.mark.parametrize('kind', ['primal', 'dual'])
+def test_flat_surface_with_inexact_height(kind):
+    # The mean of a height that is not exactly representable is rounded; the
+    # surface is nevertheless flat, so the tolerance follows from the
+    # indentation depth
+    system = _masked_punch(0., height=1.1)
+    np.testing.assert_allclose(system._length_scale(-1.05), 0.05, rtol=1e-12)
+    assert getattr(system, f'{kind}_minimize_proxy')(-1.05).success
 
 
 @pytest.mark.parametrize('kind', ['primal', 'dual'])
