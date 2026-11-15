@@ -114,3 +114,25 @@ def test_semi_periodic_image_sum_converges():
         errors += [np.abs(displacements - reference).max() / np.abs(reference).max()]
     assert errors[-1] < 1e-5
     assert np.all(np.diff(errors) < 0)
+
+
+def test_semi_periodic_real_space_greens_function(comm):
+    # The real-space Green's function is available on the full grid, also
+    # for domain-decomposed calculations
+    from NuMPI import MPI
+    serial = SemiPeriodicFFTElasticHalfSpace((16, 12), 1., (1., 1.), periodicity=(False, True), n_images=2,
+                                             communicator=MPI.COMM_SELF)
+    reference = serial.get_G_real()
+    assert reference.shape == (31, 12)
+    # G(0, 0) is at the center and is the maximum
+    assert np.argmax(reference[:, 6]) == 15
+    # It agrees with the stored (local) Green's function, reordered
+    order_x = np.argsort(np.round(np.fft.fftfreq(31) * 31))
+    order_y = np.argsort(np.round(np.fft.fftfreq(12) * 12))
+    np.testing.assert_allclose(reference, serial.G_real[np.ix_(order_x, order_y)])
+    parallel = SemiPeriodicFFTElasticHalfSpace((16, 12), 1., (1., 1.), periodicity=(False, True), n_images=2,
+                                               communicator=comm, fft='mpi')
+    np.testing.assert_allclose(parallel.get_G_real(), reference)
+    x_slice, y_slice = parallel.get_G_real_slices()
+    np.testing.assert_allclose(x_slice, reference[:, 6])
+    np.testing.assert_allclose(y_slice, reference[15, :])
