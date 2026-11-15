@@ -57,7 +57,9 @@ def test_make_system_without_physical_sizes(tmp_path):
 def test_make_system_from_file_in_parallel(comm, substrate):
     # All processes read the same file; for the free substrate, some
     # processes only hold padding and have an empty topography subdomain
-    token = comm.bcast(uuid.uuid4().hex if comm.rank == 0 else None, root=0)
+    # Common file name; rank 0 draws a random number that is distributed by
+    # a reduction (the MPI stub of older NuMPI versions has no bcast)
+    token = int(Reduction(comm).max(np.array(uuid.uuid4().int % 2 ** 62 if comm.rank == 0 else 0)))
     fn = os.path.join(tempfile.gettempdir(), f'contact_mechanics_{token}.npy')
     heights = np.arange(32 * 24, dtype=float).reshape(32, 24)
     if comm.rank == 0:
