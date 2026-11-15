@@ -21,6 +21,13 @@ v1.9.0 (not yet released)
 - MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
   scipy 1.13 or later and a recent DiscoverVersion
 - CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Primal and dual solvers reported wrong forces and gaps after
+  converging; the state is now computed from the solution
+- BUG: Default tolerances of the primal and dual solvers scale with the
+  problem instead of depending on the system of units
+- BUG: Primal and dual solvers no longer crash without an initial guess; the
+  dual energy is correct in parallel runs
+- ENH: Primal solver supports nonperiodic substrates and logging
 
 v1.8.3 (28Jul26)
 ----------------

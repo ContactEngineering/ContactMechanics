@@ -24,9 +24,8 @@ def test_using_primal_obj():
     offset = 0.005
     lbounds = np.zeros((nx, ny))
     bnds = system._reshape_bounds(lbounds, )
-    init_gap = np.zeros((nx, ny))
-    disp = np.zeros((nx, ny))
-    init_gap = disp - surface.heights() - offset
+    # Gap of the undeformed substrate, projected onto the feasible set
+    init_gap = np.maximum(-surface.heights() - offset, 0)
 
     # ####################POLONSKY-KEER##############################
     res = CCGWithRestart.constrained_conjugate_gradients_with_restart(
