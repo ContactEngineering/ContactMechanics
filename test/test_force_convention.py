@@ -39,7 +39,9 @@ def test_state_after_minimization(substrate_class, method):
     assert load > 0
     # Contact force on the topography grid, positive in compression
     assert system.force.shape == system.surface.nb_grid_pts
-    np.testing.assert_allclose(system.force.sum(), load)
+    # The primal solver yields forces in the padding region of nonperiodic
+    # substrates up to its tolerance; they are part of the load
+    np.testing.assert_allclose(system.force.sum(), load, rtol=1e-4 if method == 'primal' else 1e-12)
     # (The primal solver yields forces outside the contact up to its tolerance)
     assert system.force.min() >= -1e-4 * system.force.max()
     # Substrate force on the grid of the substrate, opposite sign
@@ -84,3 +86,16 @@ def test_minimize_proxy_result():
     np.testing.assert_allclose(result.fun, (result.jac * result.x[system.comp_slice]).sum() / 2)
     for attribute in ['success', 'message', 'offset', 'active_set', 'nit', 'nfev', 'maxcv']:
         assert hasattr(result, attribute)
+
+
+@pytest.mark.parametrize('substrate_class', [PeriodicFFTElasticHalfSpace, FreeFFTElasticHalfSpace])
+def test_primal_state_is_consistent_with_reevaluation(substrate_class):
+    # The stored substrate force is -dE/du at the stored displacements,
+    # including the residual forces in the padding region
+    system = _system(substrate_class)
+    assert system.primal_minimize_proxy(0.002, gtol=1e-6 * system._force_scale(0.002) * 100).success
+    load = system.compute_normal_force()
+    substrate_force = system.substrate.force.copy()
+    system.evaluate(system.disp, system.offset, forces=True)
+    np.testing.assert_allclose(system.substrate.force, substrate_force, rtol=1e-12, atol=0)
+    np.testing.assert_allclose(system.compute_normal_force(), load, rtol=1e-12)

@@ -444,7 +444,7 @@ class NonSmoothContactSystem(SystemBase):
         """
         return -self.reduction.sum(self.substrate.force)
 
-    def _set_state(self, offset, disp, force, energy, contact_zone=None):
+    def _set_state(self, offset, disp, force, energy, contact_zone=None, substrate_force=None):
         """
         Store the state after a minimization.
 
@@ -461,16 +461,20 @@ class NonSmoothContactSystem(SystemBase):
             Elastic energy.
         contact_zone : np.ndarray, optional
             Contacting points. (Default: points with positive force)
+        substrate_force : np.ndarray, optional
+            Force -dE/du on the (local) grid of the substrate. (Default:
+            `-force` on the topography grid and zero in the padding region)
         """
         self.offset = offset
         self.disp = disp
         self.force = force
         self.energy = self.substrate.energy = energy
         self.contact_zone = force > 0 if contact_zone is None else contact_zone
-        # The substrate force has the opposite sign and lives on the grid of
-        # the substrate
-        substrate_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
-        substrate_force[self.comp_slice] = -force
+        if substrate_force is None:
+            # The substrate force has the opposite sign and lives on the grid
+            # of the substrate
+            substrate_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
+            substrate_force[self.comp_slice] = -force
         self.substrate.force = substrate_force
 
     def compute_nb_contact_pts(self):
@@ -713,14 +717,23 @@ class NonSmoothContactSystem(SystemBase):
                              "explicitly.")
         return length
 
+    def _pixel_stiffness(self):
+        """
+        Local stiffness of a single pixel, i.e. the force per displacement of
+        one pixel: E* times the pixel size in 2D, E* for line scans (where
+        forces are per unit length).
+        """
+        if self.substrate.dim == 1:
+            return self.substrate.contact_modulus
+        return self.substrate.contact_modulus * np.sqrt(self.substrate.area_per_pt)
+
     def _force_scale(self, offset):
         """
         Characteristic force per pixel of the contact problem: the force
         needed to displace the surface by the characteristic length on the
         scale of one pixel.
         """
-        return self.substrate.contact_modulus * \
-            np.sqrt(self.substrate.area_per_pt) * self._length_scale(offset)
+        return self._pixel_stiffness() * self._length_scale(offset)
 
     def _primal_base_displacement(self, offset):
         """
@@ -860,7 +873,8 @@ class NonSmoothContactSystem(SystemBase):
         gtol : float, optional
             Absolute tolerance on the (projected) gradient, i.e. on the force
             per pixel. Default is 1e-6 times a characteristic force per pixel,
-            E* × sqrt(area_per_pt) × rms height.
+            E* × sqrt(area_per_pt) × rms height (E* × rms height for line
+            scans).
         maxiter : int, optional
             This is the maximum number of iterations allowed for the solver to converge.
             If not provided, it defaults to 1000.
@@ -931,8 +945,11 @@ class NonSmoothContactSystem(SystemBase):
             disp = np.reshape(result.x, res) + base
             # This computes energy, gap and substrate forces
             energy, substrate_force = self.evaluate(disp, offset, forces=True)
-            # The solvers place active constraints exactly onto the bound
-            self._set_state(offset, disp, -substrate_force[self.comp_slice], energy, contact_zone=self.gap <= 0)
+            # Keep the full substrate force: in the padding region of
+            # nonperiodic substrates, it vanishes only up to the tolerance.
+            # The solvers place active constraints exactly onto the bound.
+            self._set_state(offset, disp, -substrate_force[self.comp_slice], energy, contact_zone=self.gap <= 0,
+                            substrate_force=substrate_force.copy())
 
         return result
 
@@ -1107,7 +1124,8 @@ class NonSmoothContactSystem(SystemBase):
             Determines the indentation depth.
         init_force : array_like, optional
             Initial guess for the force. Default is the penetration of the
-            undeformed substrate times a local stiffness E* × sqrt(area_per_pt).
+            undeformed substrate times a local stiffness E* × sqrt(area_per_pt)
+            (E* for line scans).
             For Nonperiodic calculations, the array does not include the padding region,
             i.e. it is of shape `substrate.topography_nb_subdomain_grid_pts`
         solver : str, optional
@@ -1147,8 +1165,7 @@ class NonSmoothContactSystem(SystemBase):
             # Penetration of the undeformed substrate times a local stiffness.
             # Note that a vanishing force is a poor initial guess, since
             # all variables are then on the bound.
-            init_force = self.substrate.contact_modulus * np.sqrt(self.substrate.area_per_pt) * \
-                np.maximum(self.surface.heights() + offset, 0)
+            init_force = self._pixel_stiffness() * np.maximum(self.surface.heights() + offset, 0)
         elif np.shape(init_force) != res:
             raise IncompatibleResolutionError(
                 "`init_force` has shape {}, but should have shape {}"
