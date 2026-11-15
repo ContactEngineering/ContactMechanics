@@ -103,11 +103,35 @@ def ξ(s, s1=1e-5, s2=1e5):
     return r
 
 
+def _displacements(p, ρ, rhomax, eps):
+    """
+    Displacements due to the pressure p on the radial grid ρ.
+
+    Returns
+    -------
+    w : np.ndarray
+        Displacements.
+    w0 : float
+        Displacement at the center.
+    """
+    pint = interp1d(ρ, p)
+    w0 = simpson(p, x=ρ)
+    w = np.zeros_like(ρ)
+    w[0] = w0
+    for i, _ρ in enumerate(ρ[1:], start=1):
+        ξ = np.linspace(0, (rhomax - eps) / _ρ, len(ρ))
+        w[i] = simpson(_ρ * pint(_ρ * ξ), x=s(ξ))
+    return w, w0
+
+
 def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1, maxiter=1000):
     """
     Greenwood-Tripp solution for the contact of rough spheres.
     See: Greenwood, Tripp, J. Appl. Mech. 34, 153 (1967)
     Symbols correspond to notation in this paper.
+
+    The pressure is computed self-consistently by a damped fixed-point
+    iteration: p = μ F_{3/2}(d + ρ² + w(p) - w(p, 0)).
 
     Parameters
     ----------
@@ -118,16 +142,20 @@ def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1, maxiter=
         Material parameter, μ=8/3 η σ sqrt(2 B β) where η is the density of
         asperities, B is the sphere radius and β the asperity radius.
     rhomax : float
-        Radius cutoff (in units of σ). Pressure is assumed to be zero beyond
-        this radius.
+        Radius cutoff (in units of sqrt(2 B σ), like the radial coordinate).
+        Pressure is assumed to be zero beyond this radius.
     n : int
         Number of grid points.
     eps : float
         Small number for numerical regularization.
     tol : float
-        Max difference between displacements in consecutive solutions.
+        Convergence tolerance: maximum change of the pressure (in units of
+        E* sqrt(σ / 8B)) under one undamped fixed-point update.
     mix : float
         Mixing of solution between consecutive steps.
+    maxiter : int
+        Maximum number of iterations. A RuntimeError is raised if the
+        iteration does not converge.
 
     Returns
     -------
@@ -143,24 +171,15 @@ def GreenwoodTripp(d, μ, rhomax=5, n=100, eps=1e-6, tol=1e-6, mix=0.1, maxiter=
     w = np.zeros_like(ρ)
     w0 = 0
     p = np.zeros_like(ρ)
-    pold = p.copy() + 1.0
-    it = 0
-    while np.abs(p - pold).max() > tol:
-        if it > maxiter:
-            raise RuntimeError(
-                "Maximum number of iterations (={}) " "exceeded.".format(maxiter)
-            )
-        pold = p.copy()
-        p = mix * μ * Fn(d + ρ**2 + w - w0, 3 / 2) + (1 - mix) * p
-        pint = interp1d(ρ, p)
-        w0 = simpson(p, x=ρ)
-        w = np.zeros_like(ρ)
-        for i, _ρ in enumerate(ρ):
-            if i == 0:
-                w[0] = w0
-            else:
-                ξ = np.linspace(0, (rhomax - eps) / _ρ, n)
-                w[i] = simpson(_ρ * pint(_ρ * ξ), x=s(ξ))
-        it += 1
-    p = μ * Fn(d + ρ**2 + w - w0, 3 / 2)
-    return w - w0, p, ρ
+    for it in range(maxiter + 1):
+        # Undamped update of the pressure for the current displacements
+        p_new = μ * Fn(d + ρ**2 + w - w0, 3 / 2)
+        # Note: Testing the change of the damped iterate would test
+        # mix * residual, i.e. a tolerance of tol / mix
+        if np.abs(p_new - p).max() <= tol:
+            return w - w0, p_new, ρ
+        p = mix * p_new + (1 - mix) * p
+        w, w0 = _displacements(p, ρ, rhomax, eps)
+    raise RuntimeError(
+        "Maximum number of iterations (={}) " "exceeded.".format(maxiter)
+    )

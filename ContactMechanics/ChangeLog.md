@@ -21,6 +21,12 @@ v1.9.0 (not yet released)
 - MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
   scipy 1.13 or later and a recent DiscoverVersion
 - CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Cone reference solution: correct contact area, displacements
+  independent of the sampling points
+- BUG: Hertz reference stresses are accurate close to the center and the
+  surface
+- BUG: Greenwood-Tripp reference solution converges to the requested
+  tolerance
 
 v1.8.3 (28Jul26)
 ----------------
