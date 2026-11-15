@@ -43,6 +43,19 @@ def test_make_system_from_file(tmp_path, periodic, substrate_class):
     assert system.substrate.physical_sizes == (1., 1.)
 
 
+def test_make_system_with_conflicting_physical_sizes(tmp_path):
+    # Physical sizes fixed by the file (or topography) cannot be overridden
+    fn = str(tmp_path / 'topography.nc')
+    _rough().to_netcdf(fn)
+    with pytest.raises(ValueError, match='differ'):
+        make_system(surface=fn, young=1., physical_sizes=(2., 2.), communicator=MPI.COMM_SELF)
+    with pytest.raises(ValueError, match='differ'):
+        make_system(surface=_rough(), young=1., physical_sizes=(2., 2.), communicator=MPI.COMM_SELF)
+    # Consistent sizes are fine
+    system = make_system(surface=fn, young=1., physical_sizes=(1., 1.), communicator=MPI.COMM_SELF)
+    assert system.substrate.physical_sizes == (1., 1.)
+
+
 def test_make_system_without_physical_sizes(tmp_path):
     fn = str(tmp_path / 'topography.npy')
     np.save(fn, np.zeros((8, 8)))

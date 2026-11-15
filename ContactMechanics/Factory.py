@@ -28,6 +28,7 @@
 Implements a convenient Factory function for Contact System creation
 """
 
+import numpy as np
 from SurfaceTopography import open_topography
 from SurfaceTopography.IO import ReaderBase
 from SurfaceTopography.HeightContainer import UniformTopographyInterface
@@ -87,6 +88,18 @@ def _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
                              "file")
         else:
             physical_sizes = surface_physical_sizes
+    else:
+        # Explicit physical sizes must agree with those fixed by the
+        # topography or file; otherwise substrate and surface would describe
+        # different domains
+        if hasattr(surface, "physical_sizes"):
+            surface_physical_sizes = surface.physical_sizes
+        else:  # we assume it is a reader instance
+            surface_physical_sizes = surface.default_channel.physical_sizes
+        if surface_physical_sizes is not None and \
+                not np.allclose(surface_physical_sizes, physical_sizes):
+            raise ValueError(f"The physical sizes {physical_sizes} differ from those of the topography, "
+                             f"{surface_physical_sizes}.")
 
     # substrate build with physical sizes and nb_grid_pts
     # matching the topography
