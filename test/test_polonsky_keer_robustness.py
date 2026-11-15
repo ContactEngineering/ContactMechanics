@@ -260,3 +260,19 @@ def test_line_scan_unit_invariance(control, flat):
             np.testing.assert_allclose(tolerances['penetration_tol'] / length, reference_tolerances['penetration_tol'])
             np.testing.assert_allclose(tolerances['pressure_tol'] / (young * length),
                                        reference_tolerances['pressure_tol'])
+
+
+def test_substrate_with_contact_modulus_only():
+    # Custom substrates need not define Young's modulus
+    class Substrate(PeriodicFFTElasticHalfSpace):
+        @property
+        def young(self):
+            raise AttributeError('young')
+
+        @young.setter
+        def young(self, value):
+            pass
+
+    surface = Topography(0.01 * _rough_heights(32), (1., 1.))
+    result = constrained_conjugate_gradients(Substrate((32, 32), 1., (1., 1.)), surface, offset=0.)
+    assert result.success
