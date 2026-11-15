@@ -97,7 +97,7 @@ def _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
         else:  # we assume it is a reader instance
             surface_physical_sizes = surface.default_channel.physical_sizes
         if surface_physical_sizes is not None and \
-                not np.allclose(surface_physical_sizes, physical_sizes):
+                not np.allclose(surface_physical_sizes, physical_sizes, atol=0):
             raise ValueError(f"The physical sizes {physical_sizes} differ from those of the topography, "
                              f"{surface_physical_sizes}.")
 

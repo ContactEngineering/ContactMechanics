@@ -51,6 +51,11 @@ def test_make_system_with_conflicting_physical_sizes(tmp_path):
         make_system(surface=fn, young=1., physical_sizes=(2., 2.), communicator=MPI.COMM_SELF)
     with pytest.raises(ValueError, match='differ'):
         make_system(surface=_rough(), young=1., physical_sizes=(2., 2.), communicator=MPI.COMM_SELF)
+    # The comparison is relative, also at small length scales
+    with pytest.raises(ValueError, match='differ'):
+        make_system(surface=Topography(1e-9 * _rough().heights(), (1e-9, 1e-9), periodic=True), young=1.,
+                    physical_sizes=(2e-9, 2e-9),
+                    communicator=MPI.COMM_SELF)
     # Consistent sizes are fine
     system = make_system(surface=fn, young=1., physical_sizes=(1., 1.), communicator=MPI.COMM_SELF)
     assert system.substrate.physical_sizes == (1., 1.)
