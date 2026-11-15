@@ -203,8 +203,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     result in an infinite displacement. The stiffness at wavevector q=0,
     which relates mean pressure and mean displacement (and hence the offset
     of a rigid indenter and the load), is therefore a convention: By default,
-    it is taken equal to the lowest nonvanishing stiffness, i.e. it depends
-    on the size of the domain. It can be set with `stiffness_q0`; for
+    it is taken equal to the stiffness of the lowest nonvanishing wavevector
+    (in two dimensions, the mean of the stiffnesses of the lowest
+    wavevectors along x and y), i.e. it depends on the size of the domain. It can be set with `stiffness_q0`; for
     `stiffness_q0=0`, the q=0 mode is decoupled (mean pressure leads to no
     mean displacement and vice versa). For a substrate of finite `thickness`,
     the stiffness at q=0 is the physical stiffness of the layer.
@@ -249,8 +250,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             the last value in repeated.
         stiffness_q0 : float, optional
             Substrate stiffness at the Gamma-point (wavevector q=0).
-            If None, this is taken equal to the lowest nonvanishing
-            stiffness. Cannot be used in combination with thickness.
+            If None, this is taken equal to the stiffness of the lowest
+            nonvanishing wavevector (in two dimensions, the mean of the
+            stiffnesses of the lowest wavevectors along x and y). Cannot be
+            used in combination with thickness.
         thickness : float, optional
             Thickness of the elastic half-space. If None, this
             models an infinitely deep half-space. Cannot be used in
@@ -1340,8 +1343,8 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             displacement, and hence the relation between offset and load, is
             a convention for periodic directions: as for
             `PeriodicFFTElasticHalfSpace`, the stiffness at q = 0 is taken
-            equal to the stiffness of the lowest nonvanishing wavevector along
-            the periodic direction(s). Defaults to 10.
+            equal to the mean of the stiffnesses of the lowest nonvanishing
+            wavevectors along the periodic direction(s). Defaults to 10.
         communicator : mpi4py communicator NuMPI stub communicator
             MPI communicator object. Ignored if fftengine is provided.
         check_boundaries: bool
