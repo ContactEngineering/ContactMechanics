@@ -136,3 +136,18 @@ def test_semi_periodic_real_space_greens_function(comm):
     x_slice, y_slice = parallel.get_G_real_slices()
     np.testing.assert_allclose(x_slice, reference[:, 6])
     np.testing.assert_allclose(y_slice, reference[15, :])
+
+
+@pytest.mark.parametrize('periodicity', [(False, True), (True, False), (True, True)])
+@pytest.mark.parametrize('physical_sizes', [(10., 1.), (1., 10.), (1., 1.)])
+def test_semi_periodic_positive_energy(periodicity, physical_sizes):
+    # The image sum fixes the response to a mean pressure only up to a
+    # constant; the convention for it must keep the elastic energy positive,
+    # also on elongated domains
+    substrate = SemiPeriodicFFTElasticHalfSpace((32, 8), 1., physical_sizes, periodicity=periodicity, n_images=10)
+    assert np.all(substrate.greens_function.real > 0)
+    forces = -np.ones((32, 8))
+    assert -np.sum(forces * substrate.evaluate_disp(forces)) > 0
+    # Random (also tensile) forces
+    forces = np.random.default_rng(0).standard_normal((32, 8))
+    assert -np.sum(forces * substrate.evaluate_disp(forces)) > 0

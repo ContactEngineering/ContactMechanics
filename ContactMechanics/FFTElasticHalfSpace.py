@@ -1305,9 +1305,12 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             for the numeric periodization. The sum over the images of the
             1/r decay of the Green's function diverges; the value of each image
             at the origin is subtracted, which makes the sum converge and
-            changes the displacements only by a constant. (Note that the mean
+            changes the displacements only by a constant. The mean
             displacement, and hence the relation between offset and load, is
-            a convention for periodic directions.) Defaults to 10.
+            a convention for periodic directions: as for
+            `PeriodicFFTElasticHalfSpace`, the stiffness at q = 0 is taken
+            equal to the stiffness of the lowest nonvanishing wavevector along
+            the periodic direction(s). Defaults to 10.
         communicator : mpi4py communicator NuMPI stub communicator
             MPI communicator object. Ignored if fftengine is provided.
         check_boundaries: bool
@@ -1382,10 +1385,48 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
 
         return G_real
 
+    def _fourier_coefficient(self, G_local, wavevector):
+        """
+        Fourier coefficient of the (local part of the) real-space Green's
+        function on the computational grid at the given integer wavevector,
+        reduced over all MPI processes. The coefficient is real because the
+        Green's function is even.
+        """
+        phase = 0
+        for location, nb_pts, nb_domain_pts, k, shape in zip(self.subdomain_locations, self.nb_subdomain_grid_pts,
+                                                             self.nb_domain_grid_pts, wavevector, ((-1, 1), (1, -1))):
+            i = np.arange(location, location + nb_pts).reshape(shape)
+            phase = phase + 2 * np.pi * k * i / nb_domain_pts
+        return self.pnp.sum(np.sum(G_local * np.cos(phase)))
+
+    def _zero_mode_constant(self, G_local):
+        """
+        Constant that sets the compliance at wavevector q = 0. The sum over
+        periodic images of the 1/r decay of the Green's function diverges,
+        i.e. the mean displacement in response to a mean pressure is a
+        convention. As for `PeriodicFFTElasticHalfSpace`, the stiffness at
+        q = 0 is taken equal to the (mean) stiffness of the lowest
+        nonvanishing wavevector(s) along the periodic direction(s). This
+        keeps the elastic energy positive.
+        """
+        if not any(self.periodicity):
+            return 0.
+        stiffnesses = []
+        for direction, periodic in enumerate(self.periodicity):
+            if periodic:
+                wavevector = [0, 0]
+                wavevector[direction] = 1
+                stiffnesses += [1 / self._fourier_coefficient(G_local, wavevector)]
+        target = 1 / np.mean(stiffnesses)
+        current = self._fourier_coefficient(G_local, (0, 0))
+        return (target - current) / np.prod(self.nb_domain_grid_pts)
+
     def _compute_greens_function(self) -> NDArray:
+        G_real = self._real_space_greens_function(*self._grid_coordinates())
+        self._zero_mode_shift = self._zero_mode_constant(G_real)
         # The real-space Green's function of the local subdomain is kept for
         # analysis purposes
-        self.G_real = self._real_space_greens_function(*self._grid_coordinates())
+        self.G_real = G_real + self._zero_mode_shift
         self.real_buffer.p[...] = self.G_real
         self.fftengine.fft(self.real_buffer, self.fourier_buffer)
         return self.fourier_buffer.p.copy()
@@ -1447,7 +1488,7 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
         G_real_ordered : ndarray of shape (M, N)
             Green's function in real space with G(0,0) at the array center
         """
-        G_real = self._real_space_greens_function(*self._grid_coordinates(local=False))
+        G_real = self._real_space_greens_function(*self._grid_coordinates(local=False)) + self._zero_mode_shift
 
         nx, ny = self.nb_domain_grid_pts
         m = np.round(np.fft.fftfreq(nx) * nx).astype(int)
