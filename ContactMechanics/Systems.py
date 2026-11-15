@@ -618,11 +618,15 @@ class NonSmoothContactSystem(SystemBase):
         # Rms height of the valid pixels; computed here because older
         # versions of SurfaceTopography do not ignore masked heights
         valid = self._valid_mask()
+        heights = self._filled_heights()
         nb_valid = self.reduction.sum(valid * 1)
-        mean_height = self.reduction.sum(np.where(valid, self._filled_heights(), 0.)) / nb_valid
-        length = np.sqrt(self.reduction.sum(np.where(valid, self._filled_heights() - mean_height, 0.) ** 2) /
-                         nb_valid)
-        if length == 0:
+        mean_height = self.reduction.sum(np.where(valid, heights, 0.)) / nb_valid
+        length = np.sqrt(self.reduction.sum(np.where(valid, heights - mean_height, 0.) ** 2) / nb_valid)
+        # Test flatness directly, since the rounded mean can leave a spurious
+        # rms height of the order of the machine precision
+        max_height = self.reduction.max(np.max(np.where(valid, heights, -np.inf), initial=-np.inf))
+        min_height = -self.reduction.max(np.max(np.where(valid, -heights, -np.inf), initial=-np.inf))
+        if max_height == min_height:
             # Flat surface (e.g. a punch): fall back to the indentation depth,
             # i.e. the mean height of the valid pixels plus the offset
             length = abs(mean_height + offset)
@@ -742,7 +746,8 @@ class NonSmoothContactSystem(SystemBase):
         else:
             def fun(gap):
                 disp = gap.reshape(res) + base
-                return self.evaluate(disp, offset, forces=False,
+                # The logger reports the total force
+                return self.evaluate(disp, offset, forces=logger is not None,
                                      logger=logger)[0]
 
         return fun
@@ -837,7 +842,11 @@ class NonSmoothContactSystem(SystemBase):
         if init_gap is None:
             # Undeformed substrate
             init_gap = np.maximum(-base, bounds)
-        elif np.shape(init_gap) == tuple(self.substrate.topography_nb_subdomain_grid_pts) and \
+        else:
+            # Masked entries (e.g. on masked pixels of the topography) may
+            # hide arbitrary values
+            init_gap = np.ma.filled(init_gap, 0.)
+        if np.shape(init_gap) == tuple(self.substrate.topography_nb_subdomain_grid_pts) and \
                 np.shape(init_gap) != tuple(res):
             padded_gap = np.zeros(res)
             padded_gap[self.comp_slice] = init_gap
