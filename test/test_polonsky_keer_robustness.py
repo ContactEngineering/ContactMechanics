@@ -210,3 +210,53 @@ def test_line_scan():
                                              offset=0.)
     assert result.success
     assert 0 < (result.jac > 0).mean() < 1
+
+
+def test_plastic_load_control_with_heterogeneous_hardness():
+    # All load can only be carried if the pixels with the largest gap
+    # contribute; the bisection for the offset must include them
+    surface = Topography(np.array([[0., -1.], [0., -1.]]), (1., 1.))
+    hardness = np.array([[1., 100.], [1., 100.]])
+    substrate = PeriodicFFTElasticHalfSpace((2, 2), 1., (1., 1.))
+    result = constrained_conjugate_gradients(substrate, surface, hardness=hardness, external_force=3., maxiter=1000)
+    assert result.success
+    # Total force is converged to the relative tolerance `thermotol`
+    np.testing.assert_allclose(result.jac.sum(), 3., rtol=1e-6)
+    assert np.all(result.jac <= hardness * (1 + 1e-12))
+    with pytest.raises(ValueError, match='exceeds'):
+        constrained_conjugate_gradients(substrate, surface, hardness=hardness, external_force=300., maxiter=1000)
+
+
+@pytest.mark.parametrize('flat', [False, True])
+@pytest.mark.parametrize('control', ['offset', 'force'])
+def test_line_scan_unit_invariance(control, flat):
+    # Default tolerances of line scans must scale with the system of units:
+    # lengths with L, forces (per unit length) with E* L
+    nb_grid_pts = 256
+    x = np.arange(nb_grid_pts) / nb_grid_pts
+    if flat and control == 'offset':
+        pytest.skip('Flat line scans at constant offset are in full contact or out of contact')
+
+    def solve(young, length):
+        heights = np.zeros(nb_grid_pts) if flat else 0.01 * length * np.cos(2 * np.pi * x)
+        surface = UniformLineScan(heights, length, periodic=True)
+        substrate = PeriodicFFTElasticHalfSpace((nb_grid_pts,), young, (length,))
+        kwargs = dict(offset=0.) if control == 'offset' else dict(external_force=0.01 * young * length)
+        tolerances = {}
+
+        def callback(it, forces, d):
+            tolerances.update(d)
+
+        result = constrained_conjugate_gradients(substrate, surface, callback=callback, maxiter=1000, **kwargs)
+        assert result.success
+        return result, tolerances
+
+    reference, reference_tolerances = solve(1., 1.)
+    for young, length in [(1e9, 1e-6), (1e-9, 1e6)]:
+        result, tolerances = solve(young, length)
+        assert result.nit == reference.nit
+        np.testing.assert_allclose(result.jac.sum() / (young * length), reference.jac.sum(), rtol=1e-6)
+        if tolerances:
+            np.testing.assert_allclose(tolerances['penetration_tol'] / length, reference_tolerances['penetration_tol'])
+            np.testing.assert_allclose(tolerances['pressure_tol'] / (young * length),
+                                       reference_tolerances['pressure_tol'])
