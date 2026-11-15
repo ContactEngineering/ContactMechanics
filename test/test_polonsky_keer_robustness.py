@@ -83,12 +83,16 @@ def test_flat_topography_without_load_requires_pentol():
     assert constrained_conjugate_gradients(substrate, punch, offset=0., pentol=1e-6).success
 
 
-def test_zero_external_force():
+@pytest.mark.parametrize('shift', [0., 0.1, -0.1])
+def test_zero_external_force(shift):
+    # Without load, the surface touches the substrate at its highest point
     sphere = _sphere()
+    sphere = Topography(sphere.heights() + shift, sphere.physical_sizes)
     result = constrained_conjugate_gradients(FreeFFTElasticHalfSpace(sphere.nb_grid_pts, 1., (1., 1.)), sphere,
                                              external_force=0., maxiter=100)
     assert result.success
     np.testing.assert_array_equal(result.jac, 0)
+    np.testing.assert_allclose(result.offset, -shift, atol=1e-12)
 
 
 @pytest.mark.parametrize('substrate_class, offset', [(PeriodicFFTElasticHalfSpace, 0.),
