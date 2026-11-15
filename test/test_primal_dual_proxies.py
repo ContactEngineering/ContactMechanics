@@ -178,3 +178,39 @@ def test_line_scan_unit_invariance(kind, solver):
         assert result.nit == reference_result.nit
         # Forces of line scans are per unit length, the load scales as E* L
         np.testing.assert_allclose(system.force.sum() / (young * length), reference.force.sum(), rtol=1e-6)
+
+
+def _masked_punch(fill, height=0.):
+    nb_grid_pts, size, radius = 32, 50., 20.
+    x = (np.arange(nb_grid_pts) - nb_grid_pts // 2) * size / nb_grid_pts
+    r_sq = x.reshape(-1, 1) ** 2 + x.reshape(1, -1) ** 2
+    heights = np.full((nb_grid_pts, nb_grid_pts), fill)
+    heights[r_sq <= radius ** 2] = height
+    surface = Topography(np.ma.masked_where(r_sq > radius ** 2, heights), (size, size))
+    return NonSmoothContactSystem(FreeFFTElasticHalfSpace(surface.nb_grid_pts, 1., (size, size)), surface)
+
+
+@pytest.mark.parametrize('kind', ['primal', 'dual'])
+@pytest.mark.parametrize('fill', [5., np.nan])
+def test_masked_topography(kind, fill):
+    # Values under the mask must not matter: the heights are undefined there
+    reference = _masked_punch(0.)
+    assert reference.minimize_proxy(offset=0.1, pentol=1e-10).success
+    system = _masked_punch(fill)
+    result = getattr(system, f'{kind}_minimize_proxy')(0.1)
+    assert result.success
+    np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-5)
+    np.testing.assert_array_equal(system.contact_zone, reference.contact_zone)
+
+
+@pytest.mark.parametrize('kind', ['primal', 'dual'])
+def test_flat_surface_shift_invariance(kind):
+    # A flat surface at height 0.5 and offset -0.4 is the same problem as at
+    # height 0 and offset 0.1, including the default tolerance
+    reference = _masked_punch(0.)
+    reference_result = getattr(reference, f'{kind}_minimize_proxy')(0.1)
+    system = _masked_punch(0., height=0.5)
+    result = getattr(system, f'{kind}_minimize_proxy')(-0.4)
+    assert result.success
+    assert result.nit == reference_result.nit
+    np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-10)
