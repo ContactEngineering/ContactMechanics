@@ -307,3 +307,32 @@ def test_substrate_without_modulus_and_explicit_tolerances():
     assert result.success
     with pytest.raises(AttributeError):
         constrained_conjugate_gradients(substrate(), surface, offset=0.)
+
+    # Flat punch under force control
+    punch = _punch(32, size=1., radius=0.4)
+    nb_grid_pts = punch.nb_grid_pts
+
+    class FreeSubstrate(FreeFFTElasticHalfSpace):
+        hidden = False
+        young = Substrate.young
+        contact_modulus = Substrate.contact_modulus
+
+        def __init__(self, nb_grid_pts, *args, **kwargs):
+            # Subclasses define the padded computational grid
+            self._comp_nb_grid_pts = tuple(2 * n for n in nb_grid_pts)
+            super().__init__(nb_grid_pts, *args, **kwargs)
+
+    def free_substrate():
+        s = FreeSubstrate(nb_grid_pts, 1., punch.physical_sizes)
+        s.hidden = True
+        return s
+
+    reference = constrained_conjugate_gradients(FreeFFTElasticHalfSpace(nb_grid_pts, 1., punch.physical_sizes),
+                                                punch, external_force=0.1, pentol=1e-8, forcetol=1e-10)
+    assert reference.success
+    result = constrained_conjugate_gradients(free_substrate(), punch, external_force=0.1, pentol=1e-8,
+                                             forcetol=1e-10)
+    assert result.success
+    np.testing.assert_allclose(result.offset, reference.offset, rtol=1e-6)
+    with pytest.raises(AttributeError):
+        constrained_conjugate_gradients(free_substrate(), punch, external_force=0.1)

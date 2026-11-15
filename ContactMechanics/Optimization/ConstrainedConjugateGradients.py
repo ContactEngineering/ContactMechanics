@@ -225,11 +225,18 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
         # calculations, i.e. it is a punch.
         if external_force is not None:
             # Displacement of a rigid punch that covers the domain
-            if topography.dim == 1:
-                # Forces of line scans are per unit length
-                length_scale = abs(external_force) / contact_modulus()
-            else:
-                length_scale = abs(external_force) / (contact_modulus() * sqrt(np.prod(topography.physical_sizes)))
+            try:
+                if topography.dim == 1:
+                    # Forces of line scans are per unit length
+                    length_scale = abs(external_force) / contact_modulus()
+                else:
+                    length_scale = abs(external_force) / (contact_modulus() *
+                                                          sqrt(np.prod(topography.physical_sizes)))
+            except AttributeError:
+                # Substrate without elastic moduli: explicit tolerances
+                # suffice, the length scale then is the penetration tolerance
+                if pentol is None or forcetol is None:
+                    raise
         elif offset is not None:
             length_scale = abs(offset + reduction.sum(masked_surface) / nb_surface_pts)
     if length_scale == 0:
