@@ -21,6 +21,10 @@ v1.9.0 (not yet released)
 - MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
   scipy 1.13 or later and a recent DiscoverVersion
 - CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- DOC: Example notebooks are part of the documentation; the documentation
+  shows the parameters of constructors
+- DOC: Self-contained examples for the size of contact patches and the
+  contact area as a function of load
 
 v1.8.3 (28Jul26)
 ----------------
