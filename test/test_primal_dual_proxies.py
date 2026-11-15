@@ -249,3 +249,29 @@ def test_flat_surface_shift_invariance(kind):
     result = getattr(system, f'{kind}_minimize_proxy')(-0.4)
     assert result.success
     np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-6)
+
+
+@pytest.mark.parametrize('kind', ['primal', 'dual'])
+def test_substrate_with_young_only(kind):
+    # Custom substrates may define Young's modulus only
+    class Substrate(PeriodicFFTElasticHalfSpace):
+        hidden = False
+
+        @property
+        def contact_modulus(self):
+            if self.hidden:
+                raise AttributeError('contact_modulus')
+            return self.__dict__['_contact_modulus']
+
+        @contact_modulus.setter
+        def contact_modulus(self, value):
+            self.__dict__['_contact_modulus'] = value
+
+    reference = _periodic_system()
+    assert getattr(reference, f'{kind}_minimize_proxy')(0.).success
+    surface = reference.surface
+    substrate = Substrate(surface.nb_grid_pts, 1., surface.physical_sizes, poisson=0.)
+    substrate.hidden = True
+    system = NonSmoothContactSystem(substrate, surface)
+    assert getattr(system, f'{kind}_minimize_proxy')(0.).success
+    np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-6)
