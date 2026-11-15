@@ -28,6 +28,11 @@ v1.9.0 (not yet released)
 - BUG: Primal and dual solvers no longer crash without an initial guess; the
   dual energy is correct in parallel runs
 - ENH: Primal solver supports nonperiodic substrates and logging
+- BUG: Sign and grid of the substrate force no longer depend on the solver
+  that computed the state
+- API: The normal force is positive for compressive contact, also after
+  evaluating the elastic energy
+- DOC: Sign conventions of forces and the results of the solvers
 
 v1.8.3 (28Jul26)
 ----------------
