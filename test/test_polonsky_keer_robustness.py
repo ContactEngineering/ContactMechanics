@@ -276,3 +276,34 @@ def test_substrate_with_contact_modulus_only():
     surface = Topography(0.01 * _rough_heights(32), (1., 1.))
     result = constrained_conjugate_gradients(Substrate((32, 32), 1., (1., 1.)), surface, offset=0.)
     assert result.success
+
+
+def test_substrate_without_modulus_and_explicit_tolerances():
+    # The modulus is only needed for default tolerances
+    class Substrate(PeriodicFFTElasticHalfSpace):
+        """Substrate that hides its elastic moduli after construction"""
+        hidden = False
+
+        def _modulus(name):
+            def get(self):
+                if self.hidden:
+                    raise AttributeError(name)
+                return self.__dict__[f'_{name}']
+
+            def set(self, value):
+                self.__dict__[f'_{name}'] = value
+            return property(get, set)
+
+        young = _modulus('young')
+        contact_modulus = _modulus('contact_modulus')
+
+    def substrate():
+        s = Substrate((32, 32), 1., (1., 1.))
+        s.hidden = True
+        return s
+
+    surface = Topography(0.01 * _rough_heights(32), (1., 1.))
+    result = constrained_conjugate_gradients(substrate(), surface, offset=0., pentol=1e-6, forcetol=1e-8)
+    assert result.success
+    with pytest.raises(AttributeError):
+        constrained_conjugate_gradients(substrate(), surface, offset=0.)
