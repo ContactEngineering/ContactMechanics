@@ -628,14 +628,23 @@ class NonSmoothContactSystem(SystemBase):
                              "explicitly.")
         return length
 
+    def _pixel_stiffness(self):
+        """
+        Local stiffness of a single pixel, i.e. the force per displacement of
+        one pixel: E* times the pixel size in 2D, E* for line scans (where
+        forces are per unit length).
+        """
+        if self.substrate.dim == 1:
+            return self.substrate.contact_modulus
+        return self.substrate.contact_modulus * np.sqrt(self.substrate.area_per_pt)
+
     def _force_scale(self, offset):
         """
         Characteristic force per pixel of the contact problem: the force
         needed to displace the surface by the characteristic length on the
         scale of one pixel.
         """
-        return self.substrate.contact_modulus * \
-            np.sqrt(self.substrate.area_per_pt) * self._length_scale(offset)
+        return self._pixel_stiffness() * self._length_scale(offset)
 
     def _primal_base_displacement(self, offset):
         """
@@ -775,7 +784,8 @@ class NonSmoothContactSystem(SystemBase):
         gtol : float, optional
             Absolute tolerance on the (projected) gradient, i.e. on the force
             per pixel. Default is 1e-6 times a characteristic force per pixel,
-            E* × sqrt(area_per_pt) × rms height.
+            E* × sqrt(area_per_pt) × rms height (E* × rms height for line
+            scans).
         maxiter : int, optional
             This is the maximum number of iterations allowed for the solver to converge.
             If not provided, it defaults to 1000.
@@ -1021,7 +1031,8 @@ class NonSmoothContactSystem(SystemBase):
             Determines the indentation depth.
         init_force : array_like, optional
             Initial guess for the force. Default is the penetration of the
-            undeformed substrate times a local stiffness E* × sqrt(area_per_pt).
+            undeformed substrate times a local stiffness E* × sqrt(area_per_pt)
+            (E* for line scans).
             For Nonperiodic calculations, the array does not include the padding region,
             i.e. it is of shape `substrate.topography_nb_subdomain_grid_pts`
         solver : str, optional
@@ -1061,8 +1072,7 @@ class NonSmoothContactSystem(SystemBase):
             # Penetration of the undeformed substrate times a local stiffness.
             # Note that a vanishing force is a poor initial guess, since
             # all variables are then on the bound.
-            init_force = self.substrate.contact_modulus * np.sqrt(self.substrate.area_per_pt) * \
-                np.maximum(self.surface.heights() + offset, 0)
+            init_force = self._pixel_stiffness() * np.maximum(self.surface.heights() + offset, 0)
         elif np.shape(init_force) != res:
             raise IncompatibleResolutionError(
                 "`init_force` has shape {}, but should have shape {}"
