@@ -206,11 +206,12 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     pad_mask = np.logical_not(comp_mask)
     N_pad = reduction.sum(pad_mask * 1)
 
-    # Substrates that do not define a contact modulus are described by
-    # Young's modulus (which then is the contact modulus)
-    contact_modulus = getattr(substrate, 'contact_modulus', None)
-    if contact_modulus is None:
-        contact_modulus = substrate.young
+    def contact_modulus():
+        # Only needed for default tolerances. Substrates that do not define a
+        # contact modulus are described by Young's modulus (which then is the
+        # contact modulus).
+        modulus = getattr(substrate, 'contact_modulus', None)
+        return substrate.young if modulus is None else modulus
 
     # Characteristic length of the problem. This is necessary because numbers
     # can vary greatly depending on the system of units.
@@ -226,9 +227,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             # Displacement of a rigid punch that covers the domain
             if topography.dim == 1:
                 # Forces of line scans are per unit length
-                length_scale = abs(external_force) / contact_modulus
+                length_scale = abs(external_force) / contact_modulus()
             else:
-                length_scale = abs(external_force) / (contact_modulus * sqrt(np.prod(topography.physical_sizes)))
+                length_scale = abs(external_force) / (contact_modulus() * sqrt(np.prod(topography.physical_sizes)))
         elif offset is not None:
             length_scale = abs(offset + reduction.sum(masked_surface) / nb_surface_pts)
     if length_scale == 0:
@@ -245,7 +246,9 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
             pentol = length_scale / 1000
     if forcetol is None:
         # Stiffness of a single pixel; forces of line scans are per unit length
-        pixel_stiffness = contact_modulus if substrate.dim == 1 else contact_modulus * sqrt(substrate.area_per_pt)
+        pixel_stiffness = contact_modulus()
+        if substrate.dim != 1:
+            pixel_stiffness *= sqrt(substrate.area_per_pt)
         forcetol = pixel_stiffness * pentol
 
     logger.pr(f'maxiter = {maxiter}')
