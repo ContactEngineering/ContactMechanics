@@ -138,6 +138,20 @@ def test_semi_periodic_real_space_greens_function(comm):
     np.testing.assert_allclose(y_slice, reference[15, :])
 
 
+def test_external_fftengine_communicator(comm):
+    # A substrate on an external (possibly distributed) FFT engine reduces
+    # over the engine's processes, whatever communicator is passed
+    from NuMPI import MPI
+    reference = SemiPeriodicFFTElasticHalfSpace((16, 12), 1., (1., 1.), periodicity=(False, True), n_images=2,
+                                                communicator=comm, fft='mpi')
+    substrate = SemiPeriodicFFTElasticHalfSpace((16, 12), 1., (1., 1.), periodicity=(False, True), n_images=2,
+                                                communicator=MPI.COMM_SELF, fftengine=reference.fftengine)
+    assert substrate.communicator.size == comm.size
+    assert substrate._zero_mode_shift == reference._zero_mode_shift
+    np.testing.assert_allclose(substrate.greens_function, reference.greens_function)
+    np.testing.assert_allclose(substrate.get_G_real(), reference.get_G_real())
+
+
 @pytest.mark.parametrize('periodicity', [(False, True), (True, False), (True, True)])
 @pytest.mark.parametrize('physical_sizes', [(10., 1.), (1., 10.), (1., 1.)])
 def test_semi_periodic_positive_energy(periodicity, physical_sizes):
