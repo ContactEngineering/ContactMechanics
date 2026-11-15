@@ -4,9 +4,14 @@ substrates and Green's functions.
 """
 
 import logging
+import os
+import tempfile
+import uuid
 
 import numpy as np
 import pytest
+from NuMPI import MPI
+from NuMPI.Tools import Reduction
 from SurfaceTopography import PlasticTopography, Topography, make_sphere
 
 from ContactMechanics import ElasticSubstrate, FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace, make_system
@@ -31,8 +36,9 @@ def _rough(periodic=True):
 def test_make_system_from_file(tmp_path, periodic, substrate_class):
     fn = str(tmp_path / 'topography.nc')
     _rough(periodic).to_netcdf(fn)
-    # The substrate type is chosen from the periodicity of the topography
-    system = make_system(surface=fn, young=1.)
+    # The substrate type is chosen from the periodicity of the topography.
+    # (Every MPI process reads its own file, hence the serial communicator.)
+    system = make_system(surface=fn, young=1., communicator=MPI.COMM_SELF)
     assert type(system.substrate) is substrate_class
     assert system.substrate.physical_sizes == (1., 1.)
 
@@ -41,9 +47,31 @@ def test_make_system_without_physical_sizes(tmp_path):
     fn = str(tmp_path / 'topography.npy')
     np.save(fn, np.zeros((8, 8)))
     with pytest.raises(ValueError):
-        make_system(surface=fn, young=1., communicator=None)
-    system = make_system(surface=fn, young=1., physical_sizes=(2., 2.), communicator=None, substrate='periodic')
+        make_system(surface=fn, young=1., communicator=MPI.COMM_SELF)
+    system = make_system(surface=fn, young=1., physical_sizes=(2., 2.), communicator=MPI.COMM_SELF,
+                         substrate='periodic')
     assert system.substrate.physical_sizes == (2., 2.)
+
+
+@pytest.mark.parametrize('substrate', ['periodic', 'free'])
+def test_make_system_from_file_in_parallel(comm, substrate):
+    # All processes read the same file; for the free substrate, some
+    # processes only hold padding and have an empty topography subdomain
+    token = comm.bcast(uuid.uuid4().hex if comm.rank == 0 else None, root=0)
+    fn = os.path.join(tempfile.gettempdir(), f'contact_mechanics_{token}.npy')
+    heights = np.arange(32 * 24, dtype=float).reshape(32, 24)
+    if comm.rank == 0:
+        np.save(fn, heights)
+    comm.barrier()
+    try:
+        system = make_system(substrate=substrate, surface=fn, physical_sizes=(1., 1.), young=1., communicator=comm)
+        local_heights = system.surface.heights()
+        np.testing.assert_array_equal(local_heights, heights[system.substrate.topography_subdomain_slices])
+        assert Reduction(comm).sum(local_heights.size) == heights.size
+    finally:
+        comm.barrier()
+        if comm.rank == 0:
+            os.remove(fn)
 
 
 def test_make_plastic_contact_system():
