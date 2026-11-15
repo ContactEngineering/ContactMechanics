@@ -642,9 +642,14 @@ class NonSmoothContactSystem(SystemBase):
         one pixel: E* times the pixel size in 2D, E* for line scans (where
         forces are per unit length).
         """
+        # Substrates that do not define a contact modulus are described by
+        # Young's modulus (which then is the contact modulus)
+        contact_modulus = getattr(self.substrate, 'contact_modulus', None)
+        if contact_modulus is None:
+            contact_modulus = self.substrate.young
         if self.substrate.dim == 1:
-            return self.substrate.contact_modulus
-        return self.substrate.contact_modulus * np.sqrt(self.substrate.area_per_pt)
+            return contact_modulus
+        return contact_modulus * np.sqrt(self.substrate.area_per_pt)
 
     def _force_scale(self, offset):
         """
