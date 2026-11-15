@@ -21,6 +21,14 @@ v1.9.0 (not yet released)
 - MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
   scipy 1.13 or later and a recent DiscoverVersion
 - CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Polonsky-Keer could stall near full contact and return a wrong
+  contact area; on 81 test problems it now always converges
+- BUG: Polonsky-Keer no longer crashes or stalls for flat punches
+- ENH: Polonsky-Keer accepts a hardness that varies in space; plastic
+  deformation only occurs where the material flows
+- API: Default force tolerance scales with modulus and grid; Polonsky-Keer
+  warns when it does not converge
+- API: Nonperiodic substrates warn when the contact reaches the boundary
 
 v1.8.3 (28Jul26)
 ----------------

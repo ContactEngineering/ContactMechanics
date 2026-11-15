@@ -134,6 +134,7 @@ fourier_buffer <--> np.rfft2(a.T).T <--> np.fft.rfft2(a, axes=(1,0))
 """  # noqa E501
 
 
+import warnings
 from collections import namedtuple
 from typing import Tuple
 
@@ -916,7 +917,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         physical_sizes=2 * np.pi,
         fft="serial",
         communicator=None,
-        check_boundaries=False,
+        check_boundaries=None,
         fftengine=None,
     ):
         """
@@ -938,9 +939,12 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             repeated.
         communicator : mpi4py communicator NuMPI stub communicator
             MPI communicator object. Ignored if fftengine is provided.
-        check_boundaries: bool
-            if set to true, the function check will test that the pressures are
-            zero at the boundary of the topography-domain.
+        check_boundaries: bool, optional
+            Whether `check()` tests that the forces are zero at the boundary
+            of the topography domain. Nonzero forces there indicate that the
+            contact geometry exceeds the bounds of the domain. If None
+            (default), a warning is issued; if True, a `FreeBoundaryError` is
+            raised; if False, the check is skipped.
             `check()` is called systematically at the end of system.minimize_proxy
         fftengine : muGrid.FFTEngine, optional
             External FFT engine instance. If provided, this engine will be
@@ -1260,12 +1264,12 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
 
         if not is_ok:
             raise self.FreeBoundaryError(
-                "The forces not zero at the boundary of the active domain."
+                "The forces are not zero at the boundary of the active domain. "
                 "This is typically an indication that the contact geometry "
-                "exceeds the bounds of the domain. Since this is a nonperiodic"
+                "exceeds the bounds of the domain. Since this is a nonperiodic "
                 "calculation, you may want to increase the size of your "
-                "domain. If you are sure that the calculation is correct,"
-                " set check_boundary to False"
+                "domain. If you are sure that the calculation is correct, "
+                "set check_boundaries to False."
             )
 
     def check(self, force=None):
@@ -1279,7 +1283,12 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         -------
 
         """
-        if self._check_boundaries:
+        if self._check_boundaries is None:
+            try:
+                self.check_boundaries(force)
+            except self.FreeBoundaryError as err:
+                warnings.warn(str(err))
+        elif self._check_boundaries:
             self.check_boundaries(force)
 
 
@@ -1334,7 +1343,8 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             MPI communicator object. Ignored if fftengine is provided.
         check_boundaries: bool
             if set to true, the function check will test that the pressures are
-            zero at the boundary of the topography-domain.
+            zero at the boundary of the topography-domain. Note that this also
+            tests the boundaries in periodic directions. (Default: False)
             `check()` is called systematically at the end of system.minimize_proxy
         fftengine : muGrid.FFTEngine, optional
             External FFT engine instance. If provided, this engine will be
