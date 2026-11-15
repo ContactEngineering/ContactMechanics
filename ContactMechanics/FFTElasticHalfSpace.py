@@ -1038,6 +1038,17 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         return self._comp_nb_grid_pts
 
     @property
+    def topography_subdomain_locations(self):
+        """
+        Location of the local subdomain of the topography. Subdomains that
+        lie entirely in the padding region are empty; their location is
+        moved to the end of the topography such that it lies within the
+        topography.
+        """
+        return tuple(min(location, nb_grid_pts) for location, nb_grid_pts
+                     in zip(self.subdomain_locations, self.nb_grid_pts))
+
+    @property
     def topography_nb_subdomain_grid_pts(self):
         return tuple(
             [
