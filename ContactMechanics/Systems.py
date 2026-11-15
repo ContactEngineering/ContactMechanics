@@ -61,7 +61,7 @@ class SystemBase(object, metaclass=abc.ABCMeta):
 
         Parameters:
         -----------
-        substrate: ContactMechanics.Substrate
+        substrate: ContactMechanics.ElasticSubstrate
             Defines the solid mechanics inthe substrate
         surface: SurfaceTopography.Topography
             Defines the profile.

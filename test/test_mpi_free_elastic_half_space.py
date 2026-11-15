@@ -27,6 +27,7 @@ import numpy as np
 import pytest
 
 from ContactMechanics import FreeFFTElasticHalfSpace
+from ContactMechanics.FFTElasticHalfSpace import _love_kernel
 from NuMPI.Tools import Reduction
 
 
@@ -70,44 +71,17 @@ def test_weights(comm, pnp, nx, ny, basenpoints):
         """Compute the weights w relating fft(displacement) to fft(pressure):
            fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
 
-           This version is less is copied from matscipy, use if memory is a
-           concern
+           Serial reference computed with numpy's FFT on the full grid.
         """
-        # pylint: disable=invalid-name
-        facts = np.zeros(tuple((res * 2 for res in hs.nb_grid_pts)))
         a = hs._steps[0] * .5
-        if hs.dim == 1:
-            pass
-        else:
-            b = hs._steps[1] * .5
-            x_s = np.arange(hs.nb_grid_pts[0] * 2)
-            x_s = np.where(x_s <= hs.nb_grid_pts[0], x_s,
-                           x_s - hs.nb_grid_pts[0] * 2) * hs._steps[0]
-            x_s.shape = (-1, 1)
-            y_s = np.arange(hs.nb_grid_pts[1] * 2)
-            y_s = np.where(y_s <= hs.nb_grid_pts[1], y_s,
-                           y_s - hs.nb_grid_pts[1] * 2) * hs._steps[1]
-            y_s.shape = (1, -1)
-            facts = 1 / (np.pi * hs.young) * ((x_s + a) * np.log(
-                ((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
-                                     (x_s + a) * (x_s + a))) /
-                ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +
-                                     (x_s + a) * (x_s + a)))) +
-                                              (y_s + b) * np.log(
-                ((x_s + a) + np.sqrt((y_s + b) * (y_s + b) +
-                                     (x_s + a) * (x_s + a))) /
-                ((x_s - a) + np.sqrt((y_s + b) * (y_s + b) +
-                                     (x_s - a) * (x_s - a)))) +
-                                              (x_s - a) * np.log(
-                ((y_s - b) + np.sqrt((y_s - b) * (y_s - b) +
-                                     (x_s - a) * (x_s - a))) /
-                ((y_s + b) + np.sqrt((y_s + b) * (y_s + b) +
-                                     (x_s - a) * (x_s - a)))) +
-                                              (y_s - b) * np.log(
-                ((x_s - a) + np.sqrt((y_s - b) * (y_s - b) +
-                                     (x_s - a) * (x_s - a))) /
-                ((x_s + a) + np.sqrt((y_s - b) * (y_s - b) +
-                                     (x_s + a) * (x_s + a)))))
+        b = hs._steps[1] * .5
+        x_s = np.arange(hs.nb_grid_pts[0] * 2)
+        x_s = (np.where(x_s <= hs.nb_grid_pts[0], x_s,
+                        x_s - hs.nb_grid_pts[0] * 2) * hs._steps[0]).reshape(-1, 1)
+        y_s = np.arange(hs.nb_grid_pts[1] * 2)
+        y_s = (np.where(y_s <= hs.nb_grid_pts[1], y_s,
+                        y_s - hs.nb_grid_pts[1] * 2) * hs._steps[1]).reshape(1, -1)
+        facts = _love_kernel(x_s, y_s, a, b) / (np.pi * hs.young)
         weights = np.fft.rfftn(facts.T).T
         return weights
 

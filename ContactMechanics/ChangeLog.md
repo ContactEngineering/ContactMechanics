@@ -21,6 +21,16 @@ v1.9.0 (not yet released)
 - MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
   scipy 1.13 or later and a recent DiscoverVersion
 - CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Green's function of nonperiodic substrates is accurate to 1e-10 on
+  large grids (previously 1e-4)
+- BUG: Semi-periodic substrates converge with the number of periodic images
+  and work in parallel runs
+- BUG: Anisotropic Green's function works for all crystal orientations, the
+  isotropic one for small wavevectors
+- BUG: Periodic substrates no longer crash in 1D with a vanishing stiffness of
+  the uniform mode or for incompressible layers
+- ENH: Nonperiodic substrates accept a Poisson ratio
+- API: Removed unused substrate base classes and FFT helpers
 
 v1.8.3 (28Jul26)
 ----------------
