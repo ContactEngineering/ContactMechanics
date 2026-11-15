@@ -27,7 +27,7 @@ def test_primal_obj(s):
 
     # Feasible initial gap with free variables; in this full-contact case the
     # default (undeformed substrate) has all variables on the bound, from
-    # which 'ccg-with-restart' cannot start.
+    # which 'ccg-with-restart' cannot start for NuMPI < 0.18.2.
     init_gap = surface.heights() + offset
 
     res = system.primal_minimize_proxy(offset, init_gap=init_gap,

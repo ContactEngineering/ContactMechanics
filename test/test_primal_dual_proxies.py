@@ -7,9 +7,11 @@ and the MPI decomposition.
 """
 
 import numpy as np
+import NuMPI
 import pytest
 from NuMPI import MPI
 from NuMPI.Tools import Reduction
+from packaging.version import Version
 from SurfaceTopography import Topography, UniformLineScan, make_sphere
 
 from ContactMechanics import FreeFFTElasticHalfSpace, PeriodicFFTElasticHalfSpace
@@ -214,3 +216,22 @@ def test_flat_surface_shift_invariance(kind):
     assert result.success
     assert result.nit == reference_result.nit
     np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-10)
+
+
+@pytest.mark.skipif(Version(NuMPI.__version__) < Version('0.18.2'),
+                    reason='NuMPI < 0.18.2 cannot leave a starting point with all variables on the bound')
+@pytest.mark.parametrize('kind', ['primal', 'dual'])
+def test_with_restart_from_bound(kind):
+    # Start with every variable on its bound: no force (dual) or a gap equal
+    # to its lower bound everywhere (primal)
+    reference = _periodic_system()
+    assert reference.minimize_proxy(offset=0., pentol=1e-10).success
+
+    system = _periodic_system()
+    shape = system.surface.nb_subdomain_grid_pts
+    if kind == 'primal':
+        result = system.primal_minimize_proxy(0., init_gap=np.full(shape, -np.inf), solver='ccg-with-restart')
+    else:
+        result = system.dual_minimize_proxy(0., init_force=np.zeros(shape), solver='ccg-with-restart')
+    assert result.success, result.message
+    np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-4)
