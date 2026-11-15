@@ -139,6 +139,7 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 from muGrid import Communicator, FFTEngine
+from NuMPI import MPI
 from NuMPI.Tools import Reduction
 from SurfaceTopography.Support import doi
 
@@ -326,6 +327,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     f"FFTEngine grid size {tuple(fftengine.nb_domain_grid_pts)} "
                     f"doesn't match expected {self.nb_domain_grid_pts}"
                 )
+            # Reductions must run over the processes that share the engine's
+            # domain decomposition
+            communicator = getattr(fftengine.communicator, 'mpi4py_comm', None)
+            if communicator is None:
+                communicator = MPI.COMM_SELF  # Serial engine
         else:
             # Create internal FFT engine (muGrid 0.105+ supports 1D, 2D, and 3D)
             if communicator is not None:
