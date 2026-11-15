@@ -206,7 +206,11 @@ def constrained_conjugate_gradients(substrate, topography, hardness=None,
     pad_mask = np.logical_not(comp_mask)
     N_pad = reduction.sum(pad_mask * 1)
 
-    contact_modulus = getattr(substrate, 'contact_modulus', substrate.young)
+    # Substrates that do not define a contact modulus are described by
+    # Young's modulus (which then is the contact modulus)
+    contact_modulus = getattr(substrate, 'contact_modulus', None)
+    if contact_modulus is None:
+        contact_modulus = substrate.young
 
     # Characteristic length of the problem. This is necessary because numbers
     # can vary greatly depending on the system of units.
