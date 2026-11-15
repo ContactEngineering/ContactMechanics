@@ -709,8 +709,12 @@ class NonSmoothContactSystem(SystemBase):
         else:
             length = self.surface.rms_height_from_area()
         if length == 0:
-            # Flat surface (e.g. a punch): fall back to the indentation depth
-            length = abs(offset)
+            # Flat surface (e.g. a punch): fall back to the indentation depth,
+            # i.e. the mean height of the valid pixels plus the offset
+            valid = self._valid_mask()
+            mean_height = self.reduction.sum(np.where(valid, self._filled_heights(), 0.)) / \
+                self.reduction.sum(valid * 1)
+            length = abs(mean_height + offset)
         if length == 0:
             raise ValueError("Cannot infer a length scale for a flat surface "
                              "at zero offset. Please specify `gtol` "
@@ -735,24 +739,39 @@ class NonSmoothContactSystem(SystemBase):
         """
         return self._pixel_stiffness() * self._length_scale(offset)
 
+    def _valid_mask(self):
+        """
+        Pixels of the (local) topography grid where the heights are defined
+        """
+        return np.logical_not(np.ma.getmaskarray(self.surface.heights()))
+
+    def _filled_heights(self):
+        """
+        Heights of the (local) topography with undefined (masked) values set
+        to zero
+        """
+        return np.ma.filled(self.surface.heights(), 0.)
+
     def _primal_base_displacement(self, offset):
         """
         Displacement corresponding to a vanishing primal variable. Inside the
         topography domain, the primal variable is the gap. In the padding
-        region of nonperiodic substrates, where there is no counter surface,
-        the primal variable is the displacement itself.
+        region of nonperiodic substrates and where the heights are undefined
+        (masked), there is no counter surface and the primal variable is the
+        displacement itself.
         """
         base = np.zeros(self.substrate.nb_subdomain_grid_pts)
-        base[self.comp_slice] = self.surface.heights() + offset
+        base[self.comp_slice] = np.where(self._valid_mask(), self._filled_heights() + offset, 0.)
         return base
 
     def _primal_bounds(self):
         """
         Lower bounds on the primal variable: The gap must be nonnegative,
-        the displacement in the padding region is unconstrained.
+        the displacement in the padding region and where the heights are
+        undefined (masked) is unconstrained.
         """
         bounds = np.full(self.substrate.nb_subdomain_grid_pts, -np.inf)
-        bounds[self.comp_slice] = 0
+        bounds[self.comp_slice] = np.where(self._valid_mask(), 0., -np.inf)
         return bounds
 
     def _check_serial(self, solver):
@@ -948,8 +967,8 @@ class NonSmoothContactSystem(SystemBase):
             # Keep the full substrate force: in the padding region of
             # nonperiodic substrates, it vanishes only up to the tolerance.
             # The solvers place active constraints exactly onto the bound.
-            self._set_state(offset, disp, -substrate_force[self.comp_slice], energy, contact_zone=self.gap <= 0,
-                            substrate_force=substrate_force.copy())
+            self._set_state(offset, disp, -substrate_force[self.comp_slice], energy,
+                            contact_zone=np.ma.filled(self.gap <= 0, False), substrate_force=substrate_force.copy())
 
         return result
 
@@ -984,12 +1003,16 @@ class NonSmoothContactSystem(SystemBase):
             Gradient, which is the difference between the displacement and the sum of the
             surface heights and the offset. If forces are not computed, the gradient is None.
         """
+        # There is no contact where the heights are undefined (masked); the
+        # forces there are ignored and their gradient vanishes
+        valid = self._valid_mask()
+        force = np.where(valid, force, 0.)
         disp = self.substrate.evaluate_disp(-force)
 
-        self.gradient = disp - self.surface.heights() - offset
+        self.gradient = np.where(valid, disp - self._filled_heights() - offset, 0.)
 
         self.energy = 1 / 2 * self.reduction.sum(force * disp) - self.reduction.sum(
-            force * (self.surface.heights() + offset))
+            force * (self._filled_heights() + offset))
 
         # Update state: the substrate force has the opposite sign and lives
         # on the grid of the substrate
@@ -1100,8 +1123,9 @@ class NonSmoothContactSystem(SystemBase):
         """
         inres = pressure.shape
         res = self.substrate.topography_nb_subdomain_grid_pts
-        hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
-        return hessp.reshape(inres)
+        valid = self._valid_mask()
+        hessp = self.substrate.evaluate_disp(-np.where(valid, pressure.reshape(res), 0.))
+        return np.where(valid, hessp, 0.).reshape(inres)
 
     def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=None, maxiter=1000,
                             logger=None):
@@ -1165,7 +1189,8 @@ class NonSmoothContactSystem(SystemBase):
             # Penetration of the undeformed substrate times a local stiffness.
             # Note that a vanishing force is a poor initial guess, since
             # all variables are then on the bound.
-            init_force = self._pixel_stiffness() * np.maximum(self.surface.heights() + offset, 0)
+            init_force = self._pixel_stiffness() * np.where(self._valid_mask(),
+                                                            np.maximum(self._filled_heights() + offset, 0), 0.)
         elif np.shape(init_force) != res:
             raise IncompatibleResolutionError(
                 "`init_force` has shape {}, but should have shape {}"
@@ -1198,7 +1223,7 @@ class NonSmoothContactSystem(SystemBase):
                 options=dict(gtol=gtol, ftol=0, maxiter=maxiter))
 
         if result.success:
-            force = np.reshape(result.x, res)
+            force = np.where(self._valid_mask(), np.reshape(result.x, res), 0.)
             padded_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
             padded_force[self.comp_slice] = force
             disp = self.substrate.evaluate_disp(-padded_force)
