@@ -157,3 +157,24 @@ def test_line_scan(kind):
     result = getattr(system, f'{kind}_minimize_proxy')(0.)
     assert result.success
     np.testing.assert_allclose(system.force.sum(), reference.force.sum(), rtol=1e-4)
+
+
+@pytest.mark.parametrize('kind', ['primal', 'dual'])
+@pytest.mark.parametrize('solver', ['ccg-without-restart', 'ccg-with-restart'])
+def test_line_scan_unit_invariance(kind, solver):
+    nb_grid_pts = 256
+    x = np.arange(nb_grid_pts) / nb_grid_pts
+
+    def solve(young, length):
+        surface = UniformLineScan(0.01 * length * np.cos(2 * np.pi * x), length, periodic=True)
+        system = NonSmoothContactSystem(PeriodicFFTElasticHalfSpace((nb_grid_pts,), young, (length,)), surface)
+        result = getattr(system, f'{kind}_minimize_proxy')(0., solver=solver)
+        assert result.success
+        return result, system
+
+    reference_result, reference = solve(1., 1.)
+    for young, length in [(1e9, 1e-6), (1e-9, 1e6)]:
+        result, system = solve(young, length)
+        assert result.nit == reference_result.nit
+        # Forces of line scans are per unit length, the load scales as E* L
+        np.testing.assert_allclose(system.force.sum() / (young * length), reference.force.sum(), rtol=1e-6)
