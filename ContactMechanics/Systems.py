@@ -445,7 +445,7 @@ class NonSmoothContactSystem(SystemBase):
         """
         return -self.reduction.sum(self.substrate.force)
 
-    def _set_state(self, offset, disp, force, energy, contact_zone=None):
+    def _set_state(self, offset, disp, force, energy, contact_zone=None, substrate_force=None):
         """
         Store the state after a minimization.
 
@@ -462,16 +462,20 @@ class NonSmoothContactSystem(SystemBase):
             Elastic energy.
         contact_zone : np.ndarray, optional
             Contacting points. (Default: points with positive force)
+        substrate_force : np.ndarray, optional
+            Force -dE/du on the (local) grid of the substrate. (Default:
+            `-force` on the topography grid and zero in the padding region)
         """
         self.offset = offset
         self.disp = disp
         self.force = force
         self.energy = self.substrate.energy = energy
         self.contact_zone = force > 0 if contact_zone is None else contact_zone
-        # The substrate force has the opposite sign and lives on the grid of
-        # the substrate
-        substrate_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
-        substrate_force[self.comp_slice] = -force
+        if substrate_force is None:
+            # The substrate force has the opposite sign and lives on the grid
+            # of the substrate
+            substrate_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
+            substrate_force[self.comp_slice] = -force
         self.substrate.force = substrate_force
 
     def compute_nb_contact_pts(self):
@@ -944,8 +948,11 @@ class NonSmoothContactSystem(SystemBase):
             disp = np.reshape(result.x, res) + base
             # This computes energy, gap and substrate forces
             energy, substrate_force = self.evaluate(disp, offset, forces=True)
-            # The solvers place active constraints exactly onto the bound
-            self._set_state(offset, disp, -substrate_force[self.comp_slice], energy, contact_zone=self.gap <= 0)
+            # Keep the full substrate force: in the padding region of
+            # nonperiodic substrates, it vanishes only up to the tolerance.
+            # The solvers place active constraints exactly onto the bound.
+            self._set_state(offset, disp, -substrate_force[self.comp_slice], energy, contact_zone=self.gap <= 0,
+                            substrate_force=substrate_force.copy())
 
         return result
 
