@@ -1090,22 +1090,26 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 mask[maxix, :] = 1
         return mask
 
-    def _grid_coordinates(self):
+    def _grid_coordinates(self, local=True):
         """
-        Positions of the grid points of the local subdomain of the
-        computational grid relative to the origin. Grid index i corresponds
-        to position i for i <= (n - 1) // 2 and to i - n otherwise, where n
-        is the number of grid points of the computational grid (wrap-around
-        of the FFT).
+        Positions of the grid points of the local subdomain (or, if `local`
+        is False, of the full domain) of the computational grid relative to
+        the origin. Grid index i corresponds to position i for
+        i <= (n - 1) // 2 and to i - n otherwise, where n is the number of
+        grid points of the computational grid (wrap-around of the FFT).
 
         Returns
         -------
         x : ndarray of shape (nb_subdomain_grid_pts[0], 1)
         y : ndarray of shape (1, nb_subdomain_grid_pts[1])
         """
+        if local:
+            locations, nb_grid_pts = self.subdomain_locations, self.nb_subdomain_grid_pts
+        else:
+            locations, nb_grid_pts = (0,) * self.dim, self.nb_domain_grid_pts
         coordinates = []
-        for location, nb_pts, nb_domain_pts, step in zip(self.subdomain_locations, self.nb_subdomain_grid_pts,
-                                                         self.nb_domain_grid_pts, self._steps):
+        for location, nb_pts, nb_domain_pts, step in zip(locations, nb_grid_pts, self.nb_domain_grid_pts,
+                                                         self._steps):
             i = np.arange(location, location + nb_pts)
             coordinates += [np.where(i <= (nb_domain_pts - 1) // 2, i, i - nb_domain_pts) * step]
         x, y = coordinates
@@ -1402,8 +1406,15 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
                     # the sum over images converge
                     G_real -= super()._real_space_greens_function(img_x * sx, img_y * sy)
 
-        self.G_real = G_real.copy()
         return G_real
+
+    def _compute_greens_function(self) -> NDArray:
+        # The real-space Green's function of the local subdomain is kept for
+        # analysis purposes
+        self.G_real = self._real_space_greens_function(*self._grid_coordinates())
+        self.real_buffer.p[...] = self.G_real
+        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+        return self.fourier_buffer.p.copy()
 
     def evaluate_disp(self, forces, bIncludePadding=False) -> NDArray:
         """Computes the displacement due to a given force array
@@ -1453,13 +1464,17 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
     def get_G_real(self) -> NDArray:
         """
         For analysis purposes.
-        Returns the 'ordered' 2d G_real numpy array.
+        Returns the 'ordered' 2d G_real numpy array. The Green's function is
+        evaluated on the full computational grid, also for domain-decomposed
+        (MPI) calculations.
 
         Returns
         -------
         G_real_ordered : ndarray of shape (M, N)
             Green's function in real space with G(0,0) at the array center
         """
+        G_real = self._real_space_greens_function(*self._grid_coordinates(local=False))
+
         nx, ny = self.nb_domain_grid_pts
         m = np.round(np.fft.fftfreq(nx) * nx).astype(int)
         n = np.round(np.fft.fftfreq(ny) * ny).astype(int)
@@ -1468,7 +1483,7 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
         inv_x = np.argsort(m)
         inv_y = np.argsort(n)
 
-        G_real_ordered = self.G_real[np.ix_(inv_x, inv_y)]
+        G_real_ordered = G_real[np.ix_(inv_x, inv_y)]
 
         return G_real_ordered
 
