@@ -48,6 +48,9 @@ class IsotropicGreensFunction(object):
         self._nu = Poisson_ratio
 
     def _greens_function(self, qx, qy):
+        if qx == 0 and qy == 0:
+            # The compliance of a half-space diverges at zero wavevector
+            return np.full((3, 3), np.inf)
         q = np.sqrt(qx ** 2 + qy ** 2)
         nu = self._nu
         G = np.array([[1 / q - nu * qx ** 2 / q ** 3,
@@ -62,7 +65,7 @@ class IsotropicGreensFunction(object):
         return G / self._mu
 
     def _stiffness(self, qx, qy):
-        if abs(qx) < 1e-6 and abs(qy) < 1e-6:
+        if qx == 0 and qy == 0:
             return np.zeros((3, 3))
         return np.linalg.inv(self._greens_function(qx, qy))
 

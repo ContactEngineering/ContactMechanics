@@ -135,8 +135,8 @@ class Logger(object):
             print(s, file=logfile)
         if self.logfile:
             print(s, file=self.logfile)
-        else:
-            self.buffer += [s]
+        # Without a log file (e.g. the `quiet` logger), output is discarded.
+        # (It used to be kept in a buffer, which grew without bound.)
 
     def flush(self):
         if self.logfile:

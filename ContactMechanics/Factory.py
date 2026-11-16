@@ -28,6 +28,7 @@
 Implements a convenient Factory function for Contact System creation
 """
 
+import numpy as np
 from SurfaceTopography import open_topography
 from SurfaceTopography.IO import ReaderBase
 from SurfaceTopography.HeightContainer import UniformTopographyInterface
@@ -87,11 +88,27 @@ def _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
                              "file")
         else:
             physical_sizes = surface_physical_sizes
+    else:
+        # Explicit physical sizes must agree with those fixed by the
+        # topography or file; otherwise substrate and surface would describe
+        # different domains
+        if hasattr(surface, "physical_sizes"):
+            surface_physical_sizes = surface.physical_sizes
+        else:  # we assume it is a reader instance
+            surface_physical_sizes = surface.default_channel.physical_sizes
+        if surface_physical_sizes is not None and \
+                not np.allclose(surface_physical_sizes, physical_sizes, atol=0):
+            raise ValueError(f"The physical sizes {physical_sizes} differ from those of the topography, "
+                             f"{surface_physical_sizes}.")
 
     # substrate build with physical sizes and nb_grid_pts
     # matching the topography
     if substrate is None:
-        substrate = "periodic" if surface.is_periodic else "free"
+        if hasattr(surface, "is_periodic"):  # it is a SurfaceTopography instance
+            is_periodic = surface.is_periodic
+        else:  # we assume it is a reader instance
+            is_periodic = surface.default_channel.is_periodic
+        substrate = "periodic" if is_periodic else "free"
     if substrate == "periodic":
         substrate = PeriodicFFTElasticHalfSpace(
             nb_grid_pts, physical_sizes=physical_sizes,
@@ -103,10 +120,14 @@ def _make_system_args(surface, substrate=None, communicator=MPI.COMM_WORLD,
 
     # now the topography is ready to load
     if issubclass(surface.__class__, ReaderBase):
+        topography_kwargs = {}
+        if surface.default_channel.physical_sizes is None:
+            # Physical sizes can only be passed if they are not fixed by the file
+            topography_kwargs['physical_sizes'] = physical_sizes
         surface = surface.topography(
             subdomain_locations=substrate.topography_subdomain_locations,
             nb_subdomain_grid_pts=substrate.topography_nb_subdomain_grid_pts,
-            physical_sizes=physical_sizes)
+            **topography_kwargs)
         # TODO: this may fail for some readers
 
     return substrate, surface

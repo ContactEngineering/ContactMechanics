@@ -21,10 +21,64 @@ v1.9.0 (not yet released)
 - MAINT: Require numpy 2.2.5 or later (older versions break the FFT engine),
   scipy 1.13 or later and a recent DiscoverVersion
 - CI: Test Python 3.15 and the oldest supported versions of all dependencies
+- BUG: Primal and dual solvers reported wrong forces and gaps after
+  converging; the state is now computed from the solution
+- BUG: Default tolerances of the primal and dual solvers scale with the
+  problem instead of depending on the system of units
+- BUG: Primal and dual solvers no longer crash without an initial guess; the
+  dual energy is correct in parallel runs
+- ENH: Primal solver supports nonperiodic substrates and logging
+- BUG: Sign and grid of the substrate force no longer depend on the solver
+  that computed the state
+- API: The normal force is positive for compressive contact, also after
+  evaluating the elastic energy
+- DOC: Sign conventions of forces and the results of the solvers
+- BUG: Polonsky-Keer could stall near full contact and return a wrong
+  contact area; on 81 test problems it now always converges
+- BUG: Polonsky-Keer no longer crashes or stalls for flat punches
+- ENH: Polonsky-Keer accepts a hardness that varies in space; plastic
+  deformation only occurs where the material flows
+- API: Default force tolerance scales with modulus and grid; Polonsky-Keer
+  warns when it does not converge
+- API: Nonperiodic substrates warn when the contact reaches the boundary
+- BUG: Automatic load steps work for topographies with nonzero mean height
+- BUG: Command line tool: displacement mode works, contact maps include
+  plastic points and plastic deformation is reset between steps
+- API: Contact calculations iterate until convergence by default; this is
+  slower but avoids unconverged steps near full contact
+- ENH: Command line tool uses the same load steps as the pipeline, can set
+  the number of steps and reports convergence
+- BUG: Reading NetCDF output works without the netCDF4 package
+- DOC: The contact area returned by the pipeline is the fractional area
+- BUG: Green's function of nonperiodic substrates is accurate to 1e-10 on
+  large grids (previously 1e-4)
+- BUG: Semi-periodic substrates converge with the number of periodic images
+  and work in parallel runs
+- BUG: Anisotropic Green's function works for all crystal orientations, the
+  isotropic one for small wavevectors
+- BUG: Periodic substrates no longer crash in 1D with a vanishing stiffness of
+  the uniform mode or for incompressible layers
+- ENH: Nonperiodic substrates accept a Poisson ratio
+- API: Removed unused substrate base classes and FFT helpers
+- BUG: Cone reference solution: correct contact area, displacements
+  independent of the sampling points
+- BUG: Hertz reference stresses are accurate close to the center and the
+  surface
+- BUG: Greenwood-Tripp reference solution converges to the requested
+  tolerance
 - DOC: Example notebooks are part of the documentation; the documentation
   shows the parameters of constructors
 - DOC: Self-contained examples for the size of contact patches and the
   contact area as a function of load
+- BUG: NetCDF output: global attributes and files of the AMBER convention
+  can be read with both backends; rigid surfaces of different size work
+- BUG: Contact systems can be created from a file without specifying the
+  physical sizes
+- BUG: Loggers without output file no longer keep all output in memory
+- BUG: Inverse of the profile function of the Greenwood-Tripp solution failed
+  for intermediate values
+- BUG: Checking whether a contact system supports a topography failed
+- CI: Tests must cover at least 90% of the code
 
 v1.8.3 (28Jul26)
 ----------------

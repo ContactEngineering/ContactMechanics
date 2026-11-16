@@ -132,12 +132,14 @@ fourier_buffer.p <--> np.fft.rfft2(a.T).T <--> np.fft.rfft2(a, axes=(1, 0))
 """  # noqa E501
 
 
+import warnings
 from collections import namedtuple
 from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
 from muGrid import Communicator, FFTEngine
+from NuMPI import MPI
 from NuMPI.Tools import Reduction
 from SurfaceTopography.Support import doi
 
@@ -146,14 +148,67 @@ from .Substrates import ElasticSubstrate
 NDArray = npt.NDArray[np.floating]
 
 
+# Distance (in units of the half-width of a pixel) beyond which the multipole
+# expansion of the Love kernel is more accurate than the closed form
+_LOVE_FAR_FIELD_RADIUS = 400
+
+
+def _love_kernel(x, y, a, b):
+    """
+    Surface displacement at (x, y) due to a uniform pressure p acting on the
+    rectangle [-a, a] x [-b, b] of an elastic half-space, in units of
+    p / (pi E*). See A.E.H. Love, Phil. Trans. R. Soc. A 228, 377 (1929) and
+    K.L. Johnson, Contact Mechanics (1985), p. 54.
+
+    The kernel is even in x and y. It is evaluated for |x| and |y|, which
+    avoids cancellation in the logarithms at large negative coordinates.
+    Far from the rectangle, the four terms of the closed-form expression
+    cancel to a result of order a*b/r, i.e. the relative roundoff error grows
+    as (r/a)**2. Beyond _LOVE_FAR_FIELD_RADIUS half-widths, the multipole expansion
+    (truncation error of relative order (a/r)**4) is used instead.
+    """
+    x, y = np.broadcast_arrays(np.abs(x), np.abs(y))
+    x = x.astype(float)
+    y = y.astype(float)
+
+    def r(u, v):
+        return np.sqrt(u * u + v * v)
+
+    r_sq = x * x + y * y
+    far = r_sq > (_LOVE_FAR_FIELD_RADIUS * max(a, b)) ** 2
+    kernel = np.empty(x.shape)
+
+    # Closed-form expression
+    xn, yn = x[~far], y[~far]
+    kernel[~far] = ((xn + a) * np.log(((yn + b) + r(yn + b, xn + a)) / ((yn - b) + r(yn - b, xn + a)))
+                    + (yn + b) * np.log(((xn + a) + r(yn + b, xn + a)) / ((xn - a) + r(yn + b, xn - a)))
+                    + (xn - a) * np.log(((yn - b) + r(yn - b, xn - a)) / ((yn + b) + r(yn + b, xn - a)))
+                    + (yn - b) * np.log(((xn - a) + r(yn - b, xn - a)) / ((xn + a) + r(yn - b, xn + a))))
+
+    # Multipole expansion: monopole (point force) and quadrupole
+    xf, yf, rf_sq = x[far], y[far], r_sq[far]
+    rf = np.sqrt(rf_sq)
+    kernel[far] = 4 * a * b / rf + 2 * a * b / rf ** 5 * (
+        xf * xf * a * a + yf * yf * b * b - rf_sq * (a * a + b * b) / 3)
+    return kernel
+
+
 class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     """Uses the FFT to solve the displacements and stresses in an elastic
-    Halfspace due to a given array of point forces. This halfspace
-    implementation cheats somewhat: since a net pressure would result in
-    infinite displacement, the first term of the FFT is systematically
-    dropped.
+    Halfspace due to a given array of point forces.
     The implementation follows the description in Stanley & Kato J. Tribol.
     119(3), 481-485 (Jul 01, 1997)
+
+    A net pressure on a periodic half-space of infinite thickness would
+    result in an infinite displacement. The stiffness at wavevector q=0,
+    which relates mean pressure and mean displacement (and hence the offset
+    of a rigid indenter and the load), is therefore a convention: By default,
+    it is taken equal to the stiffness of the lowest nonvanishing wavevector
+    (in two dimensions, the mean of the stiffnesses of the lowest
+    wavevectors along x and y), i.e. it depends on the size of the domain. It can be set with `stiffness_q0`; for
+    `stiffness_q0=0`, the q=0 mode is decoupled (mean pressure leads to no
+    mean displacement and vice versa). For a substrate of finite `thickness`,
+    the stiffness at q=0 is the physical stiffness of the layer.
     """
 
     name = "periodic_fft_elastic_halfspace"
@@ -195,8 +250,10 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             the last value in repeated.
         stiffness_q0 : float, optional
             Substrate stiffness at the Gamma-point (wavevector q=0).
-            If None, this is taken equal to the lowest nonvanishing
-            stiffness. Cannot be used in combination with thickness.
+            If None, this is taken equal to the stiffness of the lowest
+            nonvanishing wavevector (in two dimensions, the mean of the
+            stiffnesses of the lowest wavevectors along x and y). Cannot be
+            used in combination with thickness.
         thickness : float, optional
             Thickness of the elastic half-space. If None, this
             models an infinitely deep half-space. Cannot be used in
@@ -228,12 +285,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             used instead of creating a new one internally. The engine's
             nb_domain_grid_pts must match the half-space's nb_domain_grid_pts.
         """
-        super().__init__()
-        if not hasattr(nb_grid_pts, "__iter__"):
-            nb_grid_pts = (nb_grid_pts,)
-        if not hasattr(physical_sizes, "__iter__"):
-            physical_sizes = (physical_sizes,)
-        self.__dim = len(nb_grid_pts)
+        super().__init__(nb_grid_pts, physical_sizes)
         if self.dim not in (1, 2):
             raise self.Error(
                 (
@@ -245,11 +297,8 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             raise self.Error(
                 "Please specify either stiffness_q0 or thickness " "or neither."
             )
-        self._nb_grid_pts = nb_grid_pts
-        tmpsize = list()
-        for i in range(self.dim):
-            tmpsize.append(physical_sizes[min(i, len(physical_sizes) - 1)])
-        self._physical_sizes = tuple(tmpsize)
+        if thickness is not None and self.dim == 1:
+            raise self.Error("Substrates of finite thickness are only implemented for two-dimensional problems.")
 
         try:
             self._steps = tuple(
@@ -281,6 +330,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     f"FFTEngine grid size {tuple(fftengine.nb_domain_grid_pts)} "
                     f"doesn't match expected {self.nb_domain_grid_pts}"
                 )
+            # Reductions must run over the processes that share the engine's
+            # domain decomposition
+            communicator = getattr(fftengine.communicator, 'mpi4py_comm', None)
+            if communicator is None:
+                communicator = MPI.COMM_SELF  # Serial engine
         else:
             # Create internal FFT engine (muGrid 0.105+ supports 1D, 2D, and 3D)
             if communicator is not None:
@@ -302,25 +356,6 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         if superclass:
             self.greens_function = self._compute_greens_function()
             self.surface_stiffness = self._compute_surface_stiffness()
-
-    @property
-    def dim(
-        self,
-    ):
-        "return the substrate's physical dimension"
-        return self.__dim
-
-    @property
-    def nb_grid_pts(self):
-        return self._nb_grid_pts
-
-    @property
-    def area_per_pt(self):
-        return np.prod(self.physical_sizes) / np.prod(self.nb_grid_pts)
-
-    @property
-    def physical_sizes(self):
-        return self._physical_sizes
 
     @property
     def nb_domain_grid_pts(
@@ -436,7 +471,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
         )
         return (
             "{0.dim}-dimensional halfspace '{0.name}', "
-            "physical_sizes(nb_grid_pts) in {1}, E' = {0.young}".format(self, size_str)
+            "physical_sizes(nb_grid_pts) in {1}, E* = {0.contact_modulus}".format(self, size_str)
         )
 
     def _compute_greens_function(self):
@@ -486,7 +521,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
             greens_function = 1 / surface_stiffness
             if self.fourier_locations == (0,):
                 if self.stiffness_q0 == 0.0:
-                    greens_function[0, 0] = 0.0
+                    greens_function[0] = 0.0
 
         elif self.dim == 2:
             if np.prod(self.nb_fourier_grid_pts) == 0:
@@ -533,12 +568,19 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
                     corr[np.isnan(corr)] = 1.0
                     surface_stiffness *= corr
                     if self.fourier_locations == (0, 0):
-                        surface_stiffness[0, 0] = (
-                            self.young
-                            / self.thickness
-                            * (1 - self.poisson)
-                            / ((1 - 2 * self.poisson) * (1 + self.poisson))
-                        )
+                        if self.poisson == 0.5:
+                            # An incompressible layer on a rigid substrate
+                            # cannot be compressed uniformly. Its Green's
+                            # function vanishes at q=0; the q=0 mode is then
+                            # decoupled as for stiffness_q0=0.
+                            surface_stiffness[0, 0] = np.inf
+                        else:
+                            surface_stiffness[0, 0] = (
+                                self.young
+                                / self.thickness
+                                * (1 - self.poisson)
+                                / ((1 - 2 * self.poisson) * (1 + self.poisson))
+                            )
                 else:
                     if self.fourier_locations == (0, 0):
                         if self.stiffness_q0 is None:
@@ -569,6 +611,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
     def evaluate_disp(self, forces):
         """Computes the displacement due to a given force array
+
+        Sign convention: `forces` are the forces exerted *by* the substrate
+        on its surface nodes (as returned by `evaluate_force`), i.e. they are
+        negative where the substrate is compressed. Displacements are
+        positive into the substrate.
+
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
@@ -588,6 +636,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     def evaluate_force(self, disp):
         """Computes the force (*not* pressures) due to a given displacement
         array.
+
+        Sign convention: Displacements are positive into the substrate. The
+        returned forces are the forces exerted *by* the substrate on its
+        surface nodes, -dE/du, i.e. they are negative where the substrate is
+        compressed.
 
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
@@ -910,21 +963,23 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         physical_sizes=2 * np.pi,
         fft="serial",
         communicator=None,
-        check_boundaries=False,
+        check_boundaries=None,
         fftengine=None,
+        poisson=0.0,
     ):
         """
         Parameters
         ----------
-        nb_grid_pts : tuple of floats
-            Tuple containing number of points in spatial directions. The length
-            of the tuple determines the spatial dimension of the problem.
+        nb_grid_pts : tuple of ints
+            Tuple containing number of points in spatial directions. Only
+            two-dimensional problems are supported.
             Warning: internally, the free boundary conditions require the
             system so store a system of 2*nb_grid_pts.x by 2*nb_grid_pts.y.
             Keep in mind that if your surface is nx by ny, the forces and
             displacements will still be 2nx by 2ny.
         young : float
-            Equiv. Young's modulus E', 1/E' = (i-ν_1**2)/E'_1 + (i-ν_2**2)/E'_2
+            Young's modulus. If poisson is not specified, it is the contact
+            modulus E*, 1/E* = (1-ν_1**2)/E_1 + (1-ν_2**2)/E_2
         physical_sizes : tuple of floats
             (default 2π) domain physical_sizes. For multidimensional problems,
             a tuple can be provided to specify the lengths per dimension. If
@@ -932,14 +987,22 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             repeated.
         communicator : mpi4py communicator NuMPI stub communicator
             MPI communicator object. Ignored if fftengine is provided.
-        check_boundaries: bool
-            if set to true, the function check will test that the pressures are
-            zero at the boundary of the topography-domain.
+        check_boundaries: bool, optional
+            Whether `check()` tests that the forces are zero at the boundary
+            of the topography domain. Nonzero forces there indicate that the
+            contact geometry exceeds the bounds of the domain. If None
+            (default), a warning is issued; if True, a `FreeBoundaryError` is
+            raised; if False, the check is skipped.
             `check()` is called systematically at the end of system.minimize_proxy
         fftengine : muGrid.FFTEngine, optional
             External FFT engine instance. If provided, this engine will be
             used instead of creating a new one internally.
+        poisson : float, optional
+            Poisson number. If specified, `young` is Young's modulus and the
+            contact modulus is young / (1 - poisson**2). (Default: 0)
         """
+        if not hasattr(nb_grid_pts, "__iter__") or len(nb_grid_pts) != 2:
+            raise self.Error("Nonperiodic substrates are only implemented for two-dimensional problems.")
         # do not use isinstance since it returns True for any class that inherits
         if type(self) is FreeFFTElasticHalfSpace:
             self._comp_nb_grid_pts = tuple((2 * r for r in nb_grid_pts))
@@ -948,6 +1011,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
             nb_grid_pts,
             young,
             physical_sizes,
+            poisson=poisson,
             superclass=False,
             fft=fft,
             communicator=communicator,
@@ -968,7 +1032,7 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 for i in range(self.dim)
             )
         )
-        return type(self)(nb_grid_pts, self.young, size)
+        return type(self)(nb_grid_pts, self.young, size, poisson=self.poisson)
 
     @property
     def nb_domain_grid_pts(
@@ -981,6 +1045,17 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         see FreeFFTElasticHalfSpace.
         """
         return self._comp_nb_grid_pts
+
+    @property
+    def topography_subdomain_locations(self):
+        """
+        Location of the local subdomain of the topography. Subdomains that
+        lie entirely in the padding region are empty; their location is
+        moved to the end of the topography such that it lies within the
+        topography.
+        """
+        return tuple(min(location, nb_grid_pts) for location, nb_grid_pts
+                     in zip(self.subdomain_locations, self.nb_grid_pts))
 
     @property
     def topography_nb_subdomain_grid_pts(self):
@@ -1024,113 +1099,45 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
                 mask[maxix, :] = 1
         return mask
 
+    def _grid_coordinates(self, local=True):
+        """
+        Positions of the grid points of the local subdomain (or, if `local`
+        is False, of the full domain) of the computational grid relative to
+        the origin. Grid index i corresponds to position i for
+        i <= (n - 1) // 2 and to i - n otherwise, where n is the number of
+        grid points of the computational grid (wrap-around of the FFT).
+
+        Returns
+        -------
+        x : ndarray of shape (nb_subdomain_grid_pts[0], 1)
+        y : ndarray of shape (1, nb_subdomain_grid_pts[1])
+        """
+        if local:
+            locations, nb_grid_pts = self.subdomain_locations, self.nb_subdomain_grid_pts
+        else:
+            locations, nb_grid_pts = (0,) * self.dim, self.nb_domain_grid_pts
+        coordinates = []
+        for location, nb_pts, nb_domain_pts, step in zip(locations, nb_grid_pts, self.nb_domain_grid_pts,
+                                                         self._steps):
+            i = np.arange(location, location + nb_pts)
+            coordinates += [np.where(i <= (nb_domain_pts - 1) // 2, i, i - nb_domain_pts) * step]
+        x, y = coordinates
+        return x.reshape(-1, 1), y.reshape(1, -1)
+
+    def _real_space_greens_function(self, x, y):
+        """
+        Displacement at positions (x, y) due to a unit pressure acting on the
+        pixel at the origin.
+        """
+        return _love_kernel(x, y, self._steps[0] / 2, self._steps[1] / 2) / (np.pi * self.contact_modulus)
+
     def _compute_greens_function(self):
         """Compute the weights w relating fft(displacement) to fft(pressure):
         fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
-
-        This version is less is copied from matscipy, use if memory is a
-        concern
         """
-        # pylint: disable=invalid-name
-        a = self._steps[0] * 0.5
-        if self.dim == 1:
-            pass
-        else:
-            b = self._steps[1] * 0.5
-            x_s = np.arange(
-                self.subdomain_locations[0],
-                self.subdomain_locations[0] + self.nb_subdomain_grid_pts[0],
-            )
-            x_s = (
-                np.where(x_s <= self.nb_grid_pts[0], x_s, x_s - self.nb_grid_pts[0] * 2)
-                * self._steps[0]
-            )
-            x_s.shape = (-1, 1)
-            y_s = np.arange(
-                self.subdomain_locations[1],
-                self.subdomain_locations[1] + self.nb_subdomain_grid_pts[1],
-            )
-            y_s = (
-                np.where(y_s <= self.nb_grid_pts[1], y_s, y_s - self.nb_grid_pts[1] * 2)
-                * self._steps[1]
-            )
-            y_s.shape = (1, -1)
-            self.real_buffer.p[...] = (
-                1
-                / (np.pi * self.young)
-                * (
-                    (x_s + a)
-                    * np.log(
-                        (
-                            (y_s + b)
-                            + np.sqrt(
-                                (y_s + b) * (y_s + b)  # noqa: E501
-                                + (x_s + a) * (x_s + a)
-                            )
-                        )  # noqa: E501
-                        / (
-                            (y_s - b)
-                            + np.sqrt(
-                                (y_s - b) * (y_s - b)  # noqa: E501
-                                + (x_s + a) * (x_s + a)
-                            )
-                        )
-                    )  # noqa: E501
-                    + (y_s + b)
-                    * np.log(
-                        (
-                            (x_s + a)
-                            + np.sqrt(
-                                (y_s + b) * (y_s + b)  # noqa: E501
-                                + (x_s + a) * (x_s + a)
-                            )
-                        )  # noqa: E501
-                        / (
-                            (x_s - a)
-                            + np.sqrt(
-                                (y_s + b) * (y_s + b)  # noqa: E501
-                                + (x_s - a) * (x_s - a)
-                            )
-                        )
-                    )  # noqa: E501
-                    + (x_s - a)
-                    * np.log(
-                        (
-                            (y_s - b)
-                            + np.sqrt(
-                                (y_s - b) * (y_s - b)  # noqa: E501
-                                + (x_s - a) * (x_s - a)
-                            )
-                        )  # noqa: E501
-                        / (
-                            (y_s + b)
-                            + np.sqrt(
-                                (y_s + b) * (y_s + b)  # noqa: E501
-                                + (x_s - a) * (x_s - a)
-                            )
-                        )
-                    )  # noqa: E501
-                    + (y_s - b)
-                    * np.log(
-                        (
-                            (x_s - a)
-                            + np.sqrt(
-                                (y_s - b) * (y_s - b)  # noqa: E501
-                                + (x_s - a) * (x_s - a)
-                            )
-                        )  # noqa: E501
-                        / (
-                            (x_s + a)
-                            + np.sqrt(
-                                (y_s - b) * (y_s - b)  # noqa: E501
-                                + (x_s + a) * (x_s + a)
-                            )
-                        )
-                    )
-                )
-            )  # noqa: E501
-            self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-            return self.fourier_buffer.p.copy()
+        self.real_buffer.p[...] = self._real_space_greens_function(*self._grid_coordinates())
+        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+        return self.fourier_buffer.p.copy()
 
     def evaluate_disp(self, forces, bIncludePadding=False):
         """Computes the displacement due to a given force array
@@ -1254,12 +1261,12 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
 
         if not is_ok:
             raise self.FreeBoundaryError(
-                "The forces not zero at the boundary of the active domain."
+                "The forces are not zero at the boundary of the active domain. "
                 "This is typically an indication that the contact geometry "
-                "exceeds the bounds of the domain. Since this is a nonperiodic"
+                "exceeds the bounds of the domain. Since this is a nonperiodic "
                 "calculation, you may want to increase the size of your "
-                "domain. If you are sure that the calculation is correct,"
-                " set check_boundary to False"
+                "domain. If you are sure that the calculation is correct, "
+                "set check_boundaries to False."
             )
 
     def check(self, force=None):
@@ -1273,7 +1280,12 @@ class FreeFFTElasticHalfSpace(PeriodicFFTElasticHalfSpace):
         -------
 
         """
-        if self._check_boundaries:
+        if self._check_boundaries is None:
+            try:
+                self.check_boundaries(force)
+            except self.FreeBoundaryError as err:
+                warnings.warn(str(err))
+        elif self._check_boundaries:
             self.check_boundaries(force)
 
 
@@ -1297,6 +1309,7 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             communicator=None,
             check_boundaries: bool = False,
             fftengine=None,
+            poisson: float = 0.0,
     ) -> None:
         """
         Parameters
@@ -1323,17 +1336,31 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             Defaults to (False, True): non-periodic in x- and periodic in y-direction.
         n_images : int
             Number of images (each in +/- direction) that are taken into account
-            for the numeric periodization. Defaults to 10.
+            for the numeric periodization. The sum over the images of the
+            1/r decay of the Green's function diverges; the value of each image
+            at the origin is subtracted, which makes the sum converge and
+            changes the displacements only by a constant. The mean
+            displacement, and hence the relation between offset and load, is
+            a convention for periodic directions: as for
+            `PeriodicFFTElasticHalfSpace`, the stiffness at q = 0 is taken
+            equal to the mean of the stiffnesses of the lowest nonvanishing
+            wavevectors along the periodic direction(s). Defaults to 10.
         communicator : mpi4py communicator NuMPI stub communicator
             MPI communicator object. Ignored if fftengine is provided.
         check_boundaries: bool
             if set to true, the function check will test that the pressures are
-            zero at the boundary of the topography-domain.
+            zero at the boundary of the topography-domain. Note that this also
+            tests the boundaries in periodic directions. (Default: False)
             `check()` is called systematically at the end of system.minimize_proxy
         fftengine : muGrid.FFTEngine, optional
             External FFT engine instance. If provided, this engine will be
             used instead of creating a new one internally.
+        poisson : float, optional
+            Poisson number. If specified, `young` is Young's modulus and the
+            contact modulus is young / (1 - poisson**2). (Default: 0)
         """
+        if not hasattr(nb_grid_pts, "__iter__") or len(nb_grid_pts) != 2:
+            raise self.Error("Semi-periodic substrates are only implemented for two-dimensional problems.")
 
         # extend domain in non-periodic direction(s)
         if periodicity[0]:
@@ -1357,155 +1384,87 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
             communicator=communicator,
             check_boundaries=check_boundaries,
             fftengine=fftengine,
+            poisson=poisson,
         )
 
-    def _compute_greens_function(self) -> NDArray:
-        """Wrapper to compute the Green's function with periodic images
-
-        Returns
-        -------
-        G_fourier : ndarray of shape (M, N)
-            Green's function in Fourier space
+    def _real_space_greens_function(self, x, y) -> NDArray:
         """
-
-        # get image iterators, for non-periodic, only [0] image is looked at
-        if self.periodicity[0]:
-            images_x = np.arange(-self.n_images, self.n_images+1)
-        else:
-            images_x = [0]
-        if self.periodicity[1]:
-            images_y = np.arange(-self.n_images, self.n_images+1)
-        else:
-            images_y = [0]
-
-        # sum up periodic images
-        p_real = np.zeros(self.nb_domain_grid_pts)
-        for img_x in images_x:
-            for img_y in images_y:
-                p_real += self._compute_greens_function_inner(img_x, img_y)
-
-        # FFT
-        self.G_real = np.copy(p_real)
-        self.real_buffer.p[...] = p_real
-        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
-
-        return self.fourier_buffer.p.copy()
-
-    def _compute_greens_function_inner(self, img_x, img_y) -> NDArray:
-        """Compute the weights w relating fft(displacement) to fft(pressure):
-        fft(u) = w*fft(p), Johnson, p. 54, and Hockney, p. 178
+        Displacement at positions (x, y) due to a unit pressure acting on the
+        pixel at the origin and its periodic images.
 
         Parameters
         ----------
-        img_x : int
-            Image shift index in x-direction
-        img_y : int
-            Image shift index in y-direction
+        x : ndarray
+            Positions in x-direction
+        y : ndarray
+            Positions in y-direction
 
         Returns
         -------
-        ndarray of shape (M, N)
+        G_real : ndarray
             Real-space Green's function.
         """
+        # get image iterators, for non-periodic, only [0] image is looked at
+        images_x = np.arange(-self.n_images, self.n_images + 1) if self.periodicity[0] else [0]
+        images_y = np.arange(-self.n_images, self.n_images + 1) if self.periodicity[1] else [0]
+        sx, sy = self.physical_sizes
 
-        if self.dim == 1:
-            pass
-        else:
-            a = self._steps[0] * 0.5
-            b = self._steps[1] * 0.5
+        G_real = np.zeros(np.broadcast(x, y).shape)
+        for img_x in images_x:
+            for img_y in images_y:
+                G_real += super()._real_space_greens_function(x + img_x * sx, y + img_y * sy)
+                if img_x != 0 or img_y != 0:
+                    # Subtract the value of the image at the origin to make
+                    # the sum over images converge
+                    G_real -= super()._real_space_greens_function(img_x * sx, img_y * sy)
 
-            # real space coordinates before image shift
-            x_s = (np.fft.fftfreq(self.nb_domain_grid_pts[0])
-                   * self.nb_domain_grid_pts[0]
-                   / self._nb_grid_pts[0]
-                   * self.physical_sizes[0])  # noqa: E501
-            x_s.shape = (-1, 1)
+        return G_real
 
-            y_s = (np.fft.fftfreq(self.nb_domain_grid_pts[1])
-                   * self.nb_domain_grid_pts[1]
-                   / self._nb_grid_pts[1]
-                   * self.physical_sizes[1])  # noqa: E501
-            y_s.shape = (1, -1)
+    def _fourier_coefficient(self, G_local, wavevector):
+        """
+        Fourier coefficient of the (local part of the) real-space Green's
+        function on the computational grid at the given integer wavevector,
+        reduced over all MPI processes. The coefficient is real because the
+        Green's function is even.
+        """
+        phase = 0
+        for location, nb_pts, nb_domain_pts, k, shape in zip(self.subdomain_locations, self.nb_subdomain_grid_pts,
+                                                             self.nb_domain_grid_pts, wavevector, ((-1, 1), (1, -1))):
+            i = np.arange(location, location + nb_pts).reshape(shape)
+            phase = phase + 2 * np.pi * k * i / nb_domain_pts
+        return self.pnp.sum(np.sum(G_local * np.cos(phase)))
 
-            # image shift, x_y and y_s are 0 <= x_i, y_i <= 1.
-            x_s = x_s + float(img_x)*self.physical_sizes[0]
-            y_s = y_s + float(img_y)*self.physical_sizes[1]
+    def _zero_mode_constant(self, G_local):
+        """
+        Constant that sets the compliance at wavevector q = 0. The sum over
+        periodic images of the 1/r decay of the Green's function diverges,
+        i.e. the mean displacement in response to a mean pressure is a
+        convention. As for `PeriodicFFTElasticHalfSpace`, the stiffness at
+        q = 0 is taken equal to the (mean) stiffness of the lowest
+        nonvanishing wavevector(s) along the periodic direction(s). This
+        keeps the elastic energy positive.
+        """
+        if not any(self.periodicity):
+            return 0.
+        stiffnesses = []
+        for direction, periodic in enumerate(self.periodicity):
+            if periodic:
+                wavevector = [0, 0]
+                wavevector[direction] = 1
+                stiffnesses += [1 / self._fourier_coefficient(G_local, wavevector)]
+        target = 1 / np.mean(stiffnesses)
+        current = self._fourier_coefficient(G_local, (0, 0))
+        return (target - current) / np.prod(self.nb_domain_grid_pts)
 
-            p = (
-                1
-                / (np.pi * self.young)
-                * (
-                    (x_s + a)
-                    * np.log(
-                        (
-                            (y_s + b)
-                            + np.sqrt(
-                                (y_s + b) * (y_s + b)  # noqa: E501
-                                + (x_s + a) * (x_s + a)
-                            )
-                        )  # noqa: E501
-                        / (
-                            (y_s - b)
-                            + np.sqrt(
-                                (y_s - b) * (y_s - b)  # noqa: E501
-                                + (x_s + a) * (x_s + a)
-                            )
-                        )
-                    )  # noqa: E501
-                    + (y_s + b)
-                    * np.log(
-                        (
-                            (x_s + a)
-                            + np.sqrt(
-                                (y_s + b) * (y_s + b)  # noqa: E501
-                                + (x_s + a) * (x_s + a)
-                            )
-                        )  # noqa: E501
-                        / (
-                            (x_s - a)
-                            + np.sqrt(
-                                (y_s + b) * (y_s + b)  # noqa: E501
-                                + (x_s - a) * (x_s - a)
-                            )
-                        )
-                    )  # noqa: E501
-                    + (x_s - a)
-                    * np.log(
-                        (
-                            (y_s - b)
-                            + np.sqrt(
-                                (y_s - b) * (y_s - b)  # noqa: E501
-                                + (x_s - a) * (x_s - a)
-                            )
-                        )  # noqa: E501
-                        / (
-                            (y_s + b)
-                            + np.sqrt(
-                                (y_s + b) * (y_s + b)  # noqa: E501
-                                + (x_s - a) * (x_s - a)
-                            )
-                        )
-                    )  # noqa: E501
-                    + (y_s - b)
-                    * np.log(
-                        (
-                            (x_s - a)
-                            + np.sqrt(
-                                (y_s - b) * (y_s - b)  # noqa: E501
-                                + (x_s - a) * (x_s - a)
-                            )
-                        )  # noqa: E501
-                        / (
-                            (x_s + a)
-                            + np.sqrt(
-                                (y_s - b) * (y_s - b)  # noqa: E501
-                                + (x_s + a) * (x_s + a)
-                            )
-                        )
-                    )
-                )
-            )  # noqa: E501
-            return p
+    def _compute_greens_function(self) -> NDArray:
+        G_real = self._real_space_greens_function(*self._grid_coordinates())
+        self._zero_mode_shift = self._zero_mode_constant(G_real)
+        # The real-space Green's function of the local subdomain is kept for
+        # analysis purposes
+        self.G_real = G_real + self._zero_mode_shift
+        self.real_buffer.p[...] = self.G_real
+        self.fftengine.fft(self.real_buffer, self.fourier_buffer)
+        return self.fourier_buffer.p.copy()
 
     def evaluate_disp(self, forces, bIncludePadding=False) -> NDArray:
         """Computes the displacement due to a given force array
@@ -1555,13 +1514,17 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
     def get_G_real(self) -> NDArray:
         """
         For analysis purposes.
-        Returns the 'ordered' 2d G_real numpy array.
+        Returns the 'ordered' 2d G_real numpy array. The Green's function is
+        evaluated on the full computational grid, also for domain-decomposed
+        (MPI) calculations.
 
         Returns
         -------
         G_real_ordered : ndarray of shape (M, N)
             Green's function in real space with G(0,0) at the array center
         """
+        G_real = self._real_space_greens_function(*self._grid_coordinates(local=False)) + self._zero_mode_shift
+
         nx, ny = self.nb_domain_grid_pts
         m = np.round(np.fft.fftfreq(nx) * nx).astype(int)
         n = np.round(np.fft.fftfreq(ny) * ny).astype(int)
@@ -1570,7 +1533,7 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
         inv_x = np.argsort(m)
         inv_y = np.argsort(n)
 
-        G_real_ordered = self.G_real[np.ix_(inv_x, inv_y)]
+        G_real_ordered = G_real[np.ix_(inv_x, inv_y)]
 
         return G_real_ordered
 
