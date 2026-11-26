@@ -572,6 +572,12 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
     def evaluate_disp(self, forces):
         """Computes the displacement due to a given force array
+
+        Sign convention: `forces` are the forces exerted *by* the substrate
+        on its surface nodes (as returned by `evaluate_force`), i.e. they are
+        negative where the substrate is compressed. Displacements are
+        positive into the substrate.
+
         Keyword Arguments:
         forces   -- a numpy array containing point forces (*not* pressures)
         """
@@ -591,6 +597,11 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
     def evaluate_force(self, disp):
         """Computes the force (*not* pressures) due to a given displacement
         array.
+
+        Sign convention: Displacements are positive into the substrate. The
+        returned forces are the forces exerted *by* the substrate on its
+        surface nodes, -dE/du, i.e. they are negative where the substrate is
+        compressed.
 
         Keyword Arguments:
         disp   -- a numpy array containing point displacements
