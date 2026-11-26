@@ -73,7 +73,7 @@ jobs:
           export PRTE_MCA_rmaps_default_mapping_policy=:oversubscribe
           python3 run-tests.py --no-build --verbose --full-trace
         else
-          python3 -m pytest --verbose --full-trace -s
+          python3 -m pytest --verbose --full-trace -s --cov=ContactMechanics --cov-report=term-missing --cov-fail-under=90
         fi
 
   minimum-versions:

@@ -23,6 +23,7 @@
 #
 
 import numpy as np
+import pytest
 
 from ContactMechanics.GreensFunctions import AnisotropicGreensFunction
 
@@ -49,3 +50,51 @@ def test_test():
     # 'k-')
     # plt.show()
     gf.find_eigenvectors(1, 0.5, -1j * Q)
+
+
+def _rotation(axis, angle):
+    axis = np.asarray(axis, dtype=float)
+    axis /= np.linalg.norm(axis)
+    K = np.array([[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]])
+    return np.eye(3) + np.sin(angle) * K + (1 - np.cos(angle)) * K @ K
+
+
+def test_scalar_wavevector():
+    gf = AnisotropicGreensFunction(1.0, 0.5, 0.3)
+    np.testing.assert_allclose(gf.stiffness(0.3, 0.1), gf.stiffness(np.array([0.3]), np.array([0.1]))[0])
+    np.testing.assert_allclose(gf.greens_function(0.3, 0.1),
+                               gf.greens_function(np.array([0.3]), np.array([0.1]))[0])
+
+
+@pytest.mark.parametrize('thickness', [None, 2.0])
+@pytest.mark.parametrize('axis, angle', [([1, 0, 0], np.pi / 6), ([1, 2, 3], 0.7)])
+def test_rotated_crystal(axis, angle, thickness):
+    # These orientations break the z -> -z symmetry of the elastic constants;
+    # det(M) then has odd powers of qz, which were neglected
+    qx = np.array([1.0, 0.3, -0.7, 2.0])
+    qy = np.array([0.0, 0.8, 0.4, -1.5])
+    gf = AnisotropicGreensFunction(1.0, 0.5, 0.3, thickness=thickness, R=_rotation(axis, angle))
+    for K, G in zip(gf.stiffness(qx, qy), gf.greens_function(qx, qy)):
+        np.testing.assert_allclose(K, K.conj().T, atol=1e-12)
+        assert np.linalg.eigvalsh(K).min() > 0
+        np.testing.assert_allclose(K @ G, np.eye(3), atol=1e-12)
+
+
+def test_cubic_symmetry():
+    # A rotation by 90 degrees about a cube axis leaves the crystal invariant
+    qx = np.array([1.0, 0.3, -0.7])
+    qy = np.array([0.0, 0.8, 0.4])
+    reference = AnisotropicGreensFunction(1.0, 0.5, 0.3).stiffness(qx, qy)
+    rotated = AnisotropicGreensFunction(1.0, 0.5, 0.3, R=_rotation([1, 0, 0], np.pi / 2)).stiffness(qx, qy)
+    np.testing.assert_allclose(rotated, reference, atol=1e-12)
+
+
+def test_rotation_of_nearly_isotropic_crystal():
+    qx = np.array([1.0, 0.3, -0.7])
+    qy = np.array([0.0, 0.8, 0.4])
+    C11, C44 = 1.0, 0.3
+    anisotropy = 1e-3
+    C12 = C11 - 2 * C44 + anisotropy
+    reference = AnisotropicGreensFunction(C11, C12, C44).stiffness(qx, qy)
+    rotated = AnisotropicGreensFunction(C11, C12, C44, R=_rotation([1, 2, 3], 0.7)).stiffness(qx, qy)
+    assert np.abs(rotated - reference).max() < anisotropy * np.abs(reference).max()
