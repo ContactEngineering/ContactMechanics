@@ -374,6 +374,26 @@ class NonSmoothContactSystem(SystemBase):
     functional at the solution). The classic contact problems, for which the
     interaction between the tribopartners is just non-penetration without
     adhesion, belong to this type of system
+
+    Sign conventions
+    ----------------
+    Displacements `disp` are positive into the substrate. Gaps are
+    nonnegative for non-penetrating surfaces.
+
+    `substrate.force` is the force exerted *by* the substrate on its surface
+    nodes, -dE/du, on the (for nonperiodic substrates: padded) grid of the
+    substrate. It is negative where the substrate is compressed. This
+    convention is independent of how the state was computed.
+
+    After a minimization (`minimize_proxy`, `primal_minimize_proxy`,
+    `dual_minimize_proxy`), `force` is the contact force acting *on* the
+    substrate on the (unpadded) topography grid, i.e. it is positive in
+    the contact; `force / area_per_pt` is the contact pressure. Note that
+    `evaluate` (used by the objective functions) instead sets `force` to
+    the substrate force -dE/du.
+
+    `compute_normal_force` returns the total normal load, which is positive
+    for compressive contact.
     """
 
     # pylint: disable=abstract-method
@@ -419,8 +439,44 @@ class NonSmoothContactSystem(SystemBase):
         return self.surface.nb_grid_pts
 
     def compute_normal_force(self):
-        "computes and returns the sum of all forces"
-        return self.reduction.sum(self.substrate.force)
+        """
+        Computes and returns the normal load, i.e. the total force acting on
+        the substrate. It is positive for compressive contact.
+        """
+        return -self.reduction.sum(self.substrate.force)
+
+    def _set_state(self, offset, disp, force, energy, contact_zone=None, substrate_force=None):
+        """
+        Store the state after a minimization.
+
+        Parameters
+        ----------
+        offset : float
+            Offset of the rigid surface.
+        disp : np.ndarray
+            Displacements on the (local) grid of the substrate.
+        force : np.ndarray
+            Contact forces on the (local) topography grid, positive in
+            compression.
+        energy : float
+            Elastic energy.
+        contact_zone : np.ndarray, optional
+            Contacting points. (Default: points with positive force)
+        substrate_force : np.ndarray, optional
+            Force -dE/du on the (local) grid of the substrate. (Default:
+            `-force` on the topography grid and zero in the padding region)
+        """
+        self.offset = offset
+        self.disp = disp
+        self.force = force
+        self.energy = self.substrate.energy = energy
+        self.contact_zone = force > 0 if contact_zone is None else contact_zone
+        if substrate_force is None:
+            # The substrate force has the opposite sign and lives on the grid
+            # of the substrate
+            substrate_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
+            substrate_force[self.comp_slice] = -force
+        self.substrate.force = substrate_force
 
     def compute_nb_contact_pts(self):
         """
@@ -574,10 +630,18 @@ class NonSmoothContactSystem(SystemBase):
         Convenience function. Eliminates boilerplate code for most minimisation
         problems by encapsulating the use of constrained minimisation.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
+        solver : callable, optional
+            The solver. (Default:
+            `ContactMechanics.Optimization.constrained_conjugate_gradients`)
         offset : float
             determines indentation depth
+        external_force : float
+            Total normal load; if given, the offset is determined by the
+            solver.
+        hardness : float or array_like
+            Hardness in units of force per pixel (for plastic calculations).
         initial_displacements : array_like
             initial guess for surface displacement. If not set, zero
                       displacement of shape
@@ -592,6 +656,38 @@ class NonSmoothContactSystem(SystemBase):
             Maximum number of iterations allowed for convergence.
         logger : :obj:`ContactMechanics.Tools.Logger`
             Reports status and values at each iteration.
+
+        All keyword arguments are passed on to the solver; see
+        `ContactMechanics.Optimization.constrained_conjugate_gradients` for
+        all options.
+
+        Returns
+        -------
+        result : scipy.optimize.OptimizeResult
+            The result of the solver with the following attributes:
+
+            - success : bool, whether the tolerances were reached
+            - message : str, description of the termination
+            - x : np.ndarray, displacements on the (local) grid of the
+              substrate, i.e. including the padding region of nonperiodic
+              substrates
+            - jac : np.ndarray, contact forces on the (local) topography
+              grid, positive in compression (`jac / area_per_pt` is the
+              contact pressure)
+            - fun : float, elastic energy
+            - offset : float, offset of the rigid surface (computed by the
+              solver if `external_force` is given)
+            - active_set : np.ndarray, points whose forces are between zero
+              and the hardness
+            - plastic : np.ndarray, plastically deforming points (only for
+              plastic calculations)
+            - nit : int, number of iterations
+            - nfev : int, number of evaluations of the elastic response
+            - maxcv : dict, maximum penetration and maximum force violation
+
+        If the solver succeeded, the state of the system (`offset`, `disp`,
+        `force`, `energy`, `contact_zone`, `substrate.force`) is updated, see
+        the sign conventions in the class documentation.
         """
         # pylint: disable=arguments-differ
         self.disp = None
@@ -602,19 +698,110 @@ class NonSmoothContactSystem(SystemBase):
             self.surface,
             **kwargs)
         if result.success:
-            self.offset = result.offset
-            self.disp = result.x
-            self.force = self.substrate.force = result.jac
-            self.contact_zone = result.jac > 0
-
+            self._set_state(result.offset, result.x, result.jac, result.fun)
             self.substrate.check()
         return result
 
-    def primal_objective(self, offset, gradient=True):
+    def _length_scale(self, offset):
+        """
+        Characteristic length of the contact problem, used to make default
+        tolerances independent of the system of units.
+        """
+        # Rms height of the valid pixels; computed here because older
+        # versions of SurfaceTopography do not ignore masked heights
+        valid = self._valid_mask()
+        heights = self._filled_heights()
+        nb_valid = self.reduction.sum(valid * 1)
+        mean_height = self.reduction.sum(np.where(valid, heights, 0.)) / nb_valid
+        length = np.sqrt(self.reduction.sum(np.where(valid, heights - mean_height, 0.) ** 2) / nb_valid)
+        # Test flatness directly, since the rounded mean can leave a spurious
+        # rms height of the order of the machine precision
+        max_height = self.reduction.max(np.max(np.where(valid, heights, -np.inf), initial=-np.inf))
+        min_height = -self.reduction.max(np.max(np.where(valid, -heights, -np.inf), initial=-np.inf))
+        if max_height == min_height:
+            # Flat surface (e.g. a punch): fall back to the indentation depth,
+            # i.e. the mean height of the valid pixels plus the offset
+            length = abs(mean_height + offset)
+        if length == 0:
+            raise ValueError("Cannot infer a length scale for a flat surface "
+                             "at zero offset. Please specify `gtol` "
+                             "explicitly.")
+        return length
+
+    def _pixel_stiffness(self):
+        """
+        Local stiffness of a single pixel, i.e. the force per displacement of
+        one pixel: E* times the pixel size in 2D, E* for line scans (where
+        forces are per unit length).
+        """
+        # Substrates that do not define a contact modulus are described by
+        # Young's modulus (which then is the contact modulus)
+        contact_modulus = getattr(self.substrate, 'contact_modulus', None)
+        if contact_modulus is None:
+            contact_modulus = self.substrate.young
+        if self.substrate.dim == 1:
+            return contact_modulus
+        return contact_modulus * np.sqrt(self.substrate.area_per_pt)
+
+    def _force_scale(self, offset):
+        """
+        Characteristic force per pixel of the contact problem: the force
+        needed to displace the surface by the characteristic length on the
+        scale of one pixel.
+        """
+        return self._pixel_stiffness() * self._length_scale(offset)
+
+    def _valid_mask(self):
+        """
+        Pixels of the (local) topography grid where the heights are defined
+        """
+        return np.logical_not(np.ma.getmaskarray(self.surface.heights()))
+
+    def _filled_heights(self):
+        """
+        Heights of the (local) topography with undefined (masked) values set
+        to zero
+        """
+        return np.ma.filled(self.surface.heights(), 0.)
+
+    def _primal_base_displacement(self, offset):
+        """
+        Displacement corresponding to a vanishing primal variable. Inside the
+        topography domain, the primal variable is the gap. In the padding
+        region of nonperiodic substrates and where the heights are undefined
+        (masked), there is no counter surface and the primal variable is the
+        displacement itself.
+        """
+        base = np.zeros(self.substrate.nb_subdomain_grid_pts)
+        base[self.comp_slice] = np.where(self._valid_mask(), self._filled_heights() + offset, 0.)
+        return base
+
+    def _primal_bounds(self):
+        """
+        Lower bounds on the primal variable: The gap must be nonnegative,
+        the displacement in the padding region and where the heights are
+        undefined (masked) is unconstrained.
+        """
+        bounds = np.full(self.substrate.nb_subdomain_grid_pts, -np.inf)
+        bounds[self.comp_slice] = np.where(self._valid_mask(), 0., -np.inf)
+        return bounds
+
+    def _check_serial(self, solver):
+        communicator = self.substrate.communicator
+        if communicator is not None and communicator.size > 1:
+            raise ValueError("Solver '{}' does not support MPI "
+                             "parallelization.".format(solver))
+
+    def primal_objective(self, offset, gradient=True, logger=None):
         r"""
         Solves the primal objective using gap as the variable. This function can be fed directly to standard solvers
         such as scipy solvers etc. and returns the elastic energy and its gradient (negative of the forces) as a
         function of the gap.
+
+        The variable has the shape `substrate.nb_subdomain_grid_pts`. For
+        nonperiodic substrates, it is the gap inside the topography domain
+        and the displacement in the padding region. Use
+        `_primal_bounds` to obtain the corresponding lower bounds.
 
         Parameters
         ----------
@@ -622,6 +809,8 @@ class NonSmoothContactSystem(SystemBase):
             Constant value to add to the surface heights.
         gradient : bool, optional
             Return gradient in addition to the energy. Default is True.
+        logger : Logger, optional
+            Logger object to log information at each evaluation. Default is None.
 
         Returns
         -------
@@ -642,20 +831,21 @@ class NonSmoothContactSystem(SystemBase):
         """
 
         res = self.substrate.nb_subdomain_grid_pts
+        base = self._primal_base_displacement(offset)
         if gradient:
             def fun(gap):
-                disp = gap.reshape(res) + self.surface.heights() + offset
                 try:
-                    self.evaluate(
-                        disp.reshape(res), offset, forces=True)
+                    disp = gap.reshape(res) + base
+                    self.evaluate(disp, offset, forces=True, logger=logger)
                 except ValueError as err:
                     raise ValueError("{}: gap.shape: {}, res: {}".format(err, gap.shape, res))
                 return self.energy, -self.force.ravel()
         else:
             def fun(gap):
-                disp = gap.reshape(res) + self.surface.heights() + offset
-                return self.evaluate(
-                    disp.reshape(res), offset, forces=False)[0]
+                disp = gap.reshape(res) + base
+                # The logger reports the total force
+                return self.evaluate(disp, offset, forces=logger is not None,
+                                     logger=logger)[0]
 
         return fun
 
@@ -685,33 +875,51 @@ class NonSmoothContactSystem(SystemBase):
         hessp = -self.substrate.evaluate_force(gap.reshape(res)).reshape(inres)
         return hessp
 
-    def primal_minimize_proxy(self, offset, init_gap=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000):
+    def primal_minimize_proxy(self, offset, init_gap=None, solver='ccg-without-restart', gtol=None, maxiter=1000,
+                              logger=None):
         """
         This function is a convenience function that simplifies the process of
         solving the primal minimisation problem where the gap is the variable.
         It does this by encapsulating the use of constrained minimisation.
+
+        On success, the state of the system is updated: `disp` contains the
+        displacement on the full (for nonperiodic substrates: padded) grid,
+        `gap` the gap and `force` the forces (positive in contact) on the
+        topography domain, and `contact_zone` the contacting points. These
+        quantities are computed from the solution `result.x` and do not depend
+        on what the solver returns in `result.jac`.
 
         Parameters
         ----------
         offset : float
             This parameter determines the indentation depth.
         init_gap : array_like, optional
-            This is the initial guess for the gap. If not provided, it defaults to None.
+            Initial guess for the gap, either on the topography domain or on
+            the full (padded) grid. In the latter case, values in the padding
+            region are displacements. Default is the gap of the undeformed
+            substrate.
         solver : str, optional
             This is the solver to be used for the minimisation. It can be one of
             'ccg-without-restart', 'ccg-with-restart', or 'l-bfgs-b'. If not provided,
             it defaults to 'ccg-without-restart'.
         gtol : float, optional
-            This is the gradient tolerance for the solver. If not provided, it defaults to 1e-8.
+            Absolute tolerance on the (projected) gradient, i.e. on the force
+            per pixel. Default is 1e-6 times a characteristic force per pixel,
+            E* × sqrt(area_per_pt) × rms height (E* × rms height for line
+            scans).
         maxiter : int, optional
             This is the maximum number of iterations allowed for the solver to converge.
             If not provided, it defaults to 1000.
+        logger : Logger, optional
+            Logger object to log information at each evaluation. Default is None.
 
         Returns
         -------
         result : OptimizeResult
-            The result of the minimisation. It contains information about the optimisation
-            result, including the final gap, force, and displacement of the system at the solution.
+            The result of the minimisation as returned by the solver. Note that
+            `result.jac` is the projected residual for the 'ccg-*' solvers and
+            the gradient for 'l-bfgs-b'; use the system state for physical
+            quantities.
         """
 
         solvers = {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b'}
@@ -723,36 +931,61 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        self.init_gap = init_gap
 
-        lbounds = np.zeros(self.init_gap.shape)
-        bnds = self._reshape_bounds(lbounds, )
+        res = self.substrate.nb_subdomain_grid_pts
+        base = self._primal_base_displacement(offset)
+        bounds = self._primal_bounds()
 
+        if init_gap is None:
+            # Undeformed substrate
+            init_gap = np.maximum(-base, bounds)
+        else:
+            # Masked entries (e.g. on masked pixels of the topography) may
+            # hide arbitrary values
+            init_gap = np.ma.filled(init_gap, 0.)
+        if np.shape(init_gap) == tuple(self.substrate.topography_nb_subdomain_grid_pts) and \
+                np.shape(init_gap) != tuple(res):
+            padded_gap = np.zeros(res)
+            padded_gap[self.comp_slice] = init_gap
+            init_gap = padded_gap
+        # The solvers evaluate the first gradient before projecting onto the
+        # feasible set
+        init_gap = np.maximum(np.reshape(init_gap, res), bounds).reshape(-1)
+
+        if gtol is None:
+            gtol = 1e-6 * self._force_scale(offset)
+
+        fun = self.primal_objective(offset, gradient=True, logger=logger)
         if solver == 'ccg-without-restart':
             result = CCGWithoutRestart.constrained_conjugate_gradients(
-                self.primal_objective(offset, gradient=True),
-                self.primal_hessian_product, x0=init_gap, gtol=gtol,
-                maxiter=maxiter)
+                fun, self.primal_hessian_product, x0=init_gap, gtol=gtol,
+                maxiter=maxiter, bounds=bounds.reshape(-1),
+                communicator=self.substrate.communicator)
         elif solver == 'ccg-with-restart':
             result = CCGWithRestart.constrained_conjugate_gradients_with_restart(
-                self.primal_objective(offset, gradient=True),
-                self.primal_hessian_product, x0=init_gap, gtol=gtol,
-                maxiter=maxiter)
+                fun, self.primal_hessian_product, x0=init_gap, gtol=gtol,
+                maxiter=maxiter, bounds=bounds.reshape(-1),
+                communicator=self.substrate.communicator)
         elif solver == 'l-bfgs-b':
+            self._check_serial(solver)
             result = optim.minimize(
-                self.primal_objective(offset, gradient=True),
-                self.shape_minimisation_input(self.init_gap),
+                fun, init_gap,
                 method='L-BFGS-B', jac=True,
-                bounds=bnds,
-                options=dict(gtol=gtol, ftol=1e-20))
+                bounds=optim.Bounds(lb=bounds.reshape(-1),
+                                    ub=np.full(bounds.size, np.inf)),
+                # ftol is disabled since scipy compares it to max(|f|, 1),
+                # which makes it an absolute criterion for small energies
+                options=dict(gtol=gtol, ftol=0, maxiter=maxiter))
 
         if result.success:
-            self.offset = offset
-            self.gap = result.x
-            self.force = self.substrate.force = result.jac
-            self.contact_zone = result.x == 0
-            self.disp = self.gap + offset + self.surface.heights().reshape(
-                self.gap.shape)
+            disp = np.reshape(result.x, res) + base
+            # This computes energy, gap and substrate forces
+            energy, substrate_force = self.evaluate(disp, offset, forces=True)
+            # Keep the full substrate force: in the padding region of
+            # nonperiodic substrates, it vanishes only up to the tolerance.
+            # The solvers place active constraints exactly onto the bound.
+            self._set_state(offset, disp, -substrate_force[self.comp_slice], energy,
+                            contact_zone=np.ma.filled(self.gap <= 0, False), substrate_force=substrate_force.copy())
 
         return result
 
@@ -787,15 +1020,22 @@ class NonSmoothContactSystem(SystemBase):
             Gradient, which is the difference between the displacement and the sum of the
             surface heights and the offset. If forces are not computed, the gradient is None.
         """
+        # There is no contact where the heights are undefined (masked); the
+        # forces there are ignored and their gradient vanishes
+        valid = self._valid_mask()
+        force = np.where(valid, force, 0.)
         disp = self.substrate.evaluate_disp(-force)
 
-        self.gradient = disp - self.surface.heights() - offset
+        self.gradient = np.where(valid, disp - self._filled_heights() - offset, 0.)
 
-        self.energy = 1 / 2 * np.sum(force * disp) - np.sum(
-            force * (self.surface.heights() + offset))
+        self.energy = 1 / 2 * self.reduction.sum(force * disp) - self.reduction.sum(
+            force * (self._filled_heights() + offset))
 
-        # Update state:
-        self.substrate.force = - force
+        # Update state: the substrate force has the opposite sign and lives
+        # on the grid of the substrate
+        substrate_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
+        substrate_force[self.comp_slice] = -force
+        self.substrate.force = substrate_force
         self.substrate.disp = disp
 
         if logger is not None:
@@ -900,22 +1140,33 @@ class NonSmoothContactSystem(SystemBase):
         """
         inres = pressure.shape
         res = self.substrate.topography_nb_subdomain_grid_pts
-        hessp = self.substrate.evaluate_disp(-pressure.reshape(res))
-        return hessp.reshape(inres)
+        valid = self._valid_mask()
+        hessp = self.substrate.evaluate_disp(-np.where(valid, pressure.reshape(res), 0.))
+        return np.where(valid, hessp, 0.).reshape(inres)
 
-    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=1e-8, maxiter=1000,
+    def dual_minimize_proxy(self, offset, init_force=None, solver='ccg-without-restart', gtol=None, maxiter=1000,
                             logger=None):
         """
         Convenience function for DUAL minimisation (pixel forces as variables).
         This function simplifies the process of solving the dual minimisation problem
         by encapsulating the use of constrained minimisation.
 
+        On success, the state of the system is updated: `disp` contains the
+        displacement on the full (for nonperiodic substrates: padded) grid,
+        `gap` the gap and `force` the forces (positive in contact) on the
+        topography domain, `energy` the elastic energy and `contact_zone` the
+        contacting points. These quantities are computed from the solution
+        `result.x` and do not depend on what the solver returns in
+        `result.jac`.
+
         Parameters
         ----------
         offset : float
             Determines the indentation depth.
         init_force : array_like, optional
-            Initial guess for the force. If not provided, it defaults to None.
+            Initial guess for the force. Default is the penetration of the
+            undeformed substrate times a local stiffness E* × sqrt(area_per_pt)
+            (E* for line scans).
             For Nonperiodic calculations, the array does not include the padding region,
             i.e. it is of shape `substrate.topography_nb_subdomain_grid_pts`
         solver : str, optional
@@ -923,16 +1174,22 @@ class NonSmoothContactSystem(SystemBase):
             'ccg-without-restart', 'ccg-with-restart', or 'l-bfgs-b'. If not provided,
             it defaults to 'ccg-without-restart'.
         gtol : float, optional
-            The gradient tolerance for the solver. If not provided, it defaults to 1e-8.
+            Absolute tolerance on the (projected) gradient, i.e. on the gap.
+            Default is 1e-6 times the rms height of the topography (or the
+            offset for flat topographies).
         maxiter : int, optional
             The maximum number of iterations allowed for the solver to converge.
             If not provided, it defaults to 1000.
+        logger : Logger, optional
+            Logger object to log information at each evaluation. Default is None.
 
         Returns
         -------
         result : OptimizeResult
-            The result of the minimisation. It contains information about the optimisation
-            result, including the final gap, force, and displacement of the system at the solution.
+            The result of the minimisation as returned by the solver. Note that
+            `result.jac` is the projected residual for the 'ccg-*' solvers and
+            the gradient for 'l-bfgs-b'; use the system state for physical
+            quantities.
         """
         solvers = {'ccg-without-restart', 'ccg-with-restart', 'l-bfgs-b'}
 
@@ -943,38 +1200,51 @@ class NonSmoothContactSystem(SystemBase):
         self.disp = None
         self.force = None
         self.contact_zone = None
-        self.init_force = init_force
 
-        if init_force is not None and init_force.shape != self.substrate.topography_nb_subdomain_grid_pts:
-            raise IncompatibleResolutionError
+        res = tuple(self.substrate.topography_nb_subdomain_grid_pts)
+        if init_force is None:
+            # Penetration of the undeformed substrate times a local stiffness.
+            # Note that a vanishing force is a poor initial guess, since
+            # all variables are then on the bound.
+            init_force = self._pixel_stiffness() * np.where(self._valid_mask(),
+                                                            np.maximum(self._filled_heights() + offset, 0), 0.)
+        elif np.shape(init_force) != res:
+            raise IncompatibleResolutionError(
+                "`init_force` has shape {}, but should have shape {}"
+                .format(np.shape(init_force), res))
+        # The solvers evaluate the first gradient before projecting onto the
+        # feasible set
+        init_force = np.maximum(init_force, 0).reshape(-1)
 
-        lbounds = np.zeros(self.init_force.shape)
-        bnds = self._reshape_bounds(lbounds, )
+        if gtol is None:
+            gtol = 1e-6 * self._length_scale(offset)
 
+        fun = self.dual_objective(offset, gradient=True, logger=logger)
         if solver == 'ccg-without-restart':
             result = CCGWithoutRestart.constrained_conjugate_gradients(
-                self.dual_objective(offset, gradient=True, logger=logger),
-                self.dual_hessian_product, x0=init_force, gtol=gtol,
-                maxiter=maxiter)
+                fun, self.dual_hessian_product, x0=init_force, gtol=gtol,
+                maxiter=maxiter, communicator=self.substrate.communicator)
         elif solver == 'ccg-with-restart':
             result = CCGWithRestart.constrained_conjugate_gradients_with_restart(
-                self.dual_objective(offset, gradient=True, logger=logger),
-                self.dual_hessian_product, x0=init_force, gtol=gtol,
-                maxiter=maxiter)
+                fun, self.dual_hessian_product, x0=init_force, gtol=gtol,
+                maxiter=maxiter, communicator=self.substrate.communicator)
         elif solver == 'l-bfgs-b':
+            self._check_serial(solver)
             result = optim.minimize(
-                self.dual_objective(offset, gradient=True, logger=logger),
-                self.init_force.ravel(),
+                fun, init_force,
                 method='L-BFGS-B', jac=True,
-                bounds=bnds,
-                options=dict(gtol=gtol, ftol=1e-20))
+                bounds=optim.Bounds(lb=np.zeros(init_force.size),
+                                    ub=np.full(init_force.size, np.inf)),
+                # ftol is disabled since scipy compares it to max(|f|, 1),
+                # which makes it an absolute criterion for small energies
+                options=dict(gtol=gtol, ftol=0, maxiter=maxiter))
 
         if result.success:
-            # TODO: I think I need to call substrate.compute , so that substrate.energy is computed
-            self.offset = offset
-            self.gap = result.jac
-            self.force = self.substrate.force = result.x
-            self.contact_zone = result.x > 0
-            self.disp = self.gap + offset + self.surface.heights().reshape(self.gap.shape)
+            force = np.where(self._valid_mask(), np.reshape(result.x, res), 0.)
+            padded_force = np.zeros(self.substrate.nb_subdomain_grid_pts)
+            padded_force[self.comp_slice] = force
+            disp = self.substrate.evaluate_disp(-padded_force)
+            self.gap = self.compute_gap(disp, offset)
+            self._set_state(offset, disp, force, self.reduction.sum(force * disp[self.comp_slice]) / 2)
 
         return result
