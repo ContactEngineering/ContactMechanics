@@ -19,6 +19,7 @@
 #
 
 import os
+import shutil
 import sys
 
 import ContactMechanics
@@ -177,3 +178,23 @@ texinfo_documents = [
 
 myst_enable_extensions = [
     "dollarmath"]
+
+# Notebooks are executed during the build if they do not contain outputs
+nb_execution_mode = "auto"
+nb_execution_timeout = 1800
+
+# -- Options for autodoc --
+
+# Show the documentation of the constructor together with the class
+autoclass_content = "both"
+
+# -- Examples --
+
+# Copy the example notebooks (and data files they need) into the
+# documentation
+_examples_source = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'examples')
+_examples_target = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'examples')
+os.makedirs(_examples_target, exist_ok=True)
+for _fn in sorted(os.listdir(_examples_source)):
+    if _fn.endswith('.ipynb') or _fn.endswith('.out'):
+        shutil.copy(os.path.join(_examples_source, _fn), _examples_target)

@@ -22,3 +22,9 @@ dist
 *.pyc
 
 
+
+# Example notebooks are copied into the documentation during the build
+/docs/examples/
+# Files written by the examples
+/examples/*.pdf
+/examples/*.nc

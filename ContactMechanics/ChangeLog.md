@@ -33,6 +33,10 @@ v1.9.0 (not yet released)
 - API: The normal force is positive for compressive contact, also after
   evaluating the elastic energy
 - DOC: Sign conventions of forces and the results of the solvers
+- DOC: Example notebooks are part of the documentation; the documentation
+  shows the parameters of constructors
+- DOC: Self-contained examples for the size of contact patches and the
+  contact area as a function of load
 
 v1.8.3 (28Jul26)
 ----------------

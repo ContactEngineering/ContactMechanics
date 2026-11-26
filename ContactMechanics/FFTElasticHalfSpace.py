@@ -93,9 +93,9 @@ Parseval's Theorem is a special case of the power theorem:
 
 
 When the fourier space array contains only half the spectrum, making use of
-hermitian symmetry, extra care has to be taken when performing the sum.
-
-# TODO
+hermitian symmetry, extra care has to be taken when performing the sum: Each
+wavevector whose hermitian partner was omitted has to be counted twice. See
+`PeriodicFFTElasticHalfSpace.evaluate_scalar_product_k_space`.
 
 
 muGrid.FFTEngine fourier transform:
@@ -119,17 +119,15 @@ Normalisation:
 2D FFT:
 -------
 
-numpy by default transforms the last index first.
-
-muGrid.FFTEngine the first
+numpy's `rfft2` keeps half of the spectrum along the *last* axis.
+muGrid's FFTEngine keeps half of the spectrum along the *first* axis, i.e. for
+a real-space array of shape (nx, ny) the Fourier-space array has shape
+(nx // 2 + 1, ny):
 ```
 real_buffer.p = a
 fftengine.fft(real_buffer, fourier_buffer)
-fourier_buffer <--> np.rfft2(a.T).T <--> np.fft.rfft2(a, axes=(1,0))
+fourier_buffer.p <--> np.fft.rfft2(a.T).T <--> np.fft.rfft2(a, axes=(1, 0))
 ```
-# FIXME: @pastewka: I expected the fourier array to be transposed, so there is a
-#                   wrapper swapping the indexes and the array
-#                   is transposed in memory ?
 
 """  # noqa E501
 
@@ -400,7 +398,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine._cpp.nb_fourier_subdomain_grid_pts
+        return self.fftengine.nb_fourier_subdomain_grid_pts
 
     @property
     def fourier_locations(self):
@@ -409,7 +407,7 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        return self.fftengine._cpp.fourier_subdomain_locations
+        return self.fftengine.fourier_subdomain_locations
 
     @property
     def fourier_slices(self):
@@ -418,10 +416,9 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         :return:
         """
-        nb_fourier_subdomain = self.fftengine._cpp.nb_fourier_subdomain_grid_pts
         return tuple(
             slice(s, s + n)
-            for s, n in zip(self.fourier_locations, nb_fourier_subdomain)
+            for s, n in zip(self.fourier_locations, self.nb_fourier_grid_pts)
         )
 
     @property
@@ -729,38 +726,35 @@ class PeriodicFFTElasticHalfSpace(ElasticSubstrate):
 
         """
 
-        # ka and kb are the output of the 2D rfftn, that means the a
-        # part of the transform is omitted because of the symetry along the
-        # last dimension
+        # ka and kb are the output of muGrid's real-to-complex FFT, which
+        # omits half of the transform along the *first* dimension because of
+        # hermitian symmetry.
         #
-        # That's why the components whose symetrics have been omitted are
-        # weighted with a factor of 2.
+        # That's why the components whose symmetric partners have been omitted
+        # are weighted with a factor of 2.
         #
-        # The first column (indexes [...,0], wavevector 0 along the last
-        # dimension) has no symetric
+        # The first row (indexes [0, ...], wavevector 0 along the first
+        # dimension) has no symmetric partner.
         #
-        # When the number of points in the last dimension is even, the last
-        # column (Nyquist Frequency) has also no symetric.
+        # When the number of points in the first dimension is even, the last
+        # row (Nyquist frequency) has no symmetric partner either.
         #
         # The serial code implementation would look like this
-        # if (self.nb_domain_grid_pts[-1] % 2 == 0)
-        #   return .5*(np.vdot(ka, kb).real +
-        #           # adding the data that has been omitted by rfftn
-        #           np.vdot(ka[..., 1:-1], kb[..., 1:-1]).real
-        #           # because of symetry
-        #           )/self.nb_pts
-        # else :
-        #   return .5 * (np.vdot(ka, kb).real +
-        #                  # adding the data that has been omitted by rfftn
-        #      #           np.vdot(ka[..., 1:], kb[..., 1:]).real
-        #      #           # because of symetry
-        #      #           )/self.nb_pts
+        # if self.nb_domain_grid_pts[0] % 2 == 0:
+        #     return (np.vdot(ka, kb).real +
+        #             # adding the data that has been omitted
+        #             np.vdot(ka[1:-1, ...], kb[1:-1, ...]).real
+        #             ) / self.nb_pts
+        # else:
+        #     return (np.vdot(ka, kb).real +
+        #             # adding the data that has been omitted
+        #             np.vdot(ka[1:, ...], kb[1:, ...]).real
+        #             ) / self.nb_pts
         #
         # Parallelized Version
-        # The inner part of the fourier data should always be symetrized (i.e.
-        # multiplied by 2). When the fourier subdomain contains boundary values
-        # (wavevector 0 (even and odd) and ny//2 (only for odd)) these values
-        # should only be added once
+        # The inner part of the fourier data should always be counted twice.
+        # When the fourier subdomain contains boundary rows (wavevector 0, and
+        # nx//2 for even nx) these rows should only be counted once
 
         if ka.size > 0:
             if self.fourier_locations[0] == 0:
@@ -1579,18 +1573,8 @@ class SemiPeriodicFFTElasticHalfSpace(FreeFFTElasticHalfSpace):
         G_real_ordered : ndarray of shape (M, N)
             Green's function in real space with G(0,0) at the array center
         """
-        self.nx, self.ny = self.nb_grid_pts
-
-        if self.periodicity[0]:
-            nx = self.nx
-        else:
-            nx = self.nx * 2 - 1
+        nx, ny = self.nb_domain_grid_pts
         m = np.round(np.fft.fftfreq(nx) * nx).astype(int)
-
-        if self.periodicity[1]:
-            ny = self.ny
-        else:
-            ny = self.ny * 2 - 1
         n = np.round(np.fft.fftfreq(ny) * ny).astype(int)
 
         # Inverting the custom frequency ordering
